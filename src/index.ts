@@ -112,12 +112,17 @@ registerReadTool(
   'defenses',
   'Defenses',
   'Where the threats are versus what you have to fight them with. Returns active ' +
-    'hostiles with map positions and their tile-distance/direction to the fort ' +
-    'core and to the nearest drawbridge, plus an inventory of controllable ' +
-    'defensive structures (drawbridges with positions, levers, floodgates, ' +
-    'hatches, cage traps, locked doors). Turns generic "atom-smash them" advice ' +
-    'into a located plan. Walls/fortifications (map tiles) are not yet covered. ' +
-    'Returns {"error":"no fort loaded"} if no fort is active.',
+    'hostiles with map positions and their geometry to the fort core and to the ' +
+    'nearest drawbridge (dist = 8-directional tile count (Chebyshev), dz = ' +
+    'z-levels with + meaning above the threat, dir = compass bearing), plus an ' +
+    'inventory of controllable defensive structures (drawbridges with positions, ' +
+    'levers, floodgates, hatches, cage traps, locked doors). Facts only — decide ' +
+    'the tactics yourself, and use identify() for a creature\'s trait facts (e.g. ' +
+    'cage traps do not hold a TRAPAVOID creature). Caveats: walls and ' +
+    'fortifications are map tiles, not buildings, so "inside vs outside the walls" ' +
+    'is not yet covered; and which lever raises which bridge is not recorded in ' +
+    'the raws, so bridges and levers are reported separately, not linked. Returns ' +
+    '{"error":"no fort loaded"} if no fort is active.',
   defenses
 );
 

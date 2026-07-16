@@ -1,16 +1,12 @@
 -- mcp_defenses: where the threats are vs. what you have to fight them with.
 --
--- Turns the generic "atom-smash them" advice into "you have 3 bridges; the
--- nearest to the demons is ~N tiles away." Everything here is buildings + unit
--- positions over the same Lua pipe (no RemoteFortressReader needed). Raw (x,y,z)
--- is meaningless alone, so the value is the RELATIVE geometry we compute: tile
--- distance (Chebyshev, since DF movement is 8-directional), z-level delta, and
--- an 8-way compass bearing.
---
--- Honest limits (documented, not hidden): walls/fortifications are map TILES,
--- not buildings, so "inside vs outside the walls" waits on RFR terrain reads;
--- and a bridge doesn't record which lever raises it, so we report bridges and
--- levers separately, not their linkage.
+-- FACTS ONLY. This script extracts positions, structures, and the RELATIVE
+-- geometry between them (tile distance (Chebyshev, since DF movement is
+-- 8-directional), z-level delta, 8-way compass bearing). It deliberately does
+-- NOT decide what to DO about it -- no "atom-smash them" advice, no per-trait
+-- caveats. Tactical judgment is the agent's job (and creature-trait facts live
+-- in identify()); doctrine baked into this version-fragile boundary would
+-- proliferate and drift. Interpretation stays out; only ground truth ships.
 --
 -- Verified live on 53.15-r2: world.buildings.all + b:getType() (df.building_type
 -- Bridge/Trap/Door/Floodgate/Hatch); bridge x1/y1/x2/y2/z/centerx/centery/
@@ -99,17 +95,6 @@ for _, u in ipairs(df.global.world.units.active) do
   end
 end
 
-local alerts = {}
-if #threats > 0 and #bridges == 0 then
-  alerts[#alerts+1] = 'no drawbridge on the map — the safest kill (atom-smasher) is unavailable until you build one'
-elseif #threats > 0 and #bridges > 0 then
-  local nearest = nil
-  for _, th in ipairs(threats) do
-    if th.nearest_bridge and (not nearest or th.nearest_bridge.dist < nearest) then nearest = th.nearest_bridge.dist end
-  end
-  if nearest then alerts[#alerts+1] = 'nearest drawbridge is ~' .. nearest .. ' tiles from a threat' end
-end
-
 emit({
   fort_core = core,
   threats = threats,
@@ -120,11 +105,5 @@ emit({
     hatches = hatches,
     cage_traps = cage_traps,
     doors = { total = doors_total, forbidden = doors_forbidden },
-  },
-  notes = {
-    'Distances are 8-directional tile counts (Chebyshev); dz is z-levels (+ = above the threat).',
-    'Walls/fortifications are map tiles, not buildings, so "inside vs outside" is not yet covered.',
-    'Bridges and levers are listed separately; which lever raises which bridge is not recorded in the raws.',
-    'Cage traps do not work on TRAPAVOID creatures (check threats()/identify()).',
   },
 })

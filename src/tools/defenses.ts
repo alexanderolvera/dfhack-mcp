@@ -36,11 +36,10 @@ export interface Defenses {
     cage_traps: number;
     doors: { total: number; forbidden: number };
   };
-  notes: string[];
 }
 
 export async function defenses(): Promise<Defenses | { error: string }> {
-  const res = await runJsonScript<Defenses>('defenses', [], ['threats', 'notes']);
+  const res = await runJsonScript<Defenses>('defenses', [], ['threats']);
   if ('error' in res) return res;
   // Nested list under structures needs its own coercion (empty Lua table -> {}).
   if (res.structures && !Array.isArray(res.structures.bridges)) res.structures.bridges = [];
