@@ -83,6 +83,99 @@ emit({
 })
 `;
 
+// threats(): enumerate dangerous units on the map, grouped by kind.
+//
+// Builds on fort_status's hostile predicate (active && !dead && isDanger &&
+// !citizen) but classifies each threat and separates ACTIVE hostiles from
+// CONTAINED ones (caged/chained — a captured beast is a hazard-in-waiting, not
+// a live attack). Groups identical creatures so "12 goblins" reads as one line.
+//
+// Verified live on 53.15-r2: getReadableName, isInvader, isUndead, isCrazed,
+// isGreatDanger all resolve; isSemiMegabeast does NOT exist in this build, so we
+// don't rely on it. great_danger (megabeasts, titans, demons, forgotten beasts)
+// is the "this can end the fort" signal.
+export const THREATS = String.raw`
+local json = require('json')
+local function emit(t) print(json.encode(t)) end
+
+if df.global.gamemode ~= df.game_mode.DWARF then
+  emit({ error = 'no fort loaded' })
+  return
+end
+
+-- Group dangerous units by a stable key so identical creatures collapse to one
+-- line. Contained (caged/chained) threats are counted apart from active ones.
+local groups = {}   -- key -> aggregate
+local order = {}    -- preserve first-seen order for stable output
+local active_total, contained_total = 0, 0
+
+local function classify(u)
+  return {
+    invader      = dfhack.units.isInvader(u),
+    undead       = dfhack.units.isUndead(u),
+    crazed       = dfhack.units.isCrazed(u),
+    great_danger = dfhack.units.isGreatDanger(u),
+  }
+end
+
+for _, u in ipairs(df.global.world.units.active) do
+  if dfhack.units.isActive(u) and not dfhack.units.isDead(u)
+     and dfhack.units.isDanger(u) and not dfhack.units.isCitizen(u) then
+    local contained = u.flags1.caged or u.flags1.chained
+    local name = dfhack.units.getReadableName(u)
+    local flags = classify(u)
+    -- Distinct groups per (name, containment) so a caged beast never masks a
+    -- loose one of the same kind.
+    local key = name .. (contained and ' [contained]' or '')
+    local g = groups[key]
+    if not g then
+      g = { name = name, count = 0, contained = contained,
+            invader = flags.invader, undead = flags.undead,
+            crazed = flags.crazed, great_danger = flags.great_danger }
+      groups[key] = g
+      order[#order+1] = key
+    end
+    g.count = g.count + 1
+    if contained then contained_total = contained_total + 1
+    else active_total = active_total + 1 end
+  end
+end
+
+local group_list = {}
+for _, key in ipairs(order) do group_list[#group_list+1] = groups[key] end
+
+-- Alerts: lead with great-danger creatures, then invaders, then a catch-all for
+-- any remaining active hostiles. Contained threats get a quieter mention.
+local alerts = {}
+local great, invaders, other = 0, 0, 0
+for _, g in ipairs(group_list) do
+  if not g.contained then
+    if g.great_danger then great = great + g.count
+    elseif g.invader then invaders = invaders + g.count
+    else other = other + g.count end
+  end
+end
+if great > 0 then
+  alerts[#alerts+1] = great .. ' great-danger creature' .. (great > 1 and 's' or '') .. ' loose (megabeast/titan/demon/FB)'
+end
+if invaders > 0 then
+  alerts[#alerts+1] = invaders .. ' invader' .. (invaders > 1 and 's' or '') .. ' on map'
+end
+if other > 0 then
+  alerts[#alerts+1] = other .. ' other hostile' .. (other > 1 and 's' or '') .. ' on map'
+end
+if contained_total > 0 then
+  alerts[#alerts+1] = contained_total .. ' dangerous creature' .. (contained_total > 1 and 's' or '') .. ' caged/chained'
+end
+
+emit({
+  active_hostiles = active_total,
+  contained = contained_total,
+  groups = group_list,
+  alerts = alerts,
+})
+`;
+
 // stocks(): food/drink as days-of-supply plus a few critical materials.
 //
 // Item counting follows DFHack's own dfstatus (iterate world.items.other.IN_PLAY,

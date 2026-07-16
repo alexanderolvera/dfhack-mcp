@@ -5,6 +5,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { fortStatus } from './tools/fortStatus.ts';
 import { stocks } from './tools/stocks.ts';
+import { threats } from './tools/threats.ts';
 import { NotConnectedError, closeConnection } from './dfclient.ts';
 
 const server = new McpServer({ name: 'dfhack-mcp', version: '0.1.0' });
@@ -41,6 +42,17 @@ registerReadTool(
     'lists of notably low or high stocks. Days-of-supply assume ~2 food and ~5 ' +
     'drink per dwarf per season. Returns {"error":"no fort loaded"} if no fort is active.',
   stocks
+);
+
+registerReadTool(
+  'threats',
+  'Threats',
+  'Dangerous units currently on the map, grouped by creature type. Separates ' +
+    'ACTIVE hostiles from CONTAINED ones (caged/chained), flags great-danger ' +
+    'creatures (megabeasts, titans, demons, forgotten beasts), invaders, and ' +
+    'the undead, and returns a pre-triaged alerts list. Returns ' +
+    '{"error":"no fort loaded"} if no fort is active.',
+  threats
 );
 
 const transport = new StdioServerTransport();
