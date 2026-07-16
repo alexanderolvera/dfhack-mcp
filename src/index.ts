@@ -6,6 +6,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { fortStatus } from './tools/fortStatus.ts';
 import { stocks } from './tools/stocks.ts';
 import { threats } from './tools/threats.ts';
+import { unmetNeeds } from './tools/unmetNeeds.ts';
 import { NotConnectedError, closeConnection } from './dfclient.ts';
 
 const server = new McpServer({ name: 'dfhack-mcp', version: '0.1.0' });
@@ -53,6 +54,18 @@ registerReadTool(
     'the undead, and returns a pre-triaged alerts list. Returns ' +
     '{"error":"no fort loaded"} if no fort is active.',
   threats
+);
+
+registerReadTool(
+  'unmet_needs',
+  'Unmet needs',
+  'Why the fort is stressed: the dwarven needs system aggregated across all ' +
+    'citizens. Returns the top unmet needs (e.g. prayer, drink, socializing) ' +
+    'ranked by how many dwarves are distracted, each with a concrete ' +
+    'suggestion for what to build or do, plus how many dwarves have at least ' +
+    'one unmet need. Complements fort_status happiness. Returns ' +
+    '{"error":"no fort loaded"} if no fort is active.',
+  unmetNeeds
 );
 
 const transport = new StdioServerTransport();
