@@ -15,6 +15,7 @@ import { findUnit } from './tools/findUnit.ts';
 import { gameData } from './tools/gameData.ts';
 import { wikiSearchTool } from './tools/wikiSearch.ts';
 import { wikiLookupTool } from './tools/wikiLookup.ts';
+import { identify } from './tools/identify.ts';
 import { runLuaTool } from './tools/runLua.ts';
 import { NotConnectedError, closeConnection } from './dfclient.ts';
 
@@ -189,6 +190,24 @@ registerQueryTool<{ title: string; section?: string; refresh?: boolean }>(
     refresh: z.boolean().optional().describe('Bypass the disk cache and refetch'),
   },
   ({ title, section, refresh }) => wikiLookupTool(title, section, refresh)
+);
+
+registerQueryTool<{ query: string }>(
+  'identify',
+  'Identify',
+  "One-call \"what is this creature and how do I handle it\": fuses THIS WORLD's " +
+    'raws (ground truth) with the DF wiki (strategy). Pass a creature token ' +
+    '(e.g. "DEMON_4"), a name ("flame phantom"), or a live unit_id (all digits) — ' +
+    'same contract as game_data. Returns the creature dossier, a "tactics" list of ' +
+    'the decisive traits with hard-fact implications (trapavoid, flier, fire, ' +
+    'building_destroyer, webber, ranged breath weapons), and 1-2 trimmed wiki ' +
+    'strategy excerpts. Procedural creatures (demons, forgotten beasts, titans) have ' +
+    'no wiki page, so strategy leans on their traits plus the most relevant trait ' +
+    'page. Use this instead of a bare wiki lookup so world-specific facts (e.g. a ' +
+    'TRAPAVOID demon that cage traps cannot hold) are never missed. Multiple matches ' +
+    'return a disambiguation list; returns {"error":"no game loaded"} if no game is active.',
+  { query: z.string().min(1).describe('Creature token, name fragment, or a live unit_id (all digits)') },
+  ({ query }) => identify(query)
 );
 
 // Dev-only escape hatch. NOT registered by default: arbitrary Lua can mutate the
