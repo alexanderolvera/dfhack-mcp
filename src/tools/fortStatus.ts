@@ -2,7 +2,7 @@
 // Thin wrapper over the FORT_STATUS Lua query.
 
 import { runJsonQuery } from '../query.ts';
-import { FORT_STATUS } from '../lua/queries.ts';
+import { FORT_STATUS } from '../dfhack-queries/fortStatus.ts';
 
 export interface FortStatus {
   fort_name: string;

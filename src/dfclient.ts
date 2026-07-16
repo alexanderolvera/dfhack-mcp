@@ -2,7 +2,7 @@
 // Lazy-connects on first use and transparently reconnects once if the socket
 // has dropped (e.g. DF was restarted between calls).
 
-import { DwarfClient } from 'dfhack-remote';
+import { DwarfClient } from 'dfhack-remote-node';
 
 const HOST = process.env.DFHACK_HOST ?? '127.0.0.1';
 const PORT = Number(process.env.DFHACK_PORT ?? 5000);
@@ -26,7 +26,7 @@ export class NotConnectedError extends Error {}
 export async function runLua(snippet: string): Promise<string> {
   try {
     return await (await ensureConnected()).runLuaSnippet(snippet);
-  } catch (err) {
+  } catch {
     // Reset and retry once — covers a stale socket after a DF restart.
     client = null;
     try {

@@ -21,7 +21,9 @@ line('== wiki_lookup("Trap")');
 const trap = await wikiLookupTool('Trap');
 if (trap.error) line('  ERROR: ' + trap.error);
 else {
-  line(`  title=${trap.title}  from_cache=${trap.from_cache}  resolved_from=${trap.resolved_from ?? '(none)'}`);
+  line(
+    `  title=${trap.title}  from_cache=${trap.from_cache}  resolved_from=${trap.resolved_from ?? '(none)'}`
+  );
   line(`  url=${trap.url}`);
   line(`  cleaned text length=${trap.text.length}`);
   line('  first ~300 chars:');

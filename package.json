@@ -4,17 +4,42 @@
   "description": "MCP server exposing a live Dwarf Fortress fort to an AI agent as curated, semantic tools",
   "type": "module",
   "bin": {
-    "dfhack-mcp": "src/index.ts"
+    "dfhack-mcp": "./dist/index.js"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE.md"
+  ],
   "scripts": {
     "start": "node src/index.ts",
-    "call": "node scripts/call-tool.mjs"
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "call": "node scripts/call-tool.mjs",
+    "prepare": "npm run build"
   },
-  "keywords": ["dwarf-fortress", "dfhack", "mcp", "model-context-protocol"],
+  "keywords": [
+    "dwarf-fortress",
+    "dfhack",
+    "mcp",
+    "model-context-protocol"
+  ],
   "author": "Alex",
   "license": "ISC",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.0",
-    "dfhack-remote": "file:../dfhack-remote"
+    "dfhack-remote-node": "file:../dfhack-remote"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "@types/node": "^24.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-prettier": "^10.0.0",
+    "prettier": "^3.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.6.0",
+    "typescript-eslint": "^8.0.0"
   }
 }

@@ -2,7 +2,7 @@
 // Thin wrapper over the STOCKS Lua query.
 
 import { runJsonQuery } from '../query.ts';
-import { STOCKS } from '../lua/queries.ts';
+import { STOCKS } from '../dfhack-queries/stocks.ts';
 
 export interface Stocks {
   population: number;

@@ -2,7 +2,7 @@
 // Thin wrapper over the JOBS_AND_LABOR Lua query.
 
 import { runJsonQuery } from '../query.ts';
-import { JOBS_AND_LABOR } from '../lua/queries.ts';
+import { JOBS_AND_LABOR } from '../dfhack-queries/jobsAndLabor.ts';
 
 export interface JobRow {
   job: string;

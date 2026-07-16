@@ -2,7 +2,7 @@
 // Thin wrapper over the INJURIES_AND_HEALTH Lua query.
 
 import { runJsonQuery } from '../query.ts';
-import { INJURIES_AND_HEALTH } from '../lua/queries.ts';
+import { INJURIES_AND_HEALTH } from '../dfhack-queries/injuriesAndHealth.ts';
 
 export interface CareRow {
   care: string;

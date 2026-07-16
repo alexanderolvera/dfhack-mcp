@@ -2,7 +2,7 @@
 // The one parameterized tool — builds the Lua per call.
 
 import { runJsonQuery } from '../query.ts';
-import { findUnitQuery } from '../lua/queries.ts';
+import { findUnitQuery } from '../dfhack-queries/findUnit.ts';
 
 export interface UnitMatch {
   name: string;

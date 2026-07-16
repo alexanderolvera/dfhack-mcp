@@ -2,7 +2,7 @@
 // Thin wrapper over the THREATS Lua query.
 
 import { runJsonQuery } from '../query.ts';
-import { THREATS } from '../lua/queries.ts';
+import { THREATS } from '../dfhack-queries/threats.ts';
 
 export interface ThreatGroup {
   name: string;

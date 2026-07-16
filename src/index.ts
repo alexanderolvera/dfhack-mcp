@@ -1,5 +1,7 @@
 // DFHack MCP server — exposes a live Dwarf Fortress fort to an AI agent as
-// curated, semantic tools over stdio. Read-only (v1).
+// curated, semantic tools over stdio. Read-only (v1). This file is just the
+// server wiring: construction, the tool list, and the stdio transport. The
+// registration plumbing lives in register.ts; each tool in tools/.
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
@@ -16,47 +18,15 @@ import { findUnit } from './tools/findUnit.ts';
 import { gameData } from './tools/gameData.ts';
 import { wikiSearchTool } from './tools/wikiSearch.ts';
 import { wikiLookupTool } from './tools/wikiLookup.ts';
-import { identify } from './tools/identify.ts';
+import { identify } from './tools/identify/index.ts';
 import { runLuaTool } from './tools/runLua.ts';
-import { NotConnectedError, closeConnection } from './dfclient.ts';
+import { registerReadTool, registerQueryTool } from './register.ts';
+import { closeConnection } from './dfclient.ts';
 
 const server = new McpServer({ name: 'dfhack-mcp', version: '0.1.0' });
 
-/** Register a no-argument, read-only tool that returns a JSON-able object. */
-function registerReadTool(name: string, title: string, description: string, run: () => Promise<unknown>) {
-  server.registerTool(name, { title, description }, async () => {
-    try {
-      const data = await run();
-      return { content: [{ type: 'text', text: JSON.stringify(data, null, 2) }] };
-    } catch (err) {
-      const message =
-        err instanceof NotConnectedError ? err.message : `${name} failed: ${(err as Error).message}`;
-      return { content: [{ type: 'text', text: JSON.stringify({ error: message }) }], isError: true };
-    }
-  });
-}
-
-/** Register a read-only tool that takes arguments matching `shape`. */
-function registerQueryTool<A>(
-  name: string,
-  title: string,
-  description: string,
-  shape: Record<string, z.ZodType>,
-  run: (args: A) => Promise<unknown>
-) {
-  server.registerTool(name, { title, description, inputSchema: shape }, async (args: A) => {
-    try {
-      const data = await run(args);
-      return { content: [{ type: 'text', text: JSON.stringify(data, null, 2) }] };
-    } catch (err) {
-      const message =
-        err instanceof NotConnectedError ? err.message : `${name} failed: ${(err as Error).message}`;
-      return { content: [{ type: 'text', text: JSON.stringify({ error: message }) }], isError: true };
-    }
-  });
-}
-
 registerReadTool(
+  server,
   'fort_status',
   'Fort status',
   'One-call situational overview of the currently loaded Dwarf Fortress fort: ' +
@@ -67,6 +37,7 @@ registerReadTool(
 );
 
 registerReadTool(
+  server,
   'stocks',
   'Stocks',
   'Food and drink as estimated days-of-supply for the current population, plus ' +
@@ -77,6 +48,7 @@ registerReadTool(
 );
 
 registerReadTool(
+  server,
   'threats',
   'Threats',
   'Dangerous units currently on the map, grouped by creature type. Separates ' +
@@ -88,6 +60,7 @@ registerReadTool(
 );
 
 registerReadTool(
+  server,
   'unmet_needs',
   'Unmet needs',
   'Why the fort is stressed: the dwarven needs system aggregated across all ' +
@@ -100,6 +73,7 @@ registerReadTool(
 );
 
 registerReadTool(
+  server,
   'jobs_and_labor',
   'Jobs and labor',
   'Workforce utilization: how many working-age dwarves are busy vs. idle ' +
@@ -111,6 +85,7 @@ registerReadTool(
 );
 
 registerReadTool(
+  server,
   'military',
   'Military',
   "The fort's military: number of squads, how many living present dwarves are " +
@@ -121,6 +96,7 @@ registerReadTool(
 );
 
 registerReadTool(
+  server,
   'injuries_and_health',
   'Injuries and health',
   "The fort's medical picture: how many dwarves are wounded, in the care " +
@@ -132,6 +108,7 @@ registerReadTool(
 );
 
 registerReadTool(
+  server,
   'defenses',
   'Defenses',
   'Where the threats are versus what you have to fight them with. Returns active ' +
@@ -145,6 +122,7 @@ registerReadTool(
 );
 
 registerQueryTool<{ query: string }>(
+  server,
   'find_unit',
   'Find unit',
   'Look up citizens by a name fragment or profession (case-insensitive, ' +
@@ -158,7 +136,11 @@ registerQueryTool<{ query: string }>(
 
 // --- Reference tier: game_data (this world's raws) + wiki (general knowledge) ---
 
-registerQueryTool<{ query: string; kind?: 'creature' | 'material' | 'plant' | 'reaction' | 'item' | 'building' }>(
+registerQueryTool<{
+  query: string;
+  kind?: 'creature' | 'material' | 'plant' | 'reaction' | 'item' | 'building';
+}>(
+  server,
   'game_data',
   'Game data',
   "Look up the LOADED WORLD's raws (ground truth for THIS world) and return " +
@@ -171,14 +153,22 @@ registerQueryTool<{ query: string; kind?: 'creature' | 'material' | 'plant' | 'r
     'return a disambiguation list. Other kinds (material/plant/reaction/item/building) ' +
     'report "not yet implemented". Returns {"error":"no game loaded"} if no game is active.',
   {
-    query: z.string().min(1).describe('Creature token, name fragment, or a live unit_id (all digits)'),
-    kind: z.enum(['creature', 'material', 'plant', 'reaction', 'item', 'building']).optional()
-      .describe('Optional narrowing filter; defaults to creature. Only creature is implemented so far.'),
+    query: z
+      .string()
+      .min(1)
+      .describe('Creature token, name fragment, or a live unit_id (all digits)'),
+    kind: z
+      .enum(['creature', 'material', 'plant', 'reaction', 'item', 'building'])
+      .optional()
+      .describe(
+        'Optional narrowing filter; defaults to creature. Only creature is implemented so far.'
+      ),
   },
   ({ query, kind }) => gameData(query, kind)
 );
 
 registerQueryTool<{ query: string }>(
+  server,
   'wiki_search',
   'Wiki search',
   'Search the Dwarf Fortress wiki (MediaWiki) for candidate article titles and ' +
@@ -190,6 +180,7 @@ registerQueryTool<{ query: string }>(
 );
 
 registerQueryTool<{ title: string; section?: string; refresh?: boolean }>(
+  server,
   'wiki_lookup',
   'Wiki lookup',
   'Fetch a Dwarf Fortress wiki article as clean, readable text, pinned to the ' +
@@ -207,9 +198,10 @@ registerQueryTool<{ title: string; section?: string; refresh?: boolean }>(
 );
 
 registerQueryTool<{ query: string }>(
+  server,
   'identify',
   'Identify',
-  "One-call \"what is this creature and how do I handle it\": fuses THIS WORLD's " +
+  'One-call "what is this creature and how do I handle it": fuses THIS WORLD\'s ' +
     'raws (ground truth) with the DF wiki (strategy). Pass a creature token ' +
     '(e.g. "DEMON_4"), a name ("flame phantom"), or a live unit_id (all digits) — ' +
     'same contract as game_data. Returns the creature dossier, a "tactics" list of ' +
@@ -220,7 +212,12 @@ registerQueryTool<{ query: string }>(
     'page. Use this instead of a bare wiki lookup so world-specific facts (e.g. a ' +
     'TRAPAVOID demon that cage traps cannot hold) are never missed. Multiple matches ' +
     'return a disambiguation list; returns {"error":"no game loaded"} if no game is active.',
-  { query: z.string().min(1).describe('Creature token, name fragment, or a live unit_id (all digits)') },
+  {
+    query: z
+      .string()
+      .min(1)
+      .describe('Creature token, name fragment, or a live unit_id (all digits)'),
+  },
   ({ query }) => identify(query)
 );
 
@@ -229,6 +226,7 @@ registerQueryTool<{ query: string }>(
 // with DFHACK_MCP_DEV=1 when probing fields while authoring new tools.
 if (process.env.DFHACK_MCP_DEV) {
   registerQueryTool<{ snippet: string }>(
+    server,
     'run_lua',
     'Run Lua (dev)',
     'DEV-ONLY escape hatch: run an arbitrary DFHack Lua snippet and return its ' +

@@ -2,7 +2,7 @@
 // Thin wrapper over the DEFENSES Lua query.
 
 import { runJsonQuery } from '../query.ts';
-import { DEFENSES } from '../lua/queries.ts';
+import { DEFENSES } from '../dfhack-queries/defenses.ts';
 
 export interface Geo {
   dist: number; // 8-directional tile distance (Chebyshev)

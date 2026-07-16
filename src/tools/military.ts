@@ -2,7 +2,7 @@
 // Thin wrapper over the MILITARY Lua query.
 
 import { runJsonQuery } from '../query.ts';
-import { MILITARY } from '../lua/queries.ts';
+import { MILITARY } from '../dfhack-queries/military.ts';
 
 export interface SquadRow {
   name: string;

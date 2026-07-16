@@ -25,7 +25,8 @@ function show(label, res) {
   }
   const c = res.creature;
   line(`creature: ${c.token} "${c.name}"  size=${c.size_label}  flags=[${c.flags.join(', ')}]`);
-  if (c.unit_id != null) line(`resolved via live unit_id=${c.unit_id}${c.unit_name ? ` (${c.unit_name})` : ''}`);
+  if (c.unit_id != null)
+    line(`resolved via live unit_id=${c.unit_id}${c.unit_name ? ` (${c.unit_name})` : ''}`);
   line('tactics (raws -> hard facts):');
   for (const t of res.tactics) line(`  - [${t.trait}] ${t.note}`);
   line('wiki (trimmed strategy context):');

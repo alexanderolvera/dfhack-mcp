@@ -2,7 +2,7 @@
 // Thin wrapper over the UNMET_NEEDS Lua query.
 
 import { runJsonQuery } from '../query.ts';
-import { UNMET_NEEDS } from '../lua/queries.ts';
+import { UNMET_NEEDS } from '../dfhack-queries/unmetNeeds.ts';
 
 export interface NeedRow {
   need: string;
