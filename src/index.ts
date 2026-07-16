@@ -12,6 +12,7 @@ import { jobsAndLabor } from './tools/jobsAndLabor.ts';
 import { military } from './tools/military.ts';
 import { injuriesAndHealth } from './tools/injuriesAndHealth.ts';
 import { findUnit } from './tools/findUnit.ts';
+import { runLuaTool } from './tools/runLua.ts';
 import { NotConnectedError, closeConnection } from './dfclient.ts';
 
 const server = new McpServer({ name: 'dfhack-mcp', version: '0.1.0' });
@@ -136,6 +137,22 @@ registerQueryTool<{ query: string }>(
   { query: z.string().min(1).describe('Name fragment or profession to search for') },
   ({ query }) => findUnit(query)
 );
+
+// Dev-only escape hatch. NOT registered by default: arbitrary Lua can mutate the
+// game, so it breaks the read-only guarantee the curated tools uphold. Opt in
+// with DFHACK_MCP_DEV=1 when probing fields while authoring new tools.
+if (process.env.DFHACK_MCP_DEV) {
+  registerQueryTool<{ snippet: string }>(
+    'run_lua',
+    'Run Lua (dev)',
+    'DEV-ONLY escape hatch: run an arbitrary DFHack Lua snippet and return its ' +
+      'printed output verbatim. Arbitrary Lua can READ AND WRITE game state, so ' +
+      'this is not read-only; it is disabled unless DFHACK_MCP_DEV is set. ' +
+      'Intended for probing fields while authoring curated tools, not for agents.',
+    { snippet: z.string().min(1).describe('DFHack Lua chunk; use print(...) to emit output') },
+    ({ snippet }) => runLuaTool(snippet)
+  );
+}
 
 const transport = new StdioServerTransport();
 await server.connect(transport);

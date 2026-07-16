@@ -18,6 +18,9 @@ const toolArgs = Object.fromEntries(
 const transport = new StdioClientTransport({
   command: process.execPath, // node
   args: ['src/index.ts'],
+  // Forward our env so flags like DFHACK_MCP_DEV / DFHACK_HOST reach the server
+  // (StdioClientTransport otherwise spawns the child with a minimal env).
+  env: { ...process.env },
 });
 const client = new Client({ name: 'dfhack-mcp-harness', version: '1.0.0' });
 
