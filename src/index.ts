@@ -7,6 +7,7 @@ import { fortStatus } from './tools/fortStatus.ts';
 import { stocks } from './tools/stocks.ts';
 import { threats } from './tools/threats.ts';
 import { unmetNeeds } from './tools/unmetNeeds.ts';
+import { jobsAndLabor } from './tools/jobsAndLabor.ts';
 import { NotConnectedError, closeConnection } from './dfclient.ts';
 
 const server = new McpServer({ name: 'dfhack-mcp', version: '0.1.0' });
@@ -66,6 +67,17 @@ registerReadTool(
     'one unmet need. Complements fort_status happiness. Returns ' +
     '{"error":"no fort loaded"} if no fort is active.',
   unmetNeeds
+);
+
+registerReadTool(
+  'jobs_and_labor',
+  'Jobs and labor',
+  'Workforce utilization: how many working-age dwarves are busy vs. idle ' +
+    '(children/babies excluded from the labor pool), the idle percentage, and ' +
+    'a ranked breakdown of what jobs the fort is currently working on. High ' +
+    'idle can mean unassigned labor or nothing queued. Returns ' +
+    '{"error":"no fort loaded"} if no fort is active.',
+  jobsAndLabor
 );
 
 const transport = new StdioServerTransport();
