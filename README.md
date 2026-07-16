@@ -81,8 +81,44 @@ raw `counts` are exact; the day estimates are approximations. Note: `food`
 counts all edible items including raw plants, some of which may be destined for
 brewing/milling — so `food_days` can overstate effective food.
 
-Planned (see the spec vault): `threats`, `unmet_needs`, `jobs_and_labor`,
-`military`, `injuries_and_health`, `find_unit`.
+### `threats()`
+Dangerous units on the map, grouped by creature type. Separates **active**
+hostiles from **contained** ones (caged/chained), and flags `great_danger`
+(megabeasts, titans, demons, forgotten beasts), `invader`, and `undead`. No
+arguments.
+
+### `unmet_needs()`
+Why the fort is stressed: the dwarven needs system aggregated across all
+citizens. Returns the top unmet needs (prayer, drink, socializing, …) ranked by
+how many dwarves are distracted, each with a concrete build/action suggestion,
+plus how many dwarves have at least one unmet need. Complements
+`fort_status`'s happiness breakdown. No arguments.
+
+### `jobs_and_labor()`
+Workforce utilization: working-age dwarves busy vs. idle (children excluded),
+the idle percentage, and a ranked breakdown of what the fort is currently
+working on. No arguments.
+
+### `military()`
+Squads, how many living present dwarves are actually enlisted (`soldiers`),
+filled squad positions, and readiness read against hostiles on the map
+(great-danger split out). Warns if the fort is undefended. No arguments.
+
+### `injuries_and_health()`
+The medical picture: wounded, patients in the care queue, bedridden, and
+unconscious counts, plus a breakdown of what care is needed (diagnosis,
+surgery, suture, …) so gaps in medical coverage are visible. No arguments.
+
+### `find_unit(query)`
+Look up citizens by a name fragment or profession (case-insensitive, matches
+either). Returns a compact dossier per match: profession, age, stress, current
+job, squad, and health flags. Argument: `query` (string).
+
+### `run_lua(snippet)` — dev only
+Raw DFHack Lua escape hatch, returning printed output verbatim. **Not
+registered unless `DFHACK_MCP_DEV` is set** — arbitrary Lua can read *and write*
+game state, so it is off by default and intended only for field-probing while
+authoring curated tools. Argument: `snippet` (string).
 
 ## Layout
 
