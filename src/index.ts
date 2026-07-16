@@ -12,6 +12,9 @@ import { jobsAndLabor } from './tools/jobsAndLabor.ts';
 import { military } from './tools/military.ts';
 import { injuriesAndHealth } from './tools/injuriesAndHealth.ts';
 import { findUnit } from './tools/findUnit.ts';
+import { gameData } from './tools/gameData.ts';
+import { wikiSearchTool } from './tools/wikiSearch.ts';
+import { wikiLookupTool } from './tools/wikiLookup.ts';
 import { runLuaTool } from './tools/runLua.ts';
 import { NotConnectedError, closeConnection } from './dfclient.ts';
 
@@ -136,6 +139,56 @@ registerQueryTool<{ query: string }>(
     'or "find Urist". Returns {"error":"no fort loaded"} if no fort is active.',
   { query: z.string().min(1).describe('Name fragment or profession to search for') },
   ({ query }) => findUnit(query)
+);
+
+// --- Reference tier: game_data (this world's raws) + wiki (general knowledge) ---
+
+registerQueryTool<{ query: string; kind?: 'creature' | 'material' | 'plant' | 'reaction' | 'item' | 'building' }>(
+  'game_data',
+  'Game data',
+  "Look up the LOADED WORLD's raws (ground truth for THIS world) and return " +
+    'curated, labeled facts. This is the authoritative source for procedural ' +
+    'creatures (demons, forgotten beasts, titans) that never appear on the wiki. ' +
+    'MVP covers the creature kind: pass a creature token (e.g. "DEMON_4"), a name ' +
+    '(e.g. "flame phantom", case-insensitive substring), or a live unit_id (all ' +
+    'digits) to get a dossier — token, name, size, notable flags, attacks, breath/' +
+    'interactions, and a blurb. A single strong hit returns a full dossier; several ' +
+    'return a disambiguation list. Other kinds (material/plant/reaction/item/building) ' +
+    'report "not yet implemented". Returns {"error":"no game loaded"} if no game is active.',
+  {
+    query: z.string().min(1).describe('Creature token, name fragment, or a live unit_id (all digits)'),
+    kind: z.enum(['creature', 'material', 'plant', 'reaction', 'item', 'building']).optional()
+      .describe('Optional narrowing filter; defaults to creature. Only creature is implemented so far.'),
+  },
+  ({ query, kind }) => gameData(query, kind)
+);
+
+registerQueryTool<{ query: string }>(
+  'wiki_search',
+  'Wiki search',
+  'Search the Dwarf Fortress wiki (MediaWiki) for candidate article titles and ' +
+    'cleaned snippets. Discovery/disambiguation step before wiki_lookup; biased ' +
+    'to the DF2014 (Steam/Premium) namespace. Pure HTTP — works without the game ' +
+    'running. Returns {results:[{title, snippet}]} (up to 8).',
+  { query: z.string().min(1).describe('What to search the DF wiki for') },
+  ({ query }) => wikiSearchTool(query)
+);
+
+registerQueryTool<{ title: string; section?: string; refresh?: boolean }>(
+  'wiki_lookup',
+  'Wiki lookup',
+  'Fetch a Dwarf Fortress wiki article as clean, readable text, pinned to the ' +
+    'DF2014 namespace. Follows redirects (multi-hop) and honors section ' +
+    'fragments (e.g. "Weapon trap" resolves to the Weapon Trap section of the ' +
+    'Trap page). Cache-first to disk (~30-day TTL); pass refresh:true to bypass. ' +
+    'Pure HTTP — works without the game running. Returns {title, url, text, ' +
+    'from_cache, resolved_from?} or {error} if the page is not found.',
+  {
+    title: z.string().min(1).describe('Article title or topic (namespace optional)'),
+    section: z.string().optional().describe('Section/heading name to scope to'),
+    refresh: z.boolean().optional().describe('Bypass the disk cache and refetch'),
+  },
+  ({ title, section, refresh }) => wikiLookupTool(title, section, refresh)
 );
 
 // Dev-only escape hatch. NOT registered by default: arbitrary Lua can mutate the
