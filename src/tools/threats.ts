@@ -1,8 +1,7 @@
 // threats(): dangerous units on the map, grouped and classified.
 // Thin wrapper over the THREATS Lua query.
 
-import { runJsonQuery } from '../query.ts';
-import { THREATS } from '../dfhack-queries/threats.ts';
+import { runJsonScript } from '../query.ts';
 
 export interface ThreatGroup {
   name: string;
@@ -26,7 +25,7 @@ export interface Threats {
 }
 
 export async function threats(): Promise<Threats | { error: string }> {
-  const res = await runJsonQuery<Threats>(THREATS, ['groups', 'alerts']);
+  const res = await runJsonScript<Threats>('threats', [], ['groups', 'alerts']);
   if ('error' in res) return res;
   // Per-group traits/ranged_attacks are nested, so the top-level list-field
   // normalization can't reach them: an empty Lua table encodes as {} not [].

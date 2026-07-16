@@ -1,25 +1,31 @@
-// defenses(): where the threats are vs. what you have to fight them with.
-//
-// Turns the generic "atom-smash them" advice into "you have 3 bridges; the
-// nearest to the demons is ~N tiles away." Everything here is buildings + unit
-// positions over the same Lua pipe (no RemoteFortressReader needed). Raw (x,y,z)
-// is meaningless alone, so the value is the RELATIVE geometry we compute: tile
-// distance (Chebyshev, since DF movement is 8-directional), z-level delta, and
-// an 8-way compass bearing.
-//
-// Honest limits (documented, not hidden): walls/fortifications are map TILES,
-// not buildings, so "inside vs outside the walls" waits on RFR terrain reads;
-// and a bridge doesn't record which lever raises it, so we report bridges and
-// levers separately, not their linkage.
-//
-// Verified live on 53.15-r2: world.buildings.all + b:getType() (df.building_type
-// Bridge/Trap/Door/Floodgate/Hatch); bridge x1/y1/x2/y2/z/centerx/centery/
-// direction; trap b.trap_type (df.trap_type CageTrap/Lever/...); door
-// door_flags.forbidden; unit u.pos.
+-- mcp_defenses: where the threats are vs. what you have to fight them with.
+--
+-- Turns the generic "atom-smash them" advice into "you have 3 bridges; the
+-- nearest to the demons is ~N tiles away." Everything here is buildings + unit
+-- positions over the same Lua pipe (no RemoteFortressReader needed). Raw (x,y,z)
+-- is meaningless alone, so the value is the RELATIVE geometry we compute: tile
+-- distance (Chebyshev, since DF movement is 8-directional), z-level delta, and
+-- an 8-way compass bearing.
+--
+-- Honest limits (documented, not hidden): walls/fortifications are map TILES,
+-- not buildings, so "inside vs outside the walls" waits on RFR terrain reads;
+-- and a bridge doesn't record which lever raises it, so we report bridges and
+-- levers separately, not their linkage.
+--
+-- Verified live on 53.15-r2: world.buildings.all + b:getType() (df.building_type
+-- Bridge/Trap/Door/Floodgate/Hatch); bridge x1/y1/x2/y2/z/centerx/centery/
+-- direction; trap b.trap_type (df.trap_type CageTrap/Lever/...); door
+-- door_flags.forbidden; unit u.pos.
+-- Invoked by name via DFHack RunCommand; prints ONE JSON object.
 
-import { preamble } from './shared.ts';
+local json = require('json')
+local function emit(t) print(json.encode(t)) end
 
-export const DEFENSES = String.raw`${preamble()}
+if df.global.gamemode ~= df.game_mode.DWARF then
+  emit({ error = 'no fort loaded' })
+  return
+end
+
 -- 8-directional tile distance + z delta + compass bearing between two points.
 local function cheb(ax, ay, bx, by) return math.max(math.abs(ax-bx), math.abs(ay-by)) end
 local function bearing(fromx, fromy, tox, toy)
@@ -122,4 +128,3 @@ emit({
     'Cage traps do not work on TRAPAVOID creatures (check threats()/identify()).',
   },
 })
-`;

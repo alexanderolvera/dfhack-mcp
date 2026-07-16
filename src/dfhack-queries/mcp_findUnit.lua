@@ -1,21 +1,29 @@
-// find_unit(query): a dossier on citizens matching a name or profession.
-//
-// The one parameterized query. The search term is injected as a Lua single-
-// quoted literal via luaStr() (escapes \\ ' newline) so it can't break the chunk
-// or inject Lua. Matches case-insensitively against the readable name AND the
-// profession, so "medical" finds the chief medical dwarf and a partial name
-// finds the dwarf. Returns a compact profile per match: profession, age, stress,
-// current job, squad, and a health summary.
-//
-// Verified live on 53.15-r2: getReadableName, getProfessionName, getAge,
-// getStressCategory all present; squad lookup via squads.all by id.
+-- mcp_findUnit(query): a dossier on citizens matching a name or profession.
+--
+-- The one parameterized query. The search term arrives as native argv (args[1]),
+-- so there is NO escaping — an apostrophe or backslash in the term is just data.
+-- Matches case-insensitively against the readable name AND the profession, so
+-- "medical" finds the chief medical dwarf and a partial name finds the dwarf.
+-- Returns a compact profile per match: profession, age, stress, current job,
+-- squad, and a health summary.
+--
+-- Verified live on 53.15-r2: getReadableName, getProfessionName, getAge,
+-- getStressCategory all present; squad lookup via squads.all by id.
+-- Invoked by name via DFHack RunCommand; prints ONE JSON object.
 
-import { luaStr, STRESS_LABELS, preamble } from './shared.ts';
+local args = {...}
+local query = args[1] or ''
 
-export function findUnitQuery(query: string): string {
-  return String.raw`${preamble()}
-local q = string.lower(${luaStr(query)})
-local STRESS = ${STRESS_LABELS}
+local json = require('json')
+local function emit(t) print(json.encode(t)) end
+
+if df.global.gamemode ~= df.game_mode.DWARF then
+  emit({ error = 'no fort loaded' })
+  return
+end
+
+local q = string.lower(query)
+local STRESS = {[0]='miserable',[1]='unhappy',[2]='unhappy',[3]='content',[4]='content',[5]='happy',[6]='ecstatic'}
 local MAX = 8
 
 -- Pre-index fort squads by id for name lookup.
@@ -55,10 +63,8 @@ for _, u in ipairs(dfhack.units.getCitizens(true)) do
 end
 
 emit({
-  query = ${luaStr(query)},
+  query = query,
   match_count = total,
   truncated = total > #matches,
   matches = matches,
 })
-`;
-}

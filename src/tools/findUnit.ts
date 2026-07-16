@@ -1,8 +1,8 @@
 // find_unit(query): dossier on citizens matching a name or profession.
-// The one parameterized tool — builds the Lua per call.
+// One of the two parameterized tools — passes the search term as native argv to
+// the mcp_findUnit.lua script (no escaping; the term is just data).
 
-import { runJsonQuery } from '../query.ts';
-import { findUnitQuery } from '../dfhack-queries/findUnit.ts';
+import { runJsonScript } from '../query.ts';
 
 export interface UnitMatch {
   name: string;
@@ -24,5 +24,5 @@ export interface FindUnit {
 }
 
 export function findUnit(query: string): Promise<FindUnit | { error: string }> {
-  return runJsonQuery<FindUnit>(findUnitQuery(query), ['matches']);
+  return runJsonScript<FindUnit>('findUnit', [query], ['matches']);
 }

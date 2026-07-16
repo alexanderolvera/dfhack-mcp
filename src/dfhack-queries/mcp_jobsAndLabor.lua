@@ -1,17 +1,23 @@
-// jobs_and_labor(): workforce utilization — who's busy, who's idle, doing what.
-//
-// Derives everything from the citizens themselves (not world.jobs.list, which is
-// a linked list, not an array). Children and babies are split out of the labor
-// pool: an idle ADULT is wasted labor; an idle child is just a child. For
-// working adults we tally current_job.job_type so the player sees what the fort
-// is actually spending its hands on.
-//
-// Verified live on 53.15-r2: u.job.current_job truthy for busy dwarves;
-// df.job_type[id] yields readable tokens; isChild/isBaby present.
+-- mcp_jobsAndLabor: workforce utilization — who's busy, who's idle, doing what.
+--
+-- Derives everything from the citizens themselves (not world.jobs.list, which is
+-- a linked list, not an array). Children and babies are split out of the labor
+-- pool: an idle ADULT is wasted labor; an idle child is just a child. For
+-- working adults we tally current_job.job_type so the player sees what the fort
+-- is actually spending its hands on.
+--
+-- Verified live on 53.15-r2: u.job.current_job truthy for busy dwarves;
+-- df.job_type[id] yields readable tokens; isChild/isBaby present.
+-- Invoked by name via DFHack RunCommand; prints ONE JSON object.
 
-import { preamble } from './shared.ts';
+local json = require('json')
+local function emit(t) print(json.encode(t)) end
 
-export const JOBS_AND_LABOR = String.raw`${preamble()}
+if df.global.gamemode ~= df.game_mode.DWARF then
+  emit({ error = 'no fort loaded' })
+  return
+end
+
 local IDLE_FRACTION_ALERT = 0.30   -- tunable: idle adults over this share -> alert
 
 local citizens = dfhack.units.getCitizens(true)
@@ -63,4 +69,3 @@ emit({
   top_jobs = top_jobs,
   alerts = alerts,
 })
-`;

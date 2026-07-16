@@ -1,8 +1,7 @@
 // defenses(): where the threats are vs. what you have to fight them with.
 // Thin wrapper over the DEFENSES Lua query.
 
-import { runJsonQuery } from '../query.ts';
-import { DEFENSES } from '../dfhack-queries/defenses.ts';
+import { runJsonScript } from '../query.ts';
 
 export interface Geo {
   dist: number; // 8-directional tile distance (Chebyshev)
@@ -41,7 +40,7 @@ export interface Defenses {
 }
 
 export async function defenses(): Promise<Defenses | { error: string }> {
-  const res = await runJsonQuery<Defenses>(DEFENSES, ['threats', 'notes']);
+  const res = await runJsonScript<Defenses>('defenses', [], ['threats', 'notes']);
   if ('error' in res) return res;
   // Nested list under structures needs its own coercion (empty Lua table -> {}).
   if (res.structures && !Array.isArray(res.structures.bridges)) res.structures.bridges = [];

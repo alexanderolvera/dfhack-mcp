@@ -1,19 +1,25 @@
-// military(): squads, soldier headcount, and readiness against live threats.
-//
-// Two different counts on purpose, because they can disagree and the gap is the
-// point: `soldiers` is living, present citizens actually in a squad
-// (unit.military.squad_id), while `assigned_positions` is filled squad slots —
-// a slot can still hold a member who is dead, off-map, or otherwise not in the
-// citizen list. Leading with `soldiers` avoids overstating fighting strength.
-// Inlines the same hostile predicate as threats() so readiness reads against
-// what's actually on the map.
-//
-// Verified live on 53.15-r2: squads.all filtered by entity_id == fortress
-// entity; translateName(sq.name); unit.military.squad_id.
+-- mcp_military: squads, soldier headcount, and readiness against live threats.
+--
+-- Two different counts on purpose, because they can disagree and the gap is the
+-- point: `soldiers` is living, present citizens actually in a squad
+-- (unit.military.squad_id), while `assigned_positions` is filled squad slots —
+-- a slot can still hold a member who is dead, off-map, or otherwise not in the
+-- citizen list. Leading with `soldiers` avoids overstating fighting strength.
+-- Inlines the same hostile predicate as threats() so readiness reads against
+-- what's actually on the map.
+--
+-- Verified live on 53.15-r2: squads.all filtered by entity_id == fortress
+-- entity; translateName(sq.name); unit.military.squad_id.
+-- Invoked by name via DFHack RunCommand; prints ONE JSON object.
 
-import { preamble } from './shared.ts';
+local json = require('json')
+local function emit(t) print(json.encode(t)) end
 
-export const MILITARY = String.raw`${preamble()}
+if df.global.gamemode ~= df.game_mode.DWARF then
+  emit({ error = 'no fort loaded' })
+  return
+end
+
 local fort = df.global.plotinfo.main.fortress_entity
 local squads = {}
 local assigned_positions = 0
@@ -79,4 +85,3 @@ emit({
   squads = squads,
   alerts = alerts,
 })
-`;

@@ -1,18 +1,24 @@
-// stocks(): food/drink as days-of-supply plus a few critical materials.
-//
-// Item counting follows DFHack's own dfstatus (iterate world.items.other.IN_PLAY,
-// skip rotten/dump/forbid/construction/trader, sum stack sizes by type) but
-// counts ALL edible food, not just prepared meals, and derives days-of-supply.
-//
-// Consumption rate (DF wiki, DF2014 Food): a dwarf eats ~2 food and drinks ~5
-// units per season; a season is 3 months x 28 days = 84 ticks-days. So
-//   food_days  = food_total  * 84 / (pop * 2)
-//   drink_days = drink_total * 84 / (pop * 5)
-// These are documented estimates; the raw counts in `counts` are exact.
+-- mcp_stocks: food/drink as days-of-supply plus a few critical materials.
+--
+-- Item counting follows DFHack's own dfstatus (iterate world.items.other.IN_PLAY,
+-- skip rotten/dump/forbid/construction/trader, sum stack sizes by type) but
+-- counts ALL edible food, not just prepared meals, and derives days-of-supply.
+--
+-- Consumption rate (DF wiki, DF2014 Food): a dwarf eats ~2 food and drinks ~5
+-- units per season; a season is 3 months x 28 days = 84 ticks-days. So
+--   food_days  = food_total  * 84 / (pop * 2)
+--   drink_days = drink_total * 84 / (pop * 5)
+-- These are documented estimates; the raw counts in `counts` are exact.
+-- Invoked by name via DFHack RunCommand; prints ONE JSON object.
 
-import { preamble } from './shared.ts';
+local json = require('json')
+local function emit(t) print(json.encode(t)) end
 
-export const STOCKS = String.raw`${preamble()}
+if df.global.gamemode ~= df.game_mode.DWARF then
+  emit({ error = 'no fort loaded' })
+  return
+end
+
 -- Tunables (days-of-supply and material floors below which we flag "low").
 local SEASON_DAYS = 84
 local FOOD_PER_SEASON, DRINK_PER_SEASON = 2, 5
@@ -69,4 +75,3 @@ emit({
   notable_high = high,
   counts = c,
 })
-`;

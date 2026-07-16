@@ -1,8 +1,7 @@
 // military(): squads, soldier headcount, and readiness vs. live threats.
 // Thin wrapper over the MILITARY Lua query.
 
-import { runJsonQuery } from '../query.ts';
-import { MILITARY } from '../dfhack-queries/military.ts';
+import { runJsonScript } from '../query.ts';
 
 export interface SquadRow {
   name: string;
@@ -22,5 +21,5 @@ export interface Military {
 }
 
 export function military(): Promise<Military | { error: string }> {
-  return runJsonQuery<Military>(MILITARY, ['squads', 'alerts']);
+  return runJsonScript<Military>('military', [], ['squads', 'alerts']);
 }

@@ -1,11 +1,10 @@
 // game_data(query, kind?): look up the loaded world's raws (ground truth for
 // THIS world) and return curated, labeled facts. MVP implements the CREATURE
 // kind; other kinds report "not yet implemented". The Lua is centralized in
-// src/dfhack-queries/gameData.ts (gameDataQuery) with a per-kind dispatch so
-// adding kinds later never adds a tool. See that file for the confirmed field paths.
+// src/dfhack-queries/mcp_gameData.lua with a per-kind dispatch so adding kinds
+// later never adds a tool. See that file for the confirmed field paths.
 
-import { runJsonQuery } from '../query.ts';
-import { gameDataQuery } from '../dfhack-queries/gameData.ts';
+import { runJsonScript } from '../query.ts';
 
 export type GameDataKind = 'creature' | 'material' | 'plant' | 'reaction' | 'item' | 'building';
 
@@ -58,7 +57,7 @@ export async function gameData(
   query: string,
   kind?: GameDataKind
 ): Promise<GameData | { error: string }> {
-  const data = await runJsonQuery<GameData>(gameDataQuery(query, kind), []);
+  const data = await runJsonScript<GameData>('gameData', [query, kind ?? ''], []);
   if ('error' in data) return data;
 
   // Normalize list fields per shape (an empty Lua table encodes as {} not []).

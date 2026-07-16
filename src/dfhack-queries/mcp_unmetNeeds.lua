@@ -1,22 +1,28 @@
-// unmet_needs(): why the fort is stressed — the needs system, aggregated.
-//
-// Companion to fort_status's happiness buckets: those say HOW MANY dwarves are
-// unhappy; this says WHY and what to build about it. Each citizen soul carries
-// personality.needs (df.need_type). focus_level is the signal: >= 0 met/neutral,
-// negative = distracted, magnitude = how starved. A dwarf can hold several needs
-// of one type (e.g. PrayOrMeditate per deity) — we count each DWARF at most once
-// per need type, using their worst focus for that type.
-//
-// Verified live on 53.15-r2: soul.personality.needs iterates; df.need_type[id]
-// yields readable tokens (PrayOrMeditate, DrinkAlcohol, Socialize, ...).
-//
-// DISTRACTED_BELOW is a heuristic cut (a tunable): below it a dwarf is
-// meaningfully distracted, not merely slightly unfulfilled. Ranked by how many
-// dwarves are distracted, so the top line is the highest-leverage fix.
+-- mcp_unmetNeeds: why the fort is stressed — the needs system, aggregated.
+--
+-- Companion to fort_status's happiness buckets: those say HOW MANY dwarves are
+-- unhappy; this says WHY and what to build about it. Each citizen soul carries
+-- personality.needs (df.need_type). focus_level is the signal: >= 0 met/neutral,
+-- negative = distracted, magnitude = how starved. A dwarf can hold several needs
+-- of one type (e.g. PrayOrMeditate per deity) — we count each DWARF at most once
+-- per need type, using their worst focus for that type.
+--
+-- Verified live on 53.15-r2: soul.personality.needs iterates; df.need_type[id]
+-- yields readable tokens (PrayOrMeditate, DrinkAlcohol, Socialize, ...).
+--
+-- DISTRACTED_BELOW is a heuristic cut (a tunable): below it a dwarf is
+-- meaningfully distracted, not merely slightly unfulfilled. Ranked by how many
+-- dwarves are distracted, so the top line is the highest-leverage fix.
+-- Invoked by name via DFHack RunCommand; prints ONE JSON object.
 
-import { preamble } from './shared.ts';
+local json = require('json')
+local function emit(t) print(json.encode(t)) end
 
-export const UNMET_NEEDS = String.raw`${preamble()}
+if df.global.gamemode ~= df.game_mode.DWARF then
+  emit({ error = 'no fort loaded' })
+  return
+end
+
 local DISTRACTED_BELOW = -1000   -- tunable: focus_level under this = distracted
 
 -- What the player can DO about each need. Terse, actionable.
@@ -108,4 +114,3 @@ emit({
   top_needs = top,
   alerts = alerts,
 })
-`;

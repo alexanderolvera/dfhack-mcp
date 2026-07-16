@@ -1,8 +1,7 @@
 // stocks(): food/drink as days-of-supply plus a few critical materials.
 // Thin wrapper over the STOCKS Lua query.
 
-import { runJsonQuery } from '../query.ts';
-import { STOCKS } from '../dfhack-queries/stocks.ts';
+import { runJsonScript } from '../query.ts';
 
 export interface Stocks {
   population: number;
@@ -23,5 +22,5 @@ export interface Stocks {
 }
 
 export function stocks(): Promise<Stocks | { error: string }> {
-  return runJsonQuery<Stocks>(STOCKS, ['notable_low', 'notable_high']);
+  return runJsonScript<Stocks>('stocks', [], ['notable_low', 'notable_high']);
 }

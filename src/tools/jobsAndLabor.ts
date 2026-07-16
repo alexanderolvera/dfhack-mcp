@@ -1,8 +1,7 @@
 // jobs_and_labor(): workforce utilization and what the fort is working on.
 // Thin wrapper over the JOBS_AND_LABOR Lua query.
 
-import { runJsonQuery } from '../query.ts';
-import { JOBS_AND_LABOR } from '../dfhack-queries/jobsAndLabor.ts';
+import { runJsonScript } from '../query.ts';
 
 export interface JobRow {
   job: string;
@@ -20,5 +19,5 @@ export interface JobsAndLabor {
 }
 
 export function jobsAndLabor(): Promise<JobsAndLabor | { error: string }> {
-  return runJsonQuery<JobsAndLabor>(JOBS_AND_LABOR, ['top_jobs', 'alerts']);
+  return runJsonScript<JobsAndLabor>('jobsAndLabor', [], ['top_jobs', 'alerts']);
 }

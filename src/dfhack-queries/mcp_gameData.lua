@@ -1,48 +1,64 @@
-// game_data(query, kind): look up the LOADED WORLD's raws (df.global.world.raws.*)
-// — ground truth for THIS world, the only source for procedural creatures
-// (demons/forgotten beasts/titans, which are never on the wiki).
-//
-// One unified query with a per-kind dispatch so new kinds (material/plant/reaction/
-// item/building) drop in without a new tool. MVP implements the CREATURE kind;
-// other kinds return {error:"kind 'X' not yet implemented"}.
-//
-// CREATURE matching contract:
-//   * query is all digits            -> treat as a live unit_id (fusion shortcut):
-//                                        df.unit.find(id).race indexes
-//                                        raws.creatures.all -> that unit's race.
-//   * exact creature_id token match  -> single strong hit (dossier).
-//   * exact name/caste_name match    -> single strong hit (dossier).
-//   * otherwise case-insensitive substring against creature_id + the name tuple
-//     (singular/plural/adjective) + every caste_name. Exactly one match ->
-//     dossier; several -> a disambiguation list (cap 8), mirroring find_unit;
-//     none -> {match_count:0, matches:[]}.
-//
-// Verified live on DFHack 53.15-r2 against the two "Flame Phantom" demons
-// (DEMON_4, unit_id 18393, race 1661). Confirmed version-fragile field paths:
-//   * df.global.world.raws.creatures.all[race]  -> creature_raw
-//   * cr.creature_id (token), cr.name[0..2] (singular/plural/adjective)
-//   * cr.adultsize (body volume, cm^3), cr.caste (vector; the field is `caste`,
-//     NOT `castes`), caste.caste_name[0..2], caste.description (a ready blurb),
-//     caste.flags (a bitfield whose TRUE keys are stable token names — iterate
-//     pairs(); NOT indexed by df.caste_raw_flags, so we never index it by token)
-//   * caste.body_info.attacks[].{name,verb_3rd} (dup per left/right bp -> dedupe)
-//   * caste.body_info.interactions[].interaction.adv_name (breath weapon label,
-//     e.g. "Hurl fireball"/"Spray jet of fire"/"Emit dust") + material_str0..2
-//     (the emitted material token, e.g. CREATURE_MAT:DEMON_4:POISON — the dust's
-//     syndrome material). The syndrome vector on the resolved material reads 0 in
-//     this build, so we surface the emission material token rather than traverse
-//     a fragile/empty syndrome path.
-//   * df.unit.find(id).race for the unit_id shortcut.
+-- mcp_gameData(query, kind): look up the LOADED WORLD's raws (df.global.world.raws.*)
+-- — ground truth for THIS world, the only source for procedural creatures
+-- (demons/forgotten beasts/titans, which are never on the wiki).
+--
+-- One unified query with a per-kind dispatch so new kinds (material/plant/reaction/
+-- item/building) drop in without a new tool. MVP implements the CREATURE kind;
+-- other kinds return {error:"kind 'X' not yet implemented"}.
+--
+-- Parameters arrive as native argv (args[1]=query, args[2]=kind), so there is NO
+-- escaping — the search term is just data.
+--
+-- CREATURE matching contract:
+--   * query is all digits            -> treat as a live unit_id (fusion shortcut):
+--                                        df.unit.find(id).race indexes
+--                                        raws.creatures.all -> that unit's race.
+--   * exact creature_id token match  -> single strong hit (dossier).
+--   * exact name/caste_name match    -> single strong hit (dossier).
+--   * otherwise case-insensitive substring against creature_id + the name tuple
+--     (singular/plural/adjective) + every caste_name. Exactly one match ->
+--     dossier; several -> a disambiguation list (cap 8), mirroring find_unit;
+--     none -> {match_count:0, matches:[]}.
+--
+-- Verified live on DFHack 53.15-r2 against the two "Flame Phantom" demons
+-- (DEMON_4, unit_id 18393, race 1661). Confirmed version-fragile field paths:
+--   * df.global.world.raws.creatures.all[race]  -> creature_raw
+--   * cr.creature_id (token), cr.name[0..2] (singular/plural/adjective)
+--   * cr.adultsize (body volume, cm^3), cr.caste (vector; the field is `caste`,
+--     NOT `castes`), caste.caste_name[0..2], caste.description (a ready blurb),
+--     caste.flags (a bitfield whose TRUE keys are stable token names — iterate
+--     pairs(); NOT indexed by df.caste_raw_flags, so we never index it by token)
+--   * caste.body_info.attacks[].{name,verb_3rd} (dup per left/right bp -> dedupe)
+--   * caste.body_info.interactions[].interaction.adv_name (breath weapon label,
+--     e.g. "Hurl fireball"/"Spray jet of fire"/"Emit dust") + material_str0..2
+--     (the emitted material token, e.g. CREATURE_MAT:DEMON_4:POISON — the dust's
+--     syndrome material). The syndrome vector on the resolved material reads 0 in
+--     this build, so we surface the emission material token rather than traverse
+--     a fragile/empty syndrome path.
+--   * df.unit.find(id).race for the unit_id shortcut.
+-- Invoked by name via DFHack RunCommand; prints ONE JSON object.
 
-import { luaStr, CREATURE_FLAG_WHITELIST, preamble } from './shared.ts';
+local args = {...}
+local query = args[1] or ''
+local kind = args[2] or ''
 
-export function gameDataQuery(query: string, kind?: string): string {
-  return String.raw`${preamble('no game loaded')}
-local query = ${luaStr(query)}
-local kind = ${luaStr(kind ?? '')}
+local json = require('json')
+local function emit(t) print(json.encode(t)) end
+
+if df.global.gamemode ~= df.game_mode.DWARF then
+  emit({ error = 'no game loaded' })
+  return
+end
+
 if kind == '' then kind = 'creature' end
 
-local FLAG_WL = ${CREATURE_FLAG_WHITELIST}
+local FLAG_WL = {DEMON=1,UNIQUE_DEMON=1,MEGABEAST=1,SEMIMEGABEAST=1,NIGHT_CREATURE_HUNTER=1,
+  NIGHT_CREATURE_BOGEYMAN=1,NIGHT_CREATURE_NIGHTMARE=1,NIGHT_CREATURE_EXPERIMENT=1,
+  FLIER=1,BUILDINGDESTROYER=1,FIREIMMUNE=1,FIREIMMUNE_SUPER=1,LARGE_PREDATOR=1,
+  TRAPAVOID=1,WEBIMMUNE=1,WEBBER=1,NOT_LIVING=1,OPPOSED_TO_LIFE=1,SUPERNATURAL=1,
+  EXTRAVISION=1,MAGMA_VISION=1,CAN_LEARN=1,CAN_SPEAK=1,NOFEAR=1,NOPAIN=1,NOSTUN=1,
+  NO_SLEEP=1,NO_EAT=1,NO_DRINK=1,MISCHIEVOUS=1,AMPHIBIOUS=1,VENOMOUS=1,
+  MOUNT=1,PET=1,COMMON_DOMESTIC=1,POWER=1,MANNERISM_LAUGH=0}
 local MAX = 8
 local creatures = df.global.world.raws.creatures.all
 
@@ -236,5 +252,3 @@ elseif UNIMPLEMENTED[kind] then
 else
   emit({ error = "unknown kind '" .. kind .. "'" })
 end
-`;
-}

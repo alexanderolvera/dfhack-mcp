@@ -1,9 +1,15 @@
-// fort_status(): one-call situational overview of the loaded fort — name, date,
-// season, population, wealth, a happiness breakdown, and a pre-triaged alerts list.
+-- mcp_fortStatus: one-call situational overview of the loaded fort — name, date,
+-- season, population, wealth, a happiness breakdown, and a pre-triaged alerts list.
+-- Invoked by name via DFHack RunCommand; prints ONE JSON object.
 
-import { preamble } from './shared.ts';
+local json = require('json')
+local function emit(t) print(json.encode(t)) end
 
-export const FORT_STATUS = String.raw`${preamble()}
+if df.global.gamemode ~= df.game_mode.DWARF then
+  emit({ error = 'no fort loaded' })
+  return
+end
+
 local months = {'Granite','Slate','Felsite','Hematite','Malachite','Galena',
                 'Limestone','Sandstone','Timber','Moonstone','Opal','Obsidian'}
 local seasons = {'Spring','Summer','Autumn','Winter'}
@@ -61,4 +67,3 @@ emit({
   happiness  = hap,
   alerts     = alerts,
 })
-`;

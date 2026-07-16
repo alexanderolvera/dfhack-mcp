@@ -1,8 +1,7 @@
 // unmet_needs(): the needs system aggregated into the fort's top stressors.
 // Thin wrapper over the UNMET_NEEDS Lua query.
 
-import { runJsonQuery } from '../query.ts';
-import { UNMET_NEEDS } from '../dfhack-queries/unmetNeeds.ts';
+import { runJsonScript } from '../query.ts';
 
 export interface NeedRow {
   need: string;
@@ -19,5 +18,5 @@ export interface UnmetNeeds {
 }
 
 export function unmetNeeds(): Promise<UnmetNeeds | { error: string }> {
-  return runJsonQuery<UnmetNeeds>(UNMET_NEEDS, ['top_needs', 'alerts']);
+  return runJsonScript<UnmetNeeds>('unmetNeeds', [], ['top_needs', 'alerts']);
 }

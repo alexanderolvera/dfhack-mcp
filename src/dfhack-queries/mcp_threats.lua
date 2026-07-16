@@ -1,18 +1,19 @@
-// threats(): enumerate dangerous units on the map, grouped by kind.
-//
-// Builds on fort_status's hostile predicate (active && !dead && isDanger &&
-// !citizen) but classifies each threat and separates ACTIVE hostiles from
-// CONTAINED ones (caged/chained — a captured beast is a hazard-in-waiting, not
-// a live attack). Groups identical creatures so "12 goblins" reads as one line.
-//
-// Verified live on 53.15-r2: getReadableName, isInvader, isUndead, isCrazed,
-// isGreatDanger all resolve; isSemiMegabeast does NOT exist in this build, so we
-// don't rely on it. great_danger (megabeasts, titans, demons, forgotten beasts)
-// is the "this can end the fort" signal.
+-- mcp_threats: enumerate dangerous units on the map, grouped by kind.
+--
+-- Builds on fort_status's hostile predicate (active && !dead && isDanger &&
+-- !citizen) but classifies each threat and separates ACTIVE hostiles from
+-- CONTAINED ones (caged/chained — a captured beast is a hazard-in-waiting, not
+-- a live attack). Groups identical creatures so "12 goblins" reads as one line.
+-- Invoked by name via DFHack RunCommand; prints ONE JSON object.
 
-import { preamble } from './shared.ts';
+local json = require('json')
+local function emit(t) print(json.encode(t)) end
 
-export const THREATS = String.raw`${preamble()}
+if df.global.gamemode ~= df.game_mode.DWARF then
+  emit({ error = 'no fort loaded' })
+  return
+end
+
 -- Group dangerous units by a stable key so identical creatures collapse to one
 -- line. Contained (caged/chained) threats are counted apart from active ones.
 local groups = {}   -- key -> aggregate
@@ -164,4 +165,3 @@ emit({
   groups = group_list,
   alerts = alerts,
 })
-`;

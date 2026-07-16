@@ -1,18 +1,24 @@
-// injuries_and_health(): the fort's medical picture — who needs care and what.
-//
-// unit.health is always present (not nil for the healthy). The actionable
-// signals live in unit.health.flags: needs_healthcare (in the care queue),
-// should_not_move (bedridden), and the rq_* care requests that say exactly what
-// the hospital must do. Reporting the rq_ breakdown tells the player whether
-// they're missing a diagnostician, surgeon, or supplies. body.wounds counts the
-// wounded; counters.unconscious catches the knocked-out.
-//
-// Verified live on 53.15-r2: the health.flags field set below is the real one
-// (rq_recover does NOT exist; don't reintroduce it).
+-- mcp_injuriesAndHealth: the fort's medical picture — who needs care and what.
+--
+-- unit.health is always present (not nil for the healthy). The actionable
+-- signals live in unit.health.flags: needs_healthcare (in the care queue),
+-- should_not_move (bedridden), and the rq_* care requests that say exactly what
+-- the hospital must do. Reporting the rq_ breakdown tells the player whether
+-- they're missing a diagnostician, surgeon, or supplies. body.wounds counts the
+-- wounded; counters.unconscious catches the knocked-out.
+--
+-- Verified live on 53.15-r2: the health.flags field set below is the real one
+-- (rq_recover does NOT exist; don't reintroduce it).
+-- Invoked by name via DFHack RunCommand; prints ONE JSON object.
 
-import { preamble } from './shared.ts';
+local json = require('json')
+local function emit(t) print(json.encode(t)) end
 
-export const INJURIES_AND_HEALTH = String.raw`${preamble()}
+if df.global.gamemode ~= df.game_mode.DWARF then
+  emit({ error = 'no fort loaded' })
+  return
+end
+
 -- rq_* care requests, mapped to plain labels for the breakdown.
 local CARE = {
   rq_diagnosis  = 'diagnosis',
@@ -73,4 +79,3 @@ emit({
   care_needs = care_needs,
   alerts = alerts,
 })
-`;

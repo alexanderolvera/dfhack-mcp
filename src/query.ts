@@ -1,15 +1,17 @@
-// Shared plumbing for tools: run a Lua query that prints one JSON object,
-// parse it, and normalize the given list fields (an empty Lua table encodes as
+// Shared plumbing for tools: invoke a registered DFHack query script (a real
+// mcp_<name>.lua file) by name with native argv, parse the one JSON object it
+// prints, and normalize the given list fields (an empty Lua table encodes as
 // {} rather than []). Query-level errors like {"error":"no fort loaded"} pass
 // through untouched.
 
-import { runLua } from './dfclient.ts';
+import { runScript } from './dfclient.ts';
 
-export async function runJsonQuery<T>(
-  snippet: string,
+export async function runJsonScript<T>(
+  name: string,
+  args: string[] = [],
   listFields: string[] = []
 ): Promise<T | { error: string }> {
-  const raw = (await runLua(snippet)).trim();
+  const raw = (await runScript(name, args)).trim();
   let data: any;
   try {
     data = JSON.parse(raw);
