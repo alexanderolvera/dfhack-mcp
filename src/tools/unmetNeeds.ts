@@ -7,7 +7,6 @@ export interface NeedRow {
   need: string;
   dwarves: number;
   worst_focus: number;
-  suggestion?: string;
 }
 
 export interface UnmetNeeds {

@@ -65,9 +65,10 @@ registerReadTool(
   'Unmet needs',
   'Why the fort is stressed: the dwarven needs system aggregated across all ' +
     'citizens. Returns the top unmet needs (e.g. prayer, drink, socializing) ' +
-    'ranked by how many dwarves are distracted, each with a concrete ' +
-    'suggestion for what to build or do, plus how many dwarves have at least ' +
-    'one unmet need. Complements fort_status happiness. Returns ' +
+    'ranked by how many dwarves are distracted, each with the worst focus level ' +
+    '(how starved the need is), plus how many dwarves have at least one unmet ' +
+    'need. Reports which needs are unmet, not how to fix them (look that up or ' +
+    'reason from the need type). Complements fort_status happiness. Returns ' +
     '{"error":"no fort loaded"} if no fort is active.',
   unmetNeeds
 );

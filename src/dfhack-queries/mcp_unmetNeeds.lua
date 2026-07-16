@@ -1,7 +1,9 @@
 -- mcp_unmetNeeds: why the fort is stressed — the needs system, aggregated.
 --
 -- Companion to fort_status's happiness buckets: those say HOW MANY dwarves are
--- unhappy; this says WHY and what to build about it. Each citizen soul carries
+-- unhappy; this says WHICH needs are starving them and how badly. Facts only:
+-- it reports the need types and severities, not what to build about them (that's
+-- game knowledge the agent looks up). Each citizen soul carries
 -- personality.needs (df.need_type). focus_level is the signal: >= 0 met/neutral,
 -- negative = distracted, magnitude = how starved. A dwarf can hold several needs
 -- of one type (e.g. PrayOrMeditate per deity) — we count each DWARF at most once
@@ -24,34 +26,6 @@ if df.global.gamemode ~= df.game_mode.DWARF then
 end
 
 local DISTRACTED_BELOW = -1000   -- tunable: focus_level under this = distracted
-
--- What the player can DO about each need. Terse, actionable.
-local SUGGEST = {
-  PrayOrMeditate  = 'build a temple (or deity-specific shrine)',
-  DrinkAlcohol    = 'keep alcohol brewed and stocked; a tavern helps',
-  Socialize       = 'a tavern / meeting hall for dwarves to gather',
-  MakeMerry       = 'a tavern with performances',
-  BeWithFriends   = 'a lively meeting hall / tavern',
-  EatGoodMeal     = 'cook prepared meals; a proper dining hall',
-  AcquireObject   = 'let dwarves own goods; produce/import trinkets',
-  BeExtravagant   = 'more/better clothing and jewelry to wear',
-  AdmireArt       = 'place statues and engrave common areas',
-  LearnSomething  = 'build a library with books/scrolls',
-  ThinkAbstractly = 'a library to study in',
-  SelfExamination = 'a quiet library / temple',
-  CraftObject     = 'assign a craft workshop and labor',
-  BeCreative      = 'workshops and artifact-capable labors',
-  PracticeSkill   = 'assign labors matching their skills',
-  MartialTraining = 'form a squad with a barracks to train',
-  Fight           = 'military duty / training',
-  StayOccupied    = 'give them jobs; reduce idle time',
-  TakeItEasy      = 'ease workload; allow leisure',
-  BeWithFamily    = 'keep family housed near each other',
-  Excitement      = 'variety: outdoor access, performances',
-  MakeRomance     = 'social venues where couples can meet',
-  HearEloquence   = 'a tavern with skilled performers',
-  SeeAnimal       = 'a zoo / pastured animals to visit',
-}
 
 local citizens = dfhack.units.getCitizens(true)
 local NEED = df.need_type
@@ -85,8 +59,7 @@ end
 -- Flatten and sort by #dwarves distracted (desc), then severity.
 local rows = {}
 for t, a in pairs(agg) do
-  rows[#rows+1] = { need = t, dwarves = a.distracted, worst_focus = a.worst,
-                    suggestion = SUGGEST[t] or nil }
+  rows[#rows+1] = { need = t, dwarves = a.distracted, worst_focus = a.worst }
 end
 table.sort(rows, function(x, y)
   if x.dwarves ~= y.dwarves then return x.dwarves > y.dwarves end
