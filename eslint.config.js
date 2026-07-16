@@ -4,7 +4,7 @@ import prettier from 'eslint-config-prettier';
 
 export default tseslint.config(
   {
-    ignores: ['dist/**', 'cache/**', 'node_modules/**'],
+    ignores: ['dist/**', 'cache/**', 'node_modules/**', '.spike-probes/**'],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
