@@ -11,6 +11,7 @@ import { unmetNeeds } from './tools/unmetNeeds.ts';
 import { jobsAndLabor } from './tools/jobsAndLabor.ts';
 import { military } from './tools/military.ts';
 import { injuriesAndHealth } from './tools/injuriesAndHealth.ts';
+import { defenses } from './tools/defenses.ts';
 import { findUnit } from './tools/findUnit.ts';
 import { gameData } from './tools/gameData.ts';
 import { wikiSearchTool } from './tools/wikiSearch.ts';
@@ -128,6 +129,19 @@ registerReadTool(
     'medical coverage are visible. Returns {"error":"no fort loaded"} if no ' +
     'fort is active.',
   injuriesAndHealth
+);
+
+registerReadTool(
+  'defenses',
+  'Defenses',
+  'Where the threats are versus what you have to fight them with. Returns active ' +
+    'hostiles with map positions and their tile-distance/direction to the fort ' +
+    'core and to the nearest drawbridge, plus an inventory of controllable ' +
+    'defensive structures (drawbridges with positions, levers, floodgates, ' +
+    'hatches, cage traps, locked doors). Turns generic "atom-smash them" advice ' +
+    'into a located plan. Walls/fortifications (map tiles) are not yet covered. ' +
+    'Returns {"error":"no fort loaded"} if no fort is active.',
+  defenses
 );
 
 registerQueryTool<{ query: string }>(
