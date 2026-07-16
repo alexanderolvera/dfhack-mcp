@@ -3,6 +3,7 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { z } from 'zod';
 import { fortStatus } from './tools/fortStatus.ts';
 import { stocks } from './tools/stocks.ts';
 import { threats } from './tools/threats.ts';
@@ -10,6 +11,7 @@ import { unmetNeeds } from './tools/unmetNeeds.ts';
 import { jobsAndLabor } from './tools/jobsAndLabor.ts';
 import { military } from './tools/military.ts';
 import { injuriesAndHealth } from './tools/injuriesAndHealth.ts';
+import { findUnit } from './tools/findUnit.ts';
 import { NotConnectedError, closeConnection } from './dfclient.ts';
 
 const server = new McpServer({ name: 'dfhack-mcp', version: '0.1.0' });
@@ -19,6 +21,26 @@ function registerReadTool(name: string, title: string, description: string, run:
   server.registerTool(name, { title, description }, async () => {
     try {
       const data = await run();
+      return { content: [{ type: 'text', text: JSON.stringify(data, null, 2) }] };
+    } catch (err) {
+      const message =
+        err instanceof NotConnectedError ? err.message : `${name} failed: ${(err as Error).message}`;
+      return { content: [{ type: 'text', text: JSON.stringify({ error: message }) }], isError: true };
+    }
+  });
+}
+
+/** Register a read-only tool that takes arguments matching `shape`. */
+function registerQueryTool<A>(
+  name: string,
+  title: string,
+  description: string,
+  shape: Record<string, z.ZodType>,
+  run: (args: A) => Promise<unknown>
+) {
+  server.registerTool(name, { title, description, inputSchema: shape }, async (args: A) => {
+    try {
+      const data = await run(args);
       return { content: [{ type: 'text', text: JSON.stringify(data, null, 2) }] };
     } catch (err) {
       const message =
@@ -101,6 +123,18 @@ registerReadTool(
     'medical coverage are visible. Returns {"error":"no fort loaded"} if no ' +
     'fort is active.',
   injuriesAndHealth
+);
+
+registerQueryTool<{ query: string }>(
+  'find_unit',
+  'Find unit',
+  'Look up citizens by a name fragment or profession (case-insensitive, ' +
+    'matches either). Returns a compact dossier per match: profession, age, ' +
+    'stress level, current job, squad, and health flags (wounded/patient/' +
+    'unconscious). Useful for questions like "how is the chief medical dwarf" ' +
+    'or "find Urist". Returns {"error":"no fort loaded"} if no fort is active.',
+  { query: z.string().min(1).describe('Name fragment or profession to search for') },
+  ({ query }) => findUnit(query)
 );
 
 const transport = new StdioServerTransport();

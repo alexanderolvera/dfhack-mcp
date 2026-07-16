@@ -1,11 +1,19 @@
 // End-to-end harness: spawn the MCP server over stdio, list tools, call one.
-// Usage: node scripts/call-tool.mjs [toolName]   (default: fort_status)
+// Usage: node scripts/call-tool.mjs [toolName] [key=value ...]
+//   default toolName: fort_status
+//   args:  node scripts/call-tool.mjs find_unit query=medical
 // Requires Dwarf Fortress running with DFHack and a fort loaded.
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
 const toolName = process.argv[2] ?? 'fort_status';
+const toolArgs = Object.fromEntries(
+  process.argv.slice(3).map((kv) => {
+    const i = kv.indexOf('=');
+    return i === -1 ? [kv, true] : [kv.slice(0, i), kv.slice(i + 1)];
+  })
+);
 
 const transport = new StdioClientTransport({
   command: process.execPath, // node
@@ -18,7 +26,7 @@ await client.connect(transport);
 const { tools } = await client.listTools();
 console.log(`server exposes: ${tools.map((t) => t.name).join(', ')}\n`);
 
-const res = await client.callTool({ name: toolName, arguments: {} });
+const res = await client.callTool({ name: toolName, arguments: toolArgs });
 console.log(`${toolName} ->${res.isError ? ' (isError)' : ''}`);
 for (const part of res.content) {
   if (part.type === 'text') console.log(part.text);
