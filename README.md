@@ -67,12 +67,22 @@ can't be reached at all it returns an `isError` result explaining that.
 
 ## Tools
 
-### `fort_status()`  (v1)
+### `fort_status()`
 Situational overview: name, date/season, population, created wealth, happiness
 breakdown, and a pre-triaged `alerts` list. No arguments.
 
-Planned (see the spec vault): `threats`, `unmet_needs`, `stocks`,
-`jobs_and_labor`, `military`, `injuries_and_health`, `find_unit`.
+### `stocks()`
+Food and drink as estimated **days-of-supply** for the current population, plus
+counts of critical materials (wood, fuel, cloth, tanned hides, stone) and
+`notable_low` / `notable_high` lists. No arguments.
+
+Days-of-supply assume ~2 food and ~5 drink per dwarf per season (DF wiki). The
+raw `counts` are exact; the day estimates are approximations. Note: `food`
+counts all edible items including raw plants, some of which may be destined for
+brewing/milling — so `food_days` can overstate effective food.
+
+Planned (see the spec vault): `threats`, `unmet_needs`, `jobs_and_labor`,
+`military`, `injuries_and_health`, `find_unit`.
 
 ## Layout
 

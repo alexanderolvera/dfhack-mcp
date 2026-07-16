@@ -4,35 +4,43 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { fortStatus } from './tools/fortStatus.ts';
+import { stocks } from './tools/stocks.ts';
 import { NotConnectedError, closeConnection } from './dfclient.ts';
 
 const server = new McpServer({ name: 'dfhack-mcp', version: '0.1.0' });
 
-server.registerTool(
-  'fort_status',
-  {
-    title: 'Fort status',
-    description:
-      'One-call situational overview of the currently loaded Dwarf Fortress fort: ' +
-      'name, in-game date and season, population, created wealth, a happiness ' +
-      'breakdown (miserable/unhappy/content/happy), and a pre-triaged list of ' +
-      'alerts worth attention. Returns {"error":"no fort loaded"} if no fort is active.',
-  },
-  async () => {
+/** Register a no-argument, read-only tool that returns a JSON-able object. */
+function registerReadTool(name: string, title: string, description: string, run: () => Promise<unknown>) {
+  server.registerTool(name, { title, description }, async () => {
     try {
-      const data = await fortStatus();
+      const data = await run();
       return { content: [{ type: 'text', text: JSON.stringify(data, null, 2) }] };
     } catch (err) {
       const message =
-        err instanceof NotConnectedError
-          ? err.message
-          : `fort_status failed: ${(err as Error).message}`;
-      return {
-        content: [{ type: 'text', text: JSON.stringify({ error: message }) }],
-        isError: true,
-      };
+        err instanceof NotConnectedError ? err.message : `${name} failed: ${(err as Error).message}`;
+      return { content: [{ type: 'text', text: JSON.stringify({ error: message }) }], isError: true };
     }
-  }
+  });
+}
+
+registerReadTool(
+  'fort_status',
+  'Fort status',
+  'One-call situational overview of the currently loaded Dwarf Fortress fort: ' +
+    'name, in-game date and season, population, created wealth, a happiness ' +
+    'breakdown (miserable/unhappy/content/happy), and a pre-triaged list of ' +
+    'alerts worth attention. Returns {"error":"no fort loaded"} if no fort is active.',
+  fortStatus
+);
+
+registerReadTool(
+  'stocks',
+  'Stocks',
+  'Food and drink as estimated days-of-supply for the current population, plus ' +
+    'counts of critical materials (wood, fuel, cloth, tanned hides, stone) and ' +
+    'lists of notably low or high stocks. Days-of-supply assume ~2 food and ~5 ' +
+    'drink per dwarf per season. Returns {"error":"no fort loaded"} if no fort is active.',
+  stocks
 );
 
 const transport = new StdioServerTransport();
