@@ -142,12 +142,13 @@ DFHACK_MCP_DEV=1 node src/index.ts
 src/
   index.ts            server construction + the 13 tool registrations + stdio wiring
   register.ts         registerReadTool / registerQueryTool helpers (result + error framing)
-  dfclient.ts         single RPC connection: lazy connect, one-shot reconnect
-  query.ts            run a Lua query -> parse JSON -> normalize list fields
-  dfhack-queries/     the version-FRAGILE boundary: one DFHack Lua query per file
-    shared.ts           preamble/guard, luaStr, stress labels, creature-flag whitelist (+ why this folder exists)
-    fortStatus.ts stocks.ts threats.ts unmetNeeds.ts jobsAndLabor.ts
-    military.ts injuriesAndHealth.ts defenses.ts findUnit.ts gameData.ts
+  dfclient.ts         single RPC connection: lazy connect, one-shot reconnect,
+                      registers dfhack-queries/ as a DFHack script path
+  query.ts            invoke a named DFHack script -> parse JSON -> normalize list fields
+  dfhack-queries/     the version-FRAGILE boundary: one real DFHack .lua script per query
+    mcp_fortStatus.lua mcp_stocks.lua mcp_threats.lua mcp_unmetNeeds.lua
+    mcp_jobsAndLabor.lua mcp_military.lua mcp_injuriesAndHealth.lua
+    mcp_defenses.lua mcp_findUnit.lua mcp_gameData.lua
   wiki/               MediaWiki client (pure HTTP; the other external boundary)
     api.ts              fetch + search + redirect/namespace/section resolution
     clean.ts            rendered HTML -> readable text (dependency-free)
@@ -164,7 +165,14 @@ cache/                git-ignored disk cache of cleaned wiki pages
 The `dfhack-queries/` folder is deliberate: **all** version-fragile DFHack field
 access (the exact `df.global.*` / `dfhack.units.*` / caste paths that can shift
 between DF/DFHack builds) is confined there, so a version bump is a localized fix
-— you edit the query snippets, never the tools or the server.
+— you edit the `.lua` scripts, never the tools or the server.
+
+These are **real DFHack `.lua` scripts**, not Lua embedded in TypeScript. On
+connect the server registers the folder with DFHack (`dfhack.internal`'s script
+path) and each tool invokes its script **by name with native argv** — so query
+parameters are injection-safe by construction (no string escaping), and the Lua
+gets proper editor tooling. (This needs `dfhack.internal.addScriptPath`, present
+in the pinned build; the server errors clearly if a DFHack lacks it.)
 
 ## Scripts
 
@@ -179,11 +187,13 @@ between DF/DFHack builds) is confined there, so a version bump is a localized fi
 
 ## Contributing
 
-New tools follow the existing split: put the version-fragile Lua in a
-`src/dfhack-queries/<name>.ts` snippet (reuse the helpers in `shared.ts`), add a
-thin wrapper in `src/tools/<name>.ts` that parses and normalizes, and register it
-in `src/index.ts`. **Verify every tool against a live fort with the harness — no
-mocks.** Keep `npm run typecheck` and `npm run lint` clean.
+New tools follow the existing split: write the version-fragile Lua as a real
+`src/dfhack-queries/mcp_<name>.lua` script (read parameters from `local args =
+{...}`, `print(require('json').encode(...))` one JSON object), add a thin wrapper
+in `src/tools/<name>.ts` that calls `runJsonScript('<name>', args, listFields)`
+and types the result, and register it in `src/index.ts`. **Verify every tool
+against a live fort with the harness — no mocks.** Keep `npm run typecheck` and
+`npm run lint` clean.
 
 ## License
 
