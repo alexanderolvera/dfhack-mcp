@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Note: CI validates typecheck + lint + build only. The tools are verified
+# against a LIVE Dwarf Fortress + DFHack, which cannot run in CI, so live-fort
+# verification stays manual (npm run call <tool>) — see the PR checklist.
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout server
+        uses: actions/checkout@v4
+        with:
+          path: dfhack-mcp
+
+      # The server depends on the sibling client via file:../dfhack-remote-node,
+      # so it must be present and built for typecheck to resolve its types.
+      - name: Checkout client (file: dependency)
+        uses: actions/checkout@v4
+        with:
+          repository: alexanderolvera/dfhack-remote-node
+          path: dfhack-remote-node
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Build client (its prepare script emits dist/)
+        working-directory: dfhack-remote-node
+        run: npm ci
+
+      - name: Install server
+        working-directory: dfhack-mcp
+        run: npm ci
+
+      - name: Typecheck
+        working-directory: dfhack-mcp
+        run: npm run typecheck
+
+      - name: Lint
+        working-directory: dfhack-mcp
+        run: npm run lint
+
+      - name: Build
+        working-directory: dfhack-mcp
+        run: npm run build
