@@ -113,6 +113,15 @@ The medical picture: wounded, patients in the care queue, bedridden, and
 unconscious counts, plus a breakdown of what care is needed (diagnosis,
 surgery, suture, …) so gaps in medical coverage are visible. No arguments.
 
+### `defenses()`
+Where the threats are versus what you have to fight them with. Returns active
+hostiles with map positions and their tile-distance/direction/z-delta to the
+**fort core** (citizen centroid) and to the **nearest drawbridge**, plus an
+inventory of controllable structures (drawbridges with positions, levers,
+floodgates, hatches, cage traps, locked doors). Turns generic "atom-smash them"
+advice into a *located* plan. Buildings + positions only — walls/fortifications
+(map tiles) await the RemoteFortressReader terrain work. No arguments.
+
 ### `find_unit(query)`
 Look up citizens by a name fragment or profession (case-insensitive, matches
 either). Returns a compact dossier per match: profession, age, stress, current
