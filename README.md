@@ -84,8 +84,12 @@ brewing/milling — so `food_days` can overstate effective food.
 ### `threats()`
 Dangerous units on the map, grouped by creature type. Separates **active**
 hostiles from **contained** ones (caged/chained), and flags `great_danger`
-(megabeasts, titans, demons, forgotten beasts), `invader`, and `undead`. No
-arguments.
+(megabeasts, titans, demons, forgotten beasts), `invader`, and `undead`. Each
+group also carries the creature `token` (a direct `game_data`/`identify` handle)
+and a curated `traits` list of the **tactically decisive** facts — `trapavoid`,
+`flier`, `fire`, `webber`, `building_destroyer`, `ranged` — plus `ranged_attacks`
+(breath-weapon names), so the facts that decide how to fight a threat are in the
+readout itself. No arguments.
 
 ### `unmet_needs()`
 Why the fort is stressed: the dwarven needs system aggregated across all
@@ -136,6 +140,17 @@ multi-hop redirects and honors section fragments (`"Weapon trap"` → the Weapon
 Trap section of `DF2014:Trap`). Cache-first to a git-ignored `cache/` dir
 (~30-day TTL; `refresh: true` bypasses). Returns `{title, url, text, from_cache,
 resolved_from?}` or `{error}`. Pure HTTP.
+
+### `identify(query)`
+One-call *"what is this creature and how do I handle it"* — fuses `game_data`
+(this world's raws) with `wiki_lookup` (strategy). Same input as `game_data` (a
+token, name, or live `unit_id`). Returns the creature dossier, a `tactics` list
+pairing each decisive trait with a hard-fact implication (e.g. *TRAPAVOID →
+mechanical traps don't work*, *FLIER → needs a roof, not just a bridge*), and
+1–2 trimmed wiki strategy excerpts. Procedural creatures (demons, forgotten
+beasts, titans) have no wiki page, so it leans on their traits plus the most
+relevant trait page. Use this instead of a bare `wiki_lookup` when a creature
+threat appears — it's the reason the tool exists.
 
 ### `run_lua(snippet)` — dev only
 Raw DFHack Lua escape hatch, returning printed output verbatim. **Not
