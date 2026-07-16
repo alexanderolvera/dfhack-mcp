@@ -187,6 +187,16 @@ in the pinned build; the server errors clearly if a DFHack lacks it.)
 
 ## Contributing
 
+**Facts, not advice.** These tools _sense_ — they return what is true about the
+fort and the world, the way a player reads a screen or looks something up. They
+do not tell the agent what to build or how to fight; that judgment is the agent's
+job. A field that says _what to do_ is advice — leave it out (or, if it is a
+genuine limitation the caller must know, put it in the tool description, not the
+per-call payload). Restating a fact that crossed a threshold ("28 dwarves
+unhappy") is fine — that mirrors the game's own announcements. Curated strategy,
+if it ever ships, belongs in a separate authored knowledge layer an agent chooses
+to consult, never scattered through sensor output.
+
 New tools follow the existing split: write the version-fragile Lua as a real
 `src/dfhack-queries/mcp_<name>.lua` script (read parameters from `local args =
 {...}`, `print(require('json').encode(...))` one JSON object), add a thin wrapper
