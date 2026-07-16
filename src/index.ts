@@ -8,6 +8,7 @@ import { stocks } from './tools/stocks.ts';
 import { threats } from './tools/threats.ts';
 import { unmetNeeds } from './tools/unmetNeeds.ts';
 import { jobsAndLabor } from './tools/jobsAndLabor.ts';
+import { military } from './tools/military.ts';
 import { NotConnectedError, closeConnection } from './dfclient.ts';
 
 const server = new McpServer({ name: 'dfhack-mcp', version: '0.1.0' });
@@ -78,6 +79,16 @@ registerReadTool(
     'idle can mean unassigned labor or nothing queued. Returns ' +
     '{"error":"no fort loaded"} if no fort is active.',
   jobsAndLabor
+);
+
+registerReadTool(
+  'military',
+  'Military',
+  "The fort's military: number of squads, how many living present dwarves are " +
+    'actually enlisted (soldiers), filled squad positions, and readiness read ' +
+    'against hostiles currently on the map (great-danger split out). Warns if ' +
+    'the fort is undefended. Returns {"error":"no fort loaded"} if no fort is active.',
+  military
 );
 
 const transport = new StdioServerTransport();
