@@ -1,0 +1,20 @@
+{
+  "name": "dfhack-mcp",
+  "version": "0.1.0",
+  "description": "MCP server exposing a live Dwarf Fortress fort to an AI agent as curated, semantic tools",
+  "type": "module",
+  "bin": {
+    "dfhack-mcp": "src/index.ts"
+  },
+  "scripts": {
+    "start": "node src/index.ts",
+    "call": "node scripts/call-tool.mjs"
+  },
+  "keywords": ["dwarf-fortress", "dfhack", "mcp", "model-context-protocol"],
+  "author": "Alex",
+  "license": "ISC",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "dfhack-remote": "file:../dfhack-remote"
+  }
+}
