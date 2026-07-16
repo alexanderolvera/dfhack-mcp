@@ -10,6 +10,23 @@ releases (`0.x.0`) may change or remove tool output, and **patch** releases
 
 ## [Unreleased]
 
+### Added
+
+- **`defenses` Level 2 — terrain-aware inside/outside** (issue #4). Each active
+  threat is now classified `inside`/`outside` the fort's walled perimeter,
+  defined concretely as sharing a DF walkability group with the fort's citizens
+  (a threat can walk to your population through connected open space without
+  breaching a wall). Adds `interior` (the citizen walk group(s)), per-threat
+  `walk_group` + `location` + `footing` (the threat's own tile, fog-of-war
+  respected), and `perimeter_terrain`: an ASCII tile grid of the busiest citizen
+  level with wall/fortification and open-to-sky vs covered counts.
+- **`mcp_readTerrain` shared terrain helper** (spike #10). A fog-of-war-safe
+  single-z terrain reader used by `defenses` and future spatial tools:
+  undiscovered tiles render as `?` and never leak their real type. Usable
+  directly or via `reqscript`. Reads tiles in Lua (block-cached) rather than RFR
+  `GetBlockList`, which leaks undiscovered terrain and ships a ~50× larger
+  payload.
+
 ### Changed
 
 - **Facts-only doctrine.** Tools report facts, not advice — they sense the game
