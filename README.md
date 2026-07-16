@@ -114,6 +114,29 @@ Look up citizens by a name fragment or profession (case-insensitive, matches
 either). Returns a compact dossier per match: profession, age, stress, current
 job, squad, and health flags. Argument: `query` (string).
 
+### `game_data(query, kind?)`
+Look up the **loaded world's raws** — ground truth for *this* world, and the
+only source for procedural creatures (demons, forgotten beasts, titans) that
+never appear on the wiki. `query` is a creature token (`DEMON_4`), a name
+(`flame phantom`, case-insensitive), or a live `unit_id` (all digits, a
+fusion shortcut). One strong hit → a full dossier (token, name, size, notable
+flags, attacks, breath/interactions, blurb); several → a disambiguation list.
+`kind` is an optional filter (`creature|material|plant|reaction|item|building`);
+only `creature` is implemented so far — the others report "not yet implemented"
+and are added *to this same tool*, never as new tools.
+
+### `wiki_search(query)`
+Search the Dwarf Fortress wiki for candidate article titles + cleaned snippets,
+biased to the `DF2014` namespace. The discovery step before `wiki_lookup`. Pure
+HTTP — works without the game running. Argument: `query` (string).
+
+### `wiki_lookup(title, section?, refresh?)`
+Fetch a wiki article as clean, readable text, pinned to `DF2014`. Follows
+multi-hop redirects and honors section fragments (`"Weapon trap"` → the Weapon
+Trap section of `DF2014:Trap`). Cache-first to a git-ignored `cache/` dir
+(~30-day TTL; `refresh: true` bypasses). Returns `{title, url, text, from_cache,
+resolved_from?}` or `{error}`. Pure HTTP.
+
 ### `run_lua(snippet)` — dev only
 Raw DFHack Lua escape hatch, returning printed output verbatim. **Not
 registered unless `DFHACK_MCP_DEV` is set** — arbitrary Lua can read *and write*
@@ -127,9 +150,16 @@ src/
   index.ts         MCP server + tool registration (stdio)
   dfclient.ts      single RPC connection: lazy connect, one-shot reconnect
   lua/queries.ts   centralized Lua queries (version-fragile field access lives here)
+  wiki/client.ts   MediaWiki fetch/resolve/clean/cache (the wiki_* tools)
   tools/           one file per tool: run query, parse, normalize
 scripts/
   call-tool.mjs    end-to-end harness (real MCP client over stdio)
+cache/             git-ignored disk cache of cleaned wiki pages
 ```
+
+Two pillars: the **sensors** (`fort_status` … `find_unit`) answer *what is this
+fort doing?*; the **reference** tools (`game_data`, `wiki_*`) answer *how does
+DF work?* — `game_data` is this world's ground truth, `wiki_*` is the general
+explanation.
 
 Every tool is verified against a real running fort before it ships — never mocks.
