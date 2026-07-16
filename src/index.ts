@@ -9,6 +9,7 @@ import { threats } from './tools/threats.ts';
 import { unmetNeeds } from './tools/unmetNeeds.ts';
 import { jobsAndLabor } from './tools/jobsAndLabor.ts';
 import { military } from './tools/military.ts';
+import { injuriesAndHealth } from './tools/injuriesAndHealth.ts';
 import { NotConnectedError, closeConnection } from './dfclient.ts';
 
 const server = new McpServer({ name: 'dfhack-mcp', version: '0.1.0' });
@@ -89,6 +90,17 @@ registerReadTool(
     'against hostiles currently on the map (great-danger split out). Warns if ' +
     'the fort is undefended. Returns {"error":"no fort loaded"} if no fort is active.',
   military
+);
+
+registerReadTool(
+  'injuries_and_health',
+  'Injuries and health',
+  "The fort's medical picture: how many dwarves are wounded, in the care " +
+    'queue (patients), bedridden, or unconscious, plus a breakdown of what ' +
+    'care is needed (diagnosis, surgery, suture, dressing, ...) so gaps in ' +
+    'medical coverage are visible. Returns {"error":"no fort loaded"} if no ' +
+    'fort is active.',
+  injuriesAndHealth
 );
 
 const transport = new StdioServerTransport();
