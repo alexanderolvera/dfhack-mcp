@@ -183,7 +183,17 @@ in the pinned build; the server errors clearly if a DFHack lacks it.)
 | `npm run typecheck` | `tsc --noEmit`                                            |
 | `npm run lint`      | eslint (flat config)                                      |
 | `npm run format`    | prettier --write                                          |
-| `npm run call`      | the live harness (see _Verify_ above)                     |
+| `npm run call`      | one-shot live harness (see _Verify_ above)                |
+| `npm run verify:t0` | contract tier: handshake + `tools/list` + schemas (no DF) |
+| `npm run verify:t1` | reachability tier: every tool callable (needs a fort)     |
+| `npm run verify:t2` | golden + invariants (needs the fixture save)              |
+| `npm run verify:update` | rewrite goldens from the loaded fixture               |
+| `npm run bootstrap` | one-command setup: build client → install → T0            |
+| `npm run worktree`  | `<branch>` → isolated worktree for a parallel agent       |
+
+The **verification harness** ([`docs/VERIFY.md`](docs/VERIFY.md)) is tiered: T0 is
+CI-gated and needs no game; T1/T2 run locally against a live fort. See
+[`CONTRIBUTING.md`](CONTRIBUTING.md) for setup and the parallel-agent workflow.
 
 ## Contributing
 
