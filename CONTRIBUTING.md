@@ -60,10 +60,17 @@ own `node_modules`, and confirms T0 passes before handing it off.
 - **T0 is free and parallel.** Contract checks need no DF, so every worktree —
   and CI — can run them simultaneously. This is the gate that lets parallel work
   land safely: schema/registration drift is caught without the game.
-- **The live DF is the one shared resource.** There's a single fort on a single
-  port, so T1/T2 (live reachability, goldens) run **one worktree at a time**
-  until [#27](https://github.com/alexanderolvera/dfhack-mcp/issues/27) provides
-  multi-port / headless instances. Coordinate live runs; don't race the game.
+- **The live DF is a shared resource — but no longer the only option.** Your
+  single live Steam DF is one fort on one port, so T1/T2 against *it* still run
+  **one worktree at a time**. For real parallel live verification, spin up
+  **disposable headless DF containers** ([`docker/`](docker/)): each worktree gets
+  its own fort on its own port, so T1/T2 run concurrently. See
+  [`docker/README.md`](docker/README.md) — this is [#27](https://github.com/alexanderolvera/dfhack-mcp/issues/27)'s
+  deliverable. Quick path:
+  ```sh
+  cd docker && ./build.sh && ./run-instances.sh 3
+  ./verify-container.sh 5001            # tools against fort #1
+  ```
 
 Why serialize, at the mechanism level: on connect the server calls
 `dfhack.internal.addScriptPath(<its queries dir>)`, which mutates a **global,

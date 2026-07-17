@@ -7,7 +7,9 @@
 set -euo pipefail
 port="${1:-5001}"; tier="${2:-1}"
 cd "$(dirname "$0")/.."
+# --require-fort: a container is SUPPOSED to have the fixture loaded, so treat
+# "no fort loaded" as a failure — otherwise a broken headless load reports green.
 MSYS_NO_PATHCONV=1 \
   DFHACK_HOST=127.0.0.1 DFHACK_PORT="$port" \
-  DFHACK_MCP_QUERY_DIR=/opt/df/mcp-queries \
-  node scripts/verify.mjs --tier="$tier"
+  DFHACK_MCP_QUERY_DIR="${DFHACK_MCP_QUERY_DIR:-/opt/df/mcp-queries}" \
+  node scripts/verify.mjs --tier="$tier" --require-fort

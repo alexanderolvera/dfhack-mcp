@@ -61,10 +61,54 @@ and `dfclient.ts` both honor it.
 | `run-instances.sh` / `stop-instances.sh` | launch/tear down N forts on ports 5001+ |
 | `verify-container.sh` | run `scripts/verify.mjs` against a container (sets env correctly) |
 
+## Per-worktree isolation
+
+The query scripts are **baked into the image at build time** — a self-contained
+snapshot, ideal for CI and for read-only parallel verification where the Lua
+doesn't change. But a worktree with **divergent** `dfhack-queries` Lua would run
+the baked snapshot, not its own code. Two ways to get true per-worktree isolation:
+
+- **Mount the live scripts** (same image, current code): `./run-instances.sh 1 ../src/dfhack-queries`
+  bind-mounts that dir read-only over `/opt/df/mcp-queries`, so the instance runs
+  the worktree's Lua. Simplest when one worktree is under test at a time.
+- **One instance per worktree, distinct port** for genuinely concurrent divergent
+  worktrees. From worktree *k*'s checkout:
+  ```sh
+  docker run -d --name df-fort-wt-k --security-opt seccomp=unconfined \
+    -e TERM=xterm-256color \
+    -v "$(pwd)/src/dfhack-queries:/opt/df/mcp-queries:ro" \
+    -p "127.0.0.1:$((5000+k)):5001" df-headless:53.15
+  # then: DFHACK_PORT=$((5000+k)) ... npm run verify:t1 --require-fort
+  ```
+  Each agent gets its own fort **and** its own live scripts — the isolation #27
+  is for. (The DF binary/save layer is shared read-only via the image; only the
+  query dir differs, so this is cheap.)
+
+## Reset primitive & the Windows-native fallback (#27 findings)
+
+- **Reset = recreate.** An instance is disposable: `docker rm -f <name>` then
+  re-`run` restores the exact baked fixture (the save lives in the image's
+  read-only layers; the container's writes are a throwaway upper layer). No
+  in-place "reset save" step is needed — teardown *is* the reset, and it's
+  deterministic because every instance starts from the same committed image.
+  `stop-instances.sh` / `run-instances.sh` are that primitive.
+- **Containers beat the Windows-native "N copies on ports" fallback**, which #27
+  asked us to weigh. The native fallback (N Steam DF processes, each with a
+  patched `remote-server.json` port) works but: ties up the desktop with N GUI
+  windows, has no filesystem isolation (shared install, save dirs, configs), no
+  clean reset (manual save juggling), can't run in CI, and each instance is
+  hand-managed. The container path is headless, disposable, reset-by-recreate,
+  identical across machines, and CI-capable — so we chose it. The native fallback
+  remains available only if a machine can't run Docker.
+- **The one true requirement the spike surfaced:** the fixture must be a
+  **compressed** save. That's the single constraint on which forts can seed an
+  instance.
+
 ## Status
 
 Proven end-to-end on 2026-07-16: image boots headless, auto-loads the fort,
-serves RPC; the host reads live fort data and **all curated MCP tools pass T1**
-against it; **two instances run in parallel** on separate ports. Remaining polish:
-a compressed `region5` as the canonical fixture, T2 goldens (needs the frozen
-fixture), and wiring this into CI as a required live check.
+serves RPC; the host reads live fort data and **all curated MCP tools pass
+`--require-fort` T1** against it; **two instances run in parallel** on separate
+ports. Remaining polish: a compressed `region5` as the canonical fixture, T2
+goldens (needs the frozen fixture), and wiring container T1/T2 into CI as a
+required live check (#28 Phase 3).
