@@ -45,12 +45,14 @@ every command" check, and it exercises the no-fort guard
 ([#6](https://github.com/alexanderolvera/dfhack-mcp/issues/6)) in one pass. Needs
 Dwarf Fortress running with DFHack and a fort loaded.
 
-> **Run T1/T2 one worktree at a time.** The server registers its `dfhack-queries/`
-> on a *global, DF-wide* script path (`dfhack.internal.addScriptPath`) and resolves
-> `mcp_<name>` by name. Two servers against one DF stomp each other's resolution
-> for same-named-but-divergent scripts (last registrant wins). New scripts are
-> picked up without a DF restart; a changed script reloads on the next call.
-> Concurrent live testing needs separate DF instances — [#27](https://github.com/alexanderolvera/dfhack-mcp/issues/27).
+> **Against a single live DF, run T1/T2 one worktree at a time.** The server
+> registers its `dfhack-queries/` on a *global, DF-wide* script path
+> (`dfhack.internal.addScriptPath`) and resolves `mcp_<name>` by name. Two servers
+> against one DF stomp each other's resolution for same-named-but-divergent scripts
+> (last registrant wins). **For real parallel verification, use the disposable
+> headless DF containers** in [`docker/`](../docker/) ([#27](https://github.com/alexanderolvera/dfhack-mcp/issues/27)'s
+> deliverable): one fort per worktree on its own port, so `DFHACK_PORT=<port> …
+> verify:t1 --require-fort` runs concurrently. See [`docker/README.md`](../docker/README.md).
 
 ### T2 — golden + invariants (fixture save)
 

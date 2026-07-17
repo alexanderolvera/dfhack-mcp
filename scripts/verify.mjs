@@ -43,6 +43,10 @@ const NETWORK_TOOLS = new Set(['wiki_search', 'wiki_lookup']);
 const argv = process.argv.slice(2);
 const tier = Number((argv.find((a) => a.startsWith('--tier=')) ?? '--tier=0').split('=')[1]);
 const update = argv.includes('--update');
+// When set, "no fort loaded" is a FAILURE, not a pass. Use it against a fixture
+// or a container that is supposed to have a fort loaded, so a broken headless
+// load can't be reported as a verified instance.
+const requireFort = argv.includes('--require-fort');
 
 // --- helpers ----------------------------------------------------------------
 let failures = 0;
@@ -126,7 +130,13 @@ async function tier1(client) {
     if (data.__unparsable__ !== undefined) {
       fail(`${name}: returned non-JSON: ${String(data.__unparsable__).slice(0, 80)}`);
     } else if (isNoFort(data)) {
-      ok(`${name}: reachable (no fort loaded)`);
+      if (requireFort) fail(`${name}: no fort loaded (--require-fort set)`);
+      else ok(`${name}: reachable (no fort loaded)`);
+    } else if (typeof data.error === 'string') {
+      // A non-no-fort error means the tool is reachable but failing (e.g. a query
+      // script didn't resolve). That's a T1 failure, not a pass — well-formed JSON
+      // isn't enough when it's an error payload.
+      fail(`${name}: returned error: ${data.error}`);
     } else {
       ok(`${name}: reachable, well-formed JSON`);
     }
