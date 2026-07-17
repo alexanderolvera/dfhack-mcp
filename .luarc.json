@@ -1,0 +1,10 @@
+{
+  "$schema": "https://raw.githubusercontent.com/LuaLS/vscode-lua/master/setting/schema.json",
+  "runtime.version": "Lua 5.3",
+  "workspace.library": [".dfhack-stubs"],
+  "workspace.ignoreDir": ["node_modules", "dist", "cache", ".spike-probes"],
+  "workspace.checkThirdParty": false,
+  "diagnostics.globals": ["df", "dfhack", "reqscript", "printall", "printall_recurse"],
+  "diagnostics.disable": ["lowercase-global"],
+  "hint.enable": true
+}
