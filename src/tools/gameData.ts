@@ -36,8 +36,134 @@ export interface CreatureDossier {
   unit_name?: string;
 }
 
+/** A temperature fact: the raw DF "urist" value plus its Celsius conversion. */
+export interface TempFact {
+  urist: number;
+  celsius: number;
+}
+
+/** A single strong hit: a material dossier (via dfhack.matinfo). */
+export interface MaterialDossier {
+  kind: 'material';
+  token: string; // e.g. "INORGANIC:IRON"
+  name: string; // solid-state display name, e.g. "iron"
+  state_names: { solid: string; liquid?: string; gas?: string };
+  melting_point?: TempFact;
+  boiling_point?: TempFact;
+  ignite_point?: TempFact;
+  flammable: boolean;
+  density: { solid?: number; liquid?: number }; // kg/m^3
+  flags: string[]; // curated notable material flags
+}
+
+export interface PlantGrowth {
+  token: string;
+  name?: string;
+}
+
+export interface PlantMaterial {
+  token: string;
+  name: string;
+}
+
+/** A single strong hit: a plant dossier. */
+export interface PlantDossier {
+  kind: 'plant';
+  token: string;
+  name: string;
+  plural?: string;
+  type: string; // tree|grass|shrub
+  value: number;
+  growth_time: number; // ticks to mature
+  seasons: string[]; // SPRING|SUMMER|AUTUMN|WINTER
+  surface: boolean;
+  subterranean: boolean;
+  depth_min: number;
+  depth_max: number;
+  biomes: string[];
+  yields: string[]; // drink|seed|thread|mill|extract_*
+  growths: PlantGrowth[];
+  materials: PlantMaterial[];
+}
+
+export interface ReactionBuilding {
+  category: string; // building_type, e.g. "Workshop"
+  workshop?: string; // workshop_type / furnace_type, e.g. "Carpenters"
+  custom?: string; // custom building_def token, when built at one
+}
+
+export interface ReactionReagent {
+  label?: string;
+  quantity: number;
+  item?: string;
+  material?: string;
+}
+
+export interface ReactionProduct {
+  item?: string;
+  quantity: number;
+  probability?: number;
+}
+
+/** A single strong hit: a reaction dossier. */
+export interface ReactionDossier {
+  kind: 'reaction';
+  token: string;
+  name?: string;
+  skill?: string;
+  building?: ReactionBuilding;
+  reagents: ReactionReagent[];
+  products: ReactionProduct[];
+}
+
+export interface ItemAttack {
+  verb?: string;
+  contact: number;
+  penetration: number;
+  velocity_mult: number;
+}
+
+/** A single strong hit: an itemdef dossier. */
+export interface ItemDossier {
+  kind: 'item';
+  token: string;
+  name: string;
+  plural?: string;
+  adjective?: string;
+  class: string; // weapon|armor|tool|ammo|trapcomp|instrument|...
+  value?: number; // absent on some classes (e.g. food)
+  stats: Record<string, string | number>;
+  attacks?: ItemAttack[];
+}
+
+export interface BuildingReaction {
+  token: string;
+  name?: string;
+}
+
+/** A single strong hit: a custom-building dossier. */
+export interface BuildingDossier {
+  kind: 'building';
+  token: string;
+  name: string;
+  category: string; // building_type
+  purpose?: string; // labor_description
+  dim_x: number;
+  dim_y: number;
+  build_stages: number;
+  reactions: BuildingReaction[];
+}
+
+export type Dossier =
+  | CreatureDossier
+  | MaterialDossier
+  | PlantDossier
+  | ReactionDossier
+  | ItemDossier
+  | BuildingDossier;
+
 export interface GameDataStub {
-  kind: 'creature';
+  kind: GameDataKind;
   token: string;
   name: string;
   blurb: string;
@@ -51,7 +177,19 @@ export interface GameDataMatches {
   matches: GameDataStub[];
 }
 
-export type GameData = CreatureDossier | GameDataMatches;
+export type GameData = Dossier | GameDataMatches;
+
+// Per-kind list fields that a dossier carries. An empty Lua table encodes as {}
+// rather than [], so we coerce these back to arrays for the kind at hand only —
+// never invent fields that a kind doesn't have.
+const DOSSIER_LIST_FIELDS: Record<GameDataKind, string[]> = {
+  creature: ['flags', 'attacks', 'interactions'],
+  material: ['flags'],
+  plant: ['seasons', 'biomes', 'yields', 'growths', 'materials'],
+  reaction: ['reagents', 'products'],
+  item: ['attacks'],
+  building: ['reactions'],
+};
 
 export async function gameData(
   query: string,
@@ -65,8 +203,10 @@ export async function gameData(
   if ('match_count' in d) {
     if (!Array.isArray(d.matches)) d.matches = [];
   } else {
-    for (const f of ['flags', 'attacks', 'interactions']) {
-      if (!Array.isArray(d[f])) d[f] = [];
+    const fields = DOSSIER_LIST_FIELDS[d.kind as GameDataKind] ?? [];
+    for (const f of fields) {
+      // item.attacks is optional (nil for non-weapons) — only coerce when present.
+      if (f in d && !Array.isArray(d[f])) d[f] = [];
     }
   }
   return data;

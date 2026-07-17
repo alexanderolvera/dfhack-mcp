@@ -46,7 +46,12 @@ export async function identify(
     };
   }
 
-  const creature = data; // a single CreatureDossier
+  // identify() only ever asks game_data for the default creature kind, so a
+  // single hit is always a CreatureDossier; narrow explicitly for the types.
+  if (data.kind !== 'creature') {
+    return { error: `expected a creature dossier, got kind '${data.kind}'` };
+  }
+  const creature = data;
 
   // Step 2 — decisive traits + factual implications, front-and-center.
   const tactics = deriveTactics(creature);
