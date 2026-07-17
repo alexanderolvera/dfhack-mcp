@@ -1,8 +1,10 @@
 name: CI
 
-# CI validates typecheck + lint + build only. The tools are verified against a
-# live Dwarf Fortress + DFHack, which cannot run in CI, so live-fort verification
-# stays manual (npm run call <tool>) -- see the PR checklist.
+# CI validates typecheck + lint + build + the T0 contract tier (verify.mjs
+# --tier=0: server starts, tools/list matches test/expected-tools.json, every
+# schema is well-formed -- no DF needed). Reachability/golden tiers (T1/T2)
+# require a live Dwarf Fortress + DFHack, which cannot run in CI, so they stay
+# local for now (npm run verify:t1) -- see CONTRIBUTING.md. Live CI is #28 Phase 3.
 
 on:
   push:
@@ -14,40 +16,30 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout server
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          path: dfhack-mcp
-
-      # The server depends on the sibling client via file:../dfhack-remote-node,
-      # so it must be checked out and built for typecheck to resolve its types.
-      - name: Checkout client
-        uses: actions/checkout@v4
-        with:
-          repository: alexanderolvera/dfhack-remote-node
-          path: dfhack-remote-node
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: "24"
 
-      - name: Build client
-        working-directory: dfhack-remote-node
-        run: npm ci
-
-      - name: Install server
-        working-directory: dfhack-mcp
+      # The dfhack-remote-node client is a published npm package (ships prebuilt),
+      # so a plain install pulls it -- no sibling checkout/build needed.
+      - name: Install
         run: npm ci
 
       - name: Typecheck
-        working-directory: dfhack-mcp
         run: npm run typecheck
 
       - name: Lint
-        working-directory: dfhack-mcp
         run: npm run lint
 
       - name: Build
-        working-directory: dfhack-mcp
         run: npm run build
+
+      # T0 contract tier: spawns the server over real MCP stdio and asserts the
+      # handshake, the tools/list == expected set, and well-formed schemas. Needs
+      # no DFHack, so it runs here and catches registration/schema regressions.
+      - name: Verify T0 (contract)
+        run: npm run verify:t0

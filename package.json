@@ -18,7 +18,17 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "call": "node scripts/call-tool.mjs",
+    "verify": "node scripts/verify.mjs --tier=0",
+    "verify:t0": "node scripts/verify.mjs --tier=0",
+    "verify:t1": "node scripts/verify.mjs --tier=1",
+    "verify:t2": "node scripts/verify.mjs --tier=2",
+    "verify:update": "node scripts/verify.mjs --tier=2 --update",
+    "bootstrap": "node scripts/bootstrap.mjs",
+    "worktree": "node scripts/new-worktree.mjs",
     "prepare": "npm run build"
+  },
+  "engines": {
+    "node": ">=24"
   },
   "keywords": [
     "dwarf-fortress",
@@ -30,7 +40,7 @@
   "license": "ISC",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.0",
-    "dfhack-remote-node": "file:../dfhack-remote-node"
+    "dfhack-remote-node": "^2.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
