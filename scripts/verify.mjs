@@ -127,6 +127,11 @@ async function tier1(client) {
       fail(`${name}: returned non-JSON: ${String(data.__unparsable__).slice(0, 80)}`);
     } else if (isNoFort(data)) {
       ok(`${name}: reachable (no fort loaded)`);
+    } else if (typeof data.error === 'string') {
+      // A non-no-fort error means the tool is reachable but failing (e.g. a query
+      // script didn't resolve). That's a T1 failure, not a pass — well-formed JSON
+      // isn't enough when it's an error payload.
+      fail(`${name}: returned error: ${data.error}`);
     } else {
       ok(`${name}: reachable, well-formed JSON`);
     }

@@ -18,7 +18,15 @@ const PORT = Number(process.env.DFHACK_PORT ?? 5000);
 // (type-stripped src/) this is src/dfhack-queries/; in the tsup bundle it is
 // dist/dfhack-queries/ (tsup copies the .lua files there). DFHack needs forward
 // slashes — backslashes fail addScriptPath on Windows.
-const QUERY_DIR = fileURLToPath(new URL('./dfhack-queries/', import.meta.url)).replace(/\\/g, '/');
+//
+// DFHACK_MCP_QUERY_DIR overrides this: the path is registered on the DFHack side,
+// so when DFHack runs in a container (a different filesystem than this server) it
+// must point at where the scripts are baked INSIDE the container, not this host
+// path. Set it to the container-internal query dir when targeting a containerized
+// DFHack (see docker/).
+const QUERY_DIR =
+  process.env.DFHACK_MCP_QUERY_DIR ??
+  fileURLToPath(new URL('./dfhack-queries/', import.meta.url)).replace(/\\/g, '/');
 
 let client: DwarfClient | null = null;
 

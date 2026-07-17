@@ -1,0 +1,6 @@
+# Staged at build time (from ../src/dfhack-queries) — not source of truth here.
+mcp-queries/
+# Downloaded fixture save (fetch-fixture.sh) — large, not committed.
+fixture/
+tmp/
+*.log
