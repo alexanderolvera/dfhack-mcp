@@ -78,7 +78,7 @@ the baked snapshot, not its own code. Two ways to get true per-worktree isolatio
     -e TERM=xterm-256color \
     -v "$(pwd)/src/dfhack-queries:/opt/df/mcp-queries:ro" \
     -p "127.0.0.1:$((5000+k)):5001" df-headless:53.15
-  # then: DFHACK_PORT=$((5000+k)) ... npm run verify:t1 --require-fort
+  # then: DFHACK_PORT=$((5000+k)) ... npm run verify:t1 -- --require-fort
   ```
   Each agent gets its own fort **and** its own live scripts — the isolation #27
   is for. (The DF binary/save layer is shared read-only via the image; only the
