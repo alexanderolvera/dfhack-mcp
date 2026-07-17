@@ -1,20 +1,16 @@
 // One-command bootstrap for the DFHack MCP server.
 //   npm run bootstrap
 //
-// The server depends on the sibling client via `file:../dfhack-remote-node`, so
-// the client must be present and built before the server installs. This script
-// makes "local" reproducible: it verifies the layout, builds the client, installs
-// the server, and runs the T0 contract check. Idempotent — safe to re-run.
+// The dfhack-remote-node client is a published npm package (ships prebuilt), so
+// "local" is just: right Node, install, contract-check. Idempotent — safe to
+// re-run any time the tree feels off.
 
 import { spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..');
-// The `file:../dfhack-remote-node` specifier resolves relative to ROOT's parent.
-const CLIENT = resolve(ROOT, '..', 'dfhack-remote-node');
 
 function run(cmd, args, cwd) {
   console.log(`\n$ ${cmd} ${args.join(' ')}   (in ${cwd})`);
@@ -34,20 +30,7 @@ if (major < 24) {
 }
 console.log(`✓ Node ${process.versions.node}`);
 
-// 2. Sibling client present.
-if (!existsSync(CLIENT)) {
-  console.error(
-    `✗ client not found at ${CLIENT}\n` +
-      `  The server needs the dfhack-remote client as a sibling. Clone it:\n` +
-      `    git clone git@github.com:alexanderolvera/dfhack-remote-node.git "${CLIENT}"\n` +
-      `  (On this Windows box a junction dfhack-remote-node -> dfhack-remote already stands in for it.)`
-  );
-  process.exit(1);
-}
-console.log(`✓ client at ${CLIENT}`);
-
-// 3. Build the client first, 4. install the server, 5. contract-check.
-run('npm', ['ci'], CLIENT);
+// 2. install, 3. contract-check.
 run('npm', ['ci'], ROOT);
 run('npm', ['run', 'verify:t0'], ROOT);
 

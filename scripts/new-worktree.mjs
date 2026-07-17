@@ -7,11 +7,10 @@
 // with no DF. The single live DF is the one shared resource — run T1/T2 one tree
 // at a time until spike #27 gives multi-port/headless instances.
 //
-// PLACEMENT MATTERS on this layout: the server resolves its client via
-// `file:../dfhack-remote-node`, a path relative to the tree's PARENT. So the
-// worktree is created as a SIBLING of the primary tree (…/dfhack-mcp-server--<branch>),
-// which keeps `../dfhack-remote-node` resolving to the same built client/junction.
-// A worktree nested elsewhere would break that dependency.
+// The worktree is created as a sibling of the primary tree
+// (…/dfhack-mcp-server--<branch>) purely for tidy grouping — the client is a
+// published npm package now, so each tree's `npm ci` pulls it independently and
+// placement is otherwise free.
 
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';

@@ -28,24 +28,14 @@ glanceable. It talks to DFHack's Remote RPC (localhost:5000) through the sibling
 
 ## Setup
 
-This server depends on the sibling
-[`dfhack-remote-node`](https://github.com/alexanderolvera/dfhack-remote-node)
-client as a local `file:` dependency (`file:../dfhack-remote-node`). That package
-ships as built TS — its `package.json` `main` points at `dist/index.js` — so
-**install it first** so its `dist/` is built before this server links to it.
+The DFHack RPC transport,
+[`dfhack-remote-node`](https://www.npmjs.com/package/dfhack-remote-node), is a
+published npm package (ships prebuilt), so setup is a single clone + install:
 
 ```sh
-# 1. Clone both repos side by side (keep the client folder name dfhack-remote-node):
-git clone https://github.com/alexanderolvera/dfhack-remote-node.git
 git clone https://github.com/alexanderolvera/dfhack-mcp.git
-
-# 2. Build the client FIRST (its `prepare` script builds dist/):
-cd dfhack-remote-node
-npm install
-
-# 3. Then install this server (links the client + pulls dev tooling):
-cd ../dfhack-mcp
-npm install
+cd dfhack-mcp
+npm install        # or: npm run bootstrap  (installs + runs the T0 contract check)
 ```
 
 ## Run

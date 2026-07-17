@@ -40,7 +40,7 @@
   "license": "ISC",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.0",
-    "dfhack-remote-node": "file:../dfhack-remote-node"
+    "dfhack-remote-node": "^2.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",

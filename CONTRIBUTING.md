@@ -1,11 +1,11 @@
 # Contributing to dfhack-mcp
 
 This server exposes a live Dwarf Fortress fort to an AI agent as curated,
-read-only tools. Two repos, gitted from commit one:
-
-- **server** (this repo) — the tools and MCP wiring
-- **client** — [`dfhack-remote-node`](https://github.com/alexanderolvera/dfhack-remote-node),
-  the DFHack Remote RPC transport, consumed via `file:../dfhack-remote-node`
+read-only tools. The DFHack RPC transport,
+[`dfhack-remote-node`](https://www.npmjs.com/package/dfhack-remote-node), is a
+published npm dependency (its source lives in a
+[separate repo](https://github.com/alexanderolvera/dfhack-remote-node)) — you
+don't clone it to work on the server.
 
 ## Environment
 
@@ -19,28 +19,16 @@ read-only tools. Two repos, gitted from commit one:
 
 ## Setup — one command
 
-Clone both repos **side by side**, keeping the client folder named
-`dfhack-remote-node` (the server's dependency path is relative):
-
-```
-some-parent/
-  dfhack-mcp-server/      # this repo
-  dfhack-remote-node/     # the client (a junction/symlink to it is fine)
-```
-
-Then, from `dfhack-mcp-server/`:
+Clone this repo and, from its root:
 
 ```sh
 npm run bootstrap
 ```
 
-That verifies Node 24, confirms the sibling client is present, **builds the
-client first**, installs the server, and runs the T0 contract check. It's
-idempotent — re-run it any time the layout feels off.
-
-> **Why client-first?** The server links the client through `file:../dfhack-remote-node`.
-> If the client's `dist/` isn't built, the server won't typecheck. `bootstrap`
-> (and CI) always build the client before installing the server.
+That verifies Node 24, installs (the published `dfhack-remote-node` client comes
+down with it), and runs the T0 contract check. It's idempotent — re-run it any
+time the tree feels off. Plain `npm install` works too; `bootstrap` just adds the
+version check and the contract gate.
 
 ## Verify — the tiered harness
 
@@ -65,9 +53,9 @@ worktree**:
 npm run worktree feat/moods       # creates ../dfhack-mcp-server--feat-moods
 ```
 
-This creates the worktree **as a sibling of the primary tree** (so
-`file:../dfhack-remote-node` still resolves to the same built client), installs
-its own `node_modules`, and confirms T0 passes before handing it off.
+This creates the worktree as a sibling of the primary tree (tidy grouping; the
+client is a published dependency, so each tree just installs it), gives it its
+own `node_modules`, and confirms T0 passes before handing it off.
 
 - **T0 is free and parallel.** Contract checks need no DF, so every worktree —
   and CI — can run them simultaneously. This is the gate that lets parallel work
