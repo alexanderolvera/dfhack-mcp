@@ -174,7 +174,11 @@ registerQueryTool<{
     query: z
       .string()
       .min(1)
-      .describe('Creature token, name fragment, or a live unit_id (all digits)'),
+      .describe(
+        'A raws token or case-insensitive name fragment for the chosen kind ' +
+          '(e.g. "IRON", "plump helmet", "MAKE_SOAP_FROM_TALLOW"); for the ' +
+          'creature kind, a live unit_id (all digits) also resolves.'
+      ),
     kind: z
       .enum(['creature', 'material', 'plant', 'reaction', 'item', 'building'])
       .optional()

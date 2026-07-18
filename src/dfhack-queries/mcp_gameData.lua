@@ -293,8 +293,17 @@ local function search(q, entries, keys, dossier1, stub1)
   if #exact == 1 then emit(dossier1(exact[1])); return true end
   if #all == 1 then emit(dossier1(all[1])); return true end
   if #all == 0 then return false end
-  local matches = {}
-  for i = 1, math.min(#all, MAX) do matches[#matches+1] = stub1(all[i]) end
+  -- Cap the disambiguation list at MAX, but list exact matches first so the
+  -- record the caller most likely meant is never truncated out of view.
+  local matches, seen = {}, {}
+  for _, rec in ipairs(exact) do
+    if #matches >= MAX then break end
+    matches[#matches+1] = stub1(rec); seen[rec] = true
+  end
+  for _, rec in ipairs(all) do
+    if #matches >= MAX then break end
+    if not seen[rec] then matches[#matches+1] = stub1(rec) end
+  end
   emit({ query = query, match_count = #all, truncated = #all > #matches, matches = matches })
   return true
 end
@@ -303,11 +312,32 @@ local function emit_empty()
   emit({ query = query, match_count = 0, matches = {} })
 end
 
+-- Safe field read: DFHack raises when a field is absent from a polymorphic
+-- subclass (e.g. a non-item reaction product), so read subclass-specific or
+-- optional fields through pcall and treat a miss as nil.
+local function sget(obj, field)
+  local ok, v = pcall(function() return obj[field] end)
+  if ok then return v end
+  return nil
+end
+
+-- Assemble an ITEM_TYPE[:SUBTYPE] token from a reagent or product. item_type /
+-- item_str live only on the *_itemst subclasses, so read them defensively — a
+-- non-item reagent/product (e.g. an improvement) yields nil instead of raising.
+local function item_token(obj)
+  local parts = {}
+  local it = sget(obj, 'item_type')
+  if it and it >= 0 then parts[#parts+1] = tostring(df.item_type[it]) end
+  local istr = sget(obj, 'item_str')
+  if istr and #istr > 0 and tostring(istr[0]) ~= '' then parts[#parts+1] = tostring(istr[0]) end
+  return (#parts > 0) and table.concat(parts, ':') or nil
+end
+
 -- ---- MATERIAL kind -------------------------------------------------------
 -- DF temperature is stored in "urists": degF = urist - 9968. 60001 is the
--- sentinel for "no such point" (won't melt / boil / ignite).
+-- sentinel for "no such point" (won't melt / boil / ignite); a real 60000 is kept.
 local function temp_fact(urist)
-  if not urist or urist >= 60000 then return nil end
+  if not urist or urist > 60000 then return nil end
   local f = urist - 9968
   return { urist = urist, celsius = math.floor((f - 32) * 5 / 9 + 0.5) }
 end
@@ -343,7 +373,7 @@ local function material_dossier(mi)
     melting_point = temp_fact(m.heat.melting_point),
     boiling_point = temp_fact(m.heat.boiling_point),
     ignite_point = temp_fact(m.heat.ignite_point),
-    flammable = (m.heat.ignite_point and m.heat.ignite_point < 60000) or false,
+    flammable = (m.heat.ignite_point and m.heat.ignite_point <= 60000) or false,
     density = density,
     flags = mat_flags(m),
   }
@@ -352,7 +382,7 @@ end
 local function material_stub(mi)
   local m = mi.material
   local fl = mat_flags(m)
-  local blurb = fl[1] and lc(string.gsub(string.gsub(fl[1], '_', ' '), '^is ', '')) or 'material'
+  local blurb = fl[1] and string.gsub(lc(string.gsub(fl[1], '_', ' ')), '^is ', '') or 'material'
   return { kind = 'material', token = tostring(mi:getToken()),
            name = tostring(m.state_name.Solid), blurb = blurb }
 end
@@ -498,11 +528,9 @@ local function reaction_building(r)
   return { category = category, workshop = workshop, custom = custom_token }
 end
 
+-- reaction_reagent is polymorphic too; item_token reads its fields defensively.
 local function reagent_item(rg)
-  local parts = {}
-  if rg.item_type and rg.item_type >= 0 then parts[#parts+1] = tostring(df.item_type[rg.item_type]) end
-  if #rg.item_str > 0 and tostring(rg.item_str[0]) ~= '' then parts[#parts+1] = tostring(rg.item_str[0]) end
-  return (#parts > 0) and table.concat(parts, ':') or nil
+  return item_token(rg)
 end
 
 local function reagent_material(rg)
@@ -530,20 +558,31 @@ local function reaction_reagents(r)
   return out
 end
 
+-- reaction.products is polymorphic: reaction_product_itemst carries
+-- item_type/count, but improvement products (glaze/encrust/stud/sew-image) do
+-- NOT — reading those fields on them raises. Read everything defensively and,
+-- for a non-item product, report the improvement kind as a labeled fact.
 local function reaction_products(r)
   local out = {}
   for j = 0, #r.products - 1 do
     local pr = r.products[j]
-    local parts = {}
-    if pr.item_type and pr.item_type >= 0 then parts[#parts+1] = tostring(df.item_type[pr.item_type]) end
-    if #pr.item_str > 0 and tostring(pr.item_str[0]) ~= '' then parts[#parts+1] = tostring(pr.item_str[0]) end
-    local item = (#parts > 0) and table.concat(parts, ':')
-      or (pr.product_token ~= '' and tostring(pr.product_token)) or nil
-    out[#out+1] = {
-      item = item,
-      quantity = pr.count,
-      probability = (pr.probability ~= 100 and pr.probability) or nil,
-    }
+    local item = item_token(pr)
+    if not item then
+      local tok = sget(pr, 'product_token')
+      if tok and tok ~= '' then item = tostring(tok) end
+    end
+    local entry = { item = item, quantity = sget(pr, 'count') }
+    local prob = sget(pr, 'probability')
+    if prob and prob ~= 100 then entry.probability = prob end
+    if not item then
+      local imp = sget(pr, 'improvement_type')
+      if imp and imp >= 0 then
+        entry.improvement = tostring(df.improvement_type[imp])
+      else
+        entry.improvement = string.match(tostring(pr._type), 'reaction_product_(.+)st$') or 'product'
+      end
+    end
+    out[#out+1] = entry
   end
   return out
 end
@@ -587,13 +626,7 @@ local ITEM_STAT_FIELDS = { 'size', 'armorlevel', 'ammo_class', 'container_capaci
   'ranged_ammo' }
 
 -- Not every itemdef_*st carries the same fields (foodst has no value /
--- name_plural / adjective), so read optional fields defensively.
-local function sget(obj, field)
-  local ok, v = pcall(function() return obj[field] end)
-  if ok then return v end
-  return nil
-end
-
+-- name_plural / adjective), so read optional fields defensively via sget (above).
 local function item_class(it)
   local t = tostring(it._type)
   return string.match(t, 'itemdef_(%a+)st') or 'item'

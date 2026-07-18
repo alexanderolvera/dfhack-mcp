@@ -101,7 +101,8 @@ export interface ReactionReagent {
 
 export interface ReactionProduct {
   item?: string;
-  quantity: number;
+  improvement?: string; // non-item product (an improvement: glaze/encrust/stud/sew-image)
+  quantity?: number; // absent on improvement products
   probability?: number;
 }
 
@@ -191,6 +192,18 @@ const DOSSIER_LIST_FIELDS: Record<GameDataKind, string[]> = {
   building: ['reactions'],
 };
 
+// Per-kind OBJECT (map) fields. An empty Lua table encodes as [] not {}, so an
+// empty map arrives as an array and violates the declared object type — coerce
+// it back to {} for the kind at hand only.
+const DOSSIER_OBJECT_FIELDS: Record<GameDataKind, string[]> = {
+  creature: [],
+  material: ['density'], // {solid?,liquid?} — empty when neither is known
+  plant: [],
+  reaction: [],
+  item: ['stats'], // Record<string, string|number> — empty for e.g. food
+  building: [],
+};
+
 export async function gameData(
   query: string,
   kind?: GameDataKind
@@ -207,6 +220,11 @@ export async function gameData(
     for (const f of fields) {
       // item.attacks is optional (nil for non-weapons) — only coerce when present.
       if (f in d && !Array.isArray(d[f])) d[f] = [];
+    }
+    const objFields = DOSSIER_OBJECT_FIELDS[d.kind as GameDataKind] ?? [];
+    for (const f of objFields) {
+      // An empty object came back as [] — restore it to {} to match the type.
+      if (f in d && Array.isArray(d[f])) d[f] = {};
     }
   }
   return data;
