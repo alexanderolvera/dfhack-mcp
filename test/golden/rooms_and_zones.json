@@ -3,7 +3,8 @@
   "bedrooms": {
     "adults_without": 0,
     "assigned": 78,
-    "unassigned": 54
+    "dormitories": 1,
+    "unassigned": 53
   },
   "coffins_free": 38,
   "coffins_used": 1,

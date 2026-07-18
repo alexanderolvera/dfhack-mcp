@@ -129,6 +129,7 @@ export const INVARIANTS = [
         'bedrooms.assigned': d.bedrooms?.assigned,
         'bedrooms.unassigned': d.bedrooms?.unassigned,
         'bedrooms.adults_without': d.bedrooms?.adults_without,
+        'bedrooms.dormitories': d.bedrooms?.dormitories,
         'dining.halls': d.dining?.halls,
         'dining.seats': d.dining?.seats,
         taverns: d.taverns,

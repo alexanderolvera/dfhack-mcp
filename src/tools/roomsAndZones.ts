@@ -10,6 +10,7 @@ export interface Bedrooms {
   assigned: number;
   unassigned: number;
   adults_without: number;
+  dormitories: number;
 }
 
 export interface Dining {
@@ -59,8 +60,17 @@ export interface RoomsAndZones {
   alerts: string[];
 }
 
-export function roomsAndZones(): Promise<RoomsAndZones | { error: string }> {
-  return runJsonScript<RoomsAndZones>('roomsAndZones', [], ['wells', 'alerts']);
+export async function roomsAndZones(): Promise<RoomsAndZones | { error: string }> {
+  const data = await runJsonScript<RoomsAndZones>('roomsAndZones', [], ['wells', 'alerts']);
+  if ('error' in data) return data;
+  // runJsonScript only normalizes top-level list fields; the temple lists are
+  // nested, so coerce them here (this encoder emits [] for an empty table, but
+  // the boundary is version-fragile — keep the tool's contract of string[] firm).
+  if (data.temples) {
+    if (!Array.isArray(data.temples.dedicated)) data.temples.dedicated = [];
+    if (!Array.isArray(data.temples.needed_by_worshippers)) data.temples.needed_by_worshippers = [];
+  }
+  return data;
 }
 
 export const roomsAndZonesDef: ToolDef = {
@@ -74,8 +84,9 @@ export const roomsAndZonesDef: ToolDef = {
     '(working state and water source: water/frozen/magma/unknown), temples ' +
     '(dedicated deities, whether an all-inclusive temple exists, and deities ' +
     'worshipped by citizens that lack a dedicated temple), taverns, libraries, ' +
-    'guildhalls, and coffins free vs. dead awaiting burial. The supply-side ' +
-    'companion to unmet_needs(). Reports what the fort has, not what to build. ' +
+    'guildhalls, and coffins free vs. dead awaiting burial (loose corpses of ' +
+    "the fort's own race). The supply-side companion to unmet_needs(). Reports " +
+    'what the fort has, not what to build. ' +
     'Wells are capped (wells_truncated flags the overflow); bedroom and coffin ' +
     'detail is aggregated to counts. Returns {"error":"no fort loaded"} if no ' +
     'fort is active.',

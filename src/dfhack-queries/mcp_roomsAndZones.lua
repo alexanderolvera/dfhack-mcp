@@ -56,16 +56,22 @@ for _, u in ipairs(citizens) do
 end
 
 -- ---- bedrooms + dining from civzones ----
-local bed_assigned, bed_unassigned = 0, 0
+-- Bedrooms are PRIVATE assignable rooms; dormitories are communal (shared, and
+-- usually unassigned), so they are counted separately — folding them in would
+-- inflate "unassigned private rooms" and leave adults_without unreduced by the
+-- communal sleeping a dormitory actually provides. Kept as distinct facts.
+local bed_assigned, bed_unassigned, dormitories = 0, 0, 0
 local dining_halls, dining_seats = 0, 0
 for _, z in ipairs(CIVZONE) do
   local kind = zt[z.type]
-  if kind == 'Bedroom' or kind == 'Dormitory' then
+  if kind == 'Bedroom' then
     if z.assigned_unit_id and z.assigned_unit_id ~= -1 then
       bed_assigned = bed_assigned + 1
     else
       bed_unassigned = bed_unassigned + 1
     end
+  elseif kind == 'Dormitory' then
+    dormitories = dormitories + 1
   elseif kind == 'DiningHall' then
     dining_halls = dining_halls + 1
     for _, b in ipairs(z.contained_buildings) do
@@ -80,7 +86,7 @@ local dedicated = {}        -- deity names with a dedicated temple
 local dedicated_hf = {}     -- set of deity hf ids with a dedicated temple
 local has_all_inclusive = false
 local hospital_ab
-for _, ab in ipairs(SITE.buildings) do
+for _, ab in ipairs(SITE and SITE.buildings or {}) do
   local t = df.abstract_building_type[ab:getType()]
   if t == 'INN_TAVERN' then
     taverns = taverns + 1
@@ -137,11 +143,14 @@ if hospital_ab then
     -- medical supplies actually in the hospital footprint (a fact, not a target)
     local function level(n) if n == 0 then return 'none' elseif n < 5 then return 'low' else return 'ok' end end
     local x1, x2, y1, y2, hzz = hz.x1, hz.x2, hz.y1, hz.y2, hz.z
+    -- getPosition resolves an item's true location THROUGH its container (thread
+    -- and cloth normally live in a coffer/bag on a hospital tile); it.pos alone is
+    -- stale for contained items and would under-count a stocked hospital.
     local function in_zone(it)
-      local p = it.pos
-      return p.z == hzz and p.x >= x1 and p.x <= x2 and p.y >= y1 and p.y <= y2
+      local x, y, z = dfhack.items.getPosition(it)  -- returns x,y,z; nil if nowhere
+      return x ~= nil and z == hzz and x >= x1 and x <= x2 and y >= y1 and y <= y2
     end
-    local counts = { thread = 0, cloth = 0, splints = 0, crutches = 0, powder = 0 }
+    local counts = { thread = 0, cloth = 0, splints = 0, crutches = 0 }
     local other = df.global.world.items.other
     local function tally(list, key)
       if not list then return end
@@ -151,7 +160,6 @@ if hospital_ab then
     tally(other.CLOTH, 'cloth')
     pcall(function() tally(other.SPLINT, 'splints') end)
     pcall(function() tally(other.CRUTCH, 'crutches') end)
-    pcall(function() tally(other.POWDER_MISC, 'powder') end)
     hospital.beds = beds
     hospital.traction_benches = traction
     hospital.well_in_hospital = well_in
@@ -213,7 +221,8 @@ for _, c in ipairs(coffins) do
   local occupied = false
   for _, ci in ipairs(c.contained_items) do
     local it = ci.item
-    if df.item_corpsest:is_instance(it) or df.item_body_component:is_instance(it) then occupied = true break end
+    if df.item_corpsest:is_instance(it) or df.item_corpsepiecest:is_instance(it)
+      or df.item_body_component:is_instance(it) then occupied = true break end
   end
   if occupied then coffins_used = coffins_used + 1 else coffins_free = coffins_free + 1 end
 end
@@ -245,7 +254,7 @@ if #needed > 0 then
 end
 
 emit({
-  bedrooms = { assigned = bed_assigned, unassigned = bed_unassigned, adults_without = adults_without },
+  bedrooms = { assigned = bed_assigned, unassigned = bed_unassigned, adults_without = adults_without, dormitories = dormitories },
   dining = { halls = dining_halls, seats = dining_seats },
   hospital = hospital,
   wells = wells,
