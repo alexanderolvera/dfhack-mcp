@@ -51,9 +51,18 @@ end
 local wealth = 0
 pcall(function() wealth = df.global.plotinfo.tasks.wealth.total end)
 
+-- Unhappy dwarves scale with population: a handful stressed at any moment is
+-- normal churn, not news. 'miserable' (stress category <= 0) is different — one
+-- can tantrum or go insane, so it's notable at any count. Gate 'unhappy' on a
+-- share of population so the alert means a fort-wide morale driver, not a number.
+local UNHAPPY_FRACTION_ALERT = 0.10   -- tunable: unhappy share over this -> alert
+
 local alerts = {}
 if hap.miserable > 0 then alerts[#alerts+1] = hap.miserable .. ' dwarves miserable' end
-if hap.unhappy > 0 then alerts[#alerts+1] = hap.unhappy .. ' dwarves unhappy' end
+if #citizens > 0 and (hap.unhappy / #citizens) >= UNHAPPY_FRACTION_ALERT then
+  local pct = math.floor(hap.unhappy * 100 / #citizens)
+  alerts[#alerts+1] = hap.unhappy .. ' dwarves unhappy (' .. pct .. '% of pop)'
+end
 if hostiles > 0 then
   alerts[#alerts+1] = hostiles .. ' hostile' .. (hostiles > 1 and 's' or '') .. ' on map'
 end
