@@ -18,6 +18,9 @@ if df.global.gamemode ~= df.game_mode.DWARF then
   return
 end
 
+-- A fort always runs some idle churn (dwarves between tasks, ~10-20%); a third
+-- of the workforce standing around is surplus/misallocated labor worth naming.
+-- Validated against the live fort (27/77 = 35% idle -> fires correctly).
 local IDLE_FRACTION_ALERT = 0.30   -- tunable: idle adults over this share -> alert
 
 local citizens = dfhack.units.getCitizens(true)

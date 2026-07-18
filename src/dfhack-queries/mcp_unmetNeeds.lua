@@ -73,12 +73,18 @@ for i = 1, math.min(#rows, 8) do top[i] = rows[i] end
 local n_affected = 0
 for _ in pairs(any_unmet) do n_affected = n_affected + 1 end
 
+-- Almost every dwarf always carries at least one distracted need, so
+-- "n_affected > 0" crosses no line — it's the baseline, not news (77 of 78 here).
+-- The signal is REACH: a single need distracting a large SHARE of the fort is a
+-- systemic, nameable gap the player can act on. Gate the top-need alert on that
+-- share; drop the near-universal aggregate line (dwarves_with_unmet_need stays a
+-- queryable output fact, just not an alert).
+local NEED_SHARE_ALERT = 0.25   -- tunable: top need distracting >= this share -> alert
+
 local alerts = {}
-if #top > 0 then
-  alerts[#alerts+1] = top[1].dwarves .. ' dwarves distracted by unmet need: ' .. top[1].need
-end
-if n_affected > 0 then
-  alerts[#alerts+1] = n_affected .. ' of ' .. #citizens .. ' dwarves have >=1 unmet need'
+if #top > 0 and #citizens > 0 and (top[1].dwarves / #citizens) >= NEED_SHARE_ALERT then
+  alerts[#alerts+1] = top[1].dwarves .. ' of ' .. #citizens ..
+    ' dwarves distracted by unmet need: ' .. top[1].need
 end
 
 emit({
