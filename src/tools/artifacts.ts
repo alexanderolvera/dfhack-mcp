@@ -102,8 +102,10 @@ export async function artifactsAndEngravings(
   );
   if ('error' in data) return data;
 
-  // An empty Lua table encodes as {} not [], and an empty map encodes as [] not
-  // {} — coerce the nested collections back to their declared shapes.
+  // DFHack's json encodes ANY empty Lua table as [] (not {}), so the empty-list
+  // fields already arrive as [] and their guards below are defensive no-ops; the
+  // only coercion that actually fires is the map field (quality) arriving as []
+  // when empty, which we restore to {} to match its declared object shape.
   const d = data as ArtifactsAndEngravings;
   for (const a of d.artifacts) {
     if (!Array.isArray(a.decorations)) a.decorations = [];

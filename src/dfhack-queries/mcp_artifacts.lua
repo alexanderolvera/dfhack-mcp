@@ -67,12 +67,6 @@ local function sget(obj, field)
   return nil
 end
 
-local function tname(name, english)
-  local ok, v = pcall(dfhack.translation.translateName, name, english)
-  if ok and v and v ~= '' then return tostring(v) end
-  return nil
-end
-
 -- Strip CP437 control bytes (e.g. the 0x0F artifact "☼" markers getDescription
 -- wraps around names) so labels are clean UTF-safe text.
 local function clean(s)
@@ -80,6 +74,12 @@ local function clean(s)
   s = tostring(s):gsub('[%z\1-\31]', '')
   s = s:gsub('^%s*(.-)%s*$', '%1')
   return (s ~= '') and s or nil
+end
+
+local function tname(name, english)
+  local ok, v = pcall(dfhack.translation.translateName, name, english)
+  if ok and v and v ~= '' then return clean(v) end  -- run names through clean() too, for consistency
+  return nil
 end
 
 local function quality_label(q)
@@ -267,14 +267,13 @@ local function build_engravings()
     if ar and ar >= 0 then artists[ar] = (artists[ar] or 0) + 1 end
   end
 
-  -- Sort subject buckets by count desc (stable by insertion order).
-  local pos = {}
-  for idx, k in ipairs(order) do pos[k] = idx end
+  -- Sort subject buckets by count desc; ties broken deterministically by the
+  -- stable art-image ref key (art_id:art_subid).
   local list = {}
   for _, k in ipairs(order) do list[#list + 1] = buckets[k] end
   table.sort(list, function(a, b)
     if a.count ~= b.count then return a.count > b.count end
-    return pos['S:' .. tostring(a.subject)] and false or (a.ref < b.ref)
+    return a.ref < b.ref
   end)
   local distinct = #list
   local by_subject = {}
