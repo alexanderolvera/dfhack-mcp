@@ -14,7 +14,7 @@
 --     .created_year, .created_tick, .pos.{x,y}. A player fort's own .civ_id is
 --     -1, so the OWNING civ comes from df.global.plotinfo.civ_id, matched in
 --     df.global.world.entities.all by .id.
---   * NAMES: dfhack.translation.translateName(name) = Dwarven ("Geshud Nözom");
+--   * NAMES: dfhack.translation.translateName(name) = Dwarven ("Geshud Nåzom");
 --     (name, true) = English ("Fortress of Dreams"). Wrapped in dfhack.df2utf so
 --     CP437 accents (ö, ä in proper nouns) become valid UTF-8 in the JSON.
 --   * ETYMOLOGY: name.words[0..6] index df.global.world.raws.language.words
@@ -202,6 +202,7 @@ do
           pcall(function() b.attacker_general = hf_name(e.attacker_general_hf) end)
           pcall(function() b.defender_general = hf_name(e.defender_general_hf) end)
           if tname == 'WAR_DESTROYED_SITE' then b.outcome = 'site destroyed' end
+          b._ord = #battles + 1  -- saga (ascending) insertion order, for a stable tie-break
           battles[#battles + 1] = b
         elseif tname == 'HIST_FIGURE_DIED' then
           local vic; pcall(function() vic = e.victim_hf end)
@@ -216,6 +217,7 @@ do
             local slayer; pcall(function() slayer = e.slayer_hf end)
             local sn = hf_name(slayer)
             if sn then d.slain_by = sn end
+            d._ord = #deaths + 1  -- saga (ascending) insertion order, for a stable tie-break
             deaths[#deaths + 1] = d
           end
         end
@@ -224,8 +226,14 @@ do
   end
 end
 
--- Most-recent-first, then cap. Stable order for equal years preserves saga order.
-local function by_year_desc(a, b) return (a.year or 0) > (b.year or 0) end
+-- Most-recent-first; ties broken by saga insertion order (_ord) so the result is
+-- deterministic (Lua's table.sort is NOT stable, so an explicit tie-break is
+-- required to actually preserve saga order for same-year events).
+local function by_year_desc(a, b)
+  local ay, by = a.year or 0, b.year or 0
+  if ay ~= by then return ay > by end
+  return (a._ord or 0) < (b._ord or 0)
+end
 table.sort(battles, by_year_desc)
 table.sort(deaths, by_year_desc)
 local function cap(list, n)
@@ -236,6 +244,9 @@ local function cap(list, n)
 end
 battles = cap(battles, BATTLE_CAP)
 deaths = cap(deaths, DEATH_CAP)
+-- Drop the internal saga-order bookkeeping field before emitting.
+for _, b in ipairs(battles) do b._ord = nil end
+for _, d in ipairs(deaths) do d._ord = nil end
 
 emit({
   site_id = SITE,

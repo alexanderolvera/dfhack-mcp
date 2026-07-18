@@ -43,7 +43,7 @@ export interface Founding {
 
 export interface SiteHistory {
   site_id: number;
-  site_name?: string; // Dwarven form, e.g. "Geshud Nözom"
+  site_name?: string; // Dwarven form, e.g. "Geshud Nåzom"
   site_name_english?: string; // English form, e.g. "Fortress of Dreams"
   site_type: string; // df.world_site_type token, e.g. "PlayerFortress"
   pos: { x: number; y: number };
