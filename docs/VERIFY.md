@@ -43,9 +43,28 @@ deliberate, reviewable record that the surface changed.
 
 Every tool is callable and returns well-formed JSON *or* the documented
 `{"error":"no fort loaded"}`. This is the literal "an agent can reach and call
-every command" check, and it exercises the no-fort guard
-([#6](https://github.com/alexanderolvera/dfhack-mcp/issues/6)) in one pass. Needs
-Dwarf Fortress running with DFHack and a fort loaded.
+every command" check. Needs Dwarf Fortress running with DFHack and a fort loaded.
+
+T1 has two assertion modes, opposite fixtures, mutually exclusive:
+
+- **`--require-fort`** (loaded fixture): a no-fort guard is a **FAILURE**, so a
+  broken headless load can't be reported as a verified instance.
+- **`--no-fort`** (no-fort fixture — title screen, RPC up, no fort loaded): the
+  **mirror**. Every *game-dependent* tool MUST return its `{"error":"no fort
+  loaded"}` (or game_data/identify's `"no game loaded"`) guard as **normal
+  output** — not `isError`, not a crash/traceback, not a different error, and
+  **not real data**. Anything else fails. This is what actually **exercises** the
+  no-fort guard ([#6](https://github.com/alexanderolvera/dfhack-mcp/issues/6)),
+  closing the long-standing "guard coded but never exercised" gap, and it is the
+  no-fort reachability path for
+  [#28](https://github.com/alexanderolvera/dfhack-mcp/issues/28). The wiki tools
+  (`wiki_search`, `wiki_lookup`) are pure HTTP with **no game dependency**, so
+  they are NOT asserted to return the guard — instead they must still return
+  well-formed, non-error output. A genuine "DFHack unreachable" surfaces as its
+  connection error and correctly fails (it is not masked as a pass). Boot the
+  no-fort fixture with the empty-`dfhack.init` container in
+  [`docker/README.md`](../docker/README.md); run with
+  `DFHACK_PORT=<port> … node scripts/verify.mjs --tier=1 --no-fort`.
 
 > **Against a single live DF, run T1/T2 one worktree at a time.** The server
 > registers its `dfhack-queries/` on a *global, DF-wide* script path
