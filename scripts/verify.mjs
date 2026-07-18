@@ -150,6 +150,16 @@ async function tier0(client) {
 async function tier1(client) {
   if (noFort) return tier1NoFort(client);
   console.log('\nT1 — reachability (every tool callable, well-formed JSON or no-fort error)');
+  // citizen(unit_id) needs a LIVE, fort-specific id; resolve one from find_unit
+  // (which emits unit_id per match) so the loaded-fort exercise hits a real unit
+  // rather than a hardcoded id that won't exist in an arbitrary fort. With no fort
+  // / no matches, TOOL_ARGS.citizen keeps its placeholder and citizen just returns
+  // its guard, which the loop handles as reachable.
+  {
+    const fu = await callJson(client, 'find_unit');
+    const liveId = fu.data?.matches?.[0]?.unit_id;
+    if (liveId != null) TOOL_ARGS.citizen = { unit_id: String(liveId) };
+  }
   for (const name of [...EXPECTED.tools].sort()) {
     const { data } = await callJson(client, name);
     if (data.__unparsable__ !== undefined) {
