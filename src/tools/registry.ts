@@ -23,6 +23,7 @@ import { runLuaDef } from './runLua.ts';
 import { siteHistoryDef } from './siteHistory.ts';
 import { stocksDef } from './stocks.ts';
 import { threatsDef } from './threats.ts';
+import { tradeDef } from './trade.ts';
 import { unmetNeedsDef } from './unmetNeeds.ts';
 import { wikiLookupDef } from './wikiLookup.ts';
 import { wikiSearchDef } from './wikiSearch.ts';
@@ -45,6 +46,7 @@ export const ALL_TOOLS: ToolDef[] = [
   siteHistoryDef,
   stocksDef,
   threatsDef,
+  tradeDef,
   unmetNeedsDef,
   wikiLookupDef,
   wikiSearchDef,
