@@ -1,0 +1,49 @@
+{
+  "alerts": [
+    "73 of 78 dwarves distracted by unmet need: BeWithFamily"
+  ],
+  "dwarves_with_unmet_need": 77,
+  "population": 78,
+  "top_needs": [
+    {
+      "dwarves": 73,
+      "need": "BeWithFamily",
+      "worst_focus": -33756
+    },
+    {
+      "dwarves": 68,
+      "need": "BeWithFriends",
+      "worst_focus": -29636
+    },
+    {
+      "dwarves": 65,
+      "need": "Fight",
+      "worst_focus": -16878
+    },
+    {
+      "dwarves": 63,
+      "need": "MartialTraining",
+      "worst_focus": -16878
+    },
+    {
+      "dwarves": 49,
+      "need": "Excitement",
+      "worst_focus": -23890
+    },
+    {
+      "dwarves": 44,
+      "need": "PrayOrMeditate",
+      "worst_focus": -134860
+    },
+    {
+      "dwarves": 42,
+      "need": "LearnSomething",
+      "worst_focus": -28345
+    },
+    {
+      "dwarves": 38,
+      "need": "HelpSomebody",
+      "worst_focus": -16112
+    }
+  ]
+}

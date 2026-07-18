@@ -1,0 +1,28 @@
+{
+  "adults": 77,
+  "alerts": [
+    "5 hostiles on map vs 13 soldiers in 3 squads"
+  ],
+  "assigned_positions": 13,
+  "great_danger_on_map": 5,
+  "hostiles_on_map": 5,
+  "soldiers": 13,
+  "squad_count": 3,
+  "squads": [
+    {
+      "filled": 4,
+      "name": "The Waxy Tomes",
+      "positions": 10
+    },
+    {
+      "filled": 5,
+      "name": "The Torrid Portals",
+      "positions": 10
+    },
+    {
+      "filled": 4,
+      "name": "The Mischief of Basements",
+      "positions": 10
+    }
+  ]
+}

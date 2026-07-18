@@ -1,0 +1,16 @@
+{
+  "alerts": [
+    "7 hostiles on map"
+  ],
+  "date": "19th Obsidian, Year 7",
+  "fort_name": "Fortress of Dreams",
+  "happiness": {
+    "content": 58,
+    "happy": 16,
+    "miserable": 0,
+    "unhappy": 4
+  },
+  "population": 78,
+  "season": "Winter",
+  "wealth": 678023
+}

@@ -1,0 +1,233 @@
+{
+  "age": 57,
+  "name": "Tun Lolumavuz \"Woodenmines\", militia commander",
+  "personality": {
+    "extremes": [
+      {
+        "facet": "depression propensity",
+        "level": "very high",
+        "value": 100
+      }
+    ]
+  },
+  "physical": {
+    "body_size_cm3": 6950,
+    "build": "average build",
+    "size_modifier": 98
+  },
+  "preferences": {
+    "detests": [
+      "lizard"
+    ],
+    "likes": [
+      "periclase",
+      "electrum",
+      "yellow zircon",
+      "green glass",
+      "sea otter leather",
+      "giraffe tooth",
+      "weapon",
+      "gloves",
+      "frill shark heart tissue",
+      "river spirits",
+      "artichoke fruit",
+      "black-handed gibbon"
+    ]
+  },
+  "profession": "militia commander",
+  "relationships": {
+    "children": [],
+    "friends": [
+      {
+        "affection": 95,
+        "meet_count": 39,
+        "name": "Cog Notchanvils",
+        "respect": 0,
+        "unit_id": 115
+      },
+      {
+        "affection": 91,
+        "meet_count": 44,
+        "name": "Olin Bronzequakes",
+        "respect": 0,
+        "unit_id": 116
+      },
+      {
+        "affection": 70,
+        "meet_count": 30,
+        "name": "Sigun Princessshoots",
+        "respect": 0,
+        "unit_id": 113
+      },
+      {
+        "affection": 68,
+        "meet_count": 31,
+        "name": "Urist Inkleaves",
+        "respect": 0,
+        "unit_id": 117
+      },
+      {
+        "affection": 64,
+        "meet_count": 30,
+        "name": "Obok Dothalls",
+        "respect": 0,
+        "unit_id": 114
+      },
+      {
+        "affection": 30,
+        "meet_count": 30,
+        "name": "At�r Coalgulfs",
+        "respect": 0,
+        "unit_id": 112
+      },
+      {
+        "affection": 10,
+        "meet_count": 2,
+        "name": "Zon Quillposts",
+        "respect": 0,
+        "unit_id": 259
+      },
+      {
+        "affection": 10,
+        "meet_count": 1,
+        "name": "Etur Tombcobras",
+        "respect": 0,
+        "unit_id": 341
+      }
+    ],
+    "friends_total": 12,
+    "grudges": [],
+    "grudges_total": 0,
+    "parents": []
+  },
+  "sex": "male",
+  "skills": [
+    {
+      "level": "Accomplished",
+      "rating": 10,
+      "skill": "situational awareness"
+    },
+    {
+      "level": "Professional",
+      "rating": 9,
+      "skill": "discipline"
+    },
+    {
+      "level": "Adept",
+      "rating": 7,
+      "skill": "melee combat"
+    },
+    {
+      "level": "Talented",
+      "rating": 6,
+      "rusty": true,
+      "skill": "plant"
+    },
+    {
+      "level": "Talented",
+      "rating": 6,
+      "skill": "axe"
+    },
+    {
+      "level": "Proficient",
+      "rating": 5,
+      "skill": "knowledge acquisition"
+    },
+    {
+      "level": "Proficient",
+      "rating": 5,
+      "skill": "dodging"
+    },
+    {
+      "level": "Proficient",
+      "rating": 5,
+      "rusty": true,
+      "skill": "record keeping"
+    },
+    {
+      "level": "Proficient",
+      "rating": 5,
+      "skill": "concentration"
+    },
+    {
+      "level": "Proficient",
+      "rating": 5,
+      "rusty": true,
+      "skill": "military tactics"
+    }
+  ],
+  "stress": {
+    "level": "unhappy",
+    "longterm": 2157,
+    "value": 16786
+  },
+  "thoughts": [
+    {
+      "about": "after sleeping without a proper room",
+      "emotion": "embarrassment",
+      "severity": 0,
+      "year": 7
+    },
+    {
+      "about": "at work",
+      "emotion": "satisfaction",
+      "severity": 0,
+      "year": 7
+    },
+    {
+      "about": "after a soapy bath",
+      "emotion": "contentment",
+      "severity": 0,
+      "year": 7
+    },
+    {
+      "about": "after teaching [skill]",
+      "emotion": "satisfaction",
+      "severity": 0,
+      "year": 7
+    },
+    {
+      "about": "upon improving [skill]",
+      "emotion": "satisfaction",
+      "severity": 0,
+      "year": 7
+    },
+    {
+      "about": "after getting into an argument",
+      "emotion": "satisfaction",
+      "severity": 0,
+      "year": 7
+    },
+    {
+      "about": "after getting into an argument",
+      "emotion": "satisfaction",
+      "severity": 0,
+      "year": 7
+    },
+    {
+      "about": "after having [quality drink]",
+      "emotion": "contentment",
+      "severity": 2,
+      "year": 7
+    },
+    {
+      "about": "having an intellectual discussion with [somebody]",
+      "emotion": "interest",
+      "severity": 0,
+      "year": 7
+    },
+    {
+      "about": "after putting on a [quality] item",
+      "emotion": "pleasure",
+      "severity": 5,
+      "year": 7
+    }
+  ],
+  "unit_id": 111,
+  "worship": [
+    {
+      "deity": "Thabost Diamondflames",
+      "strength": 44
+    }
+  ]
+}

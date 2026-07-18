@@ -1,0 +1,11 @@
+{
+  "alerts": [
+    "8 dwarves unconscious (10% of pop)"
+  ],
+  "bedridden": 0,
+  "care_needs": [],
+  "patients": 0,
+  "population": 78,
+  "unconscious": 8,
+  "wounded": 16
+}

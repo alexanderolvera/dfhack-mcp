@@ -1,0 +1,33 @@
+{
+  "attacks": [
+    {
+      "name": "BITE",
+      "verb": "bites"
+    },
+    {
+      "name": "SCRATCH",
+      "verb": "scratches"
+    }
+  ],
+  "blurb": "A small mammalian carnivore.",
+  "caste_count": 2,
+  "description": "A small mammalian carnivore.  It is usually domestic and hunts vermin.",
+  "flags": [
+    "COMMON_DOMESTIC",
+    "PET"
+  ],
+  "interactions": [
+    {
+      "name": "Clean"
+    },
+    {
+      "name": "Head bump"
+    }
+  ],
+  "kind": "creature",
+  "name": "cat",
+  "plural": "cats",
+  "size": 500,
+  "size_label": "tiny",
+  "token": "CAT"
+}

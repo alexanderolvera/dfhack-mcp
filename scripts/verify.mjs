@@ -32,6 +32,11 @@ const GOLDEN_DIR = join(ROOT, 'test', 'golden');
 const { ALL_TOOLS } = await import('../src/tools/registry.ts');
 const EXPECTED = { tools: ALL_TOOLS.filter((d) => !d.devOnly).map((d) => d.name).sort() };
 
+// Relational invariants (the Red/Green layer) live in their own module so adding
+// a spec is a one-line edit there, not surgery on this runner.
+import { INVARIANTS } from '../test/invariants.mjs';
+const INVARIANT_TOOLS = [...new Set(INVARIANTS.flatMap((i) => i.tools))];
+
 // --- arg fixtures for tiers that actually call tools ------------------------
 // No-arg tools omit an entry. Query tools get the minimal valid args that
 // exercise a real path; the values are deterministic so goldens are stable.
@@ -63,6 +68,9 @@ const requireFort = argv.includes('--require-fort');
 // This EXERCISES the guard (#6) instead of merely trusting it's coded. T1-only,
 // and mutually exclusive with --require-fort (they assert opposite fixtures).
 const noFort = argv.includes('--no-fort');
+// Run ONLY the relational invariants against a live fort — the Red/Green surface
+// that needs no committed golden. Tier-independent (treat like a T1.5).
+const invariantsOnly = argv.includes('--invariants');
 if (noFort && requireFort) {
   console.error('--no-fort and --require-fort are mutually exclusive (opposite fixtures).');
   process.exit(2);
@@ -230,6 +238,7 @@ async function tier1NoFort(client) {
 async function tier2(client) {
   console.log(`\nT2 — golden snapshots${update ? ' (UPDATE mode)' : ''}`);
   mkdirSync(GOLDEN_DIR, { recursive: true });
+  const payloads = {}; // captured here, reused by runInvariants() below
   for (const name of [...EXPECTED.tools].sort()) {
     if (NETWORK_TOOLS.has(name)) {
       console.log(`  ○ ${name}: skipped (network-dependent, not goldened)`);
@@ -240,6 +249,7 @@ async function tier2(client) {
       fail(`${name}: no fort loaded — T2 needs the fixture save loaded`);
       continue;
     }
+    payloads[name] = data;
     const snapshot = JSON.stringify(canonicalize(data), null, 2) + '\n';
     const file = join(GOLDEN_DIR, `${name}.json`);
     if (update || !existsSync(file)) {
@@ -251,32 +261,75 @@ async function tier2(client) {
       else fail(`${name}: golden DIFF (run with --update if the change is intended)`);
     }
   }
-  invariants(); // cross-tool checks would read the snapshots; stubbed until fixture lands
+  runInvariants(payloads); // reuse the payloads T2 already captured — no double-call
 }
 
-function invariants() {
-  // Thin cross-tool invariants (happiness sums to population, days-of-supply >= 0,
-  // ...) go here once the fixture save (#27) makes values deterministic. Reads the
-  // just-written goldens so it never double-calls the server.
-  console.log('  ○ invariants: none defined yet (pending fixture save, #27)');
+// Call every tool in `names` once and return a { name -> payload } map. Skips
+// network tools (no game dependency, non-deterministic). Used by --invariants to
+// gather exactly the payloads the specs read.
+async function capturePayloads(client, names) {
+  const payloads = {};
+  for (const name of names) {
+    if (NETWORK_TOOLS.has(name)) continue;
+    payloads[name] = (await callJson(client, name)).data;
+  }
+  return payloads;
+}
+
+// A payload is usable by an invariant only if the tool actually produced fort
+// data — not the no-fort guard, a crash, or any error payload.
+const isEvaluable = (d) =>
+  d && d.__unparsable__ === undefined && !isNoFort(d) && typeof d.error !== 'string';
+
+// Run every relational invariant over the captured payloads. An invariant whose
+// required tools didn't all return fort data is reported n/a (not a failure), so
+// this same runner degrades cleanly with no fort loaded.
+function runInvariants(payloads) {
+  console.log('\nInvariants (relational specs — must hold for any valid fort)');
+  let evaluated = 0;
+  for (const inv of INVARIANTS) {
+    const missing = inv.tools.filter((t) => !isEvaluable(payloads[t]));
+    if (missing.length) {
+      console.log(`  ○ ${inv.name}: n/a (needs loaded ${missing.join(', ')})`);
+      continue;
+    }
+    evaluated++;
+    const problems = inv.check(payloads);
+    if (problems.length) for (const m of problems) fail(`${inv.name}: ${m}`);
+    else ok(`${inv.name}: ${inv.desc}`);
+  }
+  if (!evaluated) console.log('  ○ no invariants evaluable (no fort loaded)');
+}
+
+// --- invariants-only mode ---------------------------------------------------
+async function invariantsMode(client) {
+  console.log('\nInvariants mode — relational specs against the live fort (no golden needed)');
+  await resolveLiveArgs(client);
+  runInvariants(await capturePayloads(client, INVARIANT_TOOLS));
 }
 
 // --- run --------------------------------------------------------------------
 const client = await connect();
 try {
-  // Loaded tiers resolve save-specific args (e.g. citizen's unit_id) from live
-  // discovery tools first; --no-fort/T0 need no fort so they skip this.
-  if ((tier === 1 && !noFort) || tier === 2) await resolveLiveArgs(client);
-  if (tier === 0) await tier0(client);
-  else if (tier === 1) await tier1(client);
-  else if (tier === 2) await tier2(client);
-  else {
-    console.error(`unknown tier: ${tier} (use --tier=0|1|2)`);
-    failures++;
+  if (invariantsOnly) {
+    // Tier-independent: resolves its own live args, needs no golden.
+    await invariantsMode(client);
+  } else {
+    // Loaded tiers resolve save-specific args (e.g. citizen's unit_id) from live
+    // discovery tools first; --no-fort/T0 need no fort so they skip this.
+    if ((tier === 1 && !noFort) || tier === 2) await resolveLiveArgs(client);
+    if (tier === 0) await tier0(client);
+    else if (tier === 1) await tier1(client);
+    else if (tier === 2) await tier2(client);
+    else {
+      console.error(`unknown tier: ${tier} (use --tier=0|1|2)`);
+      failures++;
+    }
   }
 } finally {
   await client.close();
 }
 
-console.log(`\n${failures ? `✗ ${failures} failure(s)` : '✓ all checks passed'} (T${tier})`);
+const label = invariantsOnly ? 'invariants' : `T${tier}`;
+console.log(`\n${failures ? `✗ ${failures} failure(s)` : '✓ all checks passed'} (${label})`);
 process.exit(failures ? 1 : 0);

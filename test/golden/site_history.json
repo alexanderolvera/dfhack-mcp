@@ -1,0 +1,39 @@
+{
+  "age_years": 2,
+  "battles": [],
+  "current_year": 7,
+  "founding": {
+    "civ": "Uzoledzul",
+    "civ_english": "The Oily Vestibule",
+    "civ_id": 10,
+    "date": "15th Granite, Year 5",
+    "year": 5
+  },
+  "name_etymology": [
+    {
+      "part": "Noun",
+      "word": "FORTRESS"
+    },
+    {
+      "part": "NounPlural",
+      "word": "DREAM"
+    }
+  ],
+  "notable_deaths": [
+    {
+      "cause": "BLEED",
+      "name": "Stukos Merchantage",
+      "race": "DWARF",
+      "slain_by": "Melbil Drillgorge",
+      "year": 6
+    }
+  ],
+  "pos": {
+    "x": 5,
+    "y": 4
+  },
+  "site_id": 25,
+  "site_name": "Geshud Nåzom",
+  "site_name_english": "Fortress of Dreams",
+  "site_type": "PlayerFortress"
+}

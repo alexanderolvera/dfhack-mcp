@@ -1,0 +1,96 @@
+{
+  "match_count": 75,
+  "matches": [
+    {
+      "age": 57,
+      "current_job": "idle",
+      "name": "Tun Lolumavuz \"Woodenmines\", militia commander",
+      "patient": false,
+      "profession": "militia commander",
+      "squad": "The Waxy Tomes",
+      "stress": "unhappy",
+      "unconscious": false,
+      "unit_id": 111,
+      "wounded": false
+    },
+    {
+      "age": 85,
+      "current_job": "CarveRamp",
+      "name": "At�r R�senastod \"Coalgulfs\", Miner",
+      "patient": false,
+      "profession": "Miner",
+      "stress": "content",
+      "unconscious": false,
+      "unit_id": 112,
+      "wounded": true
+    },
+    {
+      "age": 83,
+      "current_job": "CarveRamp",
+      "name": "Sigun Sastreskeskal \"Princessshoots\", Miner",
+      "patient": false,
+      "profession": "Miner",
+      "stress": "content",
+      "unconscious": false,
+      "unit_id": 113,
+      "wounded": false
+    },
+    {
+      "age": 89,
+      "current_job": "idle",
+      "name": "Obok Sacat�ton \"Dothalls\", Stone Carver",
+      "patient": false,
+      "profession": "Stone Carver",
+      "stress": "content",
+      "unconscious": false,
+      "unit_id": 114,
+      "wounded": false
+    },
+    {
+      "age": 60,
+      "current_job": "Eat",
+      "name": "Cog Lisatzunt�r \"Notchanvils\", Stonecrafter",
+      "patient": false,
+      "profession": "Stonecrafter",
+      "stress": "ecstatic",
+      "unconscious": false,
+      "unit_id": 115,
+      "wounded": false
+    },
+    {
+      "age": 75,
+      "current_job": "idle",
+      "name": "Olin Kilrud�shrir \"Bronzequakes\", Carpenter",
+      "patient": false,
+      "profession": "Carpenter",
+      "stress": "ecstatic",
+      "unconscious": false,
+      "unit_id": 116,
+      "wounded": false
+    },
+    {
+      "age": 55,
+      "current_job": "PlantSeeds",
+      "name": "Urist Likotgovos \"Inkleaves\", Planter",
+      "patient": false,
+      "profession": "Planter",
+      "stress": "ecstatic",
+      "unconscious": false,
+      "unit_id": 117,
+      "wounded": false
+    },
+    {
+      "age": 79,
+      "current_job": "idle",
+      "name": "Inod Delerkol \"Steelwheels\", Stone Carver",
+      "patient": false,
+      "profession": "Stone Carver",
+      "stress": "happy",
+      "unconscious": false,
+      "unit_id": 258,
+      "wounded": false
+    }
+  ],
+  "query": "a",
+  "truncated": true
+}

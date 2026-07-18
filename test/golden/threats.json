@@ -1,0 +1,63 @@
+{
+  "active_hostiles": 5,
+  "alerts": [
+    "5 great-danger creatures loose (megabeast/titan/demon/FB); traits: trapavoid, fire, building_destroyer, ranged",
+    "2 dangerous creatures caged/chained"
+  ],
+  "contained": 2,
+  "groups": [
+    {
+      "contained": true,
+      "count": 1,
+      "crazed": false,
+      "great_danger": false,
+      "invader": true,
+      "name": "Ngoso Ngebzoongno \"Dreadfulrulers\", Goblin Thief",
+      "ranged_attacks": [
+        "Pet animal",
+        "Spit"
+      ],
+      "token": "GOBLIN",
+      "traits": [
+        "ranged"
+      ],
+      "undead": false
+    },
+    {
+      "contained": true,
+      "count": 1,
+      "crazed": false,
+      "great_danger": false,
+      "invader": true,
+      "name": "Asno Snangkudo \"Thiefgrowls\", Goblin Thief",
+      "ranged_attacks": [
+        "Pet animal",
+        "Spit"
+      ],
+      "token": "GOBLIN",
+      "traits": [
+        "ranged"
+      ],
+      "undead": false
+    },
+    {
+      "contained": false,
+      "count": 5,
+      "crazed": false,
+      "great_danger": true,
+      "invader": false,
+      "name": "Monster Of Vomit",
+      "ranged_attacks": [
+        "Spray vapor"
+      ],
+      "token": "DEMON_19",
+      "traits": [
+        "trapavoid",
+        "fire",
+        "building_destroyer",
+        "ranged"
+      ],
+      "undead": false
+    }
+  ]
+}

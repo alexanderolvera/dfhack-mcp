@@ -1,0 +1,52 @@
+{
+  "alerts": [
+    "27 of 77 working-age dwarves idle (35%)"
+  ],
+  "children": 1,
+  "idle": 27,
+  "idle_pct": 35,
+  "top_jobs": [
+    {
+      "count": 16,
+      "job": "StoreItemInStockpile"
+    },
+    {
+      "count": 9,
+      "job": "Sleep"
+    },
+    {
+      "count": 5,
+      "job": "PenLargeAnimal"
+    },
+    {
+      "count": 5,
+      "job": "StoreItemInVehicle"
+    },
+    {
+      "count": 3,
+      "job": "MeltMetalObject"
+    },
+    {
+      "count": 2,
+      "job": "CarveRamp"
+    },
+    {
+      "count": 2,
+      "job": "CustomReaction"
+    },
+    {
+      "count": 1,
+      "job": "DrinkItem"
+    },
+    {
+      "count": 1,
+      "job": "Eat"
+    },
+    {
+      "count": 1,
+      "job": "MakeWeapon"
+    }
+  ],
+  "workforce": 77,
+  "working": 50
+}

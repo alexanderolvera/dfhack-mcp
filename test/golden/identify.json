@@ -1,0 +1,50 @@
+{
+  "creature": {
+    "attacks": [
+      {
+        "name": "BITE",
+        "verb": "bites"
+      },
+      {
+        "name": "SCRATCH",
+        "verb": "scratches"
+      }
+    ],
+    "blurb": "A small mammalian carnivore.",
+    "caste_count": 2,
+    "description": "A small mammalian carnivore.  It is usually domestic and hunts vermin.",
+    "flags": [
+      "COMMON_DOMESTIC",
+      "PET"
+    ],
+    "interactions": [
+      {
+        "name": "Clean"
+      },
+      {
+        "name": "Head bump"
+      }
+    ],
+    "kind": "creature",
+    "name": "cat",
+    "plural": "cats",
+    "size": 500,
+    "size_label": "tiny",
+    "token": "CAT"
+  },
+  "query": "cat",
+  "tactics": [
+    {
+      "note": "Ranged attacks: Clean, Head bump.",
+      "trait": "ranged"
+    }
+  ],
+  "wiki": [
+    {
+      "excerpt": "Cat\n\nc\n\nUrist likes cats for their aloofness.\n\nBiome\n\n- Domesticated\n\nTamed Attributes\n\nPet value\n\n20\n\n· Breeding\n\nNot hunting/war trainable \n\nSize\n\nBirth:\n\n500 cm3\n\nMid:\n\n2,000 cm3\n\nMax:\n\n5,000 cm3\n\nAge\n\nAdult at:\n\n1\n\nMax age:\n\n10-20\n\nButchering returns\n\nFood items\n\nMeat\n\n0-7\n\nFat\n\n0-7\n\nIntestines\n\n0-1\n\nRaw materials\n\nBones\n\n0-4\n\nSkull\n\n1\n\nSkin\n\nRaw hide\n\nWikipedia article\n\nA small mammalian carnivore. It is usually domestic and hunts vermin.\n\nCats are domestic animals, and one of the most common creatures in a typical dwarven fortress, spending their time killing vermin and creating messes for their owners to dispose of. They are fairly weak animals in combat (but combat can be quite …",
+      "title": "DF2014:Cat",
+      "topic": "creature: cat",
+      "url": "https://dwarffortresswiki.org/index.php/DF2014%3ACat"
+    }
+  ]
+}

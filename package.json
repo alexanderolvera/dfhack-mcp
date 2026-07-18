@@ -22,6 +22,7 @@
     "verify:t0": "node scripts/verify.mjs --tier=0",
     "verify:t1": "node scripts/verify.mjs --tier=1",
     "verify:t2": "node scripts/verify.mjs --tier=2",
+    "verify:invariants": "node scripts/verify.mjs --invariants",
     "verify:update": "node scripts/verify.mjs --tier=2 --update",
     "bootstrap": "node scripts/bootstrap.mjs",
     "worktree": "node scripts/new-worktree.mjs",
