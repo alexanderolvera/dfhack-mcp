@@ -118,8 +118,11 @@ async function callJson(client, name) {
   }
 }
 
+// Match the guard message EXACTLY (anchored + trimmed), not as a substring, so a
+// different error that merely contains the phrase (e.g. "no fort loaded while
+// query failed") is NOT mistaken for the clean guard.
 const isNoFort = (d) =>
-  d && typeof d.error === 'string' && /no (fort|game) loaded/i.test(d.error);
+  d && typeof d.error === 'string' && /^no (fort|game) loaded$/i.test(d.error.trim());
 
 // --- T0: contract -----------------------------------------------------------
 async function tier0(client) {
@@ -147,19 +150,21 @@ async function tier0(client) {
 }
 
 // --- T1: reachability -------------------------------------------------------
+// Some tools take a LIVE, save-specific id that no hardcoded fixture can supply.
+// Resolve those from a discovery tool against the loaded fort so the loaded tiers
+// (T1 require-fort, T2) exercise real records instead of a guessed id that won't
+// exist in an arbitrary fort. Shared by tier1 (loaded) and tier2. With no fort /
+// no matches, the static placeholder stays and the tool just returns its guard.
+async function resolveLiveArgs(client) {
+  // citizen(unit_id) <- find_unit's first match (find_unit now emits unit_id).
+  const fu = await callJson(client, 'find_unit');
+  const liveId = fu.data?.matches?.[0]?.unit_id;
+  if (liveId != null) TOOL_ARGS.citizen = { unit_id: String(liveId) };
+}
+
 async function tier1(client) {
   if (noFort) return tier1NoFort(client);
   console.log('\nT1 — reachability (every tool callable, well-formed JSON or no-fort error)');
-  // citizen(unit_id) needs a LIVE, fort-specific id; resolve one from find_unit
-  // (which emits unit_id per match) so the loaded-fort exercise hits a real unit
-  // rather than a hardcoded id that won't exist in an arbitrary fort. With no fort
-  // / no matches, TOOL_ARGS.citizen keeps its placeholder and citizen just returns
-  // its guard, which the loop handles as reachable.
-  {
-    const fu = await callJson(client, 'find_unit');
-    const liveId = fu.data?.matches?.[0]?.unit_id;
-    if (liveId != null) TOOL_ARGS.citizen = { unit_id: String(liveId) };
-  }
   for (const name of [...EXPECTED.tools].sort()) {
     const { data } = await callJson(client, name);
     if (data.__unparsable__ !== undefined) {
@@ -259,6 +264,9 @@ function invariants() {
 // --- run --------------------------------------------------------------------
 const client = await connect();
 try {
+  // Loaded tiers resolve save-specific args (e.g. citizen's unit_id) from live
+  // discovery tools first; --no-fort/T0 need no fort so they skip this.
+  if ((tier === 1 && !noFort) || tier === 2) await resolveLiveArgs(client);
   if (tier === 0) await tier0(client);
   else if (tier === 1) await tier1(client);
   else if (tier === 2) await tier2(client);
