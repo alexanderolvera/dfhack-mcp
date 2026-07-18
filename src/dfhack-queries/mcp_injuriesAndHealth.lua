@@ -64,15 +64,19 @@ end)
 -- size sits at 0. So >0 is a real medical fact crossing a line, not a big-fort
 -- artifact — keep it firing at any count. 'unconscious' is the opposite: mostly
 -- transient (sparring KOs, fainting from exhaustion, resting after a wound) and
--- one or two out cold is routine. Gate it on a share so the alert means a mass
--- event (gas, cave-in, combat rout), not a couple of nappers.
-local UNCONSCIOUS_FRACTION_ALERT = 0.10   -- tunable: unconscious share over this -> alert
+-- one or two out cold is routine. Gate it on BOTH a share AND a minimum head
+-- count so the alert means a mass event (gas, cave-in, combat rout), not a couple
+-- of nappers — and so a share alone can't fire on a tiny fort (1 KO on a 7-dwarf
+-- embark is 14% but not a mass event).
+local UNCONSCIOUS_FRACTION_ALERT = 0.10   -- tunable: unconscious share over this ...
+local UNCONSCIOUS_MIN_ALERT = 3           -- ... AND at least this many out cold -> alert
 
 local alerts = {}
 if patients > 0 then
   alerts[#alerts+1] = patients .. ' dwarves need medical care'
 end
-if #citizens > 0 and (unconscious / #citizens) >= UNCONSCIOUS_FRACTION_ALERT then
+if unconscious >= UNCONSCIOUS_MIN_ALERT and #citizens > 0
+    and (unconscious / #citizens) >= UNCONSCIOUS_FRACTION_ALERT then
   local pct = math.floor(unconscious * 100 / #citizens)
   alerts[#alerts+1] = unconscious .. ' dwarves unconscious (' .. pct .. '% of pop)'
 end

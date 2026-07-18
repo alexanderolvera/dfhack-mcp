@@ -20,6 +20,14 @@ if df.global.gamemode ~= df.game_mode.DWARF then
 end
 
 -- Tunables (days-of-supply and material floors below which we flag "low").
+-- Reviewed under #5 and KEPT deliberately: unlike the raw-count happiness alerts,
+-- food/drink here are already POPULATION-NORMALIZED — days-of-supply divides the
+-- stock by pop*per-capita-rate, so LOW_DAYS=14 (under ~2 weeks of buffer) is a
+-- proportional line that means the same on a 7-dwarf and a 200-dwarf fort. The
+-- material figures are intentional ABSOLUTE working-buffers, not pop-shares: a
+-- fort needs a baseline reserve to keep its forges/looms fed regardless of size,
+-- and these are reported as a factual notable_low/high classification (not an
+-- alert), so a large fort seeing them is a true low reserve, not statistical noise.
 local SEASON_DAYS = 84
 local FOOD_PER_SEASON, DRINK_PER_SEASON = 2, 5
 local LOW_DAYS = 14
