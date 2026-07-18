@@ -46,6 +46,19 @@ releases (`0.x.0`) may change or remove tool output, and **patch** releases
   directly or via `reqscript`. Reads tiles in Lua (block-cached) rather than RFR
   `GetBlockList`, which leaks undiscovered terrain and ships a ~50× larger
   payload.
+- **`citizen(unit_id)` — the character sheet** (issue #13). A deep dossier on
+  one citizen, chained by `unit_id` from `find_unit` (or `chronicle`). Where
+  `find_unit` stays compact, `citizen` is the depth: the walkable social graph
+  (spouse, parents, children, friends, grudges — each with a `unit_id` you can
+  pass back into `citizen` to walk the graph), worshipped deities with worship
+  strength, NOTABLE personality extremes (top/bottom facets only, not the full
+  50-facet dump), skills of note, likes/detests, physical highlights, and recent
+  thoughts phrased as the game phrases them, tied to current stress. Friends are
+  positive-affection acquaintances; grudges are relationships gone negative, each
+  carrying its raw love/trust/respect scores as labeled facts. Empty categories
+  degrade to `[]`; a missing/invalid `unit_id` yields a labeled `{error}`, never
+  a traceback. Facts only — it senses, it does not advise. `find_unit`'s
+  description now points at `citizen` for depth.
 
 ### Changed
 

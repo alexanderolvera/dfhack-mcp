@@ -3,6 +3,7 @@
   "tools": [
     "artifacts_and_engravings",
     "chronicle",
+    "citizen",
     "defenses",
     "find_unit",
     "fort_status",
