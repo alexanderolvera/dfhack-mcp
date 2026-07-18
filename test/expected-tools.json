@@ -1,6 +1,7 @@
 {
   "_comment": "Source of truth for the tool surface the server exposes with DFHACK_MCP_DEV unset. T0 (scripts/verify.mjs --tier=0) diffs tools/list against this and fails on any drift. Adding or renaming a tool is a DELIBERATE, reviewable edit here — that's the point. run_lua is intentionally absent: it only registers under DFHACK_MCP_DEV. Keep names sorted.",
   "tools": [
+    "chronicle",
     "defenses",
     "find_unit",
     "fort_status",
