@@ -15,6 +15,7 @@ import { military } from './tools/military.ts';
 import { injuriesAndHealth } from './tools/injuriesAndHealth.ts';
 import { defenses } from './tools/defenses.ts';
 import { findUnit } from './tools/findUnit.ts';
+import { citizen } from './tools/citizen.ts';
 import { gameData } from './tools/gameData.ts';
 import { wikiSearchTool } from './tools/wikiSearch.ts';
 import { wikiLookupTool } from './tools/wikiLookup.ts';
@@ -145,9 +146,37 @@ registerQueryTool<{ query: string }>(
     'matches either). Returns a compact dossier per match: profession, age, ' +
     'stress level, current job, squad, and health flags (wounded/patient/' +
     'unconscious). Useful for questions like "how is the chief medical dwarf" ' +
-    'or "find Urist". Returns {"error":"no fort loaded"} if no fort is active.',
+    'or "find Urist". Each match carries a unit_id — pass it to citizen() for a ' +
+    'deep dossier (personality, the walkable social graph, worship, skills, ' +
+    'preferences, recent thoughts). Returns {"error":"no fort loaded"} if no ' +
+    'fort is active.',
   { query: z.string().min(1).describe('Name fragment or profession to search for') },
   ({ query }) => findUnit(query)
+);
+
+registerQueryTool<{ unit_id: string }>(
+  server,
+  'citizen',
+  'Citizen',
+  'A deep dossier on ONE citizen, chained by unit_id from find_unit (or ' +
+    'chronicle). Where find_unit stays compact, this is the depth: the walkable ' +
+    'social graph (spouse, parents, children, friends, grudges — each with a ' +
+    'unit_id you can pass back into citizen() to walk the graph), worshipped ' +
+    'deities with worship strength, NOTABLE personality extremes (only the top/' +
+    'bottom facets, not the full 50-facet dump), skills of note, likes/detests, ' +
+    'physical highlights, and recent thoughts phrased as the game phrases them, ' +
+    'tied to current stress. Friends are positive-affection acquaintances; ' +
+    'grudges are relationships gone negative (each carries its raw love/trust/' +
+    'respect scores as labeled facts). Empty categories degrade to []. Facts ' +
+    'only — it senses, it does not advise. Returns {"error":...} for a missing ' +
+    'unit_id or {"error":"no fort loaded"} if no fort is active.',
+  {
+    unit_id: z
+      .string()
+      .regex(/^\d+$/)
+      .describe('A live unit_id (all digits), e.g. from a find_unit match'),
+  },
+  ({ unit_id }) => citizen(unit_id)
 );
 
 // --- Reference tier: game_data (this world's raws) + wiki (general knowledge) ---
