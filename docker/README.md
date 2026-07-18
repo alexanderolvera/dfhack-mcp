@@ -49,6 +49,43 @@ and `dfclient.ts` both honor it.
   > Windows/Git Bash mangles `/opt/...` env values into Windows paths; the scripts
   > set `MSYS_NO_PATHCONV=1` to prevent it.
 
+## No-fort fixture (title screen, RPC up, NO fort) — for `verify.mjs --no-fort`
+
+The regular instances auto-load a fort. The **no-fort** fixture is the mirror: an
+instance that boots to the **title screen** with DFHack RPC up but **no fort ever
+loaded**, so every game-dependent tool returns its `{"error":"no fort loaded"}`
+guard. This is what the harness's `--no-fort` T1 mode asserts against — it
+**exercises** the long-standing "guard coded but unexercised" gap
+([#6](https://github.com/alexanderolvera/dfhack-mcp/issues/6)) and is the no-fort
+reachability path for [#28](https://github.com/alexanderolvera/dfhack-mcp/issues/28).
+
+The trick: `autoload.lua` only runs because the baked `dfhack.init` says so
+(`dfhack-config/init/dfhack.init` contains `autoload`). Mount an **empty file**
+over that init and autoload never runs — DFHack still starts and serves RPC, but
+the game sits at the title screen with no fort.
+
+```sh
+cd docker
+:> /tmp/empty-dfhack.init            # any empty file (this is the whole trick)
+MSYS_NO_PATHCONV=1 docker run -d --name df-nofort \
+  --security-opt seccomp=unconfined \
+  -e TERM=xterm-256color \
+  -v /tmp/empty-dfhack.init:/opt/df/dfhack-config/init/dfhack.init:ro \
+  -p "127.0.0.1:5010:5001" \
+  df-headless:53.15
+# ~10-15s later (no fort to load, so it settles faster than the fort instances):
+MSYS_NO_PATHCONV=1 DFHACK_HOST=127.0.0.1 DFHACK_PORT=5010 \
+  DFHACK_MCP_QUERY_DIR=/opt/df/mcp-queries \
+  node ../scripts/verify.mjs --tier=1 --no-fort   # every game tool must return its guard cleanly
+docker rm -f df-nofort               # teardown = reset (same disposable primitive)
+```
+
+This is `run-instances.sh` with one change: the empty-`dfhack.init` bind-mount in
+place of the autoload. Everything else (seccomp, port mapping, query dir) is
+identical. To run the worktree's **live** query Lua instead of the baked snapshot,
+add `-v "$(pwd)/../src/dfhack-queries:/opt/df/mcp-queries:ro"` as with the fort
+instances.
+
 ## Files
 
 | File | Purpose |

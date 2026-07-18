@@ -38,7 +38,16 @@ Full detail in [`docs/VERIFY.md`](docs/VERIFY.md). The short version:
 | --- | --- | --- | --- |
 | **T0** contract | `npm run verify:t0` | nothing | **CI-required** |
 | **T1** reachability | `npm run verify:t1` | live fort | local |
+| **T1** no-fort guard | `node scripts/verify.mjs --tier=1 --no-fort` | no-fort fixture | local |
 | **T2** golden + invariants | `npm run verify:t2` | fixture save (#27) | local |
+
+T1 also has a **`--no-fort`** mode (the mirror of `--require-fort`): pointed at a
+no-fort fixture — a container booted to the title screen with RPC up but no fort
+loaded ([`docker/README.md`](docker/README.md)) — it asserts every game-dependent
+tool returns its `{"error":"no fort loaded"}` guard cleanly. This **exercises**
+the no-fort guard ([#6](https://github.com/alexanderolvera/dfhack-mcp/issues/6))
+rather than trusting it's coded, and is the no-fort reachability path for
+[#28](https://github.com/alexanderolvera/dfhack-mcp/issues/28).
 
 **Every tool is verified against a real running fort before it ships — no mocks.**
 Lua runs *inside* DF, so "test infra" is provisioned frozen-save fixtures, not

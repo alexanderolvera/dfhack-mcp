@@ -2,6 +2,8 @@
 //
 //   node scripts/verify.mjs --tier=0        # contract: no fort, CI-able
 //   node scripts/verify.mjs --tier=1        # reachability: needs a live fort
+//   node scripts/verify.mjs --tier=1 --require-fort  # T1, but no-fort => FAILURE (loaded fixture)
+//   node scripts/verify.mjs --tier=1 --no-fort       # T1 mirror: assert every game tool's no-fort guard (no-fort fixture)
 //   node scripts/verify.mjs --tier=2        # golden + invariants: needs the fixture save
 //   node scripts/verify.mjs --tier=2 --update   # (re)write goldens after a deliberate change
 //
@@ -34,6 +36,7 @@ const EXPECTED = { tools: ALL_TOOLS.filter((d) => !d.devOnly).map((d) => d.name)
 // No-arg tools omit an entry. Query tools get the minimal valid args that
 // exercise a real path; the values are deterministic so goldens are stable.
 const TOOL_ARGS = {
+  citizen: { unit_id: '1' },
   find_unit: { query: 'a' },
   game_data: { query: 'cat' },
   identify: { query: 'cat' },
@@ -54,6 +57,20 @@ const update = argv.includes('--update');
 // or a container that is supposed to have a fort loaded, so a broken headless
 // load can't be reported as a verified instance.
 const requireFort = argv.includes('--require-fort');
+// The MIRROR of --require-fort: assert against a NO-FORT fixture (title screen,
+// RPC up, no fort loaded) that EVERY game-dependent tool returns its "no fort
+// loaded" guard CLEANLY — as normal output, never isError / a crash / real data.
+// This EXERCISES the guard (#6) instead of merely trusting it's coded. T1-only,
+// and mutually exclusive with --require-fort (they assert opposite fixtures).
+const noFort = argv.includes('--no-fort');
+if (noFort && requireFort) {
+  console.error('--no-fort and --require-fort are mutually exclusive (opposite fixtures).');
+  process.exit(2);
+}
+if (noFort && tier !== 1) {
+  console.error('--no-fort is a T1 mode; run it with --tier=1.');
+  process.exit(2);
+}
 
 // --- helpers ----------------------------------------------------------------
 let failures = 0;
@@ -131,6 +148,7 @@ async function tier0(client) {
 
 // --- T1: reachability -------------------------------------------------------
 async function tier1(client) {
+  if (noFort) return tier1NoFort(client);
   console.log('\nT1 — reachability (every tool callable, well-formed JSON or no-fort error)');
   for (const name of [...EXPECTED.tools].sort()) {
     const { data } = await callJson(client, name);
@@ -146,6 +164,49 @@ async function tier1(client) {
       fail(`${name}: returned error: ${data.error}`);
     } else {
       ok(`${name}: reachable, well-formed JSON`);
+    }
+  }
+}
+
+// --- T1 --no-fort: guard reachability (mirror of --require-fort) -------------
+// Against a NO-FORT fixture, assert every GAME-dependent tool returns its no-fort
+// guard cleanly, so the guard is EXERCISED, not just coded (#6). This is the T1
+// reachability path #28 needs on the no-fort side.
+async function tier1NoFort(client) {
+  console.log(
+    '\nT1 (--no-fort) — every game tool returns its no-fort guard cleanly (guard exercised, #6)'
+  );
+  for (const name of [...EXPECTED.tools].sort()) {
+    const { data, isError } = await callJson(client, name);
+    // Wiki tools are pure HTTP against the external wiki — no game dependency, so
+    // they do NOT return the guard. Assert they still return well-formed,
+    // non-error output; asserting the guard here would be wrong.
+    if (NETWORK_TOOLS.has(name)) {
+      if (data.__unparsable__ !== undefined) {
+        fail(`${name}: returned non-JSON: ${String(data.__unparsable__).slice(0, 80)}`);
+      } else if (isError || typeof data.error === 'string') {
+        fail(`${name}: network tool errored: ${data.error ?? '(isError)'}`);
+      } else {
+        ok(`${name}: reachable, well-formed JSON (network tool, no game dependency)`);
+      }
+      continue;
+    }
+    // Game-dependent tool. The guard MUST come back as NORMAL output: well-formed
+    // JSON, not isError, not a crash/traceback (non-JSON), not a different error,
+    // and NOT real data. A genuine "DFHack unreachable" surfaces here as its
+    // (non-guard) connection error and correctly FAILS — it isn't masked as a pass.
+    if (data.__unparsable__ !== undefined) {
+      fail(`${name}: crash/non-JSON, not a clean guard: ${String(data.__unparsable__).slice(0, 80)}`);
+    } else if (isError) {
+      fail(`${name}: isError, not a clean no-fort guard: ${JSON.stringify(data).slice(0, 80)}`);
+    } else if (isNoFort(data)) {
+      ok(`${name}: no-fort guard returned cleanly ("${data.error}")`);
+    } else if (typeof data.error === 'string') {
+      fail(`${name}: wrong error, not the no-fort guard: ${data.error}`);
+    } else {
+      // Well-formed JSON with no error against a no-fort fixture = real data. The
+      // guard was NOT exercised — exactly the gap this mode exists to catch.
+      fail(`${name}: returned data instead of the no-fort guard (guard not exercised)`);
     }
   }
 }
