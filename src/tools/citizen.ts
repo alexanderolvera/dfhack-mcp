@@ -30,6 +30,7 @@ export interface Grudge extends Relation {
   respect: number;
   loyalty: number;
   fear: number;
+  negative_dims: string[]; // which bond dimensions are negative (love|trust|respect|loyalty)
   meet_count?: number;
 }
 
@@ -63,7 +64,9 @@ export interface SkillNote {
 
 export interface Thought {
   emotion?: string;
-  about: string; // the game's own thought caption
+  about: string; // the game's own raw thought-caption template; may contain
+  // unfilled DF placeholders like [quality]/[deity]/[relation] that the game UI
+  // substitutes at display time — surfaced verbatim as game data, not reworded.
   severity?: number;
   year?: number;
 }

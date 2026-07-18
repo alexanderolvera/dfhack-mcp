@@ -164,10 +164,13 @@ registerQueryTool<{ unit_id: string }>(
     'unit_id you can pass back into citizen() to walk the graph), worshipped ' +
     'deities with worship strength, NOTABLE personality extremes (only the top/' +
     'bottom facets, not the full 50-facet dump), skills of note, likes/detests, ' +
-    'physical highlights, and recent thoughts phrased as the game phrases them, ' +
-    'tied to current stress. Friends are positive-affection acquaintances; ' +
-    'grudges are relationships gone negative (each carries its raw love/trust/' +
-    'respect scores as labeled facts). Empty categories degrade to []. Facts ' +
+    'physical highlights, and recent thoughts as the game phrases them (raw ' +
+    'caption templates that may contain unfilled [quality]/[deity]/[relation] ' +
+    'placeholders, surfaced verbatim), tied to current stress. Friends are ' +
+    'positive-affection acquaintances; grudges are bonds gone negative with no ' +
+    'positive love to offset them (each carries its raw love/trust/respect ' +
+    'scores plus negative_dims naming the negative dimensions, as labeled ' +
+    'facts). Empty categories degrade to []. Facts ' +
     'only — it senses, it does not advise. Returns {"error":...} for a missing ' +
     'unit_id or {"error":"no fort loaded"} if no fort is active.',
   {

@@ -204,12 +204,22 @@ safe(function()
       local loyalty = safe(function() return c.loyalty end, 0)
       local fear = safe(function() return c.fear end, 0)
       local meet = safe(function() return e.meet_count end, nil)
-      local negative = (trust < 0 or love < 0 or respect < 0 or loyalty < 0)
-      if negative then
+      -- Which bond dimensions are actually negative (the discriminating facts).
+      local neg_dims = {}
+      if love < 0 then neg_dims[#neg_dims+1] = 'love' end
+      if trust < 0 then neg_dims[#neg_dims+1] = 'trust' end
+      if respect < 0 then neg_dims[#neg_dims+1] = 'respect' end
+      if loyalty < 0 then neg_dims[#neg_dims+1] = 'loyalty' end
+      -- A grudge is an outright negative bond: negative love, or a negative
+      -- feeling with no positive love to offset it. A relationship the dwarf
+      -- still LOVES (love > 0) is not a grudge even if e.g. trust is negative —
+      -- it falls through to friends, which carries the raw scores anyway.
+      local is_grudge = (love < 0) or (#neg_dims > 0 and love <= 0)
+      if is_grudge then
         grudges_all[#grudges_all+1] = {
           name = hf_name(tgt) or ('hf ' .. tgt), unit_id = hf_unit_id(tgt),
           love = love, trust = trust, respect = respect, loyalty = loyalty, fear = fear,
-          meet_count = meet,
+          negative_dims = neg_dims, meet_count = meet,
         }
       elseif love > 0 or respect > 0 then
         friends_all[#friends_all+1] = {
