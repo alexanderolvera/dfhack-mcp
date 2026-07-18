@@ -12,6 +12,26 @@ releases (`0.x.0`) may change or remove tool output, and **patch** releases
 
 ### Added
 
+- **`game_data` — the remaining raws kinds** (issues #1, #2, #3). The unified
+  `game_data` lookup now implements every kind; none report "not yet
+  implemented". Each mirrors the creature contract (one strong hit → a curated
+  dossier; several → a capped disambiguation list; none →
+  `{match_count:0,matches:[]}`):
+  - **`material`** — resolves via `dfhack.matinfo` over the loaded inorganics
+    (metals, stones, gems, ores), plus a direct token lookup for
+    fully-qualified `PLANT:`/`CREATURE:` tokens. Exposes token, state names
+    (solid/liquid/gas), melting/boiling/ignite points as DF-urist + Celsius
+    facts, a `flammable` flag, solid/liquid density, and curated notable flags.
+  - **`plant`** — token, name, `type` (tree/grass/shrub), value, growth time,
+    growth seasons, surface/subterranean + depth, biomes, `yields`
+    (drink/seed/thread/mill/extract_*), growths, and produced materials.
+  - **`reaction`** — token, name, required skill, building
+    (category + workshop/furnace + custom workshop token), reagents, products.
+  - **`item`** — itemdefs across all classes (weapon/armor/tool/ammo/…) with
+    token, names, class, value, a per-class stat block, and weapon attacks.
+  - **`building`** — custom (raws-defined) workshops: token, name, category,
+    purpose, footprint, build stages, and the reactions available there.
+
 - **`defenses` Level 2 — terrain-aware inside/outside** (issue #4). Each active
   threat is now classified `inside`/`outside` the fort's walled perimeter,
   defined concretely as sharing a DF walkability group with the fort's citizens
