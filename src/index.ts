@@ -16,10 +16,12 @@ import { injuriesAndHealth } from './tools/injuriesAndHealth.ts';
 import { defenses } from './tools/defenses.ts';
 import { findUnit } from './tools/findUnit.ts';
 import { citizen } from './tools/citizen.ts';
+import { siteHistory } from './tools/siteHistory.ts';
 import { gameData } from './tools/gameData.ts';
 import { wikiSearchTool } from './tools/wikiSearch.ts';
 import { wikiLookupTool } from './tools/wikiLookup.ts';
 import { identify } from './tools/identify/index.ts';
+import { chronicle } from './tools/chronicle.ts';
 import { runLuaTool } from './tools/runLua.ts';
 import { registerReadTool, registerQueryTool } from './register.ts';
 import { closeConnection } from './dfclient.ts';
@@ -136,6 +138,22 @@ registerReadTool(
     'raws, so bridges and levers are reported separately, not linked. Returns ' +
     '{"error":"no fort loaded"} if no fort is active.',
   defenses
+);
+
+registerReadTool(
+  server,
+  'site_history',
+  'Site history',
+  "This fort's entry in the PERMANENT world saga (the durable history event log, " +
+    'not the pruned live report stream). Returns the founding (year, in-game date, ' +
+    'and owning civilization in both Dwarven and English), the fort name in Dwarven ' +
+    'and English with a word-by-word etymology, prior sieges/battles fought AT this ' +
+    'site (attacker/defender civ and general, capped at 20, most-recent-first), and ' +
+    'the notable historical figures who died here (name, race, cause, slayer, capped ' +
+    'at 25). Scoped strictly to the loaded site. A young fort with no war history ' +
+    'degrades to empty battle/death lists (not an error). Returns ' +
+    '{"error":"no fort loaded"} if no fort is active.',
+  siteHistory
 );
 
 registerQueryTool<{ query: string }>(
@@ -274,6 +292,68 @@ registerQueryTool<{ query: string }>(
       .describe('Creature token, name fragment, or a live unit_id (all digits)'),
   },
   ({ query }) => identify(query)
+);
+
+// --- Chronicle: the fort's announcement/report stream as triaged events ---
+
+const CHRONICLE_CATEGORIES = [
+  'death',
+  'birth',
+  'marriage',
+  'battle',
+  'siege',
+  'mood',
+  'artifact',
+  'migrants',
+  'diplomacy',
+  'cave-in',
+  'megabeast',
+  'other',
+] as const;
+
+registerQueryTool<{ since?: number; categories?: string[]; limit?: number }>(
+  server,
+  'chronicle',
+  'Chronicle',
+  "The fort's announcement/report stream (combat, deaths, moods, artifacts, " +
+    'sieges, migrants, ...) as triaged, cursor-addressable events. Reads the ' +
+    'rolling, front-pruned report window. Each event carries a stable `id` ' +
+    '(monotonic and save/load-stable); pass the returned top-level `cursor` back ' +
+    'as `since` to fetch only newer events (id > since). Omitting `since` returns ' +
+    'the most recent `limit` events (default 50, max 200), oldest-to-newest. If ' +
+    '`since` predates the retained window the response sets pruned:true (earlier ' +
+    'events are gone — not silently omitted). Events are triaged into categories ' +
+    '(death, birth, marriage, battle, siege, mood, artifact, migrants, diplomacy, ' +
+    'cave-in, megabeast, other); filter with `categories`. Combat spam is tamed: ' +
+    'repeat_count is honored, wrapped continuation lines fold into their event, ' +
+    'and long consecutive battle runs collapse into a single marker (collapsed:' +
+    'true with collapsed_count) so one siege cannot flood the window — see ' +
+    'battle_collapsed. Facts only: unit refs appear only when a report names a ' +
+    'speaker (speaker_id != -1); combat reports carry no reliable unit, so they ' +
+    'get a pos tile anchor instead. Returns {"error":"no fort loaded"} if no fort ' +
+    'is active.',
+  {
+    since: z.coerce
+      .number()
+      .int()
+      .optional()
+      .describe('Cursor: return only events with id greater than this (from a prior `cursor`).'),
+    categories: z
+      .preprocess(
+        (v) => (typeof v === 'string' ? v.split(',').map((s) => s.trim()).filter(Boolean) : v),
+        z.array(z.enum(CHRONICLE_CATEGORIES)).optional()
+      )
+      .describe(
+        'Optional subset of categories to return: death, birth, marriage, battle, ' +
+          'siege, mood, artifact, migrants, diplomacy, cave-in, megabeast, other.'
+      ),
+    limit: z.coerce
+      .number()
+      .int()
+      .optional()
+      .describe('Max events to return (default 50, capped at 200); newest are kept.'),
+  },
+  ({ since, categories, limit }) => chronicle(since, categories, limit)
 );
 
 // Dev-only escape hatch. NOT registered by default: arbitrary Lua can mutate the
