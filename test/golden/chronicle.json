@@ -1,0 +1,710 @@
+{
+  "battle_collapsed": 2619,
+  "count": 50,
+  "cursor": 11606,
+  "events": [
+    {
+      "category": "battle",
+      "color": 3,
+      "date": "25th Opal, Year 7",
+      "id": 11031,
+      "pos": {
+        "x": 76,
+        "y": 60,
+        "z": 131
+      },
+      "text": "The militia commander hacks the axedwarf in the left lower arm with his �steel battle axe�, lightly tapping the target!",
+      "time": 365133,
+      "type": "COMBAT_STRIKE_DETAILS",
+      "year": 7
+    },
+    {
+      "category": "battle",
+      "color": 3,
+      "date": "25th Opal, Year 7",
+      "id": 11032,
+      "pos": {
+        "x": 77,
+        "y": 61,
+        "z": 131
+      },
+      "text": "The axedwarf strikes at the militia commander but the shot is deftly parried by the �steel battle axe�!",
+      "time": 365140,
+      "type": "COMBAT_PARRY",
+      "year": 7
+    },
+    {
+      "category": "battle",
+      "collapsed": true,
+      "collapsed_count": 76,
+      "date": "25th Opal, Year 7",
+      "id": 11033,
+      "text": "consecutive combat reports collapsed to keep the window readable",
+      "type": "COMBAT_COLLAPSED"
+    },
+    {
+      "category": "other",
+      "color": 3,
+      "date": "25th Opal, Year 7",
+      "id": 11109,
+      "repeat_count": 1,
+      "text": "Prepare lavish meal (10) has been completed.",
+      "time": 365518,
+      "type": "QUOTA_FILLED",
+      "year": 7
+    },
+    {
+      "category": "battle",
+      "color": 3,
+      "date": "25th Opal, Year 7",
+      "id": 11110,
+      "pos": {
+        "x": 74,
+        "y": 62,
+        "z": 131
+      },
+      "text": "The axedwarf attacks the militia commander but He jumps away!",
+      "time": 365520,
+      "type": "COMBAT_JUMP_DODGE_STRIKE",
+      "year": 7
+    },
+    {
+      "category": "battle",
+      "color": 3,
+      "date": "25th Opal, Year 7",
+      "id": 11111,
+      "pos": {
+        "x": 75,
+        "y": 61,
+        "z": 131
+      },
+      "text": "The militia commander hacks the axedwarf in the left foot with his �steel battle axe�, lightly tapping the target!",
+      "time": 365535,
+      "type": "COMBAT_STRIKE_DETAILS",
+      "year": 7
+    },
+    {
+      "category": "battle",
+      "color": 3,
+      "date": "25th Opal, Year 7",
+      "id": 11112,
+      "pos": {
+        "x": 74,
+        "y": 61,
+        "z": 131
+      },
+      "text": "The axedwarf attacks the militia commander but He jumps away!",
+      "time": 365537,
+      "type": "COMBAT_JUMP_DODGE_STRIKE",
+      "year": 7
+    },
+    {
+      "category": "battle",
+      "color": 3,
+      "date": "25th Opal, Year 7",
+      "id": 11113,
+      "pos": {
+        "x": 75,
+        "y": 61,
+        "z": 131
+      },
+      "text": "The militia commander hacks the axedwarf in the neck with his �steel battle axe�, lightly tapping the target!",
+      "time": 365540,
+      "type": "COMBAT_STRIKE_DETAILS",
+      "year": 7
+    },
+    {
+      "category": "battle",
+      "color": 3,
+      "date": "25th Opal, Year 7",
+      "id": 11114,
+      "pos": {
+        "x": 75,
+        "y": 62,
+        "z": 131
+      },
+      "text": "The axedwarf kicks the militia commander in the left hand with his left foot, lightly tapping the target!",
+      "time": 365545,
+      "type": "COMBAT_STRIKE_DETAILS",
+      "year": 7
+    },
+    {
+      "category": "battle",
+      "color": 3,
+      "date": "25th Opal, Year 7",
+      "id": 11115,
+      "pos": {
+        "x": 75,
+        "y": 61,
+        "z": 131
+      },
+      "text": "The militia commander hacks the axedwarf in the right hand with his �steel battle axe�, lightly tapping the target!",
+      "time": 365547,
+      "type": "COMBAT_STRIKE_DETAILS",
+      "year": 7
+    },
+    {
+      "category": "battle",
+      "collapsed": true,
+      "collapsed_count": 81,
+      "date": "25th Opal, Year 7",
+      "id": 11116,
+      "text": "consecutive combat reports collapsed to keep the window readable",
+      "type": "COMBAT_COLLAPSED"
+    },
+    {
+      "category": "other",
+      "color": 3,
+      "date": "25th Opal, Year 7",
+      "id": 11197,
+      "text": "Make cloth robe (8) has been completed.",
+      "time": 365924,
+      "type": "QUOTA_FILLED",
+      "year": 7
+    },
+    {
+      "category": "battle",
+      "color": 3,
+      "date": "25th Opal, Year 7",
+      "id": 11198,
+      "pos": {
+        "x": 73,
+        "y": 58,
+        "z": 131
+      },
+      "text": "The militia commander hacks the axedwarf in the right upper arm with his �steel battle axe�, lightly tapping the target!",
+      "time": 365925,
+      "type": "COMBAT_STRIKE_DETAILS",
+      "year": 7
+    },
+    {
+      "category": "battle",
+      "color": 3,
+      "date": "25th Opal, Year 7",
+      "id": 11199,
+      "pos": {
+        "x": 74,
+        "y": 59,
+        "z": 131
+      },
+      "text": "The axedwarf attacks the militia commander but He jumps away!",
+      "time": 365926,
+      "type": "COMBAT_JUMP_DODGE_STRIKE",
+      "year": 7
+    },
+    {
+      "category": "battle",
+      "color": 3,
+      "date": "25th Opal, Year 7",
+      "id": 11200,
+      "pos": {
+        "x": 73,
+        "y": 58,
+        "z": 131
+      },
+      "text": "The militia commander hacks the axedwarf in the left upper leg with his �steel battle axe�, lightly tapping the target!",
+      "time": 365958,
+      "type": "COMBAT_STRIKE_DETAILS",
+      "year": 7
+    },
+    {
+      "category": "battle",
+      "color": 3,
+      "date": "25th Opal, Year 7",
+      "id": 11201,
+      "pos": {
+        "x": 73,
+        "y": 58,
+        "z": 131
+      },
+      "text": "The axedwarf attacks the militia commander but He jumps away!",
+      "time": 365964,
+      "type": "COMBAT_JUMP_DODGE_STRIKE",
+      "year": 7
+    },
+    {
+      "category": "battle",
+      "color": 3,
+      "date": "25th Opal, Year 7",
+      "id": 11202,
+      "pos": {
+        "x": 73,
+        "y": 58,
+        "z": 131
+      },
+      "text": "The militia commander hacks the axedwarf in the right upper leg with his �steel battle axe�, lightly tapping the target!",
+      "time": 365966,
+      "type": "COMBAT_STRIKE_DETAILS",
+      "year": 7
+    },
+    {
+      "category": "battle",
+      "color": 7,
+      "date": "25th Opal, Year 7",
+      "id": 11203,
+      "pos": {
+        "x": 73,
+        "y": 58,
+        "z": 131
+      },
+      "text": "The axedwarf stands up.",
+      "time": 365966,
+      "type": "STAND_UP",
+      "year": 7
+    },
+    {
+      "category": "battle",
+      "collapsed": true,
+      "collapsed_count": 18,
+      "date": "25th Opal, Year 7",
+      "id": 11204,
+      "text": "consecutive combat reports collapsed to keep the window readable",
+      "type": "COMBAT_COLLAPSED"
+    },
+    {
+      "category": "artifact",
+      "color": 3,
+      "date": "4th Obsidian, Year 7",
+      "id": 11222,
+      "pos": {
+        "x": 94,
+        "y": 50,
+        "z": 125
+      },
+      "repeat_count": 2,
+      "text": "Goden Aranlogem has created a masterpiece \u000fpig tail cloth\u000f!",
+      "time": 373848,
+      "type": "MASTERPIECE_CRAFTED",
+      "year": 7
+    },
+    {
+      "category": "artifact",
+      "color": 3,
+      "date": "5th Obsidian, Year 7",
+      "id": 11223,
+      "pos": {
+        "x": 94,
+        "y": 58,
+        "z": 125
+      },
+      "repeat_count": 1,
+      "text": "Dumed K�t�klikot has created a masterpiece \u000fgander skull totem\u000f!",
+      "time": 374427,
+      "type": "MASTERPIECE_CRAFTED",
+      "year": 7
+    },
+    {
+      "category": "artifact",
+      "color": 3,
+      "date": "5th Obsidian, Year 7",
+      "id": 11224,
+      "pos": {
+        "x": 95,
+        "y": 51,
+        "z": 130
+      },
+      "text": "Inod Ustuthvuthil has created a masterpiece \u000ffoxtail millet roast [6]\u000f!",
+      "time": 374516,
+      "type": "MASTERPIECE_CRAFTED",
+      "year": 7
+    },
+    {
+      "category": "battle",
+      "color": 6,
+      "date": "5th Obsidian, Year 7",
+      "id": 11225,
+      "pos": {
+        "x": 76,
+        "y": 54,
+        "z": 131
+      },
+      "text": "The stray chick has been stung by a honey bee!",
+      "time": 375221,
+      "type": "VERMIN_BITE",
+      "year": 7
+    },
+    {
+      "category": "artifact",
+      "color": 3,
+      "date": "6th Obsidian, Year 7",
+      "id": 11226,
+      "pos": {
+        "x": 95,
+        "y": 51,
+        "z": 130
+      },
+      "repeat_count": 1,
+      "text": "Inod Ustuthvuthil has created a masterpiece \u000ffoxtail millet roast [4]\u000f!",
+      "time": 376591,
+      "type": "MASTERPIECE_CRAFTED",
+      "year": 7
+    },
+    {
+      "category": "artifact",
+      "color": 3,
+      "date": "7th Obsidian, Year 7",
+      "id": 11227,
+      "pos": {
+        "x": 94,
+        "y": 50,
+        "z": 125
+      },
+      "text": "Goden Aranlogem has created a masterpiece \u000falpaca wool cloth\u000f!",
+      "time": 377843,
+      "type": "MASTERPIECE_CRAFTED",
+      "year": 7
+    },
+    {
+      "category": "other",
+      "color": 3,
+      "date": "10th Obsidian, Year 7",
+      "id": 11228,
+      "text": "Make cloth robe (3) has been completed.",
+      "time": 381203,
+      "type": "QUOTA_FILLED",
+      "year": 7
+    },
+    {
+      "category": "battle",
+      "color": 3,
+      "date": "11th Obsidian, Year 7",
+      "id": 11229,
+      "pos": {
+        "x": 79,
+        "y": 59,
+        "z": 131
+      },
+      "text": "The wrestler misses the axedwarf!",
+      "time": 382079,
+      "type": "COMBAT_DODGE",
+      "year": 7
+    },
+    {
+      "category": "battle",
+      "color": 3,
+      "date": "11th Obsidian, Year 7",
+      "id": 11230,
+      "pos": {
+        "x": 79,
+        "y": 58,
+        "z": 131
+      },
+      "text": "The axedwarf misses the wrestler!",
+      "time": 382083,
+      "type": "COMBAT_DODGE",
+      "year": 7
+    },
+    {
+      "category": "battle",
+      "color": 3,
+      "date": "11th Obsidian, Year 7",
+      "id": 11231,
+      "pos": {
+        "x": 79,
+        "y": 59,
+        "z": 131
+      },
+      "text": "The wrestler misses the axedwarf!",
+      "time": 382085,
+      "type": "COMBAT_DODGE",
+      "year": 7
+    },
+    {
+      "category": "battle",
+      "color": 3,
+      "date": "11th Obsidian, Year 7",
+      "id": 11232,
+      "pos": {
+        "x": 79,
+        "y": 58,
+        "z": 131
+      },
+      "text": "The axedwarf kicks the wrestler in the right lower arm with her right foot, lightly tapping the target!",
+      "time": 382094,
+      "type": "COMBAT_STRIKE_DETAILS",
+      "year": 7
+    },
+    {
+      "category": "battle",
+      "color": 3,
+      "date": "11th Obsidian, Year 7",
+      "id": 11233,
+      "pos": {
+        "x": 79,
+        "y": 59,
+        "z": 131
+      },
+      "text": "The wrestler strikes at the axedwarf but the shot is deflected by the \u000fsteel battle axe\u000f!",
+      "time": 382096,
+      "type": "COMBAT_PARRY",
+      "year": 7
+    },
+    {
+      "category": "battle",
+      "color": 3,
+      "date": "11th Obsidian, Year 7",
+      "id": 11234,
+      "pos": {
+        "x": 79,
+        "y": 58,
+        "z": 131
+      },
+      "text": "The axedwarf strikes at the wrestler but the shot is parried by the �steel battle axe�!",
+      "time": 382102,
+      "type": "COMBAT_PARRY",
+      "year": 7
+    },
+    {
+      "category": "battle",
+      "collapsed": true,
+      "collapsed_count": 134,
+      "date": "11th Obsidian, Year 7",
+      "id": 11235,
+      "text": "consecutive combat reports collapsed to keep the window readable",
+      "type": "COMBAT_COLLAPSED"
+    },
+    {
+      "category": "artifact",
+      "color": 3,
+      "date": "12th Obsidian, Year 7",
+      "id": 11369,
+      "pos": {
+        "x": 84,
+        "y": 67,
+        "z": 125
+      },
+      "text": "Zon Nimak�teb has created a masterpiece \u000fsteel right gauntlet\u000f!",
+      "time": 382867,
+      "type": "MASTERPIECE_CRAFTED",
+      "year": 7
+    },
+    {
+      "category": "battle",
+      "color": 3,
+      "date": "12th Obsidian, Year 7",
+      "id": 11370,
+      "pos": {
+        "x": 77,
+        "y": 62,
+        "z": 131
+      },
+      "text": "The wrestler hacks the axedwarf in the left lower arm with his �steel battle axe�, lightly tapping the target!",
+      "time": 382870,
+      "type": "COMBAT_STRIKE_DETAILS",
+      "year": 7
+    },
+    {
+      "category": "battle",
+      "color": 3,
+      "date": "12th Obsidian, Year 7",
+      "id": 11371,
+      "pos": {
+        "x": 77,
+        "y": 62,
+        "z": 131
+      },
+      "text": "The axedwarf misses the wrestler!",
+      "time": 382873,
+      "type": "COMBAT_DODGE",
+      "year": 7
+    },
+    {
+      "category": "battle",
+      "color": 3,
+      "date": "12th Obsidian, Year 7",
+      "id": 11372,
+      "pos": {
+        "x": 77,
+        "y": 62,
+        "z": 131
+      },
+      "text": "The wrestler attacks the axedwarf but She scrambles away!",
+      "time": 382877,
+      "type": "COMBAT_JUMP_DODGE_STRIKE",
+      "year": 7
+    },
+    {
+      "category": "battle",
+      "color": 7,
+      "date": "12th Obsidian, Year 7",
+      "id": 11373,
+      "pos": {
+        "x": 76,
+        "y": 62,
+        "z": 131
+      },
+      "text": "The axedwarf stands up.",
+      "time": 382879,
+      "type": "STAND_UP",
+      "year": 7
+    },
+    {
+      "category": "battle",
+      "color": 3,
+      "date": "12th Obsidian, Year 7",
+      "id": 11374,
+      "pos": {
+        "x": 77,
+        "y": 62,
+        "z": 131
+      },
+      "text": "The axedwarf strikes at the wrestler but the shot is just barely parried by the �steel battle axe�!",
+      "time": 382885,
+      "type": "COMBAT_PARRY",
+      "year": 7
+    },
+    {
+      "category": "battle",
+      "color": 3,
+      "date": "12th Obsidian, Year 7",
+      "id": 11375,
+      "pos": {
+        "x": 76,
+        "y": 62,
+        "z": 131
+      },
+      "text": "The wrestler hacks the axedwarf in the left upper arm with his �steel battle axe�, lightly tapping the target!",
+      "time": 382887,
+      "type": "COMBAT_STRIKE_DETAILS",
+      "year": 7
+    },
+    {
+      "category": "battle",
+      "collapsed": true,
+      "collapsed_count": 222,
+      "date": "12th Obsidian, Year 7",
+      "id": 11376,
+      "text": "consecutive combat reports collapsed to keep the window readable",
+      "type": "COMBAT_COLLAPSED"
+    },
+    {
+      "category": "other",
+      "color": 3,
+      "date": "14th Obsidian, Year 7",
+      "id": 11598,
+      "text": "Spin thread (1) has been completed.",
+      "time": 385788,
+      "type": "QUOTA_FILLED",
+      "year": 7
+    },
+    {
+      "category": "other",
+      "color": 6,
+      "date": "14th Obsidian, Year 7",
+      "id": 11599,
+      "pos": {
+        "x": 54,
+        "y": 76,
+        "z": 111
+      },
+      "text": "You have struck schorl!",
+      "time": 386115,
+      "type": "STRUCK_MINERAL",
+      "year": 7
+    },
+    {
+      "category": "other",
+      "color": 3,
+      "date": "14th Obsidian, Year 7",
+      "id": 11600,
+      "pos": {
+        "x": 74,
+        "y": 61,
+        "z": 131
+      },
+      "text": "�ton Sob�robok, Wrestler has grown attached to a steel battle axe!",
+      "time": 386118,
+      "type": "ITEM_ATTACHMENT",
+      "year": 7
+    },
+    {
+      "category": "other",
+      "color": 3,
+      "date": "14th Obsidian, Year 7",
+      "id": 11601,
+      "pos": {
+        "x": 74,
+        "y": 62,
+        "z": 131
+      },
+      "text": "�shrir Amemdod�k, Axedwarf has grown attached to a steel battle axe!",
+      "time": 386123,
+      "type": "ITEM_ATTACHMENT",
+      "year": 7
+    },
+    {
+      "category": "other",
+      "color": 6,
+      "date": "17th Obsidian, Year 7",
+      "id": 11602,
+      "pos": {
+        "x": 44,
+        "y": 85,
+        "z": 111
+      },
+      "text": "You have struck wood opal!",
+      "time": 389564,
+      "type": "STRUCK_MINERAL",
+      "year": 7
+    },
+    {
+      "category": "other",
+      "color": 6,
+      "date": "18th Obsidian, Year 7",
+      "id": 11603,
+      "pos": {
+        "x": 40,
+        "y": 85,
+        "z": 112
+      },
+      "text": "You have struck hematite!",
+      "time": 390496,
+      "type": "STRUCK_ECONOMIC_MINERAL",
+      "year": 7
+    },
+    {
+      "category": "other",
+      "color": 3,
+      "date": "18th Obsidian, Year 7",
+      "id": 11604,
+      "text": "Make cloth robe (2) has been completed.",
+      "time": 390838,
+      "type": "QUOTA_FILLED",
+      "year": 7
+    },
+    {
+      "category": "other",
+      "color": 3,
+      "date": "19th Obsidian, Year 7",
+      "id": 11605,
+      "text": "Forge steel mace (1) has been completed.",
+      "time": 391352,
+      "type": "QUOTA_FILLED",
+      "year": 7
+    },
+    {
+      "category": "other",
+      "color": 6,
+      "date": "19th Obsidian, Year 7",
+      "id": 11606,
+      "pos": {
+        "x": 37,
+        "y": 88,
+        "z": 112
+      },
+      "text": "You have struck limonite!",
+      "time": 391606,
+      "type": "STRUCK_ECONOMIC_MINERAL",
+      "year": 7
+    }
+  ],
+  "limit": 50,
+  "more": true,
+  "newest_retained_id": 11606,
+  "next_report_id": 11607,
+  "oldest_retained_id": 8607,
+  "omitted_by_limit": 364,
+  "order": "ascending",
+  "pruned": false,
+  "window_size": 3000
+}

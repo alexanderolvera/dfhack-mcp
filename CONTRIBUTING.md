@@ -39,7 +39,19 @@ Full detail in [`docs/VERIFY.md`](docs/VERIFY.md). The short version:
 | **T0** contract | `npm run verify:t0` | nothing | **CI-required** |
 | **T1** reachability | `npm run verify:t1` | live fort | local |
 | **T1** no-fort guard | `node scripts/verify.mjs --tier=1 --no-fort` | no-fort fixture | local |
-| **T2** golden + invariants | `npm run verify:t2` | fixture save (#27) | local |
+| **Invariants** (Red/Green) | `npm run verify:invariants` | any live fort | local |
+| **T2** golden + invariants | `npm run verify:t2` | fixture container | local |
+
+The two halves of "did we break anything": **goldens** (T2) freeze the exact
+bytes each tool emits against the frozen fixture; **invariants** encode properties
+true of *any* valid fort (population agrees across tools, happiness sums to
+population, the `find_unit`→`citizen` id chain resolves). Because invariants are
+relational they run against *any* fort with no committed golden — so `npm run
+verify:invariants` is also the **Red/Green** surface: add a spec in
+[`test/invariants.mjs`](test/invariants.mjs), watch it fail on today's code (red),
+fix the tool until it passes (green). Both the fixture-frozen goldens and the
+invariants use the **disposable DF container** as the fort (see below); the
+container image tag *is* the fixture version.
 
 T1 also has a **`--no-fort`** mode (the mirror of `--require-fort`): pointed at a
 no-fort fixture — a container booted to the title screen with RPC up but no fort
@@ -129,5 +141,8 @@ Follow the existing split:
    derives its expected set from `ALL_TOOLS`, so it fails until you add the entry.
    Because each tool lands at its own line, sibling tool PRs auto-merge instead of
    colliding.
-5. Verify against a live fort: `npm run verify:t1`. Author a golden once the
-   fixture is available: `npm run verify:update`.
+5. Verify against a live fort: `npm run verify:t1`. Author its golden against the
+   fixture container: `npm run verify:update` (then commit `test/golden/<name>.json`
+   with the code). If the tool has a property true of any valid fort, add an
+   invariant in [`test/invariants.mjs`](test/invariants.mjs) too — that's the check
+   that survives a fixture bump.

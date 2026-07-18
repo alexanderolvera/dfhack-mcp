@@ -1,0 +1,587 @@
+{
+  "artifact_count": 6,
+  "artifacts": [
+    {
+      "decorations": [],
+      "id": 0,
+      "inscription": "I am Pamnot Kamcabekor, Pamnot Dreamedtwilight, once of the Underworld.  By Thocit, I bind myself to this place.",
+      "item_label": "microcline slab",
+      "item_type": "SLAB",
+      "maker": {
+        "histfig_id": 53,
+        "is_current_citizen": false,
+        "name": "Kun the Hood of Spiders"
+      },
+      "material": {
+        "name": "microcline",
+        "token": "INORGANIC:MICROCLINE"
+      },
+      "name": {
+        "dwarven": "Uxendof",
+        "english": "Searchdents"
+      },
+      "quality": "Masterful",
+      "value": 500
+    },
+    {
+      "decorations": [
+        {
+          "material": {
+            "name": "wool",
+            "token": "CREATURE:SHEEP:HAIR"
+          },
+          "quality": "Ordinary",
+          "type": "CLOTH"
+        },
+        {
+          "material": {
+            "name": "wool",
+            "token": "CREATURE:SHEEP:HAIR"
+          },
+          "quality": "Ordinary",
+          "type": "THREAD"
+        },
+        {
+          "image_resolved": false,
+          "material": {
+            "name": "wool",
+            "token": "CREATURE:SHEEP:HAIR"
+          },
+          "quality": "Masterful",
+          "type": "ART_IMAGE"
+        },
+        {
+          "image_resolved": false,
+          "material": {
+            "name": "wax opal",
+            "token": "INORGANIC:WAX OPAL"
+          },
+          "quality": "Masterful",
+          "type": "ART_IMAGE"
+        }
+      ],
+      "id": 1,
+      "item_label": "sheep wool sock",
+      "item_type": "SHOES",
+      "maker": {
+        "histfig_id": 187,
+        "is_current_citizen": true,
+        "name": "Goden Sculptedpainted",
+        "unit_id": 306
+      },
+      "material": {
+        "name": "wool",
+        "token": "CREATURE:SHEEP:HAIR"
+      },
+      "name": {
+        "dwarven": "Zenon Artob",
+        "english": "The Viper of Combinations"
+      },
+      "quality": "Masterful",
+      "value": 5400
+    },
+    {
+      "decorations": [
+        {
+          "material": {
+            "name": "leather",
+            "token": "CREATURE:MULE:LEATHER"
+          },
+          "quality": "Masterful",
+          "type": "COVERED"
+        },
+        {
+          "material": {
+            "name": "leather",
+            "token": "CREATURE:HORSE:LEATHER"
+          },
+          "quality": "Masterful",
+          "type": "COVERED"
+        },
+        {
+          "material": {
+            "name": "hematite",
+            "token": "INORGANIC:HEMATITE"
+          },
+          "quality": "Masterful",
+          "type": "COVERED"
+        }
+      ],
+      "id": 2,
+      "item_label": "mule leather buckler",
+      "item_type": "SHIELD",
+      "maker": {
+        "histfig_id": 222,
+        "is_current_citizen": true,
+        "name": "Tun Channelpaint",
+        "unit_id": 346
+      },
+      "material": {
+        "name": "leather",
+        "token": "CREATURE:MULE:LEATHER"
+      },
+      "name": {
+        "dwarven": "Al�th M�thkat",
+        "english": "The Bolt of Mansions"
+      },
+      "quality": "Masterful",
+      "value": 3400
+    },
+    {
+      "decorations": [
+        {
+          "material": {
+            "name": "cherry wood",
+            "token": "PLANT:CHERRY:WOOD"
+          },
+          "quality": "Masterful",
+          "type": "BANDS"
+        },
+        {
+          "material": {
+            "name": "willow",
+            "token": "PLANT:WILLOW:WOOD"
+          },
+          "quality": "Masterful",
+          "type": "BANDS"
+        },
+        {
+          "material": {
+            "name": "hazel wood",
+            "token": "PLANT:HAZEL:WOOD"
+          },
+          "quality": "Masterful",
+          "type": "SPIKES"
+        }
+      ],
+      "id": 3,
+      "item_label": "cherry wood bin",
+      "item_type": "BIN",
+      "maker": {
+        "histfig_id": 168,
+        "is_current_citizen": true,
+        "name": "Olin Bronzequakes",
+        "unit_id": 116
+      },
+      "material": {
+        "name": "cherry wood",
+        "token": "PLANT:CHERRY:WOOD"
+      },
+      "name": {
+        "dwarven": "Z�leramas",
+        "english": "Primedepth"
+      },
+      "quality": "Masterful",
+      "value": 2000
+    },
+    {
+      "decorations": [
+        {
+          "material": {
+            "name": "steel",
+            "token": "INORGANIC:STEEL"
+          },
+          "quality": "Masterful",
+          "type": "RINGS_HANGING"
+        },
+        {
+          "material": {
+            "name": "pyrite",
+            "token": "INORGANIC:PYRITE"
+          },
+          "quality": "Masterful",
+          "type": "COVERED"
+        },
+        {
+          "material": {
+            "name": "ash",
+            "token": "PLANT:ASH:WOOD"
+          },
+          "quality": "Masterful",
+          "type": "COVERED"
+        }
+      ],
+      "id": 4,
+      "item_label": "steel chest",
+      "item_type": "BOX",
+      "maker": {
+        "histfig_id": 230,
+        "is_current_citizen": true,
+        "name": "Al�th Booktrades",
+        "unit_id": 357
+      },
+      "material": {
+        "name": "steel",
+        "token": "INORGANIC:STEEL"
+      },
+      "name": {
+        "dwarven": "Unos Imsal",
+        "english": "The Wails of Racing"
+      },
+      "quality": "Masterful",
+      "value": 14200
+    },
+    {
+      "decorations": [
+        {
+          "material": {
+            "name": "cherry wood",
+            "token": "PLANT:CHERRY:WOOD"
+          },
+          "quality": "Masterful",
+          "type": "BANDS"
+        },
+        {
+          "material": {
+            "name": "cherry wood",
+            "token": "PLANT:CHERRY:WOOD"
+          },
+          "quality": "Masterful",
+          "type": "COVERED"
+        },
+        {
+          "image_resolved": false,
+          "material": {
+            "name": "cherry wood",
+            "token": "PLANT:CHERRY:WOOD"
+          },
+          "quality": "Masterful",
+          "type": "ART_IMAGE"
+        },
+        {
+          "material": {
+            "name": "wool",
+            "token": "CREATURE:ALPACA:HAIR"
+          },
+          "quality": "Masterful",
+          "type": "RINGS_HANGING"
+        },
+        {
+          "material": {
+            "name": "leather",
+            "token": "CREATURE:GOAT:LEATHER"
+          },
+          "quality": "Masterful",
+          "type": "BANDS"
+        },
+        {
+          "material": {
+            "name": "turquoise",
+            "token": "INORGANIC:TURQUOISE"
+          },
+          "quality": "Masterful",
+          "type": "RINGS_HANGING"
+        },
+        {
+          "image_resolved": false,
+          "material": {
+            "name": "wool",
+            "token": "CREATURE:SHEEP:HAIR"
+          },
+          "quality": "Masterful",
+          "type": "ART_IMAGE"
+        }
+      ],
+      "id": 5,
+      "item_label": "cherry wood scepter",
+      "item_type": "SCEPTER",
+      "maker": {
+        "histfig_id": 293,
+        "is_current_citizen": true,
+        "name": "Eral Blockadefolded",
+        "unit_id": 495
+      },
+      "material": {
+        "name": "cherry wood",
+        "token": "PLANT:CHERRY:WOOD"
+      },
+      "name": {
+        "dwarven": "Turelzafal Stibbomonget",
+        "english": "Learnair the Primitive Turquoise"
+      },
+      "quality": "Masterful",
+      "value": 4600
+    }
+  ],
+  "caps": {
+    "decorations_per_artifact": 16,
+    "default_limit": 25,
+    "engravings_scanned_max": 20000,
+    "max_limit": 100,
+    "subject_buckets_max": 40,
+    "top_engravers_max": 10
+  },
+  "cursor": 0,
+  "engravings": {
+    "by_subject": [
+      {
+        "count": 13,
+        "ref": "0:70",
+        "subject": "image #0:70",
+        "subject_resolved": false
+      },
+      {
+        "count": 12,
+        "ref": "0:83",
+        "subject": "image #0:83",
+        "subject_resolved": false
+      },
+      {
+        "count": 1,
+        "ref": "0:139",
+        "subject": "image #0:139",
+        "subject_resolved": false
+      },
+      {
+        "count": 1,
+        "ref": "0:140",
+        "subject": "image #0:140",
+        "subject_resolved": false
+      },
+      {
+        "count": 1,
+        "ref": "0:142",
+        "subject": "image #0:142",
+        "subject_resolved": false
+      },
+      {
+        "count": 1,
+        "ref": "0:143",
+        "subject": "image #0:143",
+        "subject_resolved": false
+      },
+      {
+        "count": 1,
+        "ref": "0:144",
+        "subject": "image #0:144",
+        "subject_resolved": false
+      },
+      {
+        "count": 1,
+        "ref": "0:145",
+        "subject": "image #0:145",
+        "subject_resolved": false
+      },
+      {
+        "count": 1,
+        "ref": "0:146",
+        "subject": "image #0:146",
+        "subject_resolved": false
+      },
+      {
+        "count": 1,
+        "ref": "0:148",
+        "subject": "image #0:148",
+        "subject_resolved": false
+      },
+      {
+        "count": 1,
+        "ref": "0:150",
+        "subject": "image #0:150",
+        "subject_resolved": false
+      },
+      {
+        "count": 1,
+        "ref": "0:151",
+        "subject": "image #0:151",
+        "subject_resolved": false
+      },
+      {
+        "count": 1,
+        "ref": "0:152",
+        "subject": "image #0:152",
+        "subject_resolved": false
+      },
+      {
+        "count": 1,
+        "ref": "0:154",
+        "subject": "image #0:154",
+        "subject_resolved": false
+      },
+      {
+        "count": 1,
+        "ref": "0:155",
+        "subject": "image #0:155",
+        "subject_resolved": false
+      },
+      {
+        "count": 1,
+        "ref": "0:156",
+        "subject": "image #0:156",
+        "subject_resolved": false
+      },
+      {
+        "count": 1,
+        "ref": "0:157",
+        "subject": "image #0:157",
+        "subject_resolved": false
+      },
+      {
+        "count": 1,
+        "ref": "0:158",
+        "subject": "image #0:158",
+        "subject_resolved": false
+      },
+      {
+        "count": 1,
+        "ref": "0:159",
+        "subject": "image #0:159",
+        "subject_resolved": false
+      },
+      {
+        "count": 1,
+        "ref": "0:160",
+        "subject": "image #0:160",
+        "subject_resolved": false
+      },
+      {
+        "count": 1,
+        "ref": "0:161",
+        "subject": "image #0:161",
+        "subject_resolved": false
+      },
+      {
+        "count": 1,
+        "ref": "0:162",
+        "subject": "image #0:162",
+        "subject_resolved": false
+      },
+      {
+        "count": 1,
+        "ref": "0:163",
+        "subject": "image #0:163",
+        "subject_resolved": false
+      },
+      {
+        "count": 1,
+        "ref": "0:164",
+        "subject": "image #0:164",
+        "subject_resolved": false
+      },
+      {
+        "count": 1,
+        "ref": "0:165",
+        "subject": "image #0:165",
+        "subject_resolved": false
+      },
+      {
+        "count": 1,
+        "ref": "0:167",
+        "subject": "image #0:167",
+        "subject_resolved": false
+      },
+      {
+        "count": 1,
+        "ref": "0:168",
+        "subject": "image #0:168",
+        "subject_resolved": false
+      },
+      {
+        "count": 1,
+        "ref": "0:169",
+        "subject": "image #0:169",
+        "subject_resolved": false
+      },
+      {
+        "count": 1,
+        "ref": "0:171",
+        "subject": "image #0:171",
+        "subject_resolved": false
+      },
+      {
+        "count": 1,
+        "ref": "0:173",
+        "subject": "image #0:173",
+        "subject_resolved": false
+      },
+      {
+        "count": 1,
+        "ref": "0:174",
+        "subject": "image #0:174",
+        "subject_resolved": false
+      },
+      {
+        "count": 1,
+        "ref": "0:175",
+        "subject": "image #0:175",
+        "subject_resolved": false
+      },
+      {
+        "count": 1,
+        "ref": "0:176",
+        "subject": "image #0:176",
+        "subject_resolved": false
+      },
+      {
+        "count": 1,
+        "ref": "0:177",
+        "subject": "image #0:177",
+        "subject_resolved": false
+      },
+      {
+        "count": 1,
+        "ref": "0:178",
+        "subject": "image #0:178",
+        "subject_resolved": false
+      },
+      {
+        "count": 1,
+        "ref": "0:179",
+        "subject": "image #0:179",
+        "subject_resolved": false
+      },
+      {
+        "count": 1,
+        "ref": "0:180",
+        "subject": "image #0:180",
+        "subject_resolved": false
+      },
+      {
+        "count": 1,
+        "ref": "0:181",
+        "subject": "image #0:181",
+        "subject_resolved": false
+      },
+      {
+        "count": 1,
+        "ref": "0:182",
+        "subject": "image #0:182",
+        "subject_resolved": false
+      },
+      {
+        "count": 1,
+        "ref": "0:183",
+        "subject": "image #0:183",
+        "subject_resolved": false
+      }
+    ],
+    "by_subject_truncated": true,
+    "distinct_subjects": 96,
+    "quality": {
+      "Exceptional": 1,
+      "FinelyCrafted": 53,
+      "Ordinary": 16,
+      "Superior": 17,
+      "WellCrafted": 32
+    },
+    "scan_truncated": false,
+    "scanned": 119,
+    "subjects_resolvable": false,
+    "top_engravers": [
+      {
+        "count": 64,
+        "histfig_id": 172,
+        "name": "At�r Coalgulfs",
+        "unit_id": 112
+      },
+      {
+        "count": 55,
+        "histfig_id": 171,
+        "name": "Sigun Princessshoots",
+        "unit_id": 113
+      }
+    ],
+    "total_present": 119
+  },
+  "returned": 6
+}

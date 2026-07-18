@@ -1,0 +1,19 @@
+{
+  "counts": {
+    "cloth": 209,
+    "drink": 3075,
+    "food": 2795,
+    "fuel": 835,
+    "prepared_meals": 1583,
+    "stone": 2075,
+    "tanned_hides": 956,
+    "wood": 305
+  },
+  "drink_days": 662,
+  "food_days": 1505,
+  "notable_high": [
+    "stone"
+  ],
+  "notable_low": [],
+  "population": 78
+}
