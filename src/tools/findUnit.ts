@@ -7,6 +7,7 @@ import { z } from 'zod';
 import type { ToolDef } from '../register.ts';
 
 export interface UnitMatch {
+  unit_id: number; // the live unit id — pass to citizen()/identify() to go deeper
   name: string;
   profession: string;
   age: number;

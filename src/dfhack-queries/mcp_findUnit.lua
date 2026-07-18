@@ -48,6 +48,7 @@ for _, u in ipairs(dfhack.units.getCitizens(true)) do
       local sc = dfhack.units.getStressCategory(u)
       local sid = u.military and u.military.squad_id or -1
       matches[#matches+1] = {
+        unit_id    = u.id,   -- the live id to chain into citizen()/identify()
         name       = name,
         profession = prof,
         age        = math.floor(dfhack.units.getAge(u, true)),
