@@ -21,17 +21,20 @@
 --     (>=0 means that yield exists: drink/seed/thread/mill/extract_*), .growths[],
 --     .material[] (produced materials).
 --   * REACTION: df.global.world.raws.reactions.reactions -> reaction. .code/.name,
---     .skill (df.job_skill), .building.type[0] (df.building_type) + .subtype[0]
---     (df.workshop_type / df.furnace_type) + .custom[0] (links to a custom
---     building_def by its .id), .reagents[]/.products[] (item_type via df.item_type,
---     reaction_class carries a material class).
+--     .skill (df.job_skill), .building.{type,subtype,custom} are PARALLEL vectors
+--     (a reaction can run at several buildings — iterate all i, not just [0]):
+--     type[i] (df.building_type) + subtype[i] (df.workshop_type / df.furnace_type)
+--     + custom[i] (links to a custom building_def by its .id). .reagents[]/.products[]
+--     (item_type via df.item_type, reaction_class carries a material class); both
+--     reagents and products are POLYMORPHIC — read fields via sget (improvement
+--     products lack item_type/count).
 --   * ITEM: df.global.world.raws.itemdefs.all -> itemdef_*st. Class from the type
 --     name (itemdef_<class>st). .id/.name/.name_plural/.adjective/.value + a
 --     per-class stat whitelist read defensively (missing fields pcall-skipped).
 --   * BUILDING: df.global.world.raws.buildings.all -> building_def_workshopst
 --     (custom, raws-defined workshops only; built-in shops are hardcoded, not in
 --     raws). .code/.name/.building_type/.labor_description/.dim_x/.dim_y, plus the
---     reactions whose .building.custom[0] == this def's .id.
+--     reactions where ANY .building.custom[i] == this def's .id (capped at 8).
 --
 -- Parameters arrive as native argv (args[1]=query, args[2]=kind), so there is NO
 -- escaping — the search term is just data.
@@ -509,23 +512,29 @@ local function find_plant(q)
 end
 
 -- ---- REACTION kind -------------------------------------------------------
-local function reaction_building(r)
+-- A reaction can list SEVERAL buildings (parallel type/subtype/custom vectors) —
+-- e.g. MAKE_PEARLASH runs at both the Kiln and the Magma Kiln, and ~35% of raws
+-- reactions do. Return every aligned entry, not just index 0.
+local function reaction_buildings(r)
   local b = r.building
-  if #b.type == 0 then return nil end
-  local category = tostring(df.building_type[b.type[0]])
-  local subtype = (#b.subtype > 0) and b.subtype[0] or -1
-  local workshop
-  if category == 'Workshop' and subtype >= 0 then workshop = tostring(df.workshop_type[subtype])
-  elseif category == 'Furnace' and subtype >= 0 then workshop = tostring(df.furnace_type[subtype]) end
-  local custom_token
-  local custom = (#b.custom > 0) and b.custom[0] or -1
-  if custom >= 0 then
-    local defs = df.global.world.raws.buildings.all
-    for i = 0, #defs - 1 do
-      if defs[i].id == custom then custom_token = tostring(defs[i].code); break end
+  local out = {}
+  local defs = df.global.world.raws.buildings.all
+  for i = 0, #b.type - 1 do
+    local category = tostring(df.building_type[b.type[i]])
+    local subtype = (i < #b.subtype) and b.subtype[i] or -1
+    local workshop
+    if category == 'Workshop' and subtype >= 0 then workshop = tostring(df.workshop_type[subtype])
+    elseif category == 'Furnace' and subtype >= 0 then workshop = tostring(df.furnace_type[subtype]) end
+    local custom_token
+    local custom = (i < #b.custom) and b.custom[i] or -1
+    if custom >= 0 then
+      for k = 0, #defs - 1 do
+        if defs[k].id == custom then custom_token = tostring(defs[k].code); break end
+      end
     end
+    out[#out+1] = { category = category, workshop = workshop, custom = custom_token }
   end
-  return { category = category, workshop = workshop, custom = custom_token }
+  return out
 end
 
 -- reaction_reagent is polymorphic too; item_token reads its fields defensively.
@@ -593,14 +602,14 @@ local function reaction_dossier(r)
     token = tostring(r.code),
     name = (r.name ~= '' and tostring(r.name)) or nil,
     skill = (r.skill and r.skill >= 0) and tostring(df.job_skill[r.skill]) or nil,
-    building = reaction_building(r),
+    buildings = reaction_buildings(r),
     reagents = reaction_reagents(r),
     products = reaction_products(r),
   }
 end
 
 local function reaction_stub(r)
-  local b = reaction_building(r)
+  local b = reaction_buildings(r)[1]
   local where = b and (b.custom or b.workshop or b.category) or 'reaction'
   return { kind = 'reaction', token = tostring(r.code),
            name = (r.name ~= '' and tostring(r.name)) or tostring(r.code),
@@ -709,20 +718,29 @@ local function find_item(q)
 end
 
 -- ---- BUILDING kind (custom raws-defined workshops) -----------------------
+-- Match ANY of a reaction's custom-building entries (a reaction can run at
+-- several), and cap the list at MAX so a modded workshop with dozens of
+-- reactions stays glanceable — reporting the full count when truncated.
 local function building_reactions(bd)
-  local out = {}
+  local out, total = {}, 0
   local rs = df.global.world.raws.reactions.reactions
   for i = 0, #rs - 1 do
-    local b = rs[i].building
-    if #b.custom > 0 and b.custom[0] == bd.id then
-      out[#out+1] = { token = tostring(rs[i].code),
-                      name = (rs[i].name ~= '' and tostring(rs[i].name)) or nil }
+    local custom = rs[i].building.custom
+    local match = false
+    for k = 0, #custom - 1 do if custom[k] == bd.id then match = true; break end end
+    if match then
+      total = total + 1
+      if #out < MAX then
+        out[#out+1] = { token = tostring(rs[i].code),
+                        name = (rs[i].name ~= '' and tostring(rs[i].name)) or nil }
+      end
     end
   end
-  return out
+  return out, total
 end
 
 local function building_dossier(bd)
+  local reactions, total = building_reactions(bd)
   return {
     kind = 'building',
     token = tostring(bd.code),
@@ -732,7 +750,9 @@ local function building_dossier(bd)
     dim_x = bd.dim_x,
     dim_y = bd.dim_y,
     build_stages = bd.build_stages,
-    reactions = building_reactions(bd),
+    reactions = reactions,
+    reactions_truncated = (total > #reactions) or nil,
+    reactions_total = (total > #reactions) and total or nil,
   }
 end
 

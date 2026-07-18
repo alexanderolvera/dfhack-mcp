@@ -112,7 +112,7 @@ export interface ReactionDossier {
   token: string;
   name?: string;
   skill?: string;
-  building?: ReactionBuilding;
+  buildings: ReactionBuilding[]; // a reaction can run at several buildings
   reagents: ReactionReagent[];
   products: ReactionProduct[];
 }
@@ -152,7 +152,9 @@ export interface BuildingDossier {
   dim_x: number;
   dim_y: number;
   build_stages: number;
-  reactions: BuildingReaction[];
+  reactions: BuildingReaction[]; // capped at 8
+  reactions_truncated?: boolean; // set when more than 8 reactions run here
+  reactions_total?: number; // full count, present only when truncated
 }
 
 export type Dossier =
@@ -187,7 +189,7 @@ const DOSSIER_LIST_FIELDS: Record<GameDataKind, string[]> = {
   creature: ['flags', 'attacks', 'interactions'],
   material: ['flags'],
   plant: ['seasons', 'biomes', 'yields', 'growths', 'materials'],
-  reaction: ['reagents', 'products'],
+  reaction: ['buildings', 'reagents', 'products'],
   item: ['attacks'],
   building: ['reactions'],
 };
