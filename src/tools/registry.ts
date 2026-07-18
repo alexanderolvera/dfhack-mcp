@@ -19,6 +19,7 @@ import { injuriesAndHealthDef } from './injuriesAndHealth.ts';
 import { jobsAndLaborDef } from './jobsAndLabor.ts';
 import { mandatesAndJusticeDef } from './mandatesAndJustice.ts';
 import { militaryDef } from './military.ts';
+import { moodsDef } from './moods.ts';
 import { roomsAndZonesDef } from './roomsAndZones.ts';
 import { runLuaDef } from './runLua.ts';
 import { siteHistoryDef } from './siteHistory.ts';
@@ -43,6 +44,7 @@ export const ALL_TOOLS: ToolDef[] = [
   jobsAndLaborDef,
   mandatesAndJusticeDef,
   militaryDef,
+  moodsDef,
   roomsAndZonesDef,
   runLuaDef,
   siteHistoryDef,
