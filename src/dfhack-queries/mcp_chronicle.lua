@@ -172,12 +172,17 @@ if n == 0 then
     cursor = since or (next_id and (next_id - 1)) or 0,
     oldest_retained_id = nil,
     newest_retained_id = nil,
+    next_report_id = next_id,
     window_size = 0,
+    since = since,
     pruned = false,
+    limit = limit,
     count = 0,
+    more = false,
+    omitted_by_limit = 0,
     battle_collapsed = 0,
-    returned_range = nil,
     filtered_categories = has_filter and cats_arg or nil,
+    order = 'ascending',
     events = {},
     note = 'no reports retained',
   })
@@ -186,9 +191,11 @@ end
 
 local oldest_id = reports[0].id
 local newest_id = reports[n - 1].id
--- pruned: the caller's cursor sits at/before the retained window, so we cannot
--- guarantee the (since, oldest) span wasn't front-pruned.
-local pruned = (since ~= nil) and (since < oldest_id)
+-- pruned: the scan returns only ids > since, so the first id the caller still
+-- wants is since+1. Events were actually lost only when that id falls below the
+-- retained window (since+1 < oldest_id). At since == oldest_id-1 the next wanted
+-- id IS oldest_id (retained), so nothing was pruned — don't over-warn.
+local pruned = (since ~= nil) and (since + 1 < oldest_id)
 
 -- ---- pass 1: build events (ascending), folding continuations & capping runs
 local function pos_anchor(r)
