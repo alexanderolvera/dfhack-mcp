@@ -15,6 +15,7 @@ import { military } from './tools/military.ts';
 import { injuriesAndHealth } from './tools/injuriesAndHealth.ts';
 import { defenses } from './tools/defenses.ts';
 import { findUnit } from './tools/findUnit.ts';
+import { siteHistory } from './tools/siteHistory.ts';
 import { gameData } from './tools/gameData.ts';
 import { wikiSearchTool } from './tools/wikiSearch.ts';
 import { wikiLookupTool } from './tools/wikiLookup.ts';
@@ -136,6 +137,22 @@ registerReadTool(
     'raws, so bridges and levers are reported separately, not linked. Returns ' +
     '{"error":"no fort loaded"} if no fort is active.',
   defenses
+);
+
+registerReadTool(
+  server,
+  'site_history',
+  'Site history',
+  "This fort's entry in the PERMANENT world saga (the durable history event log, " +
+    'not the pruned live report stream). Returns the founding (year, in-game date, ' +
+    'and owning civilization in both Dwarven and English), the fort name in Dwarven ' +
+    'and English with a word-by-word etymology, prior sieges/battles fought AT this ' +
+    'site (attacker/defender civ and general, capped at 20, most-recent-first), and ' +
+    'the notable historical figures who died here (name, race, cause, slayer, capped ' +
+    'at 25). Scoped strictly to the loaded site. A young fort with no war history ' +
+    'degrades to empty battle/death lists (not an error). Returns ' +
+    '{"error":"no fort loaded"} if no fort is active.',
+  siteHistory
 );
 
 registerQueryTool<{ query: string }>(
