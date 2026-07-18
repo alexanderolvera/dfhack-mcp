@@ -14,6 +14,7 @@ import { jobsAndLabor } from './tools/jobsAndLabor.ts';
 import { military } from './tools/military.ts';
 import { injuriesAndHealth } from './tools/injuriesAndHealth.ts';
 import { defenses } from './tools/defenses.ts';
+import { artifactsAndEngravings } from './tools/artifacts.ts';
 import { findUnit } from './tools/findUnit.ts';
 import { siteHistory } from './tools/siteHistory.ts';
 import { gameData } from './tools/gameData.ts';
@@ -166,6 +167,39 @@ registerQueryTool<{ query: string }>(
     'or "find Urist". Returns {"error":"no fort loaded"} if no fort is active.',
   { query: z.string().min(1).describe('Name fragment or profession to search for') },
   ({ query }) => findUnit(query)
+);
+
+registerQueryTool<{ limit?: number; cursor?: string }>(
+  server,
+  'artifacts_and_engravings',
+  'Artifacts and engravings',
+  "The fort's art, as labeled facts. Returns the named ARTIFACTS (paginated): " +
+    'each with its name (dwarven + translated), item type and base material, ' +
+    'created value, quality, maker (with a live unit_id ONLY when the maker is a ' +
+    'living current citizen, else just the historical-figure name), the ' +
+    'decorations on it (bands/covered/rings/images with their materials), and any ' +
+    'engraved inscription text (e.g. a slab\'s secret). Plus an aggregated ' +
+    'ENGRAVINGS summary for the map: engravings grouped BY SUBJECT with counts ' +
+    '(never itemized per tile), a quality histogram, and the top engravers. Note: ' +
+    'when the world\'s art images are not loaded, the human scene text is ' +
+    'unavailable (subjects_resolvable=false) and subjects are keyed by their ' +
+    'stable image reference instead — this is reported, never fabricated. Use ' +
+    'limit + next_cursor to page through artifacts; see `caps` for all documented ' +
+    'limits. Returns {"error":"no fort loaded"} if no fort is active.',
+  {
+    limit: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(100)
+      .optional()
+      .describe('Artifacts per page (default 25, max 100). Engravings are always fully aggregated.'),
+    cursor: z
+      .string()
+      .optional()
+      .describe('Opaque pagination cursor from a previous call\'s next_cursor; omit for the first page.'),
+  },
+  ({ limit, cursor }) => artifactsAndEngravings(limit, cursor)
 );
 
 // --- Reference tier: game_data (this world's raws) + wiki (general knowledge) ---
