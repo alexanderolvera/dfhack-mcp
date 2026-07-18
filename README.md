@@ -107,6 +107,7 @@ The **sensors** (no arguments; report on the loaded fort):
 - **`defenses()`** — active hostiles with map positions and tile-distance/direction/z-delta to the fort core and nearest drawbridge, plus a controllable-structure inventory (bridges, levers, floodgates, hatches, cage traps, doors).
 - **`find_unit(query)`** — look up citizens by name fragment or profession; a compact dossier per match (profession, age, stress, job, squad, health flags).
 - **`site_history()`** — the fort's entry in the permanent world saga: founding (year, in-game date, owning civ in Dwarven + English), the fort name in both tongues with a word etymology, prior sieges/battles fought at the site (attacker/defender civ + general), and the notable figures who died here. Reads the durable event log, scoped strictly to the loaded site; a young fort degrades to empty battle/death lists.
+- **`rooms_and_zones()`** — the facility inventory, each count paired with its demand-side number: bedrooms (assigned/unassigned vs. adults without one), dining halls + seats, the hospital (beds, traction benches, well-inside, medical supplies stocked), wells (working state + water source), temples (dedicated deities, all-inclusive, and deities worshipped without a temple), taverns, libraries, guildhalls, and coffins free vs. dead awaiting burial. The supply-side companion to `unmet_needs()`; wells are capped and bedroom/coffin detail aggregated so mega-forts stay flat.
 
 The **reference** tools (`wiki_*` are pure HTTP and work without the game;
 `game_data`/`identify` need a loaded world):

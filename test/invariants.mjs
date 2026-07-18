@@ -119,6 +119,73 @@ export const INVARIANTS = [
     },
   },
   {
+    name: 'rooms_counts_nonnegative_and_well_cap',
+    tools: ['rooms_and_zones'],
+    desc: 'every facility/demand count is a non-negative integer and the wells list honors its cap + truncation flag',
+    check(p) {
+      const d = p.rooms_and_zones;
+      const out = [];
+      const nn = {
+        'bedrooms.assigned': d.bedrooms?.assigned,
+        'bedrooms.unassigned': d.bedrooms?.unassigned,
+        'bedrooms.adults_without': d.bedrooms?.adults_without,
+        'bedrooms.dormitories': d.bedrooms?.dormitories,
+        'dining.halls': d.dining?.halls,
+        'dining.seats': d.dining?.seats,
+        taverns: d.taverns,
+        libraries: d.libraries,
+        guildhalls: d.guildhalls,
+        coffins_free: d.coffins_free,
+        coffins_used: d.coffins_used,
+        dead_unburied: d.dead_unburied,
+        wells_total: d.wells_total,
+      };
+      for (const [k, v] of Object.entries(nn)) {
+        if (!(isInt(v) && v >= 0)) out.push(`${k}=${v} is not a non-negative integer`);
+      }
+      const wells = d.wells;
+      if (!Array.isArray(wells)) {
+        out.push('wells is not an array');
+      } else {
+        if (wells.length > 20) out.push(`wells list length ${wells.length} exceeds the cap of 20`);
+        // wells_truncated must agree with whether the full total exceeds what's listed.
+        const shouldTrunc = isInt(d.wells_total) && d.wells_total > wells.length;
+        if (Boolean(d.wells_truncated) !== shouldTrunc)
+          out.push(`wells_truncated=${d.wells_truncated} disagrees with wells_total ${d.wells_total} vs listed ${wells.length}`);
+        if (!d.wells_truncated && isInt(d.wells_total) && d.wells_total !== wells.length)
+          out.push(`untruncated wells_total ${d.wells_total} !== listed ${wells.length}`);
+      }
+      return out;
+    },
+  },
+  {
+    name: 'rooms_hospital_and_worship_coherent',
+    tools: ['rooms_and_zones'],
+    desc: 'hospital supply levels are valid, a well-in-hospital implies a well exists, and an all-inclusive temple leaves no worshipper needing one',
+    check(p) {
+      const d = p.rooms_and_zones;
+      const out = [];
+      const h = d.hospital ?? {};
+      if (h.zoned && h.supplies) {
+        const LEVELS = new Set(['none', 'low', 'ok']);
+        for (const k of ['thread', 'cloth']) {
+          if (!LEVELS.has(h.supplies[k])) out.push(`hospital.supplies.${k}="${h.supplies[k]}" is not a valid level`);
+        }
+        for (const k of ['splints', 'crutches']) {
+          if (!(isInt(h.supplies[k]) && h.supplies[k] >= 0)) out.push(`hospital.supplies.${k}=${h.supplies[k]} is not a non-negative integer`);
+        }
+      }
+      // A well counted inside the hospital must appear in the fort's well inventory.
+      if (h.well_in_hospital === true && Array.isArray(d.wells) && d.wells.length === 0)
+        out.push('hospital.well_in_hospital is true but the fort reports zero wells');
+      // An all-inclusive temple satisfies every worshipper (documented mechanic).
+      const t = d.temples ?? {};
+      if (t.all_inclusive === true && Array.isArray(t.needed_by_worshippers) && t.needed_by_worshippers.length > 0)
+        out.push(`all-inclusive temple present, yet needed_by_worshippers lists ${t.needed_by_worshippers.length}`);
+      return out;
+    },
+  },
+  {
     name: 'alerts_are_nonempty_strings',
     tools: ['fort_status', 'injuries_and_health'],
     desc: 'alerts, when present, are human-readable non-empty strings',

@@ -1,0 +1,73 @@
+{
+  "alerts": [],
+  "bedrooms": {
+    "adults_without": 0,
+    "assigned": 78,
+    "dormitories": 1,
+    "unassigned": 53
+  },
+  "coffins_free": 38,
+  "coffins_used": 1,
+  "dead_unburied": 0,
+  "dining": {
+    "halls": 4,
+    "seats": 36
+  },
+  "guildhalls": 3,
+  "hospital": {
+    "beds": 8,
+    "supplies": {
+      "cloth": "ok",
+      "crutches": 5,
+      "splints": 5,
+      "thread": "ok"
+    },
+    "traction_benches": 2,
+    "well_in_hospital": true,
+    "zoned": true
+  },
+  "libraries": 1,
+  "taverns": 1,
+  "temples": {
+    "all_inclusive": true,
+    "dedicated": [
+      "Ertal",
+      "Thocit"
+    ],
+    "needed_by_worshippers": []
+  },
+  "wells": [
+    {
+      "source": "water",
+      "working": true,
+      "z": 124
+    },
+    {
+      "source": "water",
+      "working": true,
+      "z": 124
+    },
+    {
+      "source": "water",
+      "working": true,
+      "z": 124
+    },
+    {
+      "source": "water",
+      "working": true,
+      "z": 124
+    },
+    {
+      "source": "water",
+      "working": true,
+      "z": 124
+    },
+    {
+      "source": "water",
+      "working": true,
+      "z": 124
+    }
+  ],
+  "wells_total": 6,
+  "wells_truncated": false
+}
