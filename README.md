@@ -103,6 +103,7 @@ The **sensors** (no arguments; report on the loaded fort):
 - **`unmet_needs()`** — the needs system aggregated: top unmet needs ranked by how many dwarves are distracted, each with a build/action suggestion.
 - **`jobs_and_labor()`** — workforce utilization: busy vs. idle adults (children excluded), idle %, and a ranked breakdown of active jobs.
 - **`military()`** — squads, enlisted soldiers, filled positions, and readiness against hostiles on the map (great-danger split out).
+- **`mandates_and_justice()`** — the nobility's overhead: active production mandates and export bans (item, count, deadline), unmet noble room demands (office/bedroom/dining/tomb), and justice state (open cases, convictions awaiting punishment, and restraint capacity built vs. free).
 - **`injuries_and_health()`** — wounded / patients / bedridden / unconscious counts, plus what care is needed (diagnosis, surgery, suture, …).
 - **`defenses()`** — active hostiles with map positions and tile-distance/direction/z-delta to the fort core and nearest drawbridge, plus a controllable-structure inventory (bridges, levers, floodgates, hatches, cage traps, doors).
 - **`find_unit(query)`** — look up citizens by name fragment or profession; a compact dossier per match (profession, age, stress, job, squad, health flags).

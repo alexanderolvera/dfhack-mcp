@@ -206,4 +206,44 @@ export const INVARIANTS = [
       return out;
     },
   },
+  {
+    name: 'justice_counts_self_consistent',
+    tools: ['mandates_and_justice'],
+    desc: 'justice sub-counts are non-negative and bounded by their supersets, and mandate/demand rows are well-formed',
+    check(p) {
+      const d = p.mandates_and_justice;
+      const j = d.justice ?? {};
+      const out = [];
+      // Every justice tally is a non-negative integer.
+      for (const k of [
+        'open_cases',
+        'pending_punishments',
+        'prison_sentences',
+        'scheduled_beatings',
+        'scheduled_hammerstrikes',
+        'restraints_built',
+        'restraints_free',
+      ]) {
+        if (!(isInt(j[k]) && j[k] >= 0)) out.push(`justice.${k}=${j[k]} is not a non-negative integer`);
+      }
+      // A prison sentence / scheduled beating is itself a pending punishment, so
+      // it can never exceed the total; a free restraint can't exceed those built.
+      if (!inRange(j.prison_sentences, 0, j.pending_punishments))
+        out.push(`prison_sentences=${j.prison_sentences} exceeds pending_punishments=${j.pending_punishments}`);
+      if (!inRange(j.scheduled_beatings, 0, j.pending_punishments))
+        out.push(`scheduled_beatings=${j.scheduled_beatings} exceeds pending_punishments=${j.pending_punishments}`);
+      if (!inRange(j.restraints_free, 0, j.restraints_built))
+        out.push(`restraints_free=${j.restraints_free} outside [0, restraints_built=${j.restraints_built}]`);
+      // Mandate rows: remaining is between zero and the total quota.
+      (d.mandates ?? []).forEach((m, i) => {
+        if (!inRange(m.remaining, 0, m.count))
+          out.push(`mandates[${i}].remaining=${m.remaining} outside [0, count=${m.count}]`);
+      });
+      // Every listed demand is an UNMET one (met === false), by construction.
+      (d.demands ?? []).forEach((dm, i) => {
+        if (dm.met !== false) out.push(`demands[${i}].met=${dm.met} is not false`);
+      });
+      return out;
+    },
+  },
 ];
