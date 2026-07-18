@@ -5,6 +5,7 @@
 // scoped strictly to the loaded site. Thin wrapper over the SITE_HISTORY Lua query.
 
 import { runJsonScript } from '../query.ts';
+import type { ToolDef } from '../register.ts';
 
 /** One word of the site name, glossed to its English root + part of speech. */
 export interface NameEtymon {
@@ -67,3 +68,19 @@ export function siteHistory(): Promise<SiteHistory | { error: string }> {
     'notable_deaths',
   ]);
 }
+
+export const siteHistoryDef: ToolDef = {
+  name: 'site_history',
+  title: 'Site history',
+  description:
+    "This fort's entry in the PERMANENT world saga (the durable history event log, " +
+    'not the pruned live report stream). Returns the founding (year, in-game date, ' +
+    'and owning civilization in both Dwarven and English), the fort name in Dwarven ' +
+    'and English with a word-by-word etymology, prior sieges/battles fought AT this ' +
+    'site (attacker/defender civ and general, capped at 20, most-recent-first), and ' +
+    'the notable historical figures who died here (name, race, cause, slayer, capped ' +
+    'at 25). Scoped strictly to the loaded site. A young fort with no war history ' +
+    'degrades to empty battle/death lists (not an error). Returns ' +
+    '{"error":"no fort loaded"} if no fort is active.',
+  run: siteHistory,
+};

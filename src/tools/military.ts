@@ -2,6 +2,7 @@
 // Thin wrapper over the MILITARY Lua query.
 
 import { runJsonScript } from '../query.ts';
+import type { ToolDef } from '../register.ts';
 
 export interface SquadRow {
   name: string;
@@ -23,3 +24,14 @@ export interface Military {
 export function military(): Promise<Military | { error: string }> {
   return runJsonScript<Military>('military', [], ['squads', 'alerts']);
 }
+
+export const militaryDef: ToolDef = {
+  name: 'military',
+  title: 'Military',
+  description:
+    "The fort's military: number of squads, how many living present dwarves are " +
+    'actually enlisted (soldiers), filled squad positions, and readiness read ' +
+    'against hostiles currently on the map (great-danger split out). Warns if ' +
+    'the fort is undefended. Returns {"error":"no fort loaded"} if no fort is active.',
+  run: military,
+};

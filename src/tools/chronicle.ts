@@ -6,6 +6,8 @@
 // paths and the combat-collapse / pruning contract.
 
 import { runJsonScript } from '../query.ts';
+import { z } from 'zod';
+import type { ToolDef } from '../register.ts';
 
 /** The triage buckets a report can fall into; anything unmapped is "other". */
 export type ChronicleCategory =
@@ -76,3 +78,63 @@ export function chronicle(
   ];
   return runJsonScript<Chronicle>('chronicle', args, ['events']);
 }
+
+const CHRONICLE_CATEGORIES = [
+  'death',
+  'birth',
+  'marriage',
+  'battle',
+  'siege',
+  'mood',
+  'artifact',
+  'migrants',
+  'diplomacy',
+  'cave-in',
+  'megabeast',
+  'other',
+] as const;
+
+export const chronicleDef: ToolDef = {
+  name: 'chronicle',
+  title: 'Chronicle',
+  description:
+    "The fort's announcement/report stream (combat, deaths, moods, artifacts, " +
+    'sieges, migrants, ...) as triaged, cursor-addressable events. Reads the ' +
+    'rolling, front-pruned report window. Each event carries a stable `id` ' +
+    '(monotonic and save/load-stable); pass the returned top-level `cursor` back ' +
+    'as `since` to fetch only newer events (id > since). Omitting `since` returns ' +
+    'the most recent `limit` events (default 50, max 200), oldest-to-newest. If ' +
+    '`since` predates the retained window the response sets pruned:true (earlier ' +
+    'events are gone — not silently omitted). Events are triaged into categories ' +
+    '(death, birth, marriage, battle, siege, mood, artifact, migrants, diplomacy, ' +
+    'cave-in, megabeast, other); filter with `categories`. Combat spam is tamed: ' +
+    'repeat_count is honored, wrapped continuation lines fold into their event, ' +
+    'and long consecutive battle runs collapse into a single marker (collapsed:' +
+    'true with collapsed_count) so one siege cannot flood the window — see ' +
+    'battle_collapsed. Facts only: unit refs appear only when a report names a ' +
+    'speaker (speaker_id != -1); combat reports carry no reliable unit, so they ' +
+    'get a pos tile anchor instead. Returns {"error":"no fort loaded"} if no fort ' +
+    'is active.',
+  shape: {
+    since: z.coerce
+      .number()
+      .int()
+      .optional()
+      .describe('Cursor: return only events with id greater than this (from a prior `cursor`).'),
+    categories: z
+      .preprocess(
+        (v) => (typeof v === 'string' ? v.split(',').map((s) => s.trim()).filter(Boolean) : v),
+        z.array(z.enum(CHRONICLE_CATEGORIES)).optional()
+      )
+      .describe(
+        'Optional subset of categories to return: death, birth, marriage, battle, ' +
+          'siege, mood, artifact, migrants, diplomacy, cave-in, megabeast, other.'
+      ),
+    limit: z.coerce
+      .number()
+      .int()
+      .optional()
+      .describe('Max events to return (default 50, capped at 200); newest are kept.'),
+  },
+  run: ({ since, categories, limit }) => chronicle(since, categories, limit),
+};

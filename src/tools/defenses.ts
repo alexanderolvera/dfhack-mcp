@@ -2,6 +2,7 @@
 // Thin wrapper over the DEFENSES Lua query.
 
 import { runJsonScript } from '../query.ts';
+import type { ToolDef } from '../register.ts';
 
 export interface Geo {
   dist: number; // 8-directional tile distance (Chebyshev)
@@ -87,3 +88,32 @@ export async function defenses(): Promise<Defenses | { error: string }> {
   }
   return res;
 }
+
+export const defensesDef: ToolDef = {
+  name: 'defenses',
+  title: 'Defenses',
+  description:
+    'Where the threats are versus what you have to fight them with. Returns active ' +
+    'hostiles with map positions and their geometry to the fort core and to the ' +
+    'nearest drawbridge (dist = 8-directional tile count (Chebyshev), dz = ' +
+    'z-levels with + meaning above the threat, dir = compass bearing), plus an ' +
+    'inventory of controllable defensive structures (drawbridges with positions, ' +
+    'levers, floodgates, hatches, cage traps, locked doors). Terrain-aware: each ' +
+    'threat is classified inside/outside the fort\'s walled perimeter — "inside" ' +
+    'means its tile shares a walkability group with your citizens, i.e. a hostile ' +
+    'could walk to your population through connected open space without breaching ' +
+    'a wall (walk_group 0 = no walkable footing, e.g. a flier over open air). ' +
+    'A perimeter_terrain field reads the busiest citizen level via the terrain ' +
+    'substrate: an ASCII tile grid (with legend) plus counts of walls, ' +
+    'fortifications (with positions), and open-to-sky vs covered vs undiscovered ' +
+    'tiles. Facts only — decide the tactics yourself, and use identify() for a ' +
+    'creature\'s trait facts (e.g. cage traps do not hold a TRAPAVOID creature). ' +
+    'Caveats: inside/outside is walking connectivity, so a FLIER or ' +
+    'BUILDING_DESTROYER can reach you while reported "outside" — cross-reference ' +
+    'its traits. perimeter_terrain is a single z-level and does not synthesize a ' +
+    'multi-z approach vector; undiscovered tiles are fog of war ("?") and never ' +
+    'leak their real type. Which lever raises which bridge is not recorded in the ' +
+    'raws, so bridges and levers are reported separately, not linked. Returns ' +
+    '{"error":"no fort loaded"} if no fort is active.',
+  run: defenses,
+};

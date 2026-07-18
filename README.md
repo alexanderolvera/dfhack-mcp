@@ -131,8 +131,8 @@ DFHACK_MCP_DEV=1 node src/index.ts
 
 ```
 src/
-  index.ts            server construction + the 13 tool registrations + stdio wiring
-  register.ts         registerReadTool / registerQueryTool helpers (result + error framing)
+  index.ts            server construction + registers the collected tools + stdio wiring
+  register.ts         ToolDef types + registerTool dispatcher (result + error framing)
   dfclient.ts         single RPC connection: lazy connect, one-shot reconnect,
                       registers dfhack-queries/ as a DFHack script path
   query.ts            invoke a named DFHack script -> parse JSON -> normalize list fields
@@ -146,7 +146,9 @@ src/
     cache.ts            git-ignored disk cache (cache-first, ~30-day TTL)
     lookup.ts           the wiki_lookup orchestration
     index.ts            public re-exports
-  tools/              one file per tool: run the query/client call, parse, normalize
+  tools/              one file per tool: run the query/client call, parse, normalize,
+                      and export a ToolDef descriptor (name/title/description/schema/handler)
+    registry.ts         imports every ToolDef into ALL_TOOLS (the single tool list)
     identify/           tactics.ts (trait derivation) + wiki.ts (topic selection) + index.ts (fusion)
 scripts/
   call-tool.mjs       end-to-end harness (real MCP client over stdio)

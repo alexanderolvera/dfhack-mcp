@@ -2,6 +2,7 @@
 // Thin wrapper over the THREATS Lua query.
 
 import { runJsonScript } from '../query.ts';
+import type { ToolDef } from '../register.ts';
 
 export interface ThreatGroup {
   name: string;
@@ -36,3 +37,15 @@ export async function threats(): Promise<Threats | { error: string }> {
   }
   return res;
 }
+
+export const threatsDef: ToolDef = {
+  name: 'threats',
+  title: 'Threats',
+  description:
+    'Dangerous units currently on the map, grouped by creature type. Separates ' +
+    'ACTIVE hostiles from CONTAINED ones (caged/chained), flags great-danger ' +
+    'creatures (megabeasts, titans, demons, forgotten beasts), invaders, and ' +
+    'the undead, and returns a pre-triaged alerts list. Returns ' +
+    '{"error":"no fort loaded"} if no fort is active.',
+  run: threats,
+};

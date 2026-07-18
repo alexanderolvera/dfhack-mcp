@@ -5,6 +5,8 @@
 // version-fragile field path.
 
 import { runJsonScript } from '../query.ts';
+import { z } from 'zod';
+import type { ToolDef } from '../register.ts';
 
 /** A material reference: its raws token plus a readable name. */
 export interface MaterialRef {
@@ -118,3 +120,36 @@ export async function artifactsAndEngravings(
   }
   return d;
 }
+
+export const artifactsAndEngravingsDef: ToolDef = {
+  name: 'artifacts_and_engravings',
+  title: 'Artifacts and engravings',
+  description:
+    "The fort's art, as labeled facts. Returns the named ARTIFACTS (paginated): " +
+    'each with its name (dwarven + translated), item type and base material, ' +
+    'created value, quality, maker (with a live unit_id ONLY when the maker is a ' +
+    'living current citizen, else just the historical-figure name), the ' +
+    'decorations on it (bands/covered/rings/images with their materials), and any ' +
+    'engraved inscription text (e.g. a slab\'s secret). Plus an aggregated ' +
+    'ENGRAVINGS summary for the map: engravings grouped BY SUBJECT with counts ' +
+    '(never itemized per tile), a quality histogram, and the top engravers. Note: ' +
+    'when the world\'s art images are not loaded, the human scene text is ' +
+    'unavailable (subjects_resolvable=false) and subjects are keyed by their ' +
+    'stable image reference instead — this is reported, never fabricated. Use ' +
+    'limit + next_cursor to page through artifacts; see `caps` for all documented ' +
+    'limits. Returns {"error":"no fort loaded"} if no fort is active.',
+  shape: {
+    limit: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(100)
+      .optional()
+      .describe('Artifacts per page (default 25, max 100). Engravings are always fully aggregated.'),
+    cursor: z
+      .string()
+      .optional()
+      .describe('Opaque pagination cursor from a previous call\'s next_cursor; omit for the first page.'),
+  },
+  run: ({ limit, cursor }) => artifactsAndEngravings(limit, cursor),
+};
