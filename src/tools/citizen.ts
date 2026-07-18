@@ -7,6 +7,8 @@
 // field defensively, so a missing field is a labeled fact, not a traceback.
 
 import { runJsonScript } from '../query.ts';
+import { z } from 'zod';
+import type { ToolDef } from '../register.ts';
 
 /** A walkable edge in the social graph: a name plus the unit_id to chain on. */
 export interface Relation {
@@ -129,3 +131,31 @@ export async function citizen(unitId: string): Promise<Citizen | { error: string
   for (const p of LIST_PATHS) coerceList(root, p);
   return data;
 }
+
+export const citizenDef: ToolDef = {
+  name: 'citizen',
+  title: 'Citizen',
+  description:
+    'A deep dossier on ONE citizen, chained by unit_id from find_unit (or ' +
+    'chronicle). Where find_unit stays compact, this is the depth: the walkable ' +
+    'social graph (spouse, parents, children, friends, grudges — each with a ' +
+    'unit_id you can pass back into citizen() to walk the graph), worshipped ' +
+    'deities with worship strength, NOTABLE personality extremes (only the top/' +
+    'bottom facets, not the full 50-facet dump), skills of note, likes/detests, ' +
+    'physical highlights, and recent thoughts as the game phrases them (raw ' +
+    'caption templates that may contain unfilled [quality]/[deity]/[relation] ' +
+    'placeholders, surfaced verbatim), tied to current stress. Friends are ' +
+    'positive-affection acquaintances; grudges are bonds gone negative with no ' +
+    'positive love to offset them (each carries its raw love/trust/respect ' +
+    'scores plus negative_dims naming the negative dimensions, as labeled ' +
+    'facts). Empty categories degrade to []. Facts ' +
+    'only — it senses, it does not advise. Returns {"error":...} for a missing ' +
+    'unit_id or {"error":"no fort loaded"} if no fort is active.',
+  shape: {
+    unit_id: z
+      .string()
+      .regex(/^\d+$/)
+      .describe('A live unit_id (all digits), e.g. from a find_unit match'),
+  },
+  run: ({ unit_id }) => citizen(unit_id),
+};

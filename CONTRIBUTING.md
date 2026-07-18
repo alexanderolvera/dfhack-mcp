@@ -111,9 +111,14 @@ Follow the existing split:
    `docs/VERIFY.md`).
 2. Add a thin `src/tools/<name>.ts` wrapper that calls
    `runJsonScript('<name>', args, listFields)` and types the result.
-3. Register it in `src/index.ts`.
-4. **Add the tool name to [`test/expected-tools.json`](test/expected-tools.json)**
-   — T0 fails until you do. That edit is the deliberate, reviewable record that
-   the surface changed.
+3. In that same module, export a `ToolDef` descriptor — `export const <name>Def:
+   ToolDef = { name, title, description, shape?, run }` (add `shape` for a tool
+   that takes arguments; omit it for a no-arg read tool). The descriptor is the
+   tool's contract; keep the description and schema here, not in `src/index.ts`.
+4. **Add one import + one array entry to [`src/tools/registry.ts`](src/tools/registry.ts)**,
+   in alphabetical-by-tool-name position. That's the whole registration — T0
+   derives its expected set from `ALL_TOOLS`, so it fails until you add the entry.
+   Because each tool lands at its own line, sibling tool PRs auto-merge instead of
+   colliding.
 5. Verify against a live fort: `npm run verify:t1`. Author a golden once the
    fixture is available: `npm run verify:update`.

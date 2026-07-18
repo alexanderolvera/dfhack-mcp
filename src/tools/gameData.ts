@@ -5,6 +5,8 @@
 // later never adds a tool. See that file for the confirmed field paths.
 
 import { runJsonScript } from '../query.ts';
+import { z } from 'zod';
+import type { ToolDef } from '../register.ts';
 
 export type GameDataKind = 'creature' | 'material' | 'plant' | 'reaction' | 'item' | 'building';
 
@@ -231,3 +233,38 @@ export async function gameData(
   }
   return data;
 }
+
+export const gameDataDef: ToolDef = {
+  name: 'game_data',
+  title: 'Game data',
+  description:
+    "Look up the LOADED WORLD's raws (ground truth for THIS world) and return " +
+    'curated, labeled facts. This is the authoritative source for procedural ' +
+    'creatures (demons, forgotten beasts, titans) that never appear on the wiki. ' +
+    'Covers six kinds via the `kind` filter (default creature): creature, ' +
+    'material, plant, reaction, item, building. Pass a token (e.g. "DEMON_4", ' +
+    '"INORGANIC:IRON", "MAKE_SOAP_FROM_TALLOW"), a name (case-insensitive ' +
+    'substring, e.g. "flame phantom", "plump helmet"), or — for creature — a ' +
+    'live unit_id (all digits). A single strong hit returns a full dossier for ' +
+    'that kind; several return a disambiguation list; none returns ' +
+    '{"match_count":0,"matches":[]}. Returns {"error":"no game loaded"} if no ' +
+    'game is active.',
+  shape: {
+    query: z
+      .string()
+      .min(1)
+      .describe(
+        'A raws token or case-insensitive name fragment for the chosen kind ' +
+          '(e.g. "IRON", "plump helmet", "MAKE_SOAP_FROM_TALLOW"); for the ' +
+          'creature kind, a live unit_id (all digits) also resolves.'
+      ),
+    kind: z
+      .enum(['creature', 'material', 'plant', 'reaction', 'item', 'building'])
+      .optional()
+      .describe(
+        'Which raws table to search; defaults to creature. One of ' +
+          'creature | material | plant | reaction | item | building.'
+      ),
+  },
+  run: ({ query, kind }) => gameData(query, kind),
+};

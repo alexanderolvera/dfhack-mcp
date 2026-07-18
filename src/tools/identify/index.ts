@@ -9,6 +9,8 @@ import { gameData, type CreatureDossier, type GameDataStub } from '../gameData.t
 import { wikiLookupTool } from '../wikiLookup.ts';
 import { deriveTactics, type Tactic } from './tactics.ts';
 import { excerpt, isProcedural, wikiPlan, type WikiExcerpt } from './wiki.ts';
+import { z } from 'zod';
+import type { ToolDef } from '../../register.ts';
 
 export type { Tactic } from './tactics.ts';
 export type { WikiExcerpt } from './wiki.ts';
@@ -92,3 +94,27 @@ export async function identify(
   if (notes.length) out.notes = notes;
   return out;
 }
+
+export const identifyDef: ToolDef = {
+  name: 'identify',
+  title: 'Identify',
+  description:
+    'One-call "what is this creature and how do I handle it": fuses THIS WORLD\'s ' +
+    'raws (ground truth) with the DF wiki (strategy). Pass a creature token ' +
+    '(e.g. "DEMON_4"), a name ("flame phantom"), or a live unit_id (all digits) — ' +
+    'same contract as game_data. Returns the creature dossier, a "tactics" list of ' +
+    'the decisive traits with hard-fact implications (trapavoid, flier, fire, ' +
+    'building_destroyer, webber, ranged breath weapons), and 1-2 trimmed wiki ' +
+    'strategy excerpts. Procedural creatures (demons, forgotten beasts, titans) have ' +
+    'no wiki page, so strategy leans on their traits plus the most relevant trait ' +
+    'page. Use this instead of a bare wiki lookup so world-specific facts (e.g. a ' +
+    'TRAPAVOID demon that cage traps cannot hold) are never missed. Multiple matches ' +
+    'return a disambiguation list; returns {"error":"no game loaded"} if no game is active.',
+  shape: {
+    query: z
+      .string()
+      .min(1)
+      .describe('Creature token, name fragment, or a live unit_id (all digits)'),
+  },
+  run: ({ query }) => identify(query),
+};

@@ -21,7 +21,14 @@ import { dirname, join } from 'node:path';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..');
 const GOLDEN_DIR = join(ROOT, 'test', 'golden');
-const EXPECTED = JSON.parse(readFileSync(join(ROOT, 'test', 'expected-tools.json'), 'utf8'));
+
+// The expected tool surface is DERIVED from the same registry the server builds
+// its list from — no static JSON to keep in sync. Filter devOnly (run_lua only
+// appears under DFHACK_MCP_DEV) so the default expected set is the curated tools.
+// The server subprocess builds its tools/list independently from ALL_TOOLS, so a
+// registration that throws still surfaces here as a mismatch — the check holds.
+const { ALL_TOOLS } = await import('../src/tools/registry.ts');
+const EXPECTED = { tools: ALL_TOOLS.filter((d) => !d.devOnly).map((d) => d.name).sort() };
 
 // --- arg fixtures for tiers that actually call tools ------------------------
 // No-arg tools omit an entry. Query tools get the minimal valid args that
@@ -108,7 +115,7 @@ async function tier0(client) {
   const extra = got.filter((n) => !want.includes(n));
   if (missing.length) fail(`missing tools: ${missing.join(', ')}`);
   if (extra.length)
-    fail(`unexpected tools: ${extra.join(', ')} (update test/expected-tools.json if intended)`);
+    fail(`unexpected tools: ${extra.join(', ')} (update src/tools/registry.ts if intended)`);
   if (!missing.length && !extra.length) ok(`tools/list matches expected set (${got.length} tools)`);
 
   for (const t of tools) {

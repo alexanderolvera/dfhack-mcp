@@ -28,13 +28,15 @@ provisions it).
 ### T0 — contract (no fort → CI-able today)
 
 - Server starts and completes the MCP handshake.
-- `tools/list` **equals** the expected set in [`test/expected-tools.json`](../test/expected-tools.json).
+- `tools/list` **equals** the expected set derived from [`src/tools/registry.ts`](../src/tools/registry.ts) (`ALL_TOOLS`, minus `devOnly`).
 - Every tool has a description and a well-formed input schema.
 
 Catches registration / schema / "server won't start" regressions that CI was
 previously blind to. Runs with `DFHACK_MCP_DEV` unset, so the dev-only `run_lua`
-tool is excluded — the expected set is exactly the 13 shipping tools. Adding or
-renaming a tool **requires** editing `test/expected-tools.json`; that diff is the
+tool is excluded — the expected set is exactly the shipping tools. Both the
+server's `tools/list` and the expected set derive from the same `ALL_TOOLS`
+registry, so adding or renaming a tool is a one-line edit in
+`src/tools/registry.ts` (plus the tool's own module); that diff is the
 deliberate, reviewable record that the surface changed.
 
 ### T1 — reachability (live fort)

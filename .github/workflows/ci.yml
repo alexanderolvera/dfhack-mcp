@@ -1,8 +1,9 @@
 name: CI
 
 # CI validates typecheck + lint + build + the T0 contract tier (verify.mjs
-# --tier=0: server starts, tools/list matches test/expected-tools.json, every
-# schema is well-formed -- no DF needed). Reachability/golden tiers (T1/T2)
+# --tier=0: server starts, tools/list matches the set derived from
+# src/tools/registry.ts, every schema is well-formed -- no DF needed).
+# Reachability/golden tiers (T1/T2)
 # require a live Dwarf Fortress + DFHack, which cannot run in CI, so they stay
 # local for now (npm run verify:t1) -- see CONTRIBUTING.md. Live CI is #28 Phase 3.
 
