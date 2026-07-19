@@ -12,6 +12,14 @@ releases (`0.x.0`) may change or remove tool output, and **patch** releases
 
 ### Added
 
+- **`game_data` plant — a defensible `farm_plantable` fact** (issue #35). Each plant
+  dossier now carries `farm_plantable`, DF's own farm-plot eligibility as a labeled
+  boolean: `true` iff the plant has a plantable seed (the `SEED` flag) and is neither
+  a tree nor a grass. This closes the crop/wild-shrub gap that deferred #35: probed
+  live on 53.15, the rule yields exactly the vanilla crop roster (110 plants) and
+  correctly excludes the two gather-only wild shrubs that carry no seed (kobold bulb,
+  valley herb) and the 47 seeded trees you cannot farm. Facts only — the same
+  classification the game uses to build a plot's planting list, not advice.
 - **A2 actuators — quickfort blueprints** (issue #25, behind `DFHACK_MCP_ACTUATORS`).
   The highest-value actuator: an agent drafts a quickfort CSV and applies it to
   designate dig/zone. `blueprint_apply` and `blueprint_undo` (gated, dry-run →

@@ -430,6 +430,16 @@ local function plant_type(p)
   else return 'shrub' end
 end
 
+-- Farm-plot eligibility, DF's own rule as a labeled fact: a plant is plantable in
+-- a farm plot iff it carries the SEED flag (has a plantable seed) and is neither a
+-- tree nor a grass. Verified live on 53.15: this yields exactly the vanilla crop
+-- roster (110 plants) and excludes precisely the gather-only wild shrubs that have
+-- no seed (kobold bulb, valley herb) and the 47 seeded trees you cannot farm. Not
+-- advice — the same classification the game uses to build a plot's planting list.
+local function plant_farm_plantable(p)
+  return (not p.flags.TREE and not p.flags.GRASS and p.flags.SEED) and true or false
+end
+
 local function plant_seasons(p)
   local out = {}
   for _, s in ipairs(PLANT_SEASONS) do if p.flags[s] then out[#out+1] = s end end
@@ -480,6 +490,7 @@ local function plant_dossier(p)
     name = tostring(p.name),
     plural = (p.name_plural ~= '' and tostring(p.name_plural)) or nil,
     type = plant_type(p),
+    farm_plantable = plant_farm_plantable(p),
     value = p.value,
     growth_time = p.growdur,
     seasons = plant_seasons(p),

@@ -75,6 +75,7 @@ export interface PlantDossier {
   name: string;
   plural?: string;
   type: string; // tree|grass|shrub
+  farm_plantable: boolean; // DF farm-plot eligibility: SEED flag and not tree/grass
   value: number;
   growth_time: number; // ticks to mature
   seasons: string[]; // SPRING|SUMMER|AUTUMN|WINTER
