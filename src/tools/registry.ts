@@ -32,15 +32,17 @@ import { threatsDef } from './threats.ts';
 import { tileRegionDef } from './tileRegion.ts';
 import { tradeDef } from './trade.ts';
 import { unmetNeedsDef } from './unmetNeeds.ts';
+import { assignWorkDetailDef, workDetailsDef } from './workDetail.ts';
 import { wikiLookupDef } from './wikiLookup.ts';
 import { wikiSearchDef } from './wikiSearch.ts';
 import { workOrderCancelDef, workOrderCreateDef, workOrderListDef } from './workOrder.ts';
 
-// Alphabetical by tool name. run_lua carries devOnly:true; blueprint_apply /
-// blueprint_undo / work_order_create / work_order_cancel carry actuator:true; the
-// caller filters both via isGatedOff.
+// Alphabetical by tool name. run_lua carries devOnly:true; assign_work_detail /
+// blueprint_apply / blueprint_undo / work_order_create / work_order_cancel carry
+// actuator:true; the caller filters both via isGatedOff.
 export const ALL_TOOLS: ToolDef[] = [
   artifactsAndEngravingsDef,
+  assignWorkDetailDef,
   blueprintApplyDef,
   blueprintUndoDef,
   chronicleDef,
@@ -68,6 +70,7 @@ export const ALL_TOOLS: ToolDef[] = [
   unmetNeedsDef,
   wikiLookupDef,
   wikiSearchDef,
+  workDetailsDef,
   workOrderCancelDef,
   workOrderCreateDef,
   workOrderListDef,

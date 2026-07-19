@@ -179,9 +179,9 @@ Any apply attempt spends the token — after a rejection, re-preview. Each actua
 reversal path (order cancel / `blueprint_undo` / inverse assign) is named in its
 tool description.
 
-Shipped so far — **manager work orders (A1)** and **quickfort blueprints (A2)**.
-Only the mutating tools are behind the gate; the `work_order_list` sensor is always
-available.
+Shipped so far — **manager work orders (A1)**, **quickfort blueprints (A2)**, and
+**labor via work details (A3)**. Only the mutating tools are behind the gate; the
+sensors (`work_order_list`, `work_details`) are always available.
 
 **Quickfort blueprints (A2)** — designate dig/zone from an agent-drafted quickfort
 CSV. There is **no separate read sensor**: `blueprint_apply` **without** a
@@ -227,6 +227,35 @@ sensor is always available:
   with a `faithful` flag (false — plus `not_reproduced` — when the order carries a
   workshop binding, conditions, or item subtype that `work_order_create` can't
   restore).
+- **`work_details()`** — _read-only, always registered_ (not gated). Every work
+  detail (the game's labor groups) as facts: name, mode (`OnlySelectedDoesThis` /
+  `EverybodyDoesThis` / `NobodyDoesThis` / `Default`), the labor tokens it enables,
+  and its assigned citizens. The member list is id-sorted and capped at 200 per
+  detail — `member_count` is always the full count, `members_truncated` flags a
+  capped list, and `member_names` gives readable names parallel to `members`. The
+  Q1 labor view and the readback sensor for `assign_work_detail`.
+- **`assign_work_detail(unit_id, detail, enabled)`** — _gated actuator_. Add
+  (`enabled:true`) or remove (`enabled:false`) one citizen to/from one work detail.
+  The dry-run preview reports `currently_member`, `resulting_members_count`, and
+  `only_member` (removing the detail's sole member) as facts; an already-satisfied
+  request previews as a no-op. Reversal: the same call with `enabled` inverted
+  (`prior_member` is echoed so undo is exact; `faithful:true`).
+
+  Version marker — the exact struct paths this rides on (DF 53.15, verified live):
+  work details live at `df.global.plotinfo.labor_info.work_details`
+  (`vector<work_detail*>`); each has `.name`, `.assigned_units` (`vector<int32_t>`
+  of unit ids — membership is toggled by `insert`/`erase`), `.allowed_labors`
+  (`bool[]` indexed by `df.unit_labor`), and `.flags.mode` (`df.work_detail_mode`).
+  **Labor propagation:** editing `assigned_units` alone does _not_ immediately
+  update a unit's `status.labors` — the game reconciles them only on a frame
+  advance, via its automatic-professions system
+  (`df.global.game.external_flag.automatic_professions_disabled`, `false` = on). So
+  `assigned_units` is the durable source of truth and `status.labors` a derived
+  cache; `apply` edits `assigned_units` **and** mirrors the affected labors onto
+  `unit.status.labors[L]` now — recomputing each as the union across all details
+  (an `EverybodyDoesThis` detail grants to everyone, an `OnlySelectedDoesThis` /
+  `Default` detail to its members) — exactly what the game reconciles to, so the
+  change is visible immediately even on a paused fort.
 
 ## Layout
 

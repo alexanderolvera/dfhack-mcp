@@ -74,18 +74,27 @@ const TOOL_ARGS = {
   // The T2 golden deliberately overrides this back to {} (see GOLDEN_NO_ARG) so
   // the committed snapshot stays the reproducible default window.
   tile_region: { z: '124', x0: '49', y0: '31', x1: '88', y1: '70' },
+  // work_details is parameterized the same way: the detail filter exercises the
+  // narrowing path in T1/invariants, while the T2 golden stays the no-arg call
+  // (GOLDEN_NO_ARG) so the committed snapshot is the full unfiltered list.
+  work_details: { detail: 'Military' },
   // work_order_create dry-run (NO confirm_token -> preview only, never mutates).
   work_order_create: { job_type: 'ConstructBed', amount: 1 },
   // work_order_cancel needs a live order id; resolveLiveArgs fills it from
   // work_order_list. The static placeholder keeps T0 well-formed and lets the
   // no-fort tier reach the guard even when no order can be resolved.
   work_order_cancel: { order_id: 0 },
+  // assign_work_detail dry-run (NO confirm_token -> preview only, never mutates).
+  // resolveLiveArgs fills a real citizen unit_id + detail name from work_details;
+  // the static placeholder keeps T0 well-formed and reaches the no-fort guard.
+  assign_work_detail: { unit_id: 0, detail: 'Miners', enabled: true },
 };
 
 // Tools whose committed golden is captured with NO args even though they carry a
 // TOOL_ARGS entry above (used to exercise the param path elsewhere). For
-// tile_region the no-arg default window is the reproducible documented snapshot.
-const GOLDEN_NO_ARG = new Set(['tile_region']);
+// tile_region the no-arg default window is the reproducible documented snapshot;
+// for work_details it is the full unfiltered detail list.
+const GOLDEN_NO_ARG = new Set(['tile_region', 'work_details']);
 
 // Tools whose output depends on the network / external wiki, not the frozen
 // fort. Reachable in every tier, but excluded from T2 goldens (not deterministic
@@ -103,6 +112,7 @@ const NO_GOLDEN = new Set([
   'work_order_create',
   'work_order_cancel',
   'work_order_list',
+  'assign_work_detail',
 ]);
 
 // --- tiny CLI ---------------------------------------------------------------
@@ -223,6 +233,24 @@ async function resolveLiveArgs(client) {
   const wol = await callJson(client, 'work_order_list');
   const orderId = wol.data?.orders?.[0]?.id;
   if (orderId != null) TOOL_ARGS.work_order_cancel = { order_id: orderId };
+  // assign_work_detail(unit_id, detail) <- a real citizen (any detail member) and a
+  // detail that does NOT already contain them, so the DRY-RUN previews a genuine add
+  // (never blocked, never a noop) — still never applied (no confirm_token). Called
+  // with explicit {} — TOOL_ARGS narrows work_details to ONE detail, but resolving
+  // needs the full list.
+  const wd = await callJson(client, 'work_details', {});
+  const details = wd.data?.details ?? [];
+  let uid;
+  for (const d of details) {
+    if (Array.isArray(d.members) && d.members.length) {
+      uid = d.members[0];
+      break;
+    }
+  }
+  if (uid != null) {
+    const target = details.find((d) => !(d.members ?? []).includes(uid));
+    if (target) TOOL_ARGS.assign_work_detail = { unit_id: uid, detail: target.name, enabled: true };
+  }
 }
 
 async function tier1(client) {
@@ -327,6 +355,7 @@ async function tier2(client) {
   }
   runInvariants(payloads); // reuse the payloads T2 already captured — no double-call
   await tileRegionParamChecks(client); // param surface the no-arg golden can't reach
+  await workDetailsParamChecks(client); // ditto for the work_details narrowing args
 }
 
 // Call every tool in `names` once and return a { name -> payload } map. Skips
@@ -418,12 +447,63 @@ async function tileRegionParamChecks(client) {
     );
 }
 
+// --- work_details param surface ---------------------------------------------
+// The narrowing behaviors the no-arg golden can't reach: the exact-name detail
+// filter and the members_after cursor. Live-only; degrades to a clean skip with
+// no fort loaded or no detail populous enough to page over.
+async function workDetailsParamChecks(client) {
+  console.log('\nwork_details param surface (detail filter / members_after cursor)');
+  const call = (a) => callJson(client, 'work_details', a);
+  const all = (await call({})).data;
+  if (isNoFort(all) || all.error) {
+    console.log('  ○ skipped (no fort loaded)');
+    return;
+  }
+  // The most populous detail, so the cursor has members to page over.
+  const target = (all.details ?? []).reduce(
+    (best, d) => ((d.members?.length ?? 0) > (best?.members?.length ?? 0) ? d : best),
+    null
+  );
+  if (!target || (target.members?.length ?? 0) < 2) {
+    console.log('  ○ skipped (no detail with 2+ listed members)');
+    return;
+  }
+  // 1. detail filter: EXACTLY that one detail comes back, count agreeing.
+  const one = (await call({ detail: target.name })).data;
+  const oneOK = one.count === 1 && one.details?.length === 1 && one.details[0].name === target.name;
+  if (oneOK) ok(`detail filter "${target.name}" -> exactly that detail (count 1)`);
+  else
+    fail(
+      `detail filter wrong: count ${one.count}, got ${JSON.stringify(one.details?.map((d) => d.name))}`
+    );
+
+  // 2. members_after mid-list: only ids AFTER the cursor, full member_count kept,
+  //    and the cursor echoed at top level.
+  const mid = target.members[Math.floor(target.members.length / 2) - 1];
+  const paged = (await call({ detail: target.name, members_after: mid })).data;
+  const pd = paged.details?.[0] ?? {};
+  const wantTail = target.members.filter((m) => m > mid);
+  const pagedOK =
+    paged.members_after === mid &&
+    JSON.stringify(pd.members?.slice(0, wantTail.length)) === JSON.stringify(wantTail) &&
+    pd.member_count === target.member_count;
+  if (pagedOK)
+    ok(
+      `members_after ${mid} -> ${pd.members.length} member(s) all past the cursor, member_count still ${pd.member_count}`
+    );
+  else
+    fail(
+      `cursor page wrong: echo ${paged.members_after}, members ${JSON.stringify(pd.members)}, member_count ${pd.member_count} (expected tail ${JSON.stringify(wantTail)} of ${target.member_count})`
+    );
+}
+
 // --- invariants-only mode ---------------------------------------------------
 async function invariantsMode(client) {
   console.log('\nInvariants mode — relational specs against the live fort (no golden needed)');
   await resolveLiveArgs(client);
   runInvariants(await capturePayloads(client, INVARIANT_TOOLS));
   await tileRegionParamChecks(client);
+  await workDetailsParamChecks(client);
 }
 
 // --- run --------------------------------------------------------------------
