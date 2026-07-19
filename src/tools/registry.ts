@@ -8,6 +8,7 @@
 
 import type { ToolDef } from '../register.ts';
 import { artifactsAndEngravingsDef } from './artifacts.ts';
+import { blueprintApplyDef, blueprintUndoDef } from './blueprint.ts';
 import { chronicleDef } from './chronicle.ts';
 import { citizenDef } from './citizen.ts';
 import { defensesDef } from './defenses.ts';
@@ -35,10 +36,13 @@ import { wikiLookupDef } from './wikiLookup.ts';
 import { wikiSearchDef } from './wikiSearch.ts';
 import { workOrderCancelDef, workOrderCreateDef, workOrderListDef } from './workOrder.ts';
 
-// Alphabetical by tool name. run_lua carries devOnly:true; work_order_create /
-// work_order_cancel carry actuator:true; the caller filters both via isGatedOff.
+// Alphabetical by tool name. run_lua carries devOnly:true; blueprint_apply /
+// blueprint_undo / work_order_create / work_order_cancel carry actuator:true; the
+// caller filters both via isGatedOff.
 export const ALL_TOOLS: ToolDef[] = [
   artifactsAndEngravingsDef,
+  blueprintApplyDef,
+  blueprintUndoDef,
   chronicleDef,
   citizenDef,
   defensesDef,

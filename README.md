@@ -179,8 +179,35 @@ Any apply attempt spends the token — after a rejection, re-preview. Each actua
 reversal path (order cancel / `blueprint_undo` / inverse assign) is named in its
 tool description.
 
-Shipped so far — **manager work orders (A1)**. Only the two mutating tools are
-behind the gate; the sensor is always available:
+Shipped so far — **manager work orders (A1)** and **quickfort blueprints (A2)**.
+Only the mutating tools are behind the gate; the `work_order_list` sensor is always
+available.
+
+**Quickfort blueprints (A2)** — designate dig/zone from an agent-drafted quickfort
+CSV. There is **no separate read sensor**: `blueprint_apply` **without** a
+`confirm_token` _is_ the preview (the single-tool preview→apply model), and its
+dry-run parses quickfort's own statistics.
+
+- **`blueprint_apply(csv, anchor_x, anchor_y, anchor_z, mode)`** — _gated actuator_.
+  Designate from a quickfort blueprint CSV whose first non-blank line is the `#dig`
+  or `#zone` modeline; the top-left data cell maps to the anchor `(x,y,z)`. The
+  dry-run runs quickfort `--dry-run` and previews `mode`, `anchor`, `tiles_affected`,
+  `invalid_key_sequences`, `could_not_designate`, `footprint_cells` and
+  `fog_of_war_tiles` — undiscovered tiles under the footprint, reported as a **fact**
+  (never blocked; the agent may intend to dig into the unknown). **Malformed-CSV
+  gate:** a bad blueprint does _not_ error in quickfort — it **partially applies** —
+  so when the dry-run reports any invalid key sequences or undesignatable tiles the
+  preview is **blocked with no token**. Reversal: `blueprint_undo` with the same
+  csv/anchor/mode (quickfort's native undo). **v1 scope: dig + zone only** —
+  `build`/`place` are rejected (blocked, no token) so nothing partially applies.
+- **`blueprint_undo(csv, anchor_x, anchor_y, anchor_z, mode)`** — _gated actuator_.
+  Revert a dig/zone designation via quickfort's native undo; supply the SAME
+  csv/anchor/mode. The dry-run reads live state and previews `currently_designated`
+  (footprint tiles carrying the designation right now — what undo would clear);
+  the token is void if that count changes. Reversal: `blueprint_apply`.
+
+**Manager work orders (A1)** — only the two mutating tools are behind the gate; the
+sensor is always available:
 
 - **`work_order_list(after_id?)`** — _read-only, always registered_ (not gated). The
   fort's active manager (work) orders as facts: id, job type, output item/material

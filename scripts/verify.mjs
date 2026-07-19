@@ -56,6 +56,13 @@ const INVARIANT_TOOLS = [...new Set(INVARIANTS.flatMap((i) => i.tools))];
 // No-arg tools omit an entry. Query tools get the minimal valid args that
 // exercise a real path; the values are deterministic so goldens are stable.
 const TOOL_ARGS = {
+  // blueprint_apply / blueprint_undo dry-runs (NO confirm_token -> preview only,
+  // never mutates). A valid 3-cell dig CSV anchored on the fixture's revealed-wall
+  // strip (x79-81,y37,z122 are StoneWall, discovered) so the preview designates
+  // cleanly (tiles_affected>0, no invalid keys / could_not) and reachability
+  // exercises the real dry-run path. blueprint_undo's dry-run only READS state.
+  blueprint_apply: { csv: '#dig\nd,d,d\n', anchor_x: 79, anchor_y: 37, anchor_z: 122, mode: 'dig' },
+  blueprint_undo: { csv: '#dig\nd,d,d\n', anchor_x: 79, anchor_y: 37, anchor_z: 122, mode: 'dig' },
   citizen: { unit_id: '1' },
   find_unit: { query: 'a' },
   game_data: { query: 'cat' },
@@ -90,7 +97,13 @@ const NETWORK_TOOLS = new Set(['wiki_search', 'wiki_lookup']);
 // work_order_list is a large, fort-specific order set better checked by a
 // structural invariant than a brittle 200+-line snapshot. All three are still
 // exercised for reachability (T1) and, for list, feed the work_order invariant.
-const NO_GOLDEN = new Set(['work_order_create', 'work_order_cancel', 'work_order_list']);
+const NO_GOLDEN = new Set([
+  'blueprint_apply',
+  'blueprint_undo',
+  'work_order_create',
+  'work_order_cancel',
+  'work_order_list',
+]);
 
 // --- tiny CLI ---------------------------------------------------------------
 const argv = process.argv.slice(2);

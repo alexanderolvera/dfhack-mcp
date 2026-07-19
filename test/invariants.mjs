@@ -632,4 +632,47 @@ export const INVARIANTS = [
       return out;
     },
   },
+  {
+    name: 'blueprint_apply_preview_wellformed',
+    tools: ['blueprint_apply'],
+    desc: 'the dry-run preview is a well-formed §A0 envelope: applied:false, a coherent facts preview (dig|zone mode, integer 3-tuple anchor, non-negative tile/fog counts), and either a single-use confirm_token OR a blocked reason list with NO token',
+    check(p) {
+      const d = p.blueprint_apply;
+      const out = [];
+      // The harness calls the actuator WITHOUT a confirm_token, so this is always a
+      // preview envelope from src/actuator.ts — never an apply.
+      if (d.mode !== 'preview') out.push(`mode="${d.mode}" is not the preview envelope`);
+      if (d.applied !== false) out.push(`applied=${d.applied} is not false for a dry-run`);
+      const pv = d.preview ?? {};
+      if (pv.mode !== 'dig' && pv.mode !== 'zone')
+        out.push(`preview.mode="${pv.mode}" is not dig|zone`);
+      const anc = pv.anchor;
+      if (!Array.isArray(anc) || anc.length !== 3 || anc.some((n) => !isInt(n)))
+        out.push(`preview.anchor=${JSON.stringify(anc)} is not an integer [x,y,z]`);
+      for (const k of [
+        'tiles_affected',
+        'invalid_key_sequences',
+        'could_not_designate',
+        'footprint_cells',
+        'fog_of_war_tiles',
+      ]) {
+        if (!(isInt(pv[k]) && pv[k] >= 0)) out.push(`preview.${k}=${pv[k]} is not a non-negative integer`);
+      }
+      // fog_of_war_tiles can never exceed the footprint it is scanned over.
+      if (isInt(pv.fog_of_war_tiles) && isInt(pv.footprint_cells) && pv.fog_of_war_tiles > pv.footprint_cells)
+        out.push(`fog_of_war_tiles=${pv.fog_of_war_tiles} exceeds footprint_cells=${pv.footprint_cells}`);
+      // Token discipline (§A0): a clean preview mints a single-use confirm_token and
+      // reports no block; a blocked preview reports reasons and mints NO token.
+      const hasToken = typeof d.confirm_token === 'string' && d.confirm_token.length > 0;
+      const blocked = d.blocked;
+      if (blocked !== undefined) {
+        if (!Array.isArray(blocked) || blocked.some((s) => typeof s !== 'string' || !s.trim()))
+          out.push('blocked is present but not a list of non-empty reason strings');
+        if (hasToken) out.push('a blocked preview must NOT mint a confirm_token');
+      } else if (!hasToken) {
+        out.push('an unblocked preview must mint a confirm_token');
+      }
+      return out;
+    },
+  },
 ];
