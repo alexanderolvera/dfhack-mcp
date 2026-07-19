@@ -12,6 +12,20 @@ releases (`0.x.0`) may change or remove tool output, and **patch** releases
 
 ### Added
 
+- **A2 actuators — quickfort blueprints** (issue #25, behind `DFHACK_MCP_ACTUATORS`).
+  The highest-value actuator: an agent drafts a quickfort CSV and applies it to
+  designate dig/zone. `blueprint_apply` and `blueprint_undo` (gated, dry-run →
+  confirm → apply → undo) built on the §A0 foundation; there is no separate read
+  sensor — `blueprint_apply` without a `confirm_token` _is_ the preview, and its
+  dry-run parses quickfort's own statistics. The malformed-CSV gate (spike #11): a
+  bad blueprint does not error in quickfort — it partially applies — so the dry-run
+  blocks (no token) whenever it reports invalid key sequences or undesignatable
+  tiles. Fog-of-war tiles under the footprint are surfaced as a fact (never blocked).
+  Reversal is quickfort's native undo (`faithful:true`). v1 scope: dig + zone only;
+  build/place are rejected. Verified live end-to-end on the fixture: dig
+  preview → apply → undo (dig flag 0→1→0), zone preview → apply → undo (civzone
+  0→4→0), the malformed/unsupported-mode blocks, and the tamper/replay token
+  rejections.
 - **A1 actuators — manager work orders** (issue #24, behind `DFHACK_MCP_ACTUATORS`).
   The first actuators built on the §A0 foundation: `work_order_create` and
   `work_order_cancel` (gated, dry-run → confirm → apply → undo) plus a read-only
