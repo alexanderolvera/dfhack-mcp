@@ -34,7 +34,11 @@ releases (`0.x.0`) may change or remove tool output, and **patch** releases
   adds/removes one citizen to/from one detail; the preview flags `currently_member`,
   `resulting_members_count`, and `only_member` as facts, an already-satisfied
   request previews as a no-op, and the reversal is the same call with `enabled`
-  inverted (`prior_member` echoed, `faithful:true`). Resolves the spike-flagged
+  inverted (`prior_member` echoed; the undo handle also carries `prior_labors`, the
+  exact pre-edit labor-cache bytes, and is `faithful:true` only when that cache was
+  already consistent — `faithful:false` with a `not_reproduced` note when some
+  affected labor's cache was stale and the inverse recomputes rather than restores
+  it). Resolves the spike-flagged
   labor-propagation risk: `assigned_units` (at
   `df.global.plotinfo.labor_info.work_details`) is the durable source of truth, and
   because the game reconciles `unit.status.labors` from it only on a frame advance

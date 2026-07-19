@@ -201,17 +201,30 @@ local function labor_digest(d)
   return table.concat(idx, ',')
 end
 
+-- Digest of a detail's FULL membership: its assigned unit ids sorted ascending and
+-- comma-joined. Changes whenever the SET of members changes — including a swap that
+-- replaces one member with another and so leaves the count (and any single unit's
+-- own membership) untouched. The count alone can't see such a swap; this digest can.
+local function member_digest(d)
+  local ids = {}
+  for j = 0, #d.assigned_units - 1 do ids[#ids + 1] = d.assigned_units[j] end
+  table.sort(ids)
+  return table.concat(ids, ',')
+end
+
 -- Signature captures the detail identity + THIS unit's current membership state +
--- the detail's member count + the detail's MODE and allowed-labor set — the latter
--- two because the preview shows them and they determine which status.labors entries
--- apply mutates. Any change to the previewed target state (the unit joining/leaving
--- elsewhere, another unit changing the count, the detail vanishing, its mode or
--- labor set edited in-game between preview and confirm) voids the token. `enabled`
--- is part of the op args (opDigest), not the signature.
+-- the detail's member count + the detail's MODE and allowed-labor set + a digest of
+-- its FULL membership. The last is what makes a swap (replace member A with member B,
+-- count unchanged, this unit still a non-member) void the token: this-unit-membership
+-- and count would both be unchanged, but the membership SET differs. Any change to the
+-- previewed target state (the unit joining/leaving, another unit added/removed/swapped,
+-- the detail vanishing, its mode or labor set edited in-game between preview and
+-- confirm) voids the token. `enabled` is part of the op args (opDigest), not this.
 local function assign_signature(p, currently_member, count)
-  return string.format('assign/detail=%s/idx=%d/uid=%d/member=%s/count=%d/mode=%d/labors=%s',
+  return string.format(
+    'assign/detail=%s/idx=%d/uid=%d/member=%s/count=%d/mode=%d/labors=%s/members=%s',
     p.dname, p.didx, p.uid, tostring(currently_member), count,
-    p.detail.flags.mode, labor_digest(p.detail))
+    p.detail.flags.mode, labor_digest(p.detail), member_digest(p.detail))
 end
 
 if sub == 'plan_assign' or sub == 'apply_assign' then
@@ -260,7 +273,10 @@ if sub == 'plan_assign' or sub == 'apply_assign' then
         enabled = p.enabled,
         currently_member = currently_member,
         resulting_members_count = resulting,
-        only_member = only_member or nil,
+        -- Unconditional boolean fact: true ONLY when this op removes the detail's sole
+        -- member. Emitted as false (not omitted) so "not the sole member" is a stated
+        -- fact, never conflated with an older payload that lacked the field.
+        only_member = only_member,
         allowed_labors = labor_names(d),
         resulting_details = resulting_details,
         resulting_details_truncated = r_truncated or nil,
@@ -271,7 +287,25 @@ if sub == 'plan_assign' or sub == 'apply_assign' then
     return
   end
 
-  -- apply_assign: toggle membership, then mirror the affected labors onto the unit.
+  -- apply_assign. BEFORE editing, snapshot each affected labor's CURRENT cache value
+  -- and compare it to the union under the PRE-edit membership (granted() still sees
+  -- the original membership here). Undo reverses the membership edit and recomputes
+  -- the union, which reproduces exactly that pre-edit union — so if a labor's prior
+  -- cache already DIFFERED from it (a stale cache: the paused / automatic-professions-
+  -- disabled case this mirror exists for), undo would CORRECT the cache rather than
+  -- restore its exact prior byte. We record the prior values and flag which labors
+  -- were stale so the reversal's faithfulness is reported honestly, not overstated.
+  local prior_labors, stale_labors = {}, {}
+  for i = 0, #d.allowed_labors - 1 do
+    if d.allowed_labors[i] then
+      local name = df.unit_labor[i]
+      local prior = p.u.status.labors[i]
+      prior_labors[name] = prior
+      if prior ~= granted(p.uid, i) then stale_labors[#stale_labors + 1] = name end
+    end
+  end
+
+  -- toggle membership
   local now_member = currently_member
   if p.enabled and not currently_member then
     d.assigned_units:insert('#', p.uid)
@@ -305,7 +339,18 @@ if sub == 'plan_assign' or sub == 'apply_assign' then
       detail = p.dname,
       enabled = not p.enabled,
       prior_member = currently_member,
-      faithful = true,
+      -- The exact prior cache values for the affected labors, so a caller could
+      -- restore them byte-for-byte even when the inverse call would recompute them.
+      prior_labors = prior_labors,
+      -- faithful=true is the normal case: the prior cache matched the pre-edit union,
+      -- so the inverse call's recompute restores it exactly. faithful=false ONLY when
+      -- some affected labor's cache was stale — then undo restores membership but
+      -- recomputes (corrects) the cache instead of reproducing its prior byte.
+      faithful = #stale_labors == 0,
+      not_reproduced = (#stale_labors > 0) and {
+        string.format('labor cache for %d labor(s) was stale and is recomputed, not restored',
+          #stale_labors),
+      } or nil,
     },
     readback = {
       detail = detail_facts(d),
