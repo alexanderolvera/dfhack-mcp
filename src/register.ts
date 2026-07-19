@@ -15,6 +15,8 @@ export interface ReadToolDef {
   description: string;
   run: () => Promise<unknown>;
   devOnly?: boolean;
+  /** Mutates game state; registered only under DFHACK_MCP_ACTUATORS (see index.ts). */
+  actuator?: boolean;
 }
 
 /** A read-only tool that takes arguments matching `shape`. */
@@ -25,9 +27,25 @@ export interface QueryToolDef {
   shape: Record<string, z.ZodType>;
   run: (args: any) => Promise<unknown>;
   devOnly?: boolean;
+  /** Mutates game state; registered only under DFHACK_MCP_ACTUATORS (see index.ts). */
+  actuator?: boolean;
 }
 
 export type ToolDef = ReadToolDef | QueryToolDef;
+
+/** Whether a tool is withheld from registration under the given environment.
+ *  The single source of truth for the two mutation gates, used by index.ts (what
+ *  the server registers) AND scripts/verify.mjs (the expected tools/list set), so
+ *  the two can never drift:
+ *    - devOnly  (run_lua):        registered only under DFHACK_MCP_DEV.
+ *    - actuator (mutating tools): registered only under DFHACK_MCP_ACTUATORS.
+ *  With neither env var set, the surface is exactly the read-only curated tools. */
+export function isGatedOff(
+  def: Pick<ToolDef, 'devOnly' | 'actuator'>,
+  env: Record<string, string | undefined> = process.env
+): boolean {
+  return (!!def.devOnly && !env.DFHACK_MCP_DEV) || (!!def.actuator && !env.DFHACK_MCP_ACTUATORS);
+}
 
 function errorPayload(name: string, err: unknown): string {
   const message =

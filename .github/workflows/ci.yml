@@ -44,3 +44,8 @@ jobs:
       # no DFHack, so it runs here and catches registration/schema regressions.
       - name: Verify T0 (contract)
         run: npm run verify:t0
+
+      # Unit tests: the §A0 actuator protocol (dry-run/confirm/apply/undo, token
+      # invalidation). Pure logic, no DFHack, so it belongs in CI.
+      - name: Unit tests
+        run: npm run test:unit

@@ -30,16 +30,20 @@ so the image tag is the fixture version.
 ### T0 — contract (no fort → CI-able today)
 
 - Server starts and completes the MCP handshake.
-- `tools/list` **equals** the expected set derived from [`src/tools/registry.ts`](../src/tools/registry.ts) (`ALL_TOOLS`, minus `devOnly`).
+- `tools/list` **equals** the expected set derived from [`src/tools/registry.ts`](../src/tools/registry.ts) (`ALL_TOOLS`, minus whatever the active env gates withhold — see below).
 - Every tool has a description and a well-formed input schema.
 
 Catches registration / schema / "server won't start" regressions that CI was
-previously blind to. Runs with `DFHACK_MCP_DEV` unset, so the dev-only `run_lua`
-tool is excluded — the expected set is exactly the shipping tools. Both the
-server's `tools/list` and the expected set derive from the same `ALL_TOOLS`
-registry, so adding or renaming a tool is a one-line edit in
-`src/tools/registry.ts` (plus the tool's own module); that diff is the
-deliberate, reviewable record that the surface changed.
+previously blind to. The expected set is filtered by the SAME predicate the server
+registers with (`isGatedOff` in [`src/register.ts`](../src/register.ts)), so the
+two can't drift. With neither gate env var set — CI's default — both the dev-only
+`run_lua` (`DFHACK_MCP_DEV`) and the mutating actuators (`DFHACK_MCP_ACTUATORS`,
+e.g. `work_order_*`) are excluded, leaving exactly the read-only shipping tools;
+setting a gate (e.g. `DFHACK_MCP_ACTUATORS=1 npm run verify:t0`) adds its tools to
+both sides of the comparison. Both the server's `tools/list` and the expected set
+derive from the same `ALL_TOOLS` registry, so adding or renaming a tool is a
+one-line edit in `src/tools/registry.ts` (plus the tool's own module); that diff is
+the deliberate, reviewable record that the surface changed.
 
 ### T1 — reachability (live fort)
 
