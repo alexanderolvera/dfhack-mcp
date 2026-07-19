@@ -100,6 +100,10 @@ if sub == 'apply' then
   -- of our stdout. quicksave requests DF's autosave; DF performs the write on later
   -- frames (verified live: the save lands in a rotating "autosave N" folder).
   local out, rc = dfhack.run_command_silent('quicksave')
+  if rc ~= 0 then
+    emit({ error = 'quicksave failed (command_result ' .. tostring(rc) .. '): ' .. tostring(out) })
+    return
+  end
   emit({
     changes = {
       save_requested = true,
