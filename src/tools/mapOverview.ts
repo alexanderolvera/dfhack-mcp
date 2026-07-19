@@ -55,6 +55,12 @@ export async function mapOverview(): Promise<MapOverview | { error: string }> {
       if (!Array.isArray(data.activity[k])) data.activity[k] = [];
     }
   }
+  // The Lua encoder OMITS nil-valued keys, so surface_z (core not open to sky) and
+  // fort_core (a loaded map with no citizens) come back absent rather than the
+  // null the interface and description promise. Backfill to null so the contract
+  // holds — nullable fields, not sometimes-missing ones.
+  if (data.surface_z === undefined) data.surface_z = null;
+  if (data.fort_core === undefined) data.fort_core = null;
   return data;
 }
 

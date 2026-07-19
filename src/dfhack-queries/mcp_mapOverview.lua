@@ -77,17 +77,23 @@ end
 
 -- ---- precompute per-tiletype flags ONCE (avoids 3M live attrs lookups) ----
 local STAIR = {}
+-- STAIR[tt] holds the tile's stair role: 'U' offers up-access, 'D' offers
+-- down-access, 'X' (up/down) offers both. This is what decides whether two
+-- vertically-adjacent stair tiles actually CONNECT (see the run-grouping below),
+-- so we keep the role, not just a boolean.
 for tt = df.tiletype._first_item, df.tiletype._last_item do
   local a = attrs[tt]
   if a then
     local s = SHAPE[a.shape]
-    if s == 'STAIR_UP' or s == 'STAIR_DOWN' or s == 'STAIR_UPDOWN' then STAIR[tt] = true end
+    if s == 'STAIR_UP' then STAIR[tt] = 'U'
+    elseif s == 'STAIR_DOWN' then STAIR[tt] = 'D'
+    elseif s == 'STAIR_UPDOWN' then STAIR[tt] = 'X' end
   end
 end
 
 -- ---- one pass over map blocks: stair tiles (everywhere) + dig z (designated
 -- blocks only). Constructions come from the global vector below, not this scan. ----
-local col = {}          -- "x,y" -> list of z holding a stair tile
+local col = {}          -- "x,y" -> { x=, y=, tiles = { {z=,s=}, ... } }
 local dig_zset = {}     -- z -> true, pending player dig designations
 for _, b in ipairs(m.map_blocks) do
   local z = b.map_pos.z
@@ -98,10 +104,15 @@ for _, b in ipairs(m.map_blocks) do
     local ttx = tt[lx]
     local desx = des[lx]
     for ly = 0, 15 do
-      if STAIR[ttx[ly]] and not desx[ly].hidden then
+      local role = STAIR[ttx[ly]]
+      if role and not desx[ly].hidden then
         local key = (bx + lx) .. ',' .. (by + ly)
         local c = col[key]
-        if c then c[#c + 1] = z else col[key] = { z, x = bx + lx, y = by + ly } end
+        if c then
+          c.tiles[#c.tiles + 1] = { z = z, s = role }
+        else
+          col[key] = { x = bx + lx, y = by + ly, tiles = { { z = z, s = role } } }
+        end
       end
     end
   end
@@ -137,17 +148,28 @@ for z in pairs(con_zset) do union[z] = true end
 for z in pairs(dig_zset) do union[z] = true end
 local activity_z = sorted_keys(union)
 
--- ---- stair columns: group each (x,y)'s z-list into CONTIGUOUS vertical runs ----
+-- ---- stair columns: group each (x,y)'s stair tiles into TRAVERSABLE vertical
+-- runs. Two vertically-adjacent stair tiles connect only when the lower one
+-- offers up-access (U or X) AND the one above offers down-access (D or X) --
+-- DF's real stair rule. So a STAIR_UP under a STAIR_UP does NOT connect (nothing
+-- to descend into), and this fort's helical shafts (D/U alternating per column,
+-- descent hopping between adjacent columns) split into their genuinely-climbable
+-- single-column segments instead of one bogus straight shaft. A z gap also closes
+-- a run. z_top is the highest z of a run, z_bottom the lowest. ----
+local function connects(lo, hi)      -- lo, hi are {z=,s=} with hi.z == lo.z+1 expected
+  return hi.z == lo.z + 1
+     and (lo.s == 'U' or lo.s == 'X')
+     and (hi.s == 'D' or hi.s == 'X')
+end
 local columns = {}
-for _, zs in pairs(col) do
-  local x, y = zs.x, zs.y
-  zs.x, zs.y = nil, nil
-  table.sort(zs)
-  local start = zs[1]
-  for i = 2, #zs + 1 do
-    if zs[i] ~= (zs[i - 1] + 1) then          -- gap (or end): close the run
-      columns[#columns + 1] = { x = x, y = y, z_top = zs[i - 1], z_bottom = start }
-      start = zs[i]
+for _, cell in pairs(col) do
+  local x, y, tiles = cell.x, cell.y, cell.tiles
+  table.sort(tiles, function(a, b) return a.z < b.z end)
+  local start_i = 1
+  for i = 1, #tiles do
+    if i == #tiles or not connects(tiles[i], tiles[i + 1]) then
+      columns[#columns + 1] = { x = x, y = y, z_top = tiles[i].z, z_bottom = tiles[start_i].z }
+      start_i = i + 1
     end
   end
 end
