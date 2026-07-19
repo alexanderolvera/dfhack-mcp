@@ -17,6 +17,7 @@ import { gameDataDef } from './gameData.ts';
 import { identifyDef } from './identify/index.ts';
 import { injuriesAndHealthDef } from './injuriesAndHealth.ts';
 import { jobsAndLaborDef } from './jobsAndLabor.ts';
+import { mapOverviewDef } from './mapOverview.ts';
 import { mandatesAndJusticeDef } from './mandatesAndJustice.ts';
 import { militaryDef } from './military.ts';
 import { moodsDef } from './moods.ts';
@@ -42,6 +43,7 @@ export const ALL_TOOLS: ToolDef[] = [
   identifyDef,
   injuriesAndHealthDef,
   jobsAndLaborDef,
+  mapOverviewDef,
   mandatesAndJusticeDef,
   militaryDef,
   moodsDef,
