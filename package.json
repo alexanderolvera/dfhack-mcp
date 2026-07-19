@@ -1,10 +1,18 @@
 {
   "name": "dfhack-mcp",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "MCP server exposing a live Dwarf Fortress fort to an AI agent as curated, semantic tools",
   "type": "module",
   "bin": {
     "dfhack-mcp": "./dist/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alexanderolvera/dfhack-mcp.git"
+  },
+  "homepage": "https://github.com/alexanderolvera/dfhack-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/alexanderolvera/dfhack-mcp/issues"
   },
   "files": [
     "dist",
@@ -27,10 +35,11 @@
     "verify:update": "node scripts/verify.mjs --tier=2 --update",
     "bootstrap": "node scripts/bootstrap.mjs",
     "worktree": "node scripts/new-worktree.mjs",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run typecheck && npm run lint && npm run test:unit && npm run verify:t0"
   },
   "engines": {
-    "node": ">=24"
+    "node": ">=20"
   },
   "keywords": [
     "dwarf-fortress",

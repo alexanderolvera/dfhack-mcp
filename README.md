@@ -2,8 +2,12 @@
 
 An [MCP](https://modelcontextprotocol.io) server that exposes a **live Dwarf
 Fortress fort** to an AI agent as a small set of **curated, semantic tools** — a
-fortress co-pilot and early-warning advisor, not an autopilot. **Read-only** in
-v1: the tools observe the game, they never change it.
+fortress co-pilot and early-warning advisor, not an autopilot. **Read-only by
+default**: the 27 sensor and reference tools only observe the game. A handful of
+**actuators** that _change_ the fort (manager work orders, quickfort blueprints,
+labor assignment) ship behind an explicit `DFHACK_MCP_ACTUATORS` opt-in and are
+absent from the tool list unless you enable them — see
+[Actuators](#actuators-opt-in-write-access).
 
 It rests on two pillars:
 
@@ -20,41 +24,61 @@ glanceable. It talks to DFHack's Remote RPC (localhost:5000) through the sibling
 
 ## Requirements
 
-- **Node 24+** — runs the TypeScript sources directly via type-stripping, so the
-  dev workflow needs no build step. (Local imports use explicit `.ts` extensions.)
+- **Node 20+** to run the published package (it ships a prebuilt bundle). **Node
+  24+** only if you develop from source, which runs the TypeScript directly via
+  type-stripping — no build step. (Local imports use explicit `.ts` extensions.)
 - **Dwarf Fortress running with DFHack**, a fort loaded.
 - **DFHack Remote RPC** reachable on `localhost:5000` (`allow_remote` may stay
   `false` — localhost is enough).
 
-## Setup
+## Install
 
-The DFHack RPC transport,
-[`dfhack-remote-node`](https://www.npmjs.com/package/dfhack-remote-node), is a
-published npm package (ships prebuilt), so setup is a single clone + install:
+The package is published to npm and ships a **prebuilt bundle**, so there is
+nothing to build — point your MCP client at it with `npx`:
+
+```json
+{
+  "mcpServers": {
+    "dfhack": {
+      "command": "npx",
+      "args": ["-y", "dfhack-mcp"]
+    }
+  }
+}
+```
+
+`npx -y dfhack-mcp` downloads and runs the latest release (its only runtime
+dependency, the [`dfhack-remote-node`](https://www.npmjs.com/package/dfhack-remote-node)
+RPC transport, is pulled from npm automatically). Prefer a pinned global install?
+
+```sh
+npm install -g dfhack-mcp     # then set "command": "dfhack-mcp", "args": []
+```
+
+The server speaks MCP over stdio and connects to DFHack on `localhost:5000`
+(override with `DFHACK_HOST` / `DFHACK_PORT`). It starts **read-only**; see
+[Actuators](#actuators-opt-in-write-access) to enable write access.
+
+## Develop from source
+
+To hack on the server itself, clone and run the TypeScript entry directly (Node
+24+, no build):
 
 ```sh
 git clone https://github.com/alexanderolvera/dfhack-mcp.git
 cd dfhack-mcp
 npm install        # or: npm run bootstrap  (installs + runs the T0 contract check)
-```
-
-## Run
-
-The server speaks MCP over stdio; an MCP client launches it. In development, run
-the TypeScript entry directly (no build):
-
-```sh
 node src/index.ts
 ```
 
-MCP client config (e.g. Claude Desktop / Claude Code):
+MCP client config pointing at a source checkout:
 
 ```json
 {
   "mcpServers": {
     "dfhack": {
       "command": "node",
-      "args": ["C:/Users/Xalex/Desktop/DF-AI-Projects/dfhack-mcp-server/src/index.ts"]
+      "args": ["/absolute/path/to/dfhack-mcp/src/index.ts"]
     }
   }
 }
@@ -147,7 +171,7 @@ authoring curated tools.
 DFHACK_MCP_DEV=1 node src/index.ts
 ```
 
-### Actuators — gated, off by default
+### Actuators (opt-in write access)
 
 Every **curated** tool above is **read-only** (the `run_lua` dev escape hatch is
 the sole exception, and it is off by default). The v1.0 milestone adds a small set
@@ -157,7 +181,21 @@ of _actuators_ that **write** game state — `work_order_*` (manager orders),
 strictly read-only and gated-off actuators never appear in `tools/list`.
 
 ```sh
-DFHACK_MCP_ACTUATORS=1 node src/index.ts
+DFHACK_MCP_ACTUATORS=1 node src/index.ts     # from a source checkout
+```
+
+Enable it for the published package by adding the env to your MCP client config:
+
+```json
+{
+  "mcpServers": {
+    "dfhack": {
+      "command": "npx",
+      "args": ["-y", "dfhack-mcp"],
+      "env": { "DFHACK_MCP_ACTUATORS": "1" }
+    }
+  }
+}
 ```
 
 Every actuator obeys one contract (`src/actuator.ts`, the §A0 contract from #8),
