@@ -55,13 +55,17 @@ export const blueprintApplyDef = defineActuator<BlueprintArgs>({
     'EXECUTE-NEVER-DECIDE: you draft the CSV, name the anchor (x,y,z of its ' +
     'top-left cell) and the mode; the tool designates exactly that. Dry-run (no ' +
     'confirm_token) runs quickfort --dry-run and previews mode, anchor, ' +
-    'tiles_affected, invalid_key_sequences, could_not_designate, footprint_cells ' +
-    'and fog_of_war_tiles (undiscovered tiles under the footprint — reported as a ' +
-    'fact, never blocked). A MALFORMED blueprint is BLOCKED with no token (quickfort ' +
-    'would otherwise partially apply): the preview reports the reasons and issues no ' +
-    'confirm_token. Pass the returned confirm_token to apply. Reversal: ' +
-    'blueprint_undo with the same csv/anchor/mode (quickfort native undo). v1 scope: ' +
-    'dig + zone only; build/place are rejected.',
+    'tiles_affected, invalid_key_sequences, could_not_designate, footprint_cells, ' +
+    'fog_of_war_tiles (undiscovered tiles under the footprint — reported as a ' +
+    'fact, never blocked), pre_existing_designations (footprint tiles that ALREADY ' +
+    'carry this designation — undo would clear those too, so the undo handle is ' +
+    'flagged unfaithful when any exist), clipped_out_of_bounds, and a bounded ' +
+    'structured conflicts list [{x,y,reason}] plus bounded parse_errors lines ' +
+    'locating bad cells. A MALFORMED or over-large (>10000 cells) blueprint is ' +
+    'BLOCKED with no token (quickfort would otherwise partially apply): the ' +
+    'preview reports the reasons and issues no confirm_token. Pass the returned ' +
+    'confirm_token to apply. Reversal: blueprint_undo with the same csv/anchor/mode ' +
+    '(quickfort native undo). v1 scope: dig + zone only; build/place are rejected.',
   tokenPrefix: 'bp',
   shape: {
     csv: z.string().describe(CSV_DESC),
@@ -87,11 +91,13 @@ export const blueprintUndoDef = defineActuator<BlueprintArgs>({
   description:
     'Revert a dig/zone designation previously made from a quickfort blueprint, using ' +
     "quickfort's native undo. Supply the SAME csv, anchor and mode that were applied. " +
-    'Dry-run (no confirm_token) reads the live state and previews footprint_cells and ' +
-    'currently_designated (how many footprint tiles carry the designation right now — ' +
-    'what undo would clear); pass the returned confirm_token to apply. The token is ' +
-    'void if that count changes before you apply. Reversal: blueprint_apply with the ' +
-    'same csv/anchor/mode. v1 scope: dig + zone only.',
+    'Dry-run (no confirm_token) validates the CSV via quickfort undo --dry-run ' +
+    '(a MALFORMED blueprint is BLOCKED with no token, with bounded parse_errors ' +
+    'locating bad cells) and previews footprint_cells and currently_designated ' +
+    '(how many footprint tiles carry the designation right now — what undo would ' +
+    'clear); pass the returned confirm_token to apply. The token is void if any ' +
+    "footprint tile's designation state changes before you apply. Reversal: " +
+    'blueprint_apply with the same csv/anchor/mode. v1 scope: dig + zone only.',
   tokenPrefix: 'bp',
   shape: {
     csv: z.string().describe(CSV_DESC),
