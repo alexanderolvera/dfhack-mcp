@@ -1,0 +1,203 @@
+{
+  "alerts": [
+    "light aquifer at z125-128"
+  ],
+  "aquifer": {
+    "present": true,
+    "type": "light",
+    "z_bottom": 125,
+    "z_top": 128
+  },
+  "caverns_discovered": [],
+  "layers": [
+    {
+      "kind": "soil",
+      "materials": [
+        "red sand",
+        "sandy clay"
+      ],
+      "z_bottom": 140,
+      "z_top": 140
+    },
+    {
+      "kind": "soil",
+      "materials": [
+        "red sand"
+      ],
+      "z_bottom": 139,
+      "z_top": 139
+    },
+    {
+      "kind": "soil",
+      "materials": [
+        "clay loam",
+        "red sand"
+      ],
+      "z_bottom": 138,
+      "z_top": 138
+    },
+    {
+      "kind": "soil",
+      "materials": [
+        "red sand"
+      ],
+      "z_bottom": 137,
+      "z_top": 137
+    },
+    {
+      "kind": "soil",
+      "materials": [
+        "clay loam",
+        "red sand",
+        "sandy clay"
+      ],
+      "z_bottom": 136,
+      "z_top": 136
+    },
+    {
+      "kind": "soil",
+      "materials": [
+        "red sand"
+      ],
+      "z_bottom": 134,
+      "z_top": 135
+    },
+    {
+      "kind": "soil",
+      "materials": [
+        "clay loam",
+        "red sand",
+        "sandy clay"
+      ],
+      "z_bottom": 133,
+      "z_top": 133
+    },
+    {
+      "kind": "soil",
+      "materials": [
+        "clay",
+        "clay loam",
+        "red sand",
+        "sandy clay"
+      ],
+      "z_bottom": 132,
+      "z_top": 132
+    },
+    {
+      "kind": "mixed",
+      "materials": [
+        "sandy clay",
+        "siltstone"
+      ],
+      "z_bottom": 130,
+      "z_top": 131
+    },
+    {
+      "kind": "soil",
+      "materials": [
+        "sandy clay",
+        "silty clay"
+      ],
+      "z_bottom": 129,
+      "z_top": 129
+    },
+    {
+      "kind": "soil",
+      "materials": [
+        "sandy clay",
+        "silt",
+        "silty clay"
+      ],
+      "z_bottom": 128,
+      "z_top": 128
+    },
+    {
+      "kind": "soil",
+      "materials": [
+        "red sand",
+        "silt",
+        "silty clay"
+      ],
+      "z_bottom": 127,
+      "z_top": 127
+    },
+    {
+      "kind": "mixed",
+      "materials": [
+        "red sand",
+        "silt",
+        "siltstone"
+      ],
+      "z_bottom": 126,
+      "z_top": 126
+    },
+    {
+      "kind": "mixed",
+      "materials": [
+        "red sand",
+        "siltstone"
+      ],
+      "z_bottom": 125,
+      "z_top": 125
+    },
+    {
+      "kind": "sedimentary",
+      "materials": [
+        "siltstone"
+      ],
+      "z_bottom": 121,
+      "z_top": 124
+    },
+    {
+      "kind": "sedimentary",
+      "materials": [
+        "chalk",
+        "siltstone"
+      ],
+      "z_bottom": 119,
+      "z_top": 120
+    },
+    {
+      "kind": "sedimentary",
+      "materials": [
+        "chalk"
+      ],
+      "z_bottom": 116,
+      "z_top": 118
+    },
+    {
+      "kind": "sedimentary",
+      "materials": [
+        "chalk",
+        "claystone"
+      ],
+      "z_bottom": 114,
+      "z_top": 115
+    },
+    {
+      "kind": "sedimentary",
+      "materials": [
+        "claystone"
+      ],
+      "z_bottom": 112,
+      "z_top": 113
+    },
+    {
+      "kind": "sedimentary",
+      "materials": [
+        "chert",
+        "claystone"
+      ],
+      "z_bottom": 110,
+      "z_top": 111
+    }
+  ],
+  "magma_reached": false,
+  "surface_water": {
+    "brook": false,
+    "murky_pools": 20,
+    "permanent_freeze": false,
+    "river": false
+  },
+  "surface_z": 140
+}
