@@ -173,8 +173,15 @@ for _, cell in pairs(col) do
     end
   end
 end
--- deterministic order for stable goldens: by x, then y, then z_top.
+-- Rank by run HEIGHT (z_top - z_bottom + 1) DESCENDING before capping, so when a
+-- fort exceeds the cap the tallest, most orientation-salient shafts (a deep main
+-- stairwell, surface stairs) survive and only trivial 2-level helix fragments get
+-- dropped. Tiebreak x ASC, y ASC, z_top ASC keeps it fully deterministic for the
+-- golden. The emitted list stays in this height-ranked order (tallest first).
+local function height(c) return c.z_top - c.z_bottom + 1 end
 table.sort(columns, function(a, b)
+  local ha, hb = height(a), height(b)
+  if ha ~= hb then return ha > hb end
   if a.x ~= b.x then return a.x < b.x end
   if a.y ~= b.y then return a.y < b.y end
   return a.z_top < b.z_top

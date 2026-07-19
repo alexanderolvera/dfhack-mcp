@@ -74,9 +74,14 @@ export const mapOverviewDef: ToolDef = {
     'center (highest open-to-sky ground tile there, or null if the core is not ' +
     'under open sky), the z-levels that carry player activity (construction and ' +
     'pending digging, listed separately and as a union), and stairways collapsed ' +
-    'to vertical columns (x, y, z_top, z_bottom). The payload is fixed-size ' +
+    'to traversable single-column vertical runs (x, y, z_top, z_bottom); a run ' +
+    'only spans levels that actually connect by DF stair rules, so a helical ' +
+    'shaft splits into its climbable segments. The payload is fixed-size ' +
     'regardless of fort size: activity is a set of z-levels, never per-tile, and ' +
-    'stair columns are capped (stair_columns_truncated flags the overflow). ' +
+    'stair columns are RANKED BY HEIGHT (tallest run first) then capped, so when a ' +
+    'fort exceeds the cap the tallest shafts survive and only trivial fragments ' +
+    'are dropped (stair_columns_truncated flags the overflow; stair_columns_total ' +
+    'gives the full count). ' +
     'Fog-of-war honest: undiscovered tiles never leak. Use it to decide which ' +
     'z-levels and area to pull grids for. Returns {"error":"no fort loaded"} if ' +
     'no fort is active.',
