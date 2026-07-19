@@ -385,7 +385,7 @@ export const INVARIANTS = [
   {
     name: 'tile_region_grid_wellformed',
     tools: ['tile_region'],
-    desc: 'the grid matches its declared size, honors the 100x100 cap, its legend covers every glyph used, and fog-of-war tiles are never painted over',
+    desc: 'the grid matches its declared size, honors the 100x100 cap, its legend is a bijection with the glyphs actually used, fog-of-war tiles are never painted over, and the sparse liquids list agrees with the grid',
     check(p) {
       const d = p.tile_region;
       const out = [];
@@ -408,11 +408,16 @@ export const INVARIANTS = [
         if (row.length !== w) out.push(`grid[${i}] length ${row.length} !== width ${w}`);
         for (const ch of row) if (ch === '?') qcount++;
       });
-      // Self-describing: every distinct glyph in the grid has a legend entry.
+      // Self-describing, BOTH directions: the legend is built dynamically from the
+      // glyphs present, so "exactly the glyphs used" is the real contract. Every
+      // used glyph must have a legend entry AND every legend key must be a glyph
+      // that actually appears — a stale legend key (or a missing one) is a bug.
       const legend = d.legend ?? {};
-      for (const g of new Set(d.grid.join(''))) {
+      const used = new Set(d.grid.join(''));
+      for (const g of used)
         if (!(g in legend)) out.push(`glyph "${g}" appears in grid but is missing from legend`);
-      }
+      for (const k of Object.keys(legend))
+        if (!used.has(k)) out.push(`legend key "${k}" is not used anywhere in the grid`);
       // Fog-of-war honest: the count of '?' in the grid must equal the reported
       // hidden-tile count. An overlay that painted a class/liquid glyph over a
       // hidden tile would drop the '?' count below hidden_tiles — this catches it.
@@ -426,6 +431,34 @@ export const INVARIANTS = [
         out.push('truncated is true but requested [w,h] is absent');
       if (d.truncated === false && d.requested !== undefined)
         out.push('truncated is false yet requested is present');
+      // The sparse liquid-depth list: every entry is inside the window, carries a
+      // valid type + flow_size 1..7, and — crucially — the grid cell at its
+      // coordinate shows the matching glyph (so the list never claims liquid on a
+      // hidden '?' tile, and never disagrees with what the grid renders).
+      const [ox, oy] = Array.isArray(d.origin) ? d.origin : [NaN, NaN];
+      if (!Array.isArray(d.liquids)) {
+        out.push('liquids is not an array');
+      } else {
+        for (const [i, q] of d.liquids.entries()) {
+          if (q.type !== 'water' && q.type !== 'magma')
+            out.push(`liquids[${i}].type="${q.type}" is not water/magma`);
+          if (!(isInt(q.depth) && inRange(q.depth, 1, 7)))
+            out.push(`liquids[${i}].depth=${q.depth} outside flow_size 1..7`);
+          if (!(
+            isInt(q.x) &&
+            inRange(q.x, ox, ox + w - 1) &&
+            isInt(q.y) &&
+            inRange(q.y, oy, oy + h - 1)
+          )) {
+            out.push(`liquids[${i}] (${q.x},${q.y}) is outside the window`);
+            continue;
+          }
+          const cell = d.grid[q.y - oy]?.[q.x - ox];
+          const want = q.type === 'magma' ? '%' : '~';
+          if (cell !== want)
+            out.push(`liquids[${i}] (${q.x},${q.y}) is "${cell}" in the grid, expected "${want}"`);
+        }
+      }
       return out;
     },
   },

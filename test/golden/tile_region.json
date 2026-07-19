@@ -55,6 +55,15 @@
     "v": "ramp top",
     "~": "water / brook"
   },
+  "liquids": [
+    {
+      "depth": 7,
+      "type": "water",
+      "x": 65,
+      "y": 40
+    }
+  ],
+  "liquids_truncated": false,
   "origin": [
     49,
     31

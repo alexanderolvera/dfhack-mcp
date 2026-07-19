@@ -51,6 +51,7 @@ local DEFAULT_W, DEFAULT_H = 60, 40
 local GLYPHS = {
   ['?'] = 'undiscovered (fog of war)',
   ['#'] = 'undug stone / wall',
+  [','] = 'undug soil (sand/clay/loam wall)',
   ['F'] = 'fortification',
   ['.'] = 'dug floor / walkable ground',
   ['r'] = 'ramp',
@@ -116,10 +117,20 @@ if ax0 and ay0 and ax1 and ay1 then
   if w > CAP then w = CAP; truncated = true end
   if h > CAP then h = CAP; truncated = true end
 else
-  -- default (or partial-arg) window: centered on the fort core
+  -- default (or partial-arg) window: centered on the citizen centroid of the
+  -- LEVEL BEING RENDERED. If a z was requested and that level itself has
+  -- citizens, anchor on that level's own centroid (so `tile_region({z: L})`
+  -- recenters at L, not at the busiest level); otherwise fall back to the
+  -- busiest level's centroid, then the map center.
   w, h = DEFAULT_W, DEFAULT_H
-  local ccx = (pz and pn > 0) and math.floor(z_sx[pz] / pn) or math.floor(m.x_count / 2)
-  local ccy = (pz and pn > 0) and math.floor(z_sy[pz] / pn) or math.floor(m.y_count / 2)
+  local anchor = (az and z_count[az] and z_count[az] > 0) and az or pz
+  local ccx, ccy
+  if anchor and z_count[anchor] and z_count[anchor] > 0 then
+    ccx = math.floor(z_sx[anchor] / z_count[anchor])
+    ccy = math.floor(z_sy[anchor] / z_count[anchor])
+  else
+    ccx, ccy = math.floor(m.x_count / 2), math.floor(m.y_count / 2)
+  end
   x0 = ccx - math.floor(w / 2)
   y0 = ccy - math.floor(h / 2)
 end
@@ -155,7 +166,12 @@ local function block(x, y)
   return v
 end
 
--- ---- overlay 1: liquids + constructed floor (NEVER over a '?' tile) ----------
+-- ---- overlay 1: liquids, soil walls, constructed floor (NEVER over '?') ------
+-- Also collects a SPARSE liquid-depth list: the grid glyph collapses flow_size
+-- 1..7 to one '~'/'%' for legibility, so per-tile depth is exposed separately.
+-- Fog-honest: hidden tiles are skipped, never read for depth.
+local LIQUIDS_CAP = 400        -- sparse depth list bound (window is <= 100x100)
+local liquids, liquids_truncated = {}, false
 for yy = 0, h - 1 do
   local gy = y0 + yy
   local row = rows[yy + 1]
@@ -167,7 +183,21 @@ for yy = 0, h - 1 do
       if blk then
         local des = blk.designation[gx % 16][gy % 16]
         if des.flow_size > 0 then
-          row[xx + 1] = des.liquid_type and '%' or '~'   -- magma vs water
+          local is_magma = des.liquid_type
+          row[xx + 1] = is_magma and '%' or '~'          -- magma vs water
+          if #liquids < LIQUIDS_CAP then
+            liquids[#liquids + 1] =
+              { x = gx, y = gy, type = is_magma and 'magma' or 'water', depth = des.flow_size }
+          else
+            liquids_truncated = true
+          end
+        elseif base == '#' then
+          -- soil vs stone: readTerrain collapses every wall to '#'; distinguish
+          -- an undug SOIL wall (diggable-by-hand, sand/clay/loam) as ','.
+          local tt = blk.tiletype[gx % 16][gy % 16]
+          if df.tiletype_material[df.tiletype.attrs[tt].material] == 'SOIL' then
+            row[xx + 1] = ','
+          end
         elseif base == '.' then
           local tt = blk.tiletype[gx % 16][gy % 16]
           if df.tiletype_material[df.tiletype.attrs[tt].material] == 'CONSTRUCTION' then
@@ -220,6 +250,8 @@ local out = {
   size = { w, h },
   legend = legend,
   grid = grid,
+  liquids = liquids,
+  liquids_truncated = liquids_truncated,
   hidden_tiles = win.hidden_tiles,
   truncated = truncated,
 }
