@@ -1,0 +1,20 @@
+{
+  "alerts": [],
+  "biome": {
+    "evil": false,
+    "good": false,
+    "reanimating": false
+  },
+  "caverns": [],
+  "caverns_discovered": 0,
+  "season": 3,
+  "season_name": "winter",
+  "surface": {
+    "raining": true,
+    "snowing": false,
+    "temperature": 10042,
+    "temperature_band": "above_freezing",
+    "water_frozen": false,
+    "weather": "rain"
+  }
+}
