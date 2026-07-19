@@ -336,6 +336,56 @@ export const INVARIANTS = [
     },
   },
   {
+    name: 'environment_wellformed_and_fog_honest',
+    tools: ['environment'],
+    desc: 'season/weather/temperature are in their known sets, the payload is a fixed key set (no unbounded list), and every reported cavern is a discovered layer (1..3) — never an undiscovered one',
+    check(p) {
+      const d = p.environment;
+      const out = [];
+      // Season is 0..3; season_name is one of the four.
+      if (!inRange(d.season, 0, 3)) out.push(`season=${d.season} outside 0..3`);
+      const SEASONS = new Set(['spring', 'summer', 'autumn', 'winter']);
+      if (!SEASONS.has(d.season_name)) out.push(`season_name="${d.season_name}" is not a known season`);
+      // Surface: weather / band from fixed enums; water_frozen agrees with band and temp.
+      const s = d.surface ?? {};
+      if (!new Set(['none', 'rain', 'snow']).has(s.weather)) out.push(`surface.weather="${s.weather}" unknown`);
+      if (!new Set(['freezing', 'above_freezing', 'unknown']).has(s.temperature_band))
+        out.push(`surface.temperature_band="${s.temperature_band}" unknown`);
+      if (typeof s.water_frozen !== 'boolean') out.push(`surface.water_frozen=${s.water_frozen} not boolean`);
+      // water_frozen must match the temperature<=10000 fact when a temperature was read.
+      if (typeof s.temperature === 'number' && s.water_frozen !== s.temperature <= 10000)
+        out.push(`water_frozen=${s.water_frozen} disagrees with temperature ${s.temperature} vs freeze point 10000`);
+      // band and water_frozen are the same fact stated two ways — they must not conflict.
+      if (s.temperature_band === 'freezing' && s.water_frozen !== true)
+        out.push('temperature_band=freezing but water_frozen is not true');
+      if (s.temperature_band === 'above_freezing' && s.water_frozen !== false)
+        out.push('temperature_band=above_freezing but water_frozen is not false');
+      // Biome alignment is three booleans (the embark-known flags).
+      const b = d.biome ?? {};
+      for (const k of ['evil', 'good', 'reanimating']) {
+        if (typeof b[k] !== 'boolean') out.push(`biome.${k}=${b[k]} not boolean`);
+      }
+      // Fog of war (HARD): caverns is a bounded list; each entry is a discovered layer
+      // numbered 1..3 with an open_to_fort boolean, and the count agrees with the list.
+      // Nothing here can name an undiscovered layer — the list only ever holds breached ones.
+      const c = d.caverns;
+      if (!Array.isArray(c)) return [...out, 'caverns is not an array'];
+      if (c.length > 3) out.push(`caverns list length ${c.length} exceeds the 3 possible layers`);
+      const nums = new Set();
+      c.forEach((cv, i) => {
+        if (!(isInt(cv?.cavern) && inRange(cv.cavern, 1, 3)))
+          out.push(`caverns[${i}].cavern=${cv?.cavern} is not a layer number in 1..3`);
+        if (typeof cv?.open_to_fort !== 'boolean')
+          out.push(`caverns[${i}].open_to_fort=${cv?.open_to_fort} not boolean`);
+        if (nums.has(cv?.cavern)) out.push(`caverns[${i}].cavern=${cv?.cavern} is duplicated`);
+        nums.add(cv?.cavern);
+      });
+      if (d.caverns_discovered !== c.length)
+        out.push(`caverns_discovered=${d.caverns_discovered} disagrees with listed ${c.length}`);
+      return out;
+    },
+  },
+  {
     name: 'justice_counts_self_consistent',
     tools: ['mandates_and_justice'],
     desc: 'justice sub-counts are non-negative and bounded by their supersets, and mandate/demand rows are well-formed',
