@@ -11,20 +11,29 @@ import { defineActuator, _resetTokens } from '../src/actuator.ts';
 // steer the signature, blocked reasons, and noop flag without touching DF.
 function makeTool(overrides = {}) {
   const applyCalls = { n: 0 };
+  const planCalls = { n: 0 };
   const def = defineActuator({
     name: overrides.name ?? 'test_actuator',
     title: 'Test',
     description: 'test',
     tokenPrefix: 'tk',
     shape: { target: z.string() },
-    plan: async (args) => ({
-      preview: { target: args.target },
-      signature: overrides.signature ? overrides.signature(args) : `sig:${args.target}`,
-      blocked: overrides.blocked ? overrides.blocked(args) : undefined,
-      noop: overrides.noop ? overrides.noop(args) : undefined,
-    }),
+    plan: async (args) => {
+      planCalls.n += 1;
+      // planError(callN, args) may return a QueryError to short-circuit; call 1 is
+      // the preview, call 2 (with a token) is the apply-time re-plan.
+      const err = overrides.planError ? overrides.planError(planCalls.n, args) : undefined;
+      if (err) return err;
+      return {
+        preview: { target: args.target },
+        signature: overrides.signature ? overrides.signature(args) : `sig:${args.target}`,
+        blocked: overrides.blocked ? overrides.blocked(args) : undefined,
+        noop: overrides.noop ? overrides.noop(args) : undefined,
+      };
+    },
     apply: async (args) => {
       applyCalls.n += 1;
+      if (overrides.applyError) return overrides.applyError(args);
       return {
         changes: { target: args.target },
         undo: { handle: `undo:${args.target}` },
@@ -32,7 +41,7 @@ function makeTool(overrides = {}) {
       };
     },
   });
-  return { run: def.run, applyCalls, def };
+  return { run: def.run, applyCalls, planCalls, def };
 }
 
 test('preview (no token) returns a confirm_token and does not apply', async () => {
@@ -158,4 +167,47 @@ test('a token minted for one tool is not accepted by another', async () => {
     b.run({ target: 'a', confirm_token: preview.confirm_token }),
     /invalid or expired/
   );
+});
+
+test('a QueryError from plan() (e.g. the no-fort guard) passes straight through', async () => {
+  _resetTokens();
+  const guard = defineActuator({
+    name: 'guarded',
+    title: 'Guarded',
+    description: 'test',
+    tokenPrefix: 'g',
+    shape: { target: z.string() },
+    plan: async () => ({ error: 'no fort loaded' }),
+    apply: async () => ({ changes: {}, undo: {}, readback: {} }),
+  });
+  // The dry-run path returns the guard verbatim — not thrown, no confirm_token.
+  const res = await guard.run({ target: 'a' });
+  assert.deepEqual(res, { error: 'no fort loaded' });
+  assert.equal(res.confirm_token, undefined);
+});
+
+test('a QueryError from the apply-time re-plan passes through, and does not apply', async () => {
+  _resetTokens();
+  // plan() succeeds on the preview (call 1) so a token is minted, then returns a
+  // QueryError on the apply-time re-plan (call 2).
+  const { run, applyCalls } = makeTool({
+    planError: (n) => (n === 2 ? { error: 'no fort loaded' } : undefined),
+  });
+  const preview = await run({ target: 'a' });
+  const res = await run({ target: 'a', confirm_token: preview.confirm_token });
+  assert.deepEqual(res, { error: 'no fort loaded' });
+  assert.equal(res.applied, undefined); // never a false applied:true
+  assert.equal(applyCalls.n, 0);
+});
+
+test('a QueryError from apply() itself passes through, without a false applied:true', async () => {
+  _resetTokens();
+  const { run, applyCalls } = makeTool({
+    applyError: () => ({ error: 'DFHack script failed mid-apply' }),
+  });
+  const preview = await run({ target: 'a' });
+  const res = await run({ target: 'a', confirm_token: preview.confirm_token });
+  assert.deepEqual(res, { error: 'DFHack script failed mid-apply' });
+  assert.equal(res.applied, undefined);
+  assert.equal(applyCalls.n, 1); // apply() ran but its error is surfaced, not masked
 });

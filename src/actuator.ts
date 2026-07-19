@@ -64,6 +64,19 @@ export interface PlanResult {
   noop?: boolean;
 }
 
+/** A query-level error surfaced by the underlying DFHack script — most importantly
+ *  the `{ error: 'no fort loaded' }` guard, but also e.g. a script that failed to
+ *  resolve. plan()/apply() may return this instead of their normal result; the
+ *  wrapper passes it straight through as the tool's output (NOT isError), so the
+ *  actuator honors the same no-fort contract as every read-only tool. */
+export interface QueryError {
+  error: string;
+}
+
+export function isQueryError(x: unknown): x is QueryError {
+  return typeof x === 'object' && x !== null && typeof (x as QueryError).error === 'string';
+}
+
 /** What apply() returns once a valid token is redeemed. The wrapper adds the
  *  boolean `applied: true`, so these are the details alongside it. */
 export interface ApplyResult {
@@ -85,11 +98,13 @@ export interface ActuatorDef<A extends { confirm_token?: string }> {
   /** The operation's own argument schema. `confirm_token` is added automatically. */
   shape: Record<string, z.ZodType>;
   /** Dry-run: compute the preview + a target signature. Called on both the preview
-   *  call and (to re-derive the current signature) the apply call. Must not mutate. */
-  plan: (args: A) => Promise<PlanResult>;
+   *  call and (to re-derive the current signature) the apply call. Must not mutate.
+   *  May return a QueryError (e.g. the no-fort guard) to short-circuit cleanly. */
+  plan: (args: A) => Promise<PlanResult | QueryError>;
   /** Apply the fully-specified, confirmed operation. Only ever called after a valid,
-   *  single-use token whose signature still matches the live state. */
-  apply: (args: A, plan: PlanResult) => Promise<ApplyResult>;
+   *  single-use token whose signature still matches the live state. May return a
+   *  QueryError to short-circuit cleanly. */
+  apply: (args: A, plan: PlanResult) => Promise<ApplyResult | QueryError>;
 }
 
 // ---------------------------------------------------------------------------
@@ -169,6 +184,7 @@ export function defineActuator<A extends { confirm_token?: string }>(
       // ---- DRY-RUN (no token): preview + mint, or block with no token ---------
       if (!token) {
         const plan = await def.plan(args);
+        if (isQueryError(plan)) return plan; // no-fort guard / script error passthrough
         if (plan.blocked && plan.blocked.length) {
           return {
             mode: 'preview',
@@ -208,6 +224,7 @@ export function defineActuator<A extends { confirm_token?: string }>(
         );
       }
       const plan = await def.plan(args); // re-derive the CURRENT signature
+      if (isQueryError(plan)) return plan; // no-fort guard / script error passthrough
       if (plan.blocked && plan.blocked.length) {
         throw new Error(`cannot apply: ${plan.blocked.join('; ')}`);
       }
@@ -220,6 +237,7 @@ export function defineActuator<A extends { confirm_token?: string }>(
         return { mode: 'apply', applied: false, noop: true, preview: plan.preview };
       }
       const res = await def.apply(args, plan);
+      if (isQueryError(res)) return res; // apply-time script error passthrough
       return { mode: 'apply', applied: true, ...res };
     },
   };

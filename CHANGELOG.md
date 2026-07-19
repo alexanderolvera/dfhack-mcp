@@ -12,6 +12,16 @@ releases (`0.x.0`) may change or remove tool output, and **patch** releases
 
 ### Added
 
+- **A1 actuators — manager work orders** (issue #24, behind `DFHACK_MCP_ACTUATORS`).
+  The first actuators built on the §A0 foundation: `work_order_create` and
+  `work_order_cancel` (gated, dry-run → confirm → apply → undo) plus a read-only
+  `work_order_list` sensor (always available; the Q1 manager-screen view and the
+  actuators' readback). Create flags `would_duplicate` and `manager_present`; cancel
+  returns a recreate spec as its undo handle. Verified live end-to-end on the fixture
+  (create → appears in list → cancel → gone), including the tamper/replay rejections.
+  The validation lane also refined the foundation: actuators now pass the
+  `{error:'no fort loaded'}` guard straight through (like every read tool), and the
+  verify harness exercises the full gated surface via safe dry-runs.
 - **Actuator foundation — the §A0 mutation contract** (issue #8 §A0; de-risked by
   spike #11). `src/actuator.ts` implements the shared dry-run → single-use
   `confirm_token` → apply → undo-handle + readback loop once, so the coming

@@ -24,6 +24,13 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..');
 const GOLDEN_DIR = join(ROOT, 'test', 'golden');
 
+// The harness always exercises the FULL surface, including the gated actuators, so
+// their schemas (T0) and dry-run reachability (T1) are covered. We only ever call
+// actuators WITHOUT a confirm_token — a dry-run/preview that never mutates the
+// fixture. Set before the expected set is derived and before the server is spawned
+// (the child inherits process.env), so both sides agree on the tool list.
+process.env.DFHACK_MCP_ACTUATORS = '1';
+
 // The expected tool surface is DERIVED from the same registry the server builds
 // its list from — no static JSON to keep in sync. Apply the SAME env gates the
 // server does (index.ts): devOnly needs DFHACK_MCP_DEV, actuator needs
@@ -60,6 +67,12 @@ const TOOL_ARGS = {
   // The T2 golden deliberately overrides this back to {} (see GOLDEN_NO_ARG) so
   // the committed snapshot stays the reproducible default window.
   tile_region: { z: '124', x0: '49', y0: '31', x1: '88', y1: '70' },
+  // work_order_create dry-run (NO confirm_token -> preview only, never mutates).
+  work_order_create: { job_type: 'ConstructBed', amount: 1 },
+  // work_order_cancel needs a live order id; resolveLiveArgs fills it from
+  // work_order_list. The static placeholder keeps T0 well-formed and lets the
+  // no-fort tier reach the guard even when no order can be resolved.
+  work_order_cancel: { order_id: 0 },
 };
 
 // Tools whose committed golden is captured with NO args even though they carry a
@@ -71,6 +84,13 @@ const GOLDEN_NO_ARG = new Set(['tile_region']);
 // fort. Reachable in every tier, but excluded from T2 goldens (not deterministic
 // against a committed save). game_data/identify fuse world raws — kept in T2.
 const NETWORK_TOOLS = new Set(['wiki_search', 'wiki_lookup']);
+
+// Tools reached in every tier but NOT captured as T2 goldens. The two actuators
+// return a fresh random confirm_token in their dry-run preview (non-deterministic);
+// work_order_list is a large, fort-specific order set better checked by a
+// structural invariant than a brittle 200+-line snapshot. All three are still
+// exercised for reachability (T1) and, for list, feed the work_order invariant.
+const NO_GOLDEN = new Set(['work_order_create', 'work_order_cancel', 'work_order_list']);
 
 // --- tiny CLI ---------------------------------------------------------------
 const argv = process.argv.slice(2);
@@ -185,6 +205,11 @@ async function resolveLiveArgs(client) {
   const fu = await callJson(client, 'find_unit');
   const liveId = fu.data?.matches?.[0]?.unit_id;
   if (liveId != null) TOOL_ARGS.citizen = { unit_id: String(liveId) };
+  // work_order_cancel(order_id) <- work_order_list's first active order, so the
+  // cancel DRY-RUN previews a real order (still never applied — no confirm_token).
+  const wol = await callJson(client, 'work_order_list');
+  const orderId = wol.data?.orders?.[0]?.id;
+  if (orderId != null) TOOL_ARGS.work_order_cancel = { order_id: orderId };
 }
 
 async function tier1(client) {
@@ -271,7 +296,11 @@ async function tier2(client) {
       fail(`${name}: no fort loaded — T2 needs the fixture save loaded`);
       continue;
     }
-    payloads[name] = data;
+    payloads[name] = data; // captured for the invariants even when not goldened
+    if (NO_GOLDEN.has(name)) {
+      console.log(`  ○ ${name}: not goldened (covered by invariant + reachability)`);
+      continue;
+    }
     const snapshot = JSON.stringify(canonicalize(data), null, 2) + '\n';
     const file = join(GOLDEN_DIR, `${name}.json`);
     if (update || !existsSync(file)) {

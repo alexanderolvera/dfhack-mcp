@@ -33,8 +33,10 @@ import { tradeDef } from './trade.ts';
 import { unmetNeedsDef } from './unmetNeeds.ts';
 import { wikiLookupDef } from './wikiLookup.ts';
 import { wikiSearchDef } from './wikiSearch.ts';
+import { workOrderCancelDef, workOrderCreateDef, workOrderListDef } from './workOrder.ts';
 
-// Alphabetical by tool name. run_lua carries devOnly:true; the caller filters it.
+// Alphabetical by tool name. run_lua carries devOnly:true; work_order_create /
+// work_order_cancel carry actuator:true; the caller filters both via isGatedOff.
 export const ALL_TOOLS: ToolDef[] = [
   artifactsAndEngravingsDef,
   chronicleDef,
@@ -62,4 +64,7 @@ export const ALL_TOOLS: ToolDef[] = [
   unmetNeedsDef,
   wikiLookupDef,
   wikiSearchDef,
+  workOrderCancelDef,
+  workOrderCreateDef,
+  workOrderListDef,
 ];
