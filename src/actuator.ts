@@ -25,6 +25,25 @@ import { z } from 'zod';
 import { randomUUID } from 'node:crypto';
 import type { QueryToolDef } from './register.ts';
 
+/** Deterministic, key-sorted stringify so equal argument objects (regardless of
+ *  key order) produce an identical digest. Args here are plain JSON scalars/arrays. */
+function stableStringify(v: unknown): string {
+  if (v === null || typeof v !== 'object') return JSON.stringify(v) ?? 'null';
+  if (Array.isArray(v)) return `[${v.map(stableStringify).join(',')}]`;
+  const obj = v as Record<string, unknown>;
+  const keys = Object.keys(obj).sort();
+  return `{${keys.map((k) => `${JSON.stringify(k)}:${stableStringify(obj[k])}`).join(',')}}`;
+}
+
+/** Canonical digest of the operation's arguments, EXCLUDING confirm_token. Binds a
+ *  token to the exact operation previewed, so it can't be redeemed to apply a
+ *  different op that merely happens to share the target-state signature. */
+function opDigestOf(args: Record<string, unknown>): string {
+  const rest = { ...args };
+  delete rest.confirm_token;
+  return stableStringify(rest);
+}
+
 /** What plan() (the dry-run) reports. */
 export interface PlanResult {
   /** Facts about what applying would do — shown to the agent as the preview. */
@@ -76,17 +95,32 @@ export interface ActuatorDef<A extends { confirm_token?: string }> {
 // ---------------------------------------------------------------------------
 // Single-use confirm-token store. In-memory and process-local: the MCP server is
 // one long-lived process handling tool calls sequentially, so a Map suffices. A
-// token binds to (tool, signature); redeem() always removes it (single-use) and
-// only returns the record when the tool matches.
+// token binds to (tool, signature, opDigest); redeem() always removes it
+// (single-use) and only returns the record when the tool matches.
+//
+// The token key is a FULL uuid (122 random bits) — collisions are negligible, so
+// minting never silently clobbers an outstanding token. Abandoned previews (minted
+// but never redeemed) would otherwise accumulate for the process lifetime, so the
+// store is bounded: at the cap the oldest entry is evicted (Map preserves insertion
+// order). An evicted token simply reads as expired on redeem — the caller re-previews.
 interface StoredToken {
   tool: string;
+  /** Target-STATE signature — guards against the op's own targets drifting. */
   signature: string;
+  /** Digest of the previewed operation's ARGS — guards against redeeming for a
+   *  different operation that shares the same target-state signature. */
+  opDigest: string;
 }
 const TOKENS = new Map<string, StoredToken>();
+const MAX_TOKENS = 512;
 
-function mint(tool: string, prefix: string, signature: string): string {
-  const token = `${prefix}-${randomUUID().slice(0, 8)}`;
-  TOKENS.set(token, { tool, signature });
+function mint(tool: string, prefix: string, signature: string, opDigest: string): string {
+  if (TOKENS.size >= MAX_TOKENS) {
+    const oldest = TOKENS.keys().next().value;
+    if (oldest !== undefined) TOKENS.delete(oldest);
+  }
+  const token = `${prefix}-${randomUUID()}`;
+  TOKENS.set(token, { tool, signature, opDigest });
   return token;
 }
 
@@ -143,7 +177,12 @@ export function defineActuator<A extends { confirm_token?: string }>(
             preview: plan.preview,
           };
         }
-        const confirm_token = mint(def.name, def.tokenPrefix, plan.signature);
+        const confirm_token = mint(
+          def.name,
+          def.tokenPrefix,
+          plan.signature,
+          opDigestOf(args as Record<string, unknown>)
+        );
         return {
           mode: 'preview',
           applied: false,
@@ -158,6 +197,14 @@ export function defineActuator<A extends { confirm_token?: string }>(
       if (!rec) {
         throw new Error(
           'invalid or expired confirm_token; tokens are single-use — run a fresh preview'
+        );
+      }
+      // The apply call must specify the SAME operation that was previewed. Guard
+      // the args first (cheap, no DF round-trip) so a mismatched op is rejected
+      // before we re-plan.
+      if (opDigestOf(args as Record<string, unknown>) !== rec.opDigest) {
+        throw new Error(
+          "the operation's arguments differ from the preview; the confirm_token is void — preview the exact operation you intend to apply"
         );
       }
       const plan = await def.plan(args); // re-derive the CURRENT signature

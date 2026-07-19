@@ -94,6 +94,30 @@ test('an unrelated change (same signature) does NOT void the token', async () =>
   assert.equal(applyCalls.n, 1);
 });
 
+test('changing a non-target action argument (same signature) voids the token', async () => {
+  _resetTokens();
+  // signature depends ONLY on target, so both calls share it — but the operation's
+  // own arguments differ (enabled flips), which the op-digest must catch even though
+  // the target-state signature is unchanged.
+  const { run, applyCalls } = makeTool();
+  const preview = await run({ target: 'a', enabled: true });
+  await assert.rejects(
+    run({ target: 'a', enabled: false, confirm_token: preview.confirm_token }),
+    /arguments differ|void/
+  );
+  assert.equal(applyCalls.n, 0);
+});
+
+test('key order in arguments does not affect token validity', async () => {
+  _resetTokens();
+  const { run, applyCalls } = makeTool();
+  const preview = await run({ target: 'a', enabled: true });
+  // same op, keys in a different order + confirm_token appended — must still apply
+  const res = await run({ enabled: true, confirm_token: preview.confirm_token, target: 'a' });
+  assert.equal(res.applied, true);
+  assert.equal(applyCalls.n, 1);
+});
+
 test('a blocked plan mints no token and surfaces the reasons', async () => {
   _resetTokens();
   const { run } = makeTool({ blocked: () => ['malformed CSV: cell A1'] });

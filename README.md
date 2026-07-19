@@ -149,10 +149,11 @@ DFHACK_MCP_DEV=1 node src/index.ts
 
 ### Actuators — gated, off by default
 
-Everything above is **read-only**. The v1.0 milestone adds a small set of _actuators_
-that **write** game state — `work_order_*` (manager orders), `blueprint_*`
-(quickfort designations), and `assign_work_detail` (labor). They are **not
-registered unless `DFHACK_MCP_ACTUATORS` is set**, so the default server stays
+Every **curated** tool above is **read-only** (the `run_lua` dev escape hatch is
+the sole exception, and it is off by default). The v1.0 milestone adds a small set
+of _actuators_ that **write** game state — `work_order_*` (manager orders),
+`blueprint_*` (quickfort designations), and `assign_work_detail` (labor). They are
+**not registered unless `DFHACK_MCP_ACTUATORS` is set**, so the default server stays
 strictly read-only and gated-off actuators never appear in `tools/list`.
 
 ```sh

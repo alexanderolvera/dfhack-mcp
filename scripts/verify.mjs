@@ -33,11 +33,9 @@ const GOLDEN_DIR = join(ROOT, 'test', 'golden');
 // tools/list independently from ALL_TOOLS, so a registration that throws still
 // surfaces here as a mismatch — the check holds.
 const { ALL_TOOLS } = await import('../src/tools/registry.ts');
-const gatedOff = (d) =>
-  (d.devOnly && !process.env.DFHACK_MCP_DEV) ||
-  (d.actuator && !process.env.DFHACK_MCP_ACTUATORS);
+const { isGatedOff } = await import('../src/register.ts');
 const EXPECTED = {
-  tools: ALL_TOOLS.filter((d) => !gatedOff(d))
+  tools: ALL_TOOLS.filter((d) => !isGatedOff(d))
     .map((d) => d.name)
     .sort(),
 };
