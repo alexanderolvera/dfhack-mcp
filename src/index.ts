@@ -6,13 +6,20 @@
 // schema/handler) lives in its own module under tools/ and is collected in
 // tools/registry.ts; the registration plumbing lives in register.ts.
 
+import { createRequire } from 'node:module';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { registerTool, isGatedOff } from './register.ts';
 import { ALL_TOOLS } from './tools/registry.ts';
 import { closeConnection } from './dfclient.ts';
 
-const server = new McpServer({ name: 'dfhack-mcp', version: '0.1.0' });
+// Advertise the package version in the MCP handshake, read from package.json so it
+// can never drift from the published version. Resolved relative to this module
+// (root package.json in dev; the bundle inlines it at build). The bundler and the
+// published tarball both ship package.json alongside, so this holds at runtime too.
+const { version } = createRequire(import.meta.url)('../package.json') as { version: string };
+
+const server = new McpServer({ name: 'dfhack-mcp', version });
 
 // Register every collected tool, honoring the two mutation gates. Gated-off tools
 // do not appear in tools/list at all:

@@ -1,0 +1,94 @@
+name: Release
+
+# Publishes dfhack-mcp to npm and cuts a GitHub Release when a version tag is
+# pushed. The tarball ships a PREBUILT bundle (dist/ from `npm run build`, .lua
+# queries included), so end users install with `npx -y dfhack-mcp` — no build on
+# their side. Cut a release by bumping package.json + CHANGELOG, then:
+#   git tag v1.0.0 && git push origin v1.0.0
+#
+# Publishing uses npm TRUSTED PUBLISHING (OIDC) — no long-lived NPM_TOKEN secret
+# (npm revoked classic automation tokens in Dec 2025). One-time setup on npmjs.com:
+#   1. Bootstrap the FIRST publish manually — `npm publish --access public` from an
+#      authenticated `npm login` session — since a trusted publisher can only be
+#      configured on a package that already exists.
+#   2. On the package's npmjs.com settings, add a Trusted Publisher pointing at this
+#      repo + workflow (`.github/workflows/release.yml`).
+# After that, every `v*` tag publishes here with provenance and no secret.
+
+on:
+  push:
+    tags: ['v*']
+
+# Least privilege by default; each job escalates only what it needs, so a
+# compromised install/build step in verify-artifact/publish can neither write to
+# the repo nor mint an OIDC token unless that job explicitly grants it.
+permissions:
+  contents: read
+
+jobs:
+  # Gate the ARTIFACT under the published runtime floor (Node 20). The T0 tier in
+  # `publish` launches src/index.ts under Node 24; this instead packs the tarball,
+  # installs it clean-room, and boots the PREBUILT bundle — catching a broken dist
+  # or a Node-20 regression that the source gate can't see.
+  verify-artifact:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - name: Clean-room pack + install + MCP handshake
+        run: npm run smoke:artifact
+
+  publish:
+    needs: verify-artifact
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # checkout only
+      id-token: write # OIDC token for trusted publishing + provenance
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+      - run: npm ci
+      # Trusted publishing needs npm >= 11.5.x (OIDC support). Pin an exact version
+      # so a re-run months later can't pull an npm major that drops Node 24 or
+      # changes publish behavior — the workflow stays reproducible without edits.
+      - run: npm install -g npm@11.5.1
+      # The same gate CI runs — a broken build never reaches the registry.
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run test:unit
+      - run: npm run build
+      - run: npm run verify:t0
+      # Guard: the tag must match package.json (tag v1.0.0 -> 1.0.0), so a
+      # mis-tagged push can't publish the wrong version.
+      - name: Check tag matches package version
+        run: |
+          PKG=$(node -p "require('./package.json').version")
+          TAG=${GITHUB_REF_NAME#v}
+          if [ "$PKG" != "$TAG" ]; then
+            echo "::error::tag $GITHUB_REF_NAME ($TAG) != package.json version $PKG"
+            exit 1
+          fi
+      # Trusted publishing (OIDC): npm detects the id-token and mints a short-lived
+      # credential — no NODE_AUTH_TOKEN. Provenance is attached automatically.
+      - name: Publish to npm
+        run: npm publish --access public
+
+  # Separate, dependent job so a transient failure here is independently
+  # re-runnable WITHOUT re-attempting the (immutable) npm publish above.
+  github-release:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the GitHub Release
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true

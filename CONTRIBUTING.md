@@ -1,7 +1,10 @@
 # Contributing to dfhack-mcp
 
 This server exposes a live Dwarf Fortress fort to an AI agent as curated,
-read-only tools. The DFHack RPC transport,
+semantic tools — **read-only by default**, with a small set of mutation
+_actuators_ (`work_order_*`, `blueprint_*`, `assign_work_detail`) gated behind
+`DFHACK_MCP_ACTUATORS` and absent from the tool list unless it is set. The DFHack
+RPC transport,
 [`dfhack-remote-node`](https://www.npmjs.com/package/dfhack-remote-node), is a
 published npm dependency (its source lives in a
 [separate repo](https://github.com/alexanderolvera/dfhack-remote-node)) — you
@@ -9,13 +12,21 @@ don't clone it to work on the server.
 
 ## Environment
 
-- **Node 24** — pinned in [`.nvmrc`](.nvmrc) and `engines`. `nvm use` (or install
+- **Node 24 for development** — pinned in [`.nvmrc`](.nvmrc). `nvm use` (or install
   Node 24) before anything. The server runs TypeScript directly via Node's type
-  stripping (`node src/index.ts`); no ts-node.
+  stripping (`node src/index.ts`); no ts-node. (`engines` in `package.json` is the
+  looser `>=20` — that governs the _published_ bundle's runtime, not this
+  from-source dev workflow.)
 - **Windows-native by default.** DF + DFHack run on the Windows host; there is no
   headless mode yet (that's [#27](https://github.com/alexanderolvera/dfhack-mcp/issues/27)).
-- **Localhost only.** Never enable `allow_remote` in `remote-server.json`. The
-  server only ever talks to `localhost:5000`.
+- **Don't expose the fort.** Never enable `allow_remote` in `remote-server.json`.
+  DFHack's RPC only accepts connections that _originate_ from `127.0.0.1`, so the
+  server talks to `localhost:5000` by default. `DFHACK_HOST` / `DFHACK_PORT` can
+  retarget it, but reaching DF in another environment (a VM, WSL, a container) is
+  not just a matter of the address — DFHack still rejects a non-loopback origin,
+  so you must put a **loopback-preserving forward or bridge** in front of it that
+  re-originates the connection as local (the `socat` pattern in
+  [`docker/README.md`](docker/README.md)), never `allow_remote`.
 
 ## Setup — one command
 

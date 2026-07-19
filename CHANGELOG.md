@@ -10,6 +10,13 @@ releases (`0.x.0`) may change or remove tool output, and **patch** releases
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-07-19
+
+The tool surface is complete and stable: **27 read-only sensors + reference
+tools** plus **5 opt-in actuators** (behind `DFHACK_MCP_ACTUATORS`; the default
+server stays strictly read-only). First release published to npm — install with
+`npx -y dfhack-mcp`, no build step.
+
 ### Added
 
 - **`game_data` plant — a defensible `farm_plantable` fact** (issue #35). Each plant
@@ -151,5 +158,6 @@ releases (`0.x.0`) may change or remove tool output, and **patch** releases
   by name with argv (`src/dfhack-queries/`), so a DF/DFHack version bump is a
   localized fix.
 
-[Unreleased]: https://github.com/alexanderolvera/dfhack-mcp/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/alexanderolvera/dfhack-mcp/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/alexanderolvera/dfhack-mcp/compare/v0.1.0...v1.0.0
 [0.1.0]: https://github.com/alexanderolvera/dfhack-mcp/releases/tag/v0.1.0
