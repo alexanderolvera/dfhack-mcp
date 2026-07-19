@@ -112,6 +112,19 @@ The **sensors** (no arguments; report on the loaded fort):
 - **`site_history()`** — the fort's entry in the permanent world saga: founding (year, in-game date, owning civ in Dwarven + English), the fort name in both tongues with a word etymology, prior sieges/battles fought at the site (attacker/defender civ + general), and the notable figures who died here. Reads the durable event log, scoped strictly to the loaded site; a young fort degrades to empty battle/death lists.
 - **`rooms_and_zones()`** — the facility inventory, each count paired with its demand-side number: bedrooms (assigned/unassigned vs. adults without one), dining halls + seats, the hospital (beds, traction benches, well-inside, medical supplies stocked), wells (working state + water source), temples (dedicated deities, all-inclusive, and deities worshipped without a temple), taverns, libraries, guildhalls, and coffins free vs. dead awaiting burial. The supply-side companion to `unmet_needs()`; wells are capped and bedroom/coffin detail aggregated so mega-forts stay flat.
 - **`map_overview()`** — cheap spatial orientation to run _before_ any per-tile terrain read: map extents (x/y/z tile counts), the fort-core coordinate (the same 3D citizen centroid `defenses()` reports), the surface z-level above the fort center, the z-levels carrying player activity (construction and pending digging, listed separately and unioned), and stairways collapsed to vertical columns (`x, y, z_top, z_bottom`). Fixed-size regardless of fort size — activity is a set of z-levels, never per-tile, and stair columns are capped. Fog-of-war honest; tells the agent which z-levels and area to pull grids for.
+- **`tile_region(z?, x0?, y0?, x1?, y1?)`** — a bounded window of ONE z-level rendered as an ASCII character grid plus a self-describing legend (shipped with **every** response, carrying exactly the glyphs present). Composes on the fog-of-war-safe `mcp_readTerrain` substrate: undiscovered tiles stay `?` and are **never** painted over. Distinguishes undug **soil** (`,`) from undug **stone** (`#`). Buildings are collapsed to four CLASS footprints (workshop / stockpile / machine / furniture), never per-building detail. The grid glyph is depth-blind; a separate sparse `liquids` list carries per-tile `{x,y,type,depth}` (flow_size 1–7, capped at 400 with `liquids_truncated`). All params are optional: with **none**, returns the DEFAULT **60×40 window centered on the fort core** (the busiest citizen z-level and that level's citizen centroid); pass `z` alone to recenter on **that level's own** citizen centroid, or `z,x0,y0,x1,y1` for an explicit rectangle (corners may be given in any order). The window is **hard-capped at 100×100** per side — an oversized request is _clamped_ (never errored) with `truncated:true` and the original size echoed in `requested`. A busy 100×100 window is ~10.8 KB (~2.7k tokens); a liquid-heavy one ~20 KB (~5k tokens) — comfortably inside one tool-result budget. Facts only: it renders the map, it never designs or suggests layouts. Read-only. The fixed legend:
+
+  | glyph       | meaning                     | glyph   | meaning                                 |
+  | ----------- | --------------------------- | ------- | --------------------------------------- |
+  | `?`         | undiscovered (fog of war)   | `+`     | constructed floor                       |
+  | `#`         | undug stone / wall          | `~`     | water / brook                           |
+  | `,`         | undug soil (sand/clay/loam) | `%`     | magma                                   |
+  | `.`         | dug floor / walkable ground | `W`     | workshop / furnace                      |
+  | `F`         | fortification               | `S`     | stockpile                               |
+  | `r`         | ramp                        | `M`     | machine (gear/axle/pump/wheel/windmill) |
+  | `v`         | ramp top                    | `n`     | furniture (bed/chair/table/door/etc)    |
+  | `<` `>` `x` | up / down / up-down stair   | (space) | open space                              |
+  | `T`         | tree                        |         |                                         |
 
 The **reference** tools (`wiki_*` are pure HTTP and work without the game;
 `game_data`/`identify` need a loaded world):
@@ -174,20 +187,20 @@ in the pinned build; the server errors clearly if a DFHack lacks it.)
 
 ## Scripts
 
-| Script              | Does                                                      |
-| ------------------- | --------------------------------------------------------- |
-| `npm start`         | run the server directly (`node src/index.ts`, type-strip) |
-| `npm run build`     | bundle `src/index.ts` → `dist/index.js` (ESM, shebang)    |
-| `npm run typecheck` | `tsc --noEmit`                                            |
-| `npm run lint`      | eslint (flat config)                                      |
-| `npm run format`    | prettier --write                                          |
-| `npm run call`      | one-shot live harness (see _Verify_ above)                |
-| `npm run verify:t0` | contract tier: handshake + `tools/list` + schemas (no DF) |
-| `npm run verify:t1` | reachability tier: every tool callable (needs a fort)     |
-| `npm run verify:t2` | golden + invariants (needs the fixture save)              |
-| `npm run verify:update` | rewrite goldens from the loaded fixture               |
-| `npm run bootstrap` | one-command setup: build client → install → T0            |
-| `npm run worktree`  | `<branch>` → isolated worktree for a parallel agent       |
+| Script                  | Does                                                      |
+| ----------------------- | --------------------------------------------------------- |
+| `npm start`             | run the server directly (`node src/index.ts`, type-strip) |
+| `npm run build`         | bundle `src/index.ts` → `dist/index.js` (ESM, shebang)    |
+| `npm run typecheck`     | `tsc --noEmit`                                            |
+| `npm run lint`          | eslint (flat config)                                      |
+| `npm run format`        | prettier --write                                          |
+| `npm run call`          | one-shot live harness (see _Verify_ above)                |
+| `npm run verify:t0`     | contract tier: handshake + `tools/list` + schemas (no DF) |
+| `npm run verify:t1`     | reachability tier: every tool callable (needs a fort)     |
+| `npm run verify:t2`     | golden + invariants (needs the fixture save)              |
+| `npm run verify:update` | rewrite goldens from the loaded fixture                   |
+| `npm run bootstrap`     | one-command setup: build client → install → T0            |
+| `npm run worktree`      | `<branch>` → isolated worktree for a parallel agent       |
 
 The **verification harness** ([`docs/VERIFY.md`](docs/VERIFY.md)) is tiered: T0 is
 CI-gated and needs no game; T1/T2 run locally against a live fort. See

@@ -30,7 +30,11 @@ const GOLDEN_DIR = join(ROOT, 'test', 'golden');
 // The server subprocess builds its tools/list independently from ALL_TOOLS, so a
 // registration that throws still surfaces here as a mismatch — the check holds.
 const { ALL_TOOLS } = await import('../src/tools/registry.ts');
-const EXPECTED = { tools: ALL_TOOLS.filter((d) => !d.devOnly).map((d) => d.name).sort() };
+const EXPECTED = {
+  tools: ALL_TOOLS.filter((d) => !d.devOnly)
+    .map((d) => d.name)
+    .sort(),
+};
 
 // Relational invariants (the Red/Green layer) live in their own module so adding
 // a spec is a one-line edit there, not surgery on this runner.
@@ -47,7 +51,17 @@ const TOOL_ARGS = {
   identify: { query: 'cat' },
   wiki_search: { query: 'cage trap' },
   wiki_lookup: { title: 'Cage trap' },
+  // tile_region is parameterized; a deterministic explicit rectangle so T1
+  // reachability and the invariants exercise the ARG path, not only the default.
+  // The T2 golden deliberately overrides this back to {} (see GOLDEN_NO_ARG) so
+  // the committed snapshot stays the reproducible default window.
+  tile_region: { z: '124', x0: '49', y0: '31', x1: '88', y1: '70' },
 };
+
+// Tools whose committed golden is captured with NO args even though they carry a
+// TOOL_ARGS entry above (used to exercise the param path elsewhere). For
+// tile_region the no-arg default window is the reproducible documented snapshot.
+const GOLDEN_NO_ARG = new Set(['tile_region']);
 
 // Tools whose output depends on the network / external wiki, not the frozen
 // fort. Reachable in every tier, but excluded from T2 goldens (not deterministic
@@ -116,8 +130,8 @@ function connect() {
 
 /** Call a tool and return its parsed JSON payload, or a synthetic error object
  *  if the text wasn't JSON. */
-async function callJson(client, name) {
-  const res = await client.callTool({ name, arguments: TOOL_ARGS[name] ?? {} });
+async function callJson(client, name, argsOverride) {
+  const res = await client.callTool({ name, arguments: argsOverride ?? TOOL_ARGS[name] ?? {} });
   const text = res.content?.find((p) => p.type === 'text')?.text ?? '';
   try {
     return { data: JSON.parse(text), isError: !!res.isError };
@@ -147,8 +161,7 @@ async function tier0(client) {
   if (!missing.length && !extra.length) ok(`tools/list matches expected set (${got.length} tools)`);
 
   for (const t of tools) {
-    if (!t.description || t.description.length < 20)
-      fail(`${t.name}: missing/short description`);
+    if (!t.description || t.description.length < 20) fail(`${t.name}: missing/short description`);
     // The SDK emits a JSON Schema for inputSchema; no-arg tools get an empty
     // object schema. Assert it's at least a well-formed object schema.
     const s = t.inputSchema;
@@ -219,7 +232,9 @@ async function tier1NoFort(client) {
     // and NOT real data. A genuine "DFHack unreachable" surfaces here as its
     // (non-guard) connection error and correctly FAILS — it isn't masked as a pass.
     if (data.__unparsable__ !== undefined) {
-      fail(`${name}: crash/non-JSON, not a clean guard: ${String(data.__unparsable__).slice(0, 80)}`);
+      fail(
+        `${name}: crash/non-JSON, not a clean guard: ${String(data.__unparsable__).slice(0, 80)}`
+      );
     } else if (isError) {
       fail(`${name}: isError, not a clean no-fort guard: ${JSON.stringify(data).slice(0, 80)}`);
     } else if (isNoFort(data)) {
@@ -244,7 +259,10 @@ async function tier2(client) {
       console.log(`  ○ ${name}: skipped (network-dependent, not goldened)`);
       continue;
     }
-    const { data } = await callJson(client, name);
+    // Golden snapshot: capture the deterministic no-arg default for tools that
+    // opt into it (their TOOL_ARGS entry exists only to exercise the param path
+    // in other tiers), otherwise the tool's normal fixture args.
+    const { data } = await callJson(client, name, GOLDEN_NO_ARG.has(name) ? {} : undefined);
     if (isNoFort(data)) {
       fail(`${name}: no fort loaded — T2 needs the fixture save loaded`);
       continue;
@@ -262,6 +280,7 @@ async function tier2(client) {
     }
   }
   runInvariants(payloads); // reuse the payloads T2 already captured — no double-call
+  await tileRegionParamChecks(client); // param surface the no-arg golden can't reach
 }
 
 // Call every tool in `names` once and return a { name -> payload } map. Skips
@@ -301,11 +320,64 @@ function runInvariants(payloads) {
   if (!evaluated) console.log('  ○ no invariants evaluable (no fort loaded)');
 }
 
+// --- tile_region param surface ----------------------------------------------
+// The parameterized behaviors a single TOOL_ARGS entry (and the no-arg golden)
+// can't reach: an explicit rectangle, reversed corners resolving to the SAME
+// window, and an oversized request CLAMPED to the 100x100 cap. Live-only (needs a
+// fort); degrades to a clean skip with no fort loaded.
+async function tileRegionParamChecks(client) {
+  console.log('\ntile_region param surface (explicit rect / reversed corners / clamp)');
+  const call = (a) => callJson(client, 'tile_region', a);
+  const probe = await call({ z: '124', x0: '60', y0: '40', x1: '79', y1: '59' });
+  if (isNoFort(probe.data) || probe.data.error) {
+    console.log('  ○ skipped (no fort loaded)');
+    return;
+  }
+  // 1. explicit rectangle: 20x20 at origin (60,40), not truncated.
+  const rect = probe.data;
+  const rectOK =
+    JSON.stringify(rect.size) === '[20,20]' &&
+    JSON.stringify(rect.origin) === '[60,40]' &&
+    rect.truncated === false;
+  if (rectOK) ok('explicit rectangle -> size [20,20] origin [60,40] truncated:false');
+  else
+    fail(
+      `explicit rectangle wrong: size ${JSON.stringify(rect.size)} origin ${JSON.stringify(rect.origin)} truncated ${rect.truncated}`
+    );
+
+  // 2. reversed corners describe the same rectangle -> identical window + grid.
+  const rev = (await call({ z: '124', x0: '79', y0: '59', x1: '60', y1: '40' })).data;
+  const revOK =
+    JSON.stringify(rev.origin) === JSON.stringify(rect.origin) &&
+    JSON.stringify(rev.size) === JSON.stringify(rect.size) &&
+    JSON.stringify(rev.grid) === JSON.stringify(rect.grid);
+  if (revOK) ok('reversed corners resolve to the identical window + grid');
+  else
+    fail(
+      `reversed corners differ: origin ${JSON.stringify(rev.origin)} size ${JSON.stringify(rev.size)} gridEqual ${JSON.stringify(rev.grid) === JSON.stringify(rect.grid)}`
+    );
+
+  // 3. oversized request (150x150) is CLAMPED to 100x100 with truncated + echo.
+  const big = (await call({ z: '124', x0: '0', y0: '0', x1: '149', y1: '149' })).data;
+  const clampOK =
+    JSON.stringify(big.size) === '[100,100]' &&
+    big.truncated === true &&
+    JSON.stringify(big.requested) === '[150,150]' &&
+    big.grid.length === 100 &&
+    big.grid.every((r) => r.length === 100);
+  if (clampOK) ok('oversized 150x150 -> clamped [100,100] truncated:true requested [150,150]');
+  else
+    fail(
+      `clamp wrong: size ${JSON.stringify(big.size)} truncated ${big.truncated} requested ${JSON.stringify(big.requested)}`
+    );
+}
+
 // --- invariants-only mode ---------------------------------------------------
 async function invariantsMode(client) {
   console.log('\nInvariants mode — relational specs against the live fort (no golden needed)');
   await resolveLiveArgs(client);
   runInvariants(await capturePayloads(client, INVARIANT_TOOLS));
+  await tileRegionParamChecks(client);
 }
 
 // --- run --------------------------------------------------------------------
