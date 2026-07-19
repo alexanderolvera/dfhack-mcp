@@ -356,6 +356,7 @@ async function tier2(client) {
   runInvariants(payloads); // reuse the payloads T2 already captured — no double-call
   await tileRegionParamChecks(client); // param surface the no-arg golden can't reach
   await workDetailsParamChecks(client); // ditto for the work_details narrowing args
+  await blueprintActuatorChecks(client); // live confirm+apply+undo; restores the fixture
 }
 
 // Call every tool in `names` once and return a { name -> payload } map. Skips
@@ -497,6 +498,109 @@ async function workDetailsParamChecks(client) {
     );
 }
 
+// --- blueprint actuator surface (LIVE, MUTATING then restored) --------------
+// The confirm→apply→undo loop, zone mode, and the malformed/unsupported blocks —
+// none reachable from the no-token dry-run the golden/reachability tiers exercise
+// (the two actuators are in NO_GOLDEN precisely because the token is random). This
+// routine APPLIES to the fixture, so it MUST undo everything it applies and leave
+// the fort byte-identical (the T2 sensor goldens — e.g. map_overview's digging_z —
+// depend on that). Live-only; degrades to a clean skip with no fort loaded.
+async function blueprintActuatorChecks(client) {
+  console.log('\nblueprint actuator surface (confirm+apply+undo / zone / malformed / unsupported)');
+  // Small dig blueprint on the revealed StoneWall strip (x79-81,y37,z122): three
+  // discovered, undesignated wall cells (the same clean strip the dry-run fixtures
+  // use), so apply designates exactly 3 tiles and undo fully reverts them.
+  const dig = { csv: '#dig\nd,d,d\n', anchor_x: 79, anchor_y: 37, anchor_z: 122, mode: 'dig' };
+
+  // Skip cleanly with no fort loaded (mirror tileRegionParamChecks).
+  const pre = (await callJson(client, 'blueprint_apply', dig)).data;
+  if (isNoFort(pre) || pre.error) {
+    console.log('  ○ skipped (no fort loaded)');
+    return;
+  }
+
+  // (a) preview minted a token on a clean strip; APPLY it and assert the dig flags
+  //     land (the readback counts footprint tiles whose dig flag is set).
+  if (typeof pre.confirm_token !== 'string') {
+    fail(
+      `dig preview minted no confirm_token (blocked=${JSON.stringify(pre.blocked)}); nothing applied`
+    );
+    return; // nothing applied -> nothing to restore
+  }
+  if (pre.preview?.pre_existing_designations !== 0)
+    fail(
+      `dig strip is not clean (pre_existing=${pre.preview?.pre_existing_designations}); apply/undo restore is unsafe`
+    );
+  const applied = (
+    await callJson(client, 'blueprint_apply', { ...dig, confirm_token: pre.confirm_token })
+  ).data;
+  if (
+    applied.applied === true &&
+    applied.changes?.tiles_affected === 3 &&
+    applied.readback?.designated_tiles === 3
+  )
+    ok('dig blueprint applied -> 3 tiles designated (readback confirms flags set)');
+  else fail(`dig apply wrong: ${JSON.stringify(applied).slice(0, 200)}`);
+
+  // (b) undo it and assert the flags clear back to 0 — this is what restores the
+  //     fixture byte-identical for the T2 goldens.
+  const upre = (await callJson(client, 'blueprint_undo', dig)).data;
+  if (typeof upre.confirm_token !== 'string') {
+    fail(
+      `undo preview minted no confirm_token (blocked=${JSON.stringify(upre.blocked)}); fixture is DIRTY`
+    );
+  } else {
+    const undone = (
+      await callJson(client, 'blueprint_undo', { ...dig, confirm_token: upre.confirm_token })
+    ).data;
+    if (undone.applied === true && undone.readback?.designated_tiles === 0)
+      ok('blueprint_undo -> 0 tiles designated (flags cleared, fixture restored)');
+    else fail(`undo wrong (fixture may be DIRTY): ${JSON.stringify(undone).slice(0, 200)}`);
+  }
+
+  // (c) zone mode previews a real designation (dry-run only; never mutates).
+  const zone = (
+    await callJson(client, 'blueprint_apply', {
+      csv: '#zone\nm,m\nm,m\n',
+      anchor_x: 79,
+      anchor_y: 37,
+      anchor_z: 122,
+      mode: 'zone',
+    })
+  ).data;
+  if (zone.preview?.tiles_affected > 0 && typeof zone.confirm_token === 'string')
+    ok(`zone preview -> tiles_affected=${zone.preview.tiles_affected} with a confirm_token`);
+  else fail(`zone preview wrong: ${JSON.stringify(zone).slice(0, 200)}`);
+
+  // (d) a malformed CSV previews BLOCKED with no token (spike #11 partial-apply gate).
+  const bad = (
+    await callJson(client, 'blueprint_apply', {
+      csv: '#dig\nZZZ,d\n',
+      anchor_x: 79,
+      anchor_y: 37,
+      anchor_z: 122,
+      mode: 'dig',
+    })
+  ).data;
+  if (Array.isArray(bad.blocked) && bad.blocked.length > 0 && bad.confirm_token === undefined)
+    ok('malformed CSV -> blocked with no confirm_token');
+  else fail(`malformed CSV not blocked cleanly: ${JSON.stringify(bad).slice(0, 200)}`);
+
+  // (e) an unsupported mode (build) blocks with no token (v1 scope gate).
+  const build = (
+    await callJson(client, 'blueprint_apply', {
+      csv: '#build\nb,b\n',
+      anchor_x: 79,
+      anchor_y: 37,
+      anchor_z: 122,
+      mode: 'build',
+    })
+  ).data;
+  if (Array.isArray(build.blocked) && build.blocked.length > 0 && build.confirm_token === undefined)
+    ok('unsupported mode "build" -> blocked with no confirm_token');
+  else fail(`build mode not blocked cleanly: ${JSON.stringify(build).slice(0, 200)}`);
+}
+
 // --- invariants-only mode ---------------------------------------------------
 async function invariantsMode(client) {
   console.log('\nInvariants mode — relational specs against the live fort (no golden needed)');
@@ -504,6 +608,7 @@ async function invariantsMode(client) {
   runInvariants(await capturePayloads(client, INVARIANT_TOOLS));
   await tileRegionParamChecks(client);
   await workDetailsParamChecks(client);
+  await blueprintActuatorChecks(client);
 }
 
 // --- run --------------------------------------------------------------------

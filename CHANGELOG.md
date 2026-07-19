@@ -21,7 +21,9 @@ releases (`0.x.0`) may change or remove tool output, and **patch** releases
   bad blueprint does not error in quickfort — it partially applies — so the dry-run
   blocks (no token) whenever it reports invalid key sequences or undesignatable
   tiles. Fog-of-war tiles under the footprint are surfaced as a fact (never blocked).
-  Reversal is quickfort's native undo (`faithful:true`). v1 scope: dig + zone only;
+  Reversal is quickfort's native undo, whose handle is `faithful:true` only when no
+  footprint tile carried a pre-existing designation; when some did, undo would clear
+  those too, so the handle is `faithful:false` with a `not_reproduced` note. v1 scope: dig + zone only;
   build/place are rejected. Verified live end-to-end on the fixture: dig
   preview → apply → undo (dig flag 0→1→0), zone preview → apply → undo (civzone
   0→4→0), the malformed/unsupported-mode blocks, and the tamper/replay token
