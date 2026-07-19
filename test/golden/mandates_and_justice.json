@@ -1,0 +1,47 @@
+{
+  "alerts": [],
+  "demands": [],
+  "demands_truncated": false,
+  "export_bans": [],
+  "export_bans_truncated": false,
+  "guild_demands": [],
+  "justice": {
+    "active": true,
+    "open_cases": 0,
+    "pending_punishments": 0,
+    "prison_sentences": 0,
+    "restraints_built": 21,
+    "restraints_free": 21,
+    "scheduled_beatings": 0,
+    "scheduled_hammerstrikes": 0
+  },
+  "mandates": [],
+  "mandates_truncated": false,
+  "nobles": [
+    {
+      "can_demand": 0,
+      "can_mandate": 0,
+      "noble": "Ingish Lorbambecor \"Standardtempted\", bookkeeper",
+      "position": "bookkeeper"
+    },
+    {
+      "can_demand": 0,
+      "can_mandate": 0,
+      "noble": "�nul Kolmegid \"Wheeledslides\", captain of the guard",
+      "position": "captain of the guard"
+    },
+    {
+      "can_demand": 0,
+      "can_mandate": 0,
+      "noble": "Melbil Monangerib \"Drillgorge\", manager",
+      "position": "manager"
+    },
+    {
+      "can_demand": 2,
+      "can_mandate": 1,
+      "noble": "Zefon Zanosoddom \"Hopefulcloister\", mayor",
+      "position": "mayor"
+    }
+  ],
+  "population": 78
+}
