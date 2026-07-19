@@ -209,6 +209,38 @@ export const INVARIANTS = [
     },
   },
   {
+    name: 'moods_wellformed',
+    tools: ['moods'],
+    desc: 'each active strange mood has an integer unit_id, a known mood/status, and demands whose counts are sane (needed/gathered >= 0, have >= -1 sentinel)',
+    check(p) {
+      const d = p.moods;
+      if (!Array.isArray(d.active)) return ['active is not an array'];
+      const MOODS = new Set(['fey', 'secretive', 'possessed', 'macabre', 'fell']);
+      const STATUS = new Set(['unclaimed', 'gathering', 'working']);
+      const out = [];
+      d.active.forEach((m, i) => {
+        if (!isInt(m?.unit_id)) out.push(`active[${i}].unit_id=${m?.unit_id} is not an integer`);
+        if (!MOODS.has(m?.mood)) out.push(`active[${i}].mood="${m?.mood}" is not a strange-mood type`);
+        if (!STATUS.has(m?.workshop_status))
+          out.push(`active[${i}].workshop_status="${m?.workshop_status}" is unknown`);
+        if (!isInt(m?.mood_timeout)) out.push(`active[${i}].mood_timeout=${m?.mood_timeout} is not an integer`);
+        if (!Array.isArray(m?.demands)) {
+          out.push(`active[${i}].demands is not an array`);
+          return;
+        }
+        m.demands.forEach((dem, j) => {
+          if (!(isInt(dem?.needed) && dem.needed >= 0))
+            out.push(`active[${i}].demands[${j}].needed=${dem?.needed} is not a non-negative integer`);
+          if (!(isInt(dem?.gathered) && dem.gathered >= 0))
+            out.push(`active[${i}].demands[${j}].gathered=${dem?.gathered} is not a non-negative integer`);
+          if (!(isInt(dem?.have) && dem.have >= -1))
+            out.push(`active[${i}].demands[${j}].have=${dem?.have} is below the -1 sentinel`);
+        });
+      });
+      return out;
+    },
+  },
+  {
     name: 'alerts_are_nonempty_strings',
     tools: ['fort_status', 'injuries_and_health'],
     desc: 'alerts, when present, are human-readable non-empty strings',
