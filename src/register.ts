@@ -15,6 +15,8 @@ export interface ReadToolDef {
   description: string;
   run: () => Promise<unknown>;
   devOnly?: boolean;
+  /** Mutates game state; registered only under DFHACK_MCP_ACTUATORS (see index.ts). */
+  actuator?: boolean;
 }
 
 /** A read-only tool that takes arguments matching `shape`. */
@@ -25,6 +27,8 @@ export interface QueryToolDef {
   shape: Record<string, z.ZodType>;
   run: (args: any) => Promise<unknown>;
   devOnly?: boolean;
+  /** Mutates game state; registered only under DFHACK_MCP_ACTUATORS (see index.ts). */
+  actuator?: boolean;
 }
 
 export type ToolDef = ReadToolDef | QueryToolDef;

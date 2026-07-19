@@ -25,13 +25,19 @@ const ROOT = join(HERE, '..');
 const GOLDEN_DIR = join(ROOT, 'test', 'golden');
 
 // The expected tool surface is DERIVED from the same registry the server builds
-// its list from — no static JSON to keep in sync. Filter devOnly (run_lua only
-// appears under DFHACK_MCP_DEV) so the default expected set is the curated tools.
-// The server subprocess builds its tools/list independently from ALL_TOOLS, so a
-// registration that throws still surfaces here as a mismatch — the check holds.
+// its list from — no static JSON to keep in sync. Apply the SAME env gates the
+// server does (index.ts): devOnly needs DFHACK_MCP_DEV, actuator needs
+// DFHACK_MCP_ACTUATORS — so with neither set the expected set is the read-only
+// curated tools, and `DFHACK_MCP_ACTUATORS=1 npm run verify:t0` expects the
+// actuators too. The server subprocess (spawned with our env) builds its
+// tools/list independently from ALL_TOOLS, so a registration that throws still
+// surfaces here as a mismatch — the check holds.
 const { ALL_TOOLS } = await import('../src/tools/registry.ts');
+const gatedOff = (d) =>
+  (d.devOnly && !process.env.DFHACK_MCP_DEV) ||
+  (d.actuator && !process.env.DFHACK_MCP_ACTUATORS);
 const EXPECTED = {
-  tools: ALL_TOOLS.filter((d) => !d.devOnly)
+  tools: ALL_TOOLS.filter((d) => !gatedOff(d))
     .map((d) => d.name)
     .sort(),
 };

@@ -147,6 +147,36 @@ authoring curated tools.
 DFHACK_MCP_DEV=1 node src/index.ts
 ```
 
+### Actuators — gated, off by default
+
+Everything above is **read-only**. The v1.0 milestone adds a small set of _actuators_
+that **write** game state — `work_order_*` (manager orders), `blueprint_*`
+(quickfort designations), and `assign_work_detail` (labor). They are **not
+registered unless `DFHACK_MCP_ACTUATORS` is set**, so the default server stays
+strictly read-only and gated-off actuators never appear in `tools/list`.
+
+```sh
+DFHACK_MCP_ACTUATORS=1 node src/index.ts
+```
+
+Every actuator obeys one contract (`src/actuator.ts`, the §A0 contract from #8),
+so an agent drives them all the same way:
+
+1. **Dry-run.** Call with the operation fully specified and **no** `confirm_token`.
+   You get back a `preview` of exactly what would change (facts, never advice) and
+   a single-use `confirm_token`. Nothing is written. If the operation can't be
+   applied as specified (e.g. malformed blueprint), the preview reports the reasons
+   and **no token is issued**.
+2. **Apply.** Call again with the same arguments plus that `confirm_token`. The
+   server re-checks that the operation's **own targets** haven't changed since the
+   preview — if they have, the token is void and you re-preview. On success you get
+   an `undo` handle and a `readback` from the matching sensor confirming the change.
+
+Tokens are single-use and target-scoped: an unrelated change elsewhere in the fort
+does **not** invalidate them, but a change to the thing you're about to act on does.
+Each actuator's reversal path (order cancel / `blueprint_undo` / inverse assign) is
+named in its tool description.
+
 ## Layout
 
 ```
@@ -156,6 +186,8 @@ src/
   dfclient.ts         single RPC connection: lazy connect, one-shot reconnect,
                       registers dfhack-queries/ as a DFHack script path
   query.ts            invoke a named DFHack script -> parse JSON -> normalize list fields
+  actuator.ts         §A0 mutation contract: dry-run -> single-use confirm_token ->
+                      apply -> undo handle + readback; defineActuator wraps it once
   dfhack-queries/     the version-FRAGILE boundary: one real DFHack .lua script per query
     mcp_fortStatus.lua mcp_stocks.lua mcp_threats.lua mcp_unmetNeeds.lua
     mcp_jobsAndLabor.lua mcp_military.lua mcp_injuriesAndHealth.lua
@@ -197,6 +229,7 @@ in the pinned build; the server errors clearly if a DFHack lacks it.)
 | `npm run lint`          | eslint (flat config)                                      |
 | `npm run format`        | prettier --write                                          |
 | `npm run call`          | one-shot live harness (see _Verify_ above)                |
+| `npm run test:unit`     | node:test unit tests (the §A0 actuator protocol, no DF)   |
 | `npm run verify:t0`     | contract tier: handshake + `tools/list` + schemas (no DF) |
 | `npm run verify:t1`     | reachability tier: every tool callable (needs a fort)     |
 | `npm run verify:t2`     | golden + invariants (needs the fixture save)              |

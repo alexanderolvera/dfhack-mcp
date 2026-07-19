@@ -18,6 +18,7 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "call": "node scripts/call-tool.mjs",
+    "test:unit": "node --test test/*.test.mjs",
     "verify": "node scripts/verify.mjs --tier=0",
     "verify:t0": "node scripts/verify.mjs --tier=0",
     "verify:t1": "node scripts/verify.mjs --tier=1",

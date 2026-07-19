@@ -12,6 +12,16 @@ releases (`0.x.0`) may change or remove tool output, and **patch** releases
 
 ### Added
 
+- **Actuator foundation — the §A0 mutation contract** (issue #8 §A0; de-risked by
+  spike #11). `src/actuator.ts` implements the shared dry-run → single-use
+  `confirm_token` → apply → undo-handle + readback loop once, so the coming
+  `work_order_*` / `blueprint_*` / `assign_work_detail` tools supply only their
+  version-fragile `plan()`/`apply()` bodies. Tokens are single-use and scoped to
+  the operation's **own** targets (an unrelated world change does not void them; a
+  change to the target does). A new `DFHACK_MCP_ACTUATORS` gate keeps every
+  mutating tool out of `tools/list` unless explicitly enabled — **the default
+  server remains strictly read-only**. Adds `npm run test:unit` (node:test,
+  CI-gated) covering the protocol, and a `docs`/README section on the contract.
 - **`game_data` — the remaining raws kinds** (issues #1, #2, #3). The unified
   `game_data` lookup now implements every kind; none report "not yet
   implemented". Each mirrors the creature contract (one strong hit → a curated
