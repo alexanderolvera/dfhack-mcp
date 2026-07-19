@@ -179,20 +179,27 @@ Any apply attempt spends the token — after a rejection, re-preview. Each actua
 reversal path (order cancel / `blueprint_undo` / inverse assign) is named in its
 tool description.
 
-Shipped so far (behind the gate):
+Shipped so far — **manager work orders (A1)**. Only the two mutating tools are
+behind the gate; the sensor is always available:
 
-- **`work_order_list()`** — the fort's active manager (work) orders as facts: id,
-  job type, output item/material tokens, amount total/left, repeat frequency, bound
-  workshop, condition count, and whether a manager noble is assigned. Sorted by id,
-  capped at 256 with `truncated`. Read-only; also the readback sensor for the two
-  below and a standalone Q1 manager-screen view.
+- **`work_order_list(after_id?)`** — _read-only, always registered_ (not gated). The
+  fort's active manager (work) orders as facts: id, job type, output item/material
+  tokens, amount total/left, repeat frequency, bound workshop, condition count, and
+  per-order validation state (`active` + `validated`; `validated:false` = can't
+  currently be fulfilled). `count` is the fort total; the page is sorted by id and
+  capped at 256, and when capped returns `truncated:true` + a `next_cursor` to pass
+  back as `after_id`. Also the readback sensor for the two actuators + a Q1
+  manager-screen view.
 - **`work_order_create(job_type, amount, frequency?, material?, item_type?)`** —
-  queue a new manager order. The dry-run preview flags `would_duplicate` (an
-  identical active order already exists) and `manager_present`; apply returns the
-  new order id. Reversal: `work_order_cancel`. (v1: advanced prerequisite conditions
-  are rejected — specify material/item_type directly.)
-- **`work_order_cancel(order_id)`** — remove one order by id; the preview shows the
-  exact order, apply returns a recreate spec as the undo handle.
+  _gated actuator_. Queue a new manager order. The dry-run preview flags
+  `would_duplicate` (an identical active order already exists) and `manager_present`;
+  apply returns the new order id. Reversal: `work_order_cancel`. (v1: advanced
+  prerequisite conditions are rejected — specify material/item_type directly.)
+- **`work_order_cancel(order_id)`** — _gated actuator_. Remove one order by id; the
+  preview shows the exact order, apply returns a recreate spec as the undo handle
+  with a `faithful` flag (false — plus `not_reproduced` — when the order carries a
+  workshop binding, conditions, or item subtype that `work_order_create` can't
+  restore).
 
 ## Layout
 

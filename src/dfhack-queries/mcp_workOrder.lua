@@ -49,7 +49,11 @@ local function manager_present()
   return false
 end
 
--- Facts for one order. material/item_type are decoded to tokens; nil when unset.
+-- Facts for one order. material/item_type are decoded to tokens; the KEY IS OMITTED
+-- when unset (this DFHack JSON encoder can't emit null — the TS type marks them
+-- optional to match). status.active / status.validated are the per-order validation
+-- state: validated=false on an active order means it cannot currently be fulfilled
+-- (e.g. required materials unavailable) — a fact, for the agent to interpret.
 local function order_facts(o)
   local mat
   if o.mat_type ~= -1 or o.mat_index ~= -1 then
@@ -68,6 +72,8 @@ local function order_facts(o)
     frequency = FREQ_NAME[o.frequency] or o.frequency,
     workshop_id = (o.workshop_id ~= -1) and o.workshop_id or nil,
     conditions = #o.item_conditions + #o.order_conditions,
+    active = o.status.active,
+    validated = o.status.validated,
   }
 end
 
@@ -77,17 +83,33 @@ local function identity(job_type, item_type, item_subtype, mat_type, mat_index)
 end
 
 -- ============================ list ============================
+-- args: [2] = after_id (optional pagination cursor). Returns active orders with
+-- id > after_id, sorted by id, capped at LIST_CAP. `count` is the TOTAL number of
+-- active orders in the fort (unfiltered); when the page is capped, `truncated` is
+-- true and `next_cursor` is the id to pass back as after_id for the next page.
 if sub == 'list' then
+  local after = tonumber(a[2]) -- nil => from the start
   local all = df.global.world.manager_orders.all
   local out = {}
-  for i = 0, #all - 1 do out[#out + 1] = order_facts(all[i]) end
+  for i = 0, #all - 1 do
+    local o = all[i]
+    if not after or o.id > after then out[#out + 1] = order_facts(o) end
+  end
   table.sort(out, function(x, y) return x.id < y.id end)
   local truncated = false
+  local next_cursor
   while #out > LIST_CAP do
     table.remove(out)
     truncated = true
   end
-  emit({ count = #all, orders = out, truncated = truncated, manager_present = manager_present() })
+  if truncated then next_cursor = out[#out].id end
+  emit({
+    count = #all,
+    orders = out,
+    truncated = truncated,
+    next_cursor = next_cursor,
+    manager_present = manager_present(),
+  })
   return
 end
 
@@ -228,26 +250,43 @@ if sub == 'plan_cancel' or sub == 'apply_cancel' then
   local idx, o = find_order(id)
   if not o then emit({ blocked = { 'no active manager order with id ' .. id } }) return end
   local facts = order_facts(o)
-  local signature = string.format('cancel/%d/%s', id,
-    identity(o.job_type, o.item_type, o.item_subtype, o.mat_type, o.mat_index))
+  local nconds = #o.item_conditions + #o.order_conditions
+  -- Signature captures EVERYTHING the preview shows, so any change to the previewed
+  -- order (progress, frequency, workshop, conditions, validation) voids the token.
+  local signature = string.format('cancel/%d/%s/tot=%d/left=%d/%s/ws=%d/cond=%d/sub=%d/val=%s',
+    id, identity(o.job_type, o.item_type, o.item_subtype, o.mat_type, o.mat_index),
+    o.amount_total, o.amount_left, facts.frequency, o.workshop_id, nconds, o.item_subtype,
+    tostring(o.status.validated))
   if sub == 'plan_cancel' then
     emit({ preview = facts, signature = signature })
     return
   end
-  -- apply_cancel: capture the recreate spec (for the undo handle) BEFORE removing.
+  -- apply_cancel: capture the recreate spec (undo handle) BEFORE removing. The spec
+  -- holds only what work_order_create can reproduce; `faithful` is true ONLY when the
+  -- order carries nothing create would drop. When false, `not_reproduced` names the
+  -- lost features as facts, so the agent knows the undo is approximate.
+  local faithful = (o.workshop_id == -1) and (nconds == 0) and (o.item_subtype == -1)
   local recreate = {
     job_type = facts.job_type,
-    amount = o.amount_total,
+    amount = o.amount_left, -- the REMAINING work, not the original total
     frequency = facts.frequency,
     material = facts.material,
     item_type = facts.item_type,
   }
+  local undo = { recreate = recreate, faithful = faithful, reversal = 'work_order_create with the recreate spec' }
+  if not faithful then
+    local dropped = {}
+    if o.workshop_id ~= -1 then dropped[#dropped + 1] = 'workshop binding' end
+    if nconds > 0 then dropped[#dropped + 1] = nconds .. ' order condition(s)' end
+    if o.item_subtype ~= -1 then dropped[#dropped + 1] = 'item_subtype' end
+    undo.not_reproduced = dropped
+  end
   df.global.world.manager_orders.all:erase(idx)
   o:delete()
   local _, still = find_order(id)
   emit({
     changes = { cancelled_order_id = id },
-    undo = { recreate = recreate, reversal = 'work_order_create with the recreate spec' },
+    undo = undo,
     readback = { order_id = id, present = still ~= nil },
   })
   return

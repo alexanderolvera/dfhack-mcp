@@ -17,25 +17,34 @@ import type { ToolDef } from '../register.ts';
 export interface OrderFacts {
   id: number;
   job_type: string;
-  item_type: string | null;
-  material: string | null;
+  // item_type / material are the constrained output spec; the key is OMITTED when
+  // unconstrained (the DFHack encoder can't emit null), hence optional.
+  item_type?: string;
+  material?: string;
   amount_total: number;
   amount_left: number;
   frequency: string;
   workshop_id?: number;
   conditions: number;
+  // Per-order validation state: active in the queue, and validated (false on an
+  // active order means it can't currently be fulfilled, e.g. missing materials).
+  active: boolean;
+  validated: boolean;
 }
 
 export interface WorkOrderList {
-  count: number;
+  count: number; // total active orders in the fort (unfiltered by the cursor)
   orders: OrderFacts[];
   truncated: boolean;
+  next_cursor?: number; // pass as after_id to fetch the next page (present iff truncated)
   manager_present: boolean;
 }
 
 // ---- work_order_list (read-only sensor) ------------------------------------
-export async function workOrderList(): Promise<WorkOrderList | { error: string }> {
-  return runJsonScript<WorkOrderList>('workOrder', ['list'], ['orders']);
+export async function workOrderList(args: {
+  after_id?: number;
+}): Promise<WorkOrderList | { error: string }> {
+  return runJsonScript<WorkOrderList>('workOrder', ['list', s(args?.after_id)], ['orders']);
 }
 
 export const workOrderListDef: ToolDef = {
@@ -43,11 +52,23 @@ export const workOrderListDef: ToolDef = {
   title: 'Work order list',
   description:
     'List the fort’s active manager (work) orders as facts: id, job type, output ' +
-    'item/material tokens, amount total/left, repeat frequency, bound workshop, and ' +
-    'condition count, plus whether a manager noble is assigned (orders are not ' +
-    'validated without one). Sorted by id, capped at 256 with truncated:true. ' +
-    'Read-only; also the readback sensor for work_order_create / work_order_cancel.',
-  run: () => workOrderList(),
+    'item/material tokens, amount total/left, repeat frequency, bound workshop, ' +
+    'condition count, and per-order validation state (active + validated; validated:' +
+    'false means the order cannot currently be fulfilled). Also reports whether a ' +
+    'manager noble is assigned. `count` is the fort total; the page is sorted by id ' +
+    'and capped at 256 — when capped, truncated:true and next_cursor gives the ' +
+    'after_id for the next page. READ-ONLY and always available (not behind the ' +
+    'actuator gate); also the readback sensor for work_order_create / _cancel.',
+  shape: {
+    after_id: z
+      .number()
+      .int()
+      .optional()
+      .describe(
+        'pagination cursor: return only orders with id greater than this (from next_cursor)'
+      ),
+  },
+  run: (args) => workOrderList(args),
 };
 
 // ---- shared arg coercion ---------------------------------------------------
