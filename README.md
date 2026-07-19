@@ -203,8 +203,10 @@ dry-run parses quickfort's own statistics.
 - **`blueprint_undo(csv, anchor_x, anchor_y, anchor_z, mode)`** — _gated actuator_.
   Revert a dig/zone designation via quickfort's native undo; supply the SAME
   csv/anchor/mode. The dry-run reads live state and previews `currently_designated`
-  (footprint tiles carrying the designation right now — what undo would clear);
-  the token is void if that count changes. Reversal: `blueprint_apply`.
+  (footprint tiles carrying the designation right now — what undo would clear); the
+  token signs a **per-cell** digest of every footprint tile's designation state, so
+  **any** per-cell drift voids it (not only a change to the count). Reversal:
+  `blueprint_apply`.
 
 **Manager work orders (A1)** — only the two mutating tools are behind the gate; the
 sensor is always available:

@@ -48,6 +48,13 @@ local FOG_CAP = 64 -- bounded fog-of-war sample list
 local CONFLICT_CAP = 50 -- bounded conflicts list
 local MSG_CAP = 20 -- bounded quickfort diagnostic-line capture
 local MAX_FOOTPRINT = 10000 -- distinct-cell cap; a (WxH) bomb blocks, never expands
+-- Distinct BYTE cap on the raw CSV. The footprint cap bounds occupied CELLS, but
+-- blank/comment bytes add zero cells while still being written to the temp
+-- blueprint file AND echoed verbatim into the preview/undo handle (memory + disk).
+-- So an all-blank 100 KB CSV clears MAX_FOOTPRINT yet is unbounded payload. 64 KiB
+-- is far above any legitimate hand-drafted blueprint; over it blocks (no token) in
+-- validate(), shared by both blueprint_apply and blueprint_undo.
+local MAX_CSV_BYTES = 65536
 
 -- ---- footprint parsing ----------------------------------------------------
 -- Quote-aware CSV field split (RFC-4180-ish): spreadsheet-exported blueprints
@@ -155,6 +162,12 @@ end
 -- blocks here too, before any per-cell scan or quickfort run.
 local function validate()
   local blocked = {}
+  -- Byte cap first: cheapest gate, and it bounds the payload (temp file + echoed
+  -- handle) that the footprint cap alone leaves unbounded for blank/comment bytes.
+  if #csv > MAX_CSV_BYTES then
+    blocked[#blocked + 1] = string.format(
+      'csv is %d bytes, over the %d-byte (64 KiB) limit', #csv, MAX_CSV_BYTES)
+  end
   if not SUPPORTED[mode] then
     if mode == 'build' or mode == 'place' then
       blocked[#blocked + 1] =
