@@ -186,6 +186,29 @@ export const INVARIANTS = [
     },
   },
   {
+    name: 'trade_state_consistency',
+    tools: ['trade'],
+    desc: 'depot goods are non-negative, caravan states are known, and no caravan is "at depot" without a depot to be at',
+    check(p) {
+      const d = p.trade;
+      const out = [];
+      const g = d.goods_at_depot ?? {};
+      if (!(isInt(g.count) && g.count >= 0)) out.push(`goods_at_depot.count=${g.count} not a non-negative integer`);
+      if (!(typeof g.approx_value === 'number' && g.approx_value >= 0))
+        out.push(`goods_at_depot.approx_value=${g.approx_value} is negative`);
+      const KNOWN = new Set(['None', 'Approaching', 'AtDepot', 'Leaving', 'Stuck']);
+      if (!Array.isArray(d.caravans)) return [...out, 'caravans is not an array'];
+      let atDepot = 0;
+      d.caravans.forEach((c, i) => {
+        if (!KNOWN.has(c.state)) out.push(`caravans[${i}].state="${c.state}" is not a known trade_state`);
+        if (c.state === 'AtDepot') atDepot += 1;
+      });
+      // A caravan can only be AtDepot if a depot exists to dock at.
+      if (atDepot > 0 && !d.depot?.exists) out.push(`${atDepot} caravan(s) AtDepot but depot.exists is false`);
+      return out;
+    },
+  },
+  {
     name: 'alerts_are_nonempty_strings',
     tools: ['fort_status', 'injuries_and_health'],
     desc: 'alerts, when present, are human-readable non-empty strings',

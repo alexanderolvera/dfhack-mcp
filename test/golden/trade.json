@@ -1,0 +1,25 @@
+{
+  "alerts": [
+    "trade depot is not wagon-accessible"
+  ],
+  "broker": {
+    "assigned": true,
+    "at_depot": false,
+    "current_job": "StoreItemInStockpile",
+    "name": "Unib Clenchedshoots",
+    "present": true
+  },
+  "caravan_count": 0,
+  "caravans": [],
+  "caravans_truncated": false,
+  "depot": {
+    "accessible": false,
+    "complete": true,
+    "exists": true,
+    "trader_requested": false
+  },
+  "goods_at_depot": {
+    "approx_value": 15,
+    "count": 3
+  }
+}
