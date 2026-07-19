@@ -195,8 +195,8 @@
   "magma_reached": false,
   "surface_water": {
     "brook": false,
-    "frozen_in_winter": false,
     "murky_pools": 20,
+    "permanent_freeze": false,
     "river": false
   },
   "surface_z": 140

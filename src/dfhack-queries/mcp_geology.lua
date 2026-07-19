@@ -26,12 +26,16 @@
 --     LOCAL feature layers (type 7 = subterranean cavern, 8 = magma_core,
 --     9 = underworld). flags.Discovered is the authoritative fog-of-war gate;
 --     feature.min_map_z/max_map_z give the LOCAL z-range. start_depth orders the
---     caverns (0=first cavern). A cavern's water is read by scanning its z-band for
---     liquid water among tiles the player may see (hidden tiles skipped unless
---     reveal_hidden), so the water fact stays fog-honest too.
+--     caverns (0=first cavern). Caverns are GLOBAL features: block.global_feature
+--     resolves (getGlobalInitFeature) to the map_features entry, and per-tile
+--     designation.feature_global marks its tiles — so a cavern's water is counted
+--     only on ITS OWN tiles (a cistern/aquifer seep in the same z-band is not
+--     miscredited), hidden tiles skipped unless reveal_hidden. magma_reached is
+--     the magma-SEA discovery flag ALONE — never a volcano / pool / hauled magma.
 --   * Surface water: brook tiletype material, RIVER/RIVER_SOURCE tiletype special
 --     and block has_river_* flags, murky pools as connected stagnant-water bodies
---     on revealed outside tiles. Freeze is biome-temperature derived (see below).
+--     on revealed outside tiles. permanent_freeze is biome-base-temperature
+--     derived (year-round ice; NOT a seasonal winter claim — see below).
 --
 -- Bounded: layer bands and cavern rows are O(depth); the per-tile scan is one pass.
 -- Invoked by name via DFHack RunCommand; prints ONE JSON object.
@@ -54,12 +58,14 @@ local TMAT = df.tiletype_material
 local TSPECIAL = df.tiletype_special
 local GLT = df.geo_layer_type
 
--- Freezing point of water in DF tile temperature units (urist); 10000 = 0C.
 -- Region biome temperature is stored in Fahrenheit-scaled units; 32F is the
--- freeze point. A biome whose base temperature is at or below freezing keeps its
--- surface water frozen (glacier / tundra) — reported conservatively: a warmer
--- biome that freezes only in deep winter is NOT flagged, so we never fabricate a
--- freeze. (This fixture's biomes are 77-81F; the true/frozen path is untested.)
+-- freeze point of water. A biome whose BASE temperature is at or below freezing
+-- has permanently frozen surface water (glacier / tundra) — that is what
+-- surface_water.permanent_freeze reports. It is deliberately NOT a seasonal
+-- "freezes in winter" claim: DF 53.15 does not reliably expose a per-biome winter
+-- minimum (plotinfo hi/lo temp read back as sentinels), so seasonal freezing is
+-- not computed and a warm biome that freezes only in deep winter is not flagged.
+-- (This fixture's biomes are 77-81F; the true/frozen path is untested here.)
 local FREEZE_F = 32
 
 -- geo_layer_type enum -> readable kind. All SOIL* variants collapse to 'soil'
@@ -82,25 +88,30 @@ local function mat_name(mi)
   return name
 end
 
--- cache: block region-biome key -> geo_index (one lookup per block center)
+-- cache: region-biome key -> geo_index. A tile's geo biome is resolved from THAT
+-- TILE's own biome (getTileBiomeRgn honours the per-tile designation.biome), not
+-- the block centre — a block that straddles a biome boundary has tiles indexing
+-- different geo layer tables, and the block centre would mislabel the boundary
+-- tiles. A per-block cache keyed by the tile's designation.biome (0-8, the 3x3
+-- neighbour selector) collapses getTileBiomeRgn to ~one call per distinct biome
+-- per block, so per-tile correctness costs no measurable throughput.
 local geo_cache = {}
 local function geo_index_at(x, y, z)
   local rx, ry = dfhack.maps.getTileBiomeRgn(xyz2pos(x, y, z))
   if not rx then return nil end
   local key = rx * 100000 + ry
   local gi = geo_cache[key]
-  if gi ~= nil then return gi end
+  if gi ~= nil then return gi or nil end
   local rb = dfhack.maps.getRegionBiome(rx, ry)
-  gi = rb and rb.geo_index or nil
-  geo_cache[key] = gi or false
-  return gi
+  gi = rb and rb.geo_index or false
+  geo_cache[key] = gi
+  return gi or nil
 end
 
 -- ---- single pass over the map -------------------------------------------------
 local surface_z = -1
 local revealed_zmin, revealed_zmax = math.huge, -1
 local aq_present, aq_heavy, aq_zmin, aq_zmax = false, false, math.huge, -1
-local magma_revealed = false
 local brook, river = false, false
 local pool_tiles = {}            -- "x,y,z" -> true (revealed stagnant surface water)
 local perZ = {}                  -- z -> { ["kind\tmaterial"] = {kind=, material=} }
@@ -115,8 +126,9 @@ for _, blk in ipairs(blocks) do
   if blk.flags.has_river_high or blk.flags.has_river_medium or blk.flags.has_river_low then
     river = true
   end
-  -- one geo lookup per block (center), reused for this block's sampled tiles
-  local block_gi = geo_index_at(blk.map_pos.x + 8, blk.map_pos.y + 8, bz)
+  -- per-block cache: this tile's designation.biome -> geo_index, so a boundary
+  -- block resolves each tile against its OWN biome (not the block centre).
+  local biome_geo = {}
 
   for lx = 0, 15 do
     for ly = 0, 15 do
@@ -132,8 +144,6 @@ for _, blk in ipairs(blocks) do
           local shp = SHAPE[a.shape]
           if (shp == 'FLOOR' or shp == 'RAMP') and bz > surface_z then surface_z = bz end
         end
-        -- magma actually visible on the map
-        if des.flow_size > 0 and des.liquid_type then magma_revealed = true end
         -- surface water tiletypes
         if TMAT[a.material] == 'BROOK' then brook = true end
         local sp = TSPECIAL[a.special]
@@ -156,8 +166,14 @@ for _, blk in ipairs(blocks) do
       -- map data — deterministically, not from whichever columns happen to be dug
       -- — on a coarse stride. The DEPTH shown is fog-gated at build time (default
       -- stops at the deepest revealed z; reveal_hidden shows the full column).
-      if block_gi and lx % 4 == 0 and ly % 4 == 0 then
-        local L = w.world_data.geo_biomes[block_gi].layers[des.geolayer_index]
+      if lx % 4 == 0 and ly % 4 == 0 then
+        local b = des.biome
+        local gi = biome_geo[b]
+        if gi == nil then
+          gi = geo_index_at(blk.map_pos.x + lx, blk.map_pos.y + ly, bz) or false
+          biome_geo[b] = gi
+        end
+        local L = gi and w.world_data.geo_biomes[gi].layers[des.geolayer_index]
         if L then
           local bucket = perZ[bz]
           if not bucket then bucket = {}; perZ[bz] = bucket end
@@ -240,25 +256,8 @@ end
 
 -- ---- caverns + magma sea (fog-of-war gated) -----------------------------------
 -- Read the local feature layers. A cavern/magma is DISCOVERED per its
--- flags.Discovered bit; undiscovered ones are OMITTED unless reveal_hidden. Water
--- for a cavern is scanned from its z-band, skipping hidden tiles unless revealed,
--- so the water fact obeys the same fog-of-war rule.
-local function zband_has_water(zb, zt)
-  for _, blk in ipairs(blocks) do
-    local bz = blk.map_pos.z
-    if bz >= zb and bz <= zt then
-      for lx = 0, 15 do
-        for ly = 0, 15 do
-          local des = blk.designation[lx][ly]
-          if (reveal_hidden or not des.hidden) and des.flow_size > 0 and not des.liquid_type then
-            return true
-          end
-        end
-      end
-    end
-  end
-  return false
-end
+-- flags.Discovered bit; undiscovered ones are OMITTED unless reveal_hidden.
+local mf = w.features.map_features
 
 local function feature_zrange(f)
   local zmin, zmax = math.huge, -1
@@ -270,12 +269,53 @@ local function feature_zrange(f)
   return zmin, zmax
 end
 
+-- Cavern water, SCOPED to each cavern's own tiles. A cavern is a GLOBAL feature:
+-- block.global_feature resolves (via getGlobalInitFeature) to the map_features
+-- entry, and designation.feature_global marks the tiles that belong to it. We
+-- count water only on those tiles, so a cistern or an aquifer seep sharing the
+-- cavern's z-band does NOT get miscredited as cavern water. Built in one pass and
+-- keyed by map_features index; hidden tiles are skipped unless reveal_hidden, so
+-- the water fact obeys the same fog-of-war rule as the cavern itself.
+local gfeat_to_mf = {}         -- block.global_feature index -> map_features index (cached)
+local function mf_index_of_gfeat(gf)
+  local cached = gfeat_to_mf[gf]
+  if cached ~= nil then return cached or nil end
+  local finit = dfhack.maps.getGlobalInitFeature(gf)
+  local idx = false
+  if finit then
+    for i = 0, #mf - 1 do
+      if mf[i] == finit then idx = i; break end
+    end
+  end
+  gfeat_to_mf[gf] = idx
+  return idx or nil
+end
+
+local feature_water = {}       -- map_features index -> true if that cavern holds water
+for _, blk in ipairs(blocks) do
+  local gf = blk.global_feature
+  if gf ~= -1 then
+    local mi = mf_index_of_gfeat(gf)
+    if mi ~= nil and not feature_water[mi] then
+      for lx = 0, 15 do
+        for ly = 0, 15 do
+          local des = blk.designation[lx][ly]
+          if des.feature_global and (reveal_hidden or not des.hidden)
+            and des.flow_size > 0 and not des.liquid_type then
+            feature_water[mi] = true
+          end
+        end
+      end
+    end
+  end
+end
+
 local caverns_discovered = {}
 local caverns_hidden = {}
-local magma_reached = magma_revealed
-local magma_hidden      -- z-range of the (undiscovered) magma sea, only when reveal_hidden
+local magma_reached = false    -- true ONLY when the magma-SEA layer is discovered,
+                               -- never for a volcano / magma pool / hauled magma
+local magma_hidden             -- z-range of the (undiscovered) magma sea, only when reveal_hidden
 
-local mf = w.features.map_features
 for i = 0, #mf - 1 do
   local feat = mf[i]
   local ft = feat:getType()
@@ -285,7 +325,7 @@ for i = 0, #mf - 1 do
       layer = feat.start_depth + 1,           -- 1 = first cavern
       z_top = zmax,
       z_bottom = zmin,
-      water = zband_has_water(zmin, zmax),
+      water = feature_water[i] or false,
     }
     if feat.flags.Discovered then
       caverns_discovered[#caverns_discovered + 1] = row
@@ -329,12 +369,17 @@ local function count_pools()
   return n
 end
 
-local frozen = (biome_temp_min ~= math.huge) and (biome_temp_min <= FREEZE_F) or false
+-- permanent_freeze: the biome's base temperature is at or below freezing, so its
+-- surface water is ice YEAR-ROUND (glacier / tundra). This is NOT seasonal winter
+-- freezing: DF 53.15 exposes only the biome base temperature (plotinfo hi/lo temp
+-- read back as sentinels on this build), so a warm biome that freezes only in deep
+-- winter is honestly NOT flagged — the field claims permanent freeze, not seasonal.
+local permanent_freeze = (biome_temp_min ~= math.huge) and (biome_temp_min <= FREEZE_F) or false
 local surface_water = {
   brook = brook,
   river = river,
   murky_pools = count_pools(),
-  frozen_in_winter = frozen,
+  permanent_freeze = permanent_freeze,
 }
 
 -- ---- alerts: factual restatements only ----------------------------------------

@@ -32,7 +32,10 @@ export interface SurfaceWater {
   brook: boolean;
   river: boolean;
   murky_pools: number;
-  frozen_in_winter: boolean;
+  // Biome base temperature is at/below freezing, so surface water is ice
+  // year-round (glacier/tundra). NOT a seasonal winter claim — DF 53.15 does not
+  // reliably expose a per-biome winter minimum on this build.
+  permanent_freeze: boolean;
 }
 
 export interface Geology {
@@ -75,8 +78,10 @@ export const geologyDef: ToolDef = {
     'the aquifer (presence, light vs. heavy type, and z-range, enough to fuse with ' +
     'wiki_lookup("Aquifer")); the caverns actually DISCOVERED (each with z-range and ' +
     'whether it holds water); whether the magma sea has been reached; and surface ' +
-    'water (brook, river, murky-pool count, and whether it freezes in winter — the ' +
-    'well-gating fact). Undiscovered caverns and an unreached magma sea are OMITTED ' +
+    'water (brook, river, murky-pool count, and permanent_freeze — whether the ' +
+    "biome's base temperature keeps surface water frozen year-round, glacier/tundra, " +
+    'the well-gating fact; not a seasonal winter claim). Undiscovered caverns and an ' +
+    'unreached magma sea are OMITTED ' +
     '(fog of war stays honest). Set reveal_hidden=true to BYPASS FOG OF WAR and also ' +
     'surface every undiscovered cavern (caverns_hidden) and the magma sea z-range ' +
     '(magma_hidden) — a debug/spoiler switch, default false. Reports what is there, ' +

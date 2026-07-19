@@ -490,7 +490,7 @@ export const INVARIANTS = [
           out.push(`aquifer.type="${aq.type}" is not light|heavy`);
         if (!(isInt(aq.z_top) && isInt(aq.z_bottom) && aq.z_top >= aq.z_bottom))
           out.push(`aquifer z_top=${aq.z_top} < z_bottom=${aq.z_bottom}`);
-      } else if (aq.type !== undefined || aq.z_top !== undefined) {
+      } else if (aq.type !== undefined || aq.z_top !== undefined || aq.z_bottom !== undefined) {
         out.push('aquifer.present is false but a type/z-range leaked');
       }
       // Discovered caverns: ordered z-range, positive layer number, boolean water.
@@ -515,7 +515,7 @@ export const INVARIANTS = [
       const sw = d.surface_water ?? {};
       if (!(isInt(sw.murky_pools) && sw.murky_pools >= 0))
         out.push(`surface_water.murky_pools=${sw.murky_pools} is not a non-negative integer`);
-      for (const k of ['brook', 'river', 'frozen_in_winter']) {
+      for (const k of ['brook', 'river', 'permanent_freeze']) {
         if (typeof sw[k] !== 'boolean') out.push(`surface_water.${k}=${sw[k]} is not a boolean`);
       }
       return out;
