@@ -19,9 +19,11 @@ on:
   push:
     tags: ['v*']
 
+# Least privilege by default; each job escalates only what it needs, so a
+# compromised install/build step in verify-artifact/publish can neither write to
+# the repo nor mint an OIDC token unless that job explicitly grants it.
 permissions:
-  contents: write # github-release job creates the Release
-  id-token: write # npm provenance + trusted publishing (OIDC)
+  contents: read
 
 jobs:
   # Gate the ARTIFACT under the published runtime floor (Node 20). The T0 tier in
@@ -42,6 +44,9 @@ jobs:
   publish:
     needs: verify-artifact
     runs-on: ubuntu-latest
+    permissions:
+      contents: read # checkout only
+      id-token: write # OIDC token for trusted publishing + provenance
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -49,8 +54,10 @@ jobs:
           node-version: '24'
           registry-url: 'https://registry.npmjs.org'
       - run: npm ci
-      # Trusted publishing needs a recent npm (OIDC support landed in 11.5.x).
-      - run: npm install -g npm@latest
+      # Trusted publishing needs npm >= 11.5.x (OIDC support). Pin an exact version
+      # so a re-run months later can't pull an npm major that drops Node 24 or
+      # changes publish behavior — the workflow stays reproducible without edits.
+      - run: npm install -g npm@11.5.1
       # The same gate CI runs — a broken build never reaches the registry.
       - run: npm run typecheck
       - run: npm run lint
@@ -77,6 +84,8 @@ jobs:
   github-release:
     needs: publish
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the GitHub Release
     steps:
       - uses: actions/checkout@v4
       - name: Create GitHub Release

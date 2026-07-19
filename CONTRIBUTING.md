@@ -19,11 +19,14 @@ don't clone it to work on the server.
   from-source dev workflow.)
 - **Windows-native by default.** DF + DFHack run on the Windows host; there is no
   headless mode yet (that's [#27](https://github.com/alexanderolvera/dfhack-mcp/issues/27)).
-- **Don't expose the fort.** Never enable `allow_remote` in `remote-server.json`
-  — that would let _other machines_ reach your DFHack RPC. The server connects to
-  `localhost:5000` by default. If DF runs in a VM, WSL, or container, keep
-  `allow_remote:false` and expose it through a loopback-only port forward/bridge;
-  point `DFHACK_HOST` / `DFHACK_PORT` at that local endpoint.
+- **Don't expose the fort.** Never enable `allow_remote` in `remote-server.json`.
+  DFHack's RPC only accepts connections that _originate_ from `127.0.0.1`, so the
+  server talks to `localhost:5000` by default. `DFHACK_HOST` / `DFHACK_PORT` can
+  retarget it, but reaching DF in another environment (a VM, WSL, a container) is
+  not just a matter of the address — DFHack still rejects a non-loopback origin,
+  so you must put a **loopback-preserving forward or bridge** in front of it that
+  re-originates the connection as local (the `socat` pattern in
+  [`docker/README.md`](docker/README.md)), never `allow_remote`.
 
 ## Setup — one command
 

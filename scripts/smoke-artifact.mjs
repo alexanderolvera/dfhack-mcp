@@ -37,11 +37,16 @@ try {
   const bin = join(room, 'node_modules', 'dfhack-mcp', 'dist', 'index.js');
 
   // 3) Boot the INSTALLED bundle over MCP (actuators on → full 32-tool surface)
-  //    and assert the handshake version + expected tools.
+  //    and assert the handshake version + expected tools. Pin the gates
+  //    explicitly — actuators ON, dev OFF — so the tool count is deterministic
+  //    regardless of any DFHACK_MCP_* the caller happens to have in their shell
+  //    (a stray DFHACK_MCP_DEV would register run_lua and blow the 32 assertion).
+  const childEnv = { ...process.env, DFHACK_MCP_ACTUATORS: '1' };
+  delete childEnv.DFHACK_MCP_DEV;
   const transport = new StdioClientTransport({
     command: 'node',
     args: [bin],
-    env: { ...process.env, DFHACK_MCP_ACTUATORS: '1' },
+    env: childEnv,
   });
   const client = new Client({ name: 'smoke', version: '0' }, { capabilities: {} });
   await client.connect(transport);
