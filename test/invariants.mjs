@@ -262,6 +262,58 @@ export const INVARIANTS = [
     },
   },
   {
+    name: 'map_overview_extents_and_activity_coherent',
+    tools: ['map_overview'],
+    desc: 'extents are positive, every activity/surface/stair z sits inside [0, z_count), each stair column runs top>=bottom, and the columns list honors its cap + truncation flag',
+    check(p) {
+      const d = p.map_overview;
+      const out = [];
+      const e = d.extents ?? {};
+      for (const k of ['x', 'y', 'z']) {
+        if (!(isInt(e[k]) && e[k] > 0)) out.push(`extents.${k}=${e[k]} is not a positive integer`);
+      }
+      const zc = e.z; // valid z-levels are [0, zc)
+      const zOk = (z) => isInt(z) && inRange(z, 0, zc - 1);
+      // fort_core, when present, sits inside the map.
+      const c = d.fort_core;
+      if (c !== null && c !== undefined) {
+        if (!(isInt(c.x) && inRange(c.x, 0, e.x - 1))) out.push(`fort_core.x=${c.x} outside [0, ${e.x})`);
+        if (!(isInt(c.y) && inRange(c.y, 0, e.y - 1))) out.push(`fort_core.y=${c.y} outside [0, ${e.y})`);
+        if (!zOk(c.z)) out.push(`fort_core.z=${c.z} outside [0, ${zc})`);
+      }
+      // surface_z is null or a real z-level.
+      if (d.surface_z !== null && !zOk(d.surface_z)) out.push(`surface_z=${d.surface_z} outside [0, ${zc})`);
+      // every activity z-level is a real z-level, and the union covers both parts.
+      const a = d.activity ?? {};
+      const uni = new Set(a.z_levels ?? []);
+      for (const key of ['z_levels', 'construction_z', 'digging_z']) {
+        for (const z of a[key] ?? []) {
+          if (!zOk(z)) out.push(`activity.${key} contains z=${z} outside [0, ${zc})`);
+          if (key !== 'z_levels' && !uni.has(z)) out.push(`activity.${key} z=${z} missing from the z_levels union`);
+        }
+      }
+      // stair columns: a downward-consistent vertical run inside the map.
+      const cols = d.stair_columns;
+      if (!Array.isArray(cols)) {
+        out.push('stair_columns is not an array');
+      } else {
+        cols.forEach((s, i) => {
+          if (!(isInt(s.x) && inRange(s.x, 0, e.x - 1))) out.push(`stair_columns[${i}].x=${s.x} outside [0, ${e.x})`);
+          if (!(isInt(s.y) && inRange(s.y, 0, e.y - 1))) out.push(`stair_columns[${i}].y=${s.y} outside [0, ${e.y})`);
+          if (!zOk(s.z_top)) out.push(`stair_columns[${i}].z_top=${s.z_top} outside [0, ${zc})`);
+          if (!zOk(s.z_bottom)) out.push(`stair_columns[${i}].z_bottom=${s.z_bottom} outside [0, ${zc})`);
+          if (isInt(s.z_top) && isInt(s.z_bottom) && s.z_top < s.z_bottom)
+            out.push(`stair_columns[${i}] z_top=${s.z_top} < z_bottom=${s.z_bottom}`);
+        });
+        if (cols.length > 40) out.push(`stair_columns length ${cols.length} exceeds the cap of 40`);
+        const shouldTrunc = isInt(d.stair_columns_total) && d.stair_columns_total > cols.length;
+        if (Boolean(d.stair_columns_truncated) !== shouldTrunc)
+          out.push(`stair_columns_truncated=${d.stair_columns_truncated} disagrees with total ${d.stair_columns_total} vs listed ${cols.length}`);
+      }
+      return out;
+    },
+  },
+  {
     name: 'justice_counts_self_consistent',
     tools: ['mandates_and_justice'],
     desc: 'justice sub-counts are non-negative and bounded by their supersets, and mandate/demand rows are well-formed',
