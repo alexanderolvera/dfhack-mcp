@@ -142,17 +142,22 @@ for x = math.floor(BIOME_STEP / 2), m.x_count - 1, BIOME_STEP do
 end
 
 -- representative surface temperature = median of the samples (robust to a stray
--- sun-warmed construction tile). No samples (fully roofed/hidden) => nil.
-local surface_temp
+-- sun-warmed construction tile). No samples (fully roofed/hidden) => UNKNOWN: we
+-- leave surface_temp AND water_frozen nil rather than fabricating a `false`, so we
+-- never claim water is liquid without having read a temperature. This encoder can't
+-- emit JSON null, so nil keys are simply omitted here and the TS wrapper normalizes
+-- them to explicit null (keeping the fixed key set + number|null contract).
+local surface_temp   -- nil if no surface sample
 if #temps > 0 then
   table.sort(temps)
   surface_temp = temps[math.ceil(#temps / 2)]
 end
-local water_frozen = (surface_temp ~= nil) and (surface_temp <= WATER_FREEZE) or false
-local temperature_band
-if surface_temp == nil then temperature_band = 'unknown'
-elseif surface_temp <= WATER_FREEZE then temperature_band = 'freezing'
-else temperature_band = 'above_freezing' end
+local water_frozen   -- nil (=> unknown) unless a temperature was actually read
+local temperature_band = 'unknown'
+if surface_temp ~= nil then
+  water_frozen = surface_temp <= WATER_FREEZE
+  temperature_band = water_frozen and 'freezing' or 'above_freezing'
+end
 
 -- ---- caverns: only those the fort has BREACHED (Discovered), open vs sealed ----
 -- Collect the distinct global-feature ids referenced by loaded blocks, resolve each
@@ -187,7 +192,13 @@ if any_discovered then
       local bx, by, bz = b.map_pos.x, b.map_pos.y, b.map_pos.z
       for lx = 0, 15 do
         for ly = 0, 15 do
-          if not b.designation[lx][ly].hidden then
+          -- Only tiles that ACTUALLY belong to the cavern count: the block-level
+          -- global_feature says "this 16x16 has cavern tiles", but the per-tile
+          -- designation.feature_global flag says WHICH ones. Without it a stray
+          -- revealed, citizen-reachable tunnel tile sharing the block would mark a
+          -- SEALED cavern "open". Gate on both, plus revealed + a shared walk group.
+          local des = b.designation[lx][ly]
+          if des.feature_global and not des.hidden then
             local g = dfhack.maps.getWalkableGroup(xyz2pos(bx + lx, by + ly, bz))
             if g ~= 0 and citizen_groups[g] then cavern_open[num] = true end
           end

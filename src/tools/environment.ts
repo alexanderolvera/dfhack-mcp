@@ -13,7 +13,7 @@ export type TemperatureBand = 'freezing' | 'above_freezing' | 'unknown';
 export interface Surface {
   temperature: number | null; // DF units; 10000 == water's freezing point. null if fully roofed/hidden.
   temperature_band: TemperatureBand;
-  water_frozen: boolean; // surface temperature at/below water's freezing point
+  water_frozen: boolean | null; // temp at/below water's freezing point; null when temperature is unknown
   weather: Weather; // dominant cell over the weather grid
   raining: boolean;
   snowing: boolean;
@@ -41,7 +41,17 @@ export interface Environment {
 }
 
 export async function environment(): Promise<Environment | { error: string }> {
-  return runJsonScript<Environment>('environment', [], ['caverns', 'alerts']);
+  const data = await runJsonScript<Environment>('environment', [], ['caverns', 'alerts']);
+  if ('error' in data) return data;
+  // The DFHack Lua encoder can't emit JSON null, so when no surface tile could be
+  // sampled it OMITS temperature / water_frozen rather than fabricating a `false`.
+  // Normalize the absent scalars to explicit null here so the payload always carries
+  // the full fixed key set with the documented number|null / boolean|null contract.
+  if (data.surface) {
+    if (data.surface.temperature === undefined) data.surface.temperature = null;
+    if (data.surface.water_frozen === undefined) data.surface.water_frozen = null;
+  }
+  return data;
 }
 
 export const environmentDef: ToolDef = {
