@@ -14,6 +14,7 @@ import { defensesDef } from './defenses.ts';
 import { findUnitDef } from './findUnit.ts';
 import { fortStatusDef } from './fortStatus.ts';
 import { gameDataDef } from './gameData.ts';
+import { geologyDef } from './geology.ts';
 import { identifyDef } from './identify/index.ts';
 import { injuriesAndHealthDef } from './injuriesAndHealth.ts';
 import { jobsAndLaborDef } from './jobsAndLabor.ts';
@@ -41,6 +42,7 @@ export const ALL_TOOLS: ToolDef[] = [
   findUnitDef,
   fortStatusDef,
   gameDataDef,
+  geologyDef,
   identifyDef,
   injuriesAndHealthDef,
   jobsAndLaborDef,

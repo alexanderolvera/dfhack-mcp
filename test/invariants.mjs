@@ -462,4 +462,63 @@ export const INVARIANTS = [
       return out;
     },
   },
+  {
+    name: 'geology_depths_ordered_and_fog_honest',
+    tools: ['geology'],
+    desc: 'every layer/aquifer/cavern z_top >= z_bottom, aquifer.type is light|heavy when present, and the default payload leaks no undiscovered-depth keys',
+    check(p) {
+      const d = p.geology;
+      const out = [];
+      // surface_z is an integer z-level.
+      if (!isInt(d.surface_z)) out.push(`surface_z=${d.surface_z} is not an integer`);
+      // Every geological band is ordered top-at-or-above-bottom with real materials.
+      if (!Array.isArray(d.layers)) {
+        out.push('layers is not an array');
+      } else {
+        d.layers.forEach((b, i) => {
+          if (!(isInt(b.z_top) && isInt(b.z_bottom) && b.z_top >= b.z_bottom))
+            out.push(`layers[${i}] z_top=${b.z_top} < z_bottom=${b.z_bottom}`);
+          if (!Array.isArray(b.materials) || b.materials.some((m) => typeof m !== 'string' || !m))
+            out.push(`layers[${i}].materials is not a list of non-empty strings`);
+        });
+      }
+      // Aquifer: a present aquifer is light|heavy with an ordered z-range; an absent
+      // one carries no z-range tell.
+      const aq = d.aquifer ?? {};
+      if (aq.present) {
+        if (aq.type !== 'light' && aq.type !== 'heavy')
+          out.push(`aquifer.type="${aq.type}" is not light|heavy`);
+        if (!(isInt(aq.z_top) && isInt(aq.z_bottom) && aq.z_top >= aq.z_bottom))
+          out.push(`aquifer z_top=${aq.z_top} < z_bottom=${aq.z_bottom}`);
+      } else if (aq.type !== undefined || aq.z_top !== undefined) {
+        out.push('aquifer.present is false but a type/z-range leaked');
+      }
+      // Discovered caverns: ordered z-range, positive layer number, boolean water.
+      if (!Array.isArray(d.caverns_discovered)) {
+        out.push('caverns_discovered is not an array');
+      } else {
+        d.caverns_discovered.forEach((c, i) => {
+          if (!(isInt(c.z_top) && isInt(c.z_bottom) && c.z_top >= c.z_bottom))
+            out.push(`caverns_discovered[${i}] z_top=${c.z_top} < z_bottom=${c.z_bottom}`);
+          if (!(isInt(c.layer) && c.layer >= 1)) out.push(`caverns_discovered[${i}].layer=${c.layer} is not >= 1`);
+          if (typeof c.water !== 'boolean') out.push(`caverns_discovered[${i}].water=${c.water} is not a boolean`);
+        });
+      }
+      if (typeof d.magma_reached !== 'boolean') out.push(`magma_reached=${d.magma_reached} is not a boolean`);
+      // FOG OF WAR: with reveal_hidden NOT passed (the harness calls geology with no
+      // args), the fog-piercing keys must be entirely ABSENT — no undiscovered
+      // cavern/magma z-range may leak into the default survey.
+      for (const k of ['reveal_hidden', 'caverns_hidden', 'magma_hidden']) {
+        if (k in d) out.push(`default payload leaks fog-of-war key "${k}"`);
+      }
+      // Surface water counts are sane.
+      const sw = d.surface_water ?? {};
+      if (!(isInt(sw.murky_pools) && sw.murky_pools >= 0))
+        out.push(`surface_water.murky_pools=${sw.murky_pools} is not a non-negative integer`);
+      for (const k of ['brook', 'river', 'frozen_in_winter']) {
+        if (typeof sw[k] !== 'boolean') out.push(`surface_water.${k}=${sw[k]} is not a boolean`);
+      }
+      return out;
+    },
+  },
 ];
