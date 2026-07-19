@@ -1,0 +1,234 @@
+{
+  "count": 12,
+  "details": [
+    {
+      "allowed_labors": [
+        "MINE"
+      ],
+      "icon": 0,
+      "member_count": 2,
+      "member_names": [
+        "At�r R�senastod \"Coalgulfs\", Miner",
+        "Sigun Sastreskeskal \"Princessshoots\", Miner"
+      ],
+      "members": [
+        112,
+        113
+      ],
+      "members_truncated": false,
+      "mode": "OnlySelectedDoesThis",
+      "name": "Miners",
+      "no_modify": true
+    },
+    {
+      "allowed_labors": [
+        "CUTWOOD"
+      ],
+      "icon": 1,
+      "member_count": 1,
+      "member_names": [
+        "Kel Mengtangath \"Lashedtrampled\", Peasant"
+      ],
+      "members": [
+        492
+      ],
+      "members_truncated": false,
+      "mode": "OnlySelectedDoesThis",
+      "name": "Woodcutters",
+      "no_modify": true
+    },
+    {
+      "allowed_labors": [
+        "HUNT"
+      ],
+      "icon": 2,
+      "member_count": 0,
+      "member_names": [],
+      "members": [],
+      "members_truncated": false,
+      "mode": "NobodyDoesThis",
+      "name": "Hunters",
+      "no_modify": true
+    },
+    {
+      "allowed_labors": [
+        "PLANT"
+      ],
+      "icon": 3,
+      "member_count": 2,
+      "member_names": [
+        "Urist Likotgovos \"Inkleaves\", Planter",
+        "Doren Asobalen \"Boardmoths\", Planter"
+      ],
+      "members": [
+        117,
+        424
+      ],
+      "members_truncated": false,
+      "mode": "OnlySelectedDoesThis",
+      "name": "Planters",
+      "no_modify": true
+    },
+    {
+      "allowed_labors": [
+        "FISH"
+      ],
+      "icon": 4,
+      "member_count": 2,
+      "member_names": [
+        "Inod Asteshmatul \"Cudgeldanced\", Fishery Worker",
+        "Uzol St�gilled \"Jawrack\", Bookbinder"
+      ],
+      "members": [
+        491,
+        529
+      ],
+      "members_truncated": false,
+      "mode": "OnlySelectedDoesThis",
+      "name": "Fisherdwarves",
+      "no_modify": true
+    },
+    {
+      "allowed_labors": [
+        "HERBALIST"
+      ],
+      "icon": 7,
+      "member_count": 0,
+      "member_names": [],
+      "members": [],
+      "members_truncated": false,
+      "mode": "EverybodyDoesThis",
+      "name": "Plant gatherers",
+      "no_modify": true
+    },
+    {
+      "allowed_labors": [
+        "STONECUTTER"
+      ],
+      "icon": 5,
+      "member_count": 0,
+      "member_names": [],
+      "members": [],
+      "members_truncated": false,
+      "mode": "EverybodyDoesThis",
+      "name": "Stonecutters",
+      "no_modify": true
+    },
+    {
+      "allowed_labors": [
+        "ENGRAVER"
+      ],
+      "icon": 6,
+      "member_count": 2,
+      "member_names": [
+        "At�r R�senastod \"Coalgulfs\", Miner",
+        "Sigun Sastreskeskal \"Princessshoots\", Miner"
+      ],
+      "members": [
+        112,
+        113
+      ],
+      "members_truncated": false,
+      "mode": "OnlySelectedDoesThis",
+      "name": "Engravers",
+      "no_modify": true
+    },
+    {
+      "allowed_labors": [
+        "HAUL_STONE",
+        "HAUL_WOOD",
+        "HAUL_BODY",
+        "HAUL_FOOD",
+        "HAUL_REFUSE",
+        "HAUL_ITEM",
+        "HAUL_FURNITURE",
+        "HAUL_ANIMALS",
+        "HANDLE_VEHICLES",
+        "HAUL_TRADE",
+        "HAUL_WATER"
+      ],
+      "icon": 8,
+      "member_count": 0,
+      "member_names": [],
+      "members": [],
+      "members_truncated": false,
+      "mode": "EverybodyDoesThis",
+      "name": "Haulers",
+      "no_modify": true
+    },
+    {
+      "allowed_labors": [
+        "SUTURING",
+        "DRESSING_WOUNDS",
+        "FEED_WATER_CIVILIANS",
+        "RECOVER_WOUNDED"
+      ],
+      "icon": 9,
+      "member_count": 0,
+      "member_names": [],
+      "members": [],
+      "members_truncated": false,
+      "mode": "EverybodyDoesThis",
+      "name": "Orderlies",
+      "no_modify": true
+    },
+    {
+      "allowed_labors": [],
+      "icon": 10,
+      "member_count": 13,
+      "member_names": [
+        "Tun Lolumavuz \"Woodenmines\", militia commander",
+        "�shrir Amemdod�k \"Curledclasps\", Axedwarf",
+        "�nul Kolmegid \"Wheeledslides\", captain of the guard",
+        "Lolor Oshurber \"Circledearth\", Axedwarf",
+        "Cerol �gamm�rul \"Gorgedpage\", Axedwarf",
+        "�ton Sob�robok \"Releasedpillars\", Wrestler",
+        "Deg�l Oshur�nul \"Circledmirrored\", Marksdwarf",
+        "Kib Sazirtathur \"Bridgedscribes\", Axedwarf",
+        "Dod�k Zikelasob \"Fierceboard\", Marksdwarf",
+        "K�buk �nullisid \"Mirroredclashed\", Wrestler",
+        "Likot Oshoshnish \"Hermittrades\", Marksdwarf",
+        "Kad�l Sterusathel \"Driverings\", militia captain",
+        "Dumat Vab�kvudthar \"Orbransacked\", Marksdwarf"
+      ],
+      "members": [
+        111,
+        304,
+        335,
+        336,
+        347,
+        348,
+        349,
+        353,
+        377,
+        426,
+        485,
+        498,
+        526
+      ],
+      "members_truncated": false,
+      "mode": "EverybodyDoesThis",
+      "name": "Military",
+      "no_modify": false
+    },
+    {
+      "allowed_labors": [
+        "HAUL_STONE"
+      ],
+      "icon": 11,
+      "member_count": 2,
+      "member_names": [
+        "Melbil Monangerib \"Drillgorge\", manager",
+        "Ingish Lorbambecor \"Standardtempted\", bookkeeper"
+      ],
+      "members": [
+        260,
+        421
+      ],
+      "members_truncated": false,
+      "mode": "EverybodyDoesThis",
+      "name": "Stone Haulers",
+      "no_modify": false
+    }
+  ]
+}

@@ -26,6 +26,22 @@ releases (`0.x.0`) may change or remove tool output, and **patch** releases
   preview → apply → undo (dig flag 0→1→0), zone preview → apply → undo (civzone
   0→4→0), the malformed/unsupported-mode blocks, and the tamper/replay token
   rejections.
+- **A3 — labor via work details** (issue #26, behind `DFHACK_MCP_ACTUATORS`). A
+  read-only `work_details()` sensor (always available) lists every work detail with
+  its mode, the labor tokens it enables, and its assigned citizens (id-sorted,
+  capped at 200 with a `members_truncated` flag + full `member_count`, plus
+  `member_names`). The gated `assign_work_detail(unit_id, detail, enabled)` actuator
+  adds/removes one citizen to/from one detail; the preview flags `currently_member`,
+  `resulting_members_count`, and `only_member` as facts, an already-satisfied
+  request previews as a no-op, and the reversal is the same call with `enabled`
+  inverted (`prior_member` echoed, `faithful:true`). Resolves the spike-flagged
+  labor-propagation risk: `assigned_units` (at
+  `df.global.plotinfo.labor_info.work_details`) is the durable source of truth, and
+  because the game reconciles `unit.status.labors` from it only on a frame advance
+  (its automatic-professions system), `apply` mirrors the affected labors onto the
+  unit immediately — recomputed as the union across all details, matching what the
+  game reconciles to. Verified live end-to-end on the fixture (assign → member +
+  labors propagate → restore), including the no-op and tamper/replay rejections.
 - **A1 actuators — manager work orders** (issue #24, behind `DFHACK_MCP_ACTUATORS`).
   The first actuators built on the §A0 foundation: `work_order_create` and
   `work_order_cancel` (gated, dry-run → confirm → apply → undo) plus a read-only

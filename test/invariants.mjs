@@ -727,4 +727,99 @@ export const INVARIANTS = [
       return out;
     },
   },
+  {
+    name: 'work_details_wellformed',
+    tools: ['work_details'],
+    desc: 'each detail has a non-empty name, a known mode, string labor tokens, ascending integer members agreeing with member_count + the 200 cap/truncation flag (cursor-aware), members_cursor present iff truncated, and parallel member_names',
+    check(p) {
+      const out = [];
+      const d = p.work_details;
+      // The members_after cursor echo: absent on a plain call, an integer when the
+      // caller paged. The member-list relations below depend on which mode this is.
+      const after = d.members_after;
+      if (after !== undefined && !isInt(after))
+        out.push(`members_after=${after} is not an integer`);
+      if (!isInt(d.count) || d.count < 0)
+        out.push(`count=${d.count} is not a non-negative integer`);
+      if (!Array.isArray(d.details)) return [...out, 'details is not an array'];
+      if (d.details.length !== d.count)
+        out.push(`details.length=${d.details.length} != count=${d.count}`);
+      const MODES = new Set([
+        'Default',
+        'EverybodyDoesThis',
+        'NobodyDoesThis',
+        'OnlySelectedDoesThis',
+      ]);
+      const CAP = 200;
+      d.details.forEach((wd, i) => {
+        if (typeof wd.name !== 'string' || !wd.name)
+          out.push(`details[${i}].name is not a non-empty string`);
+        if (!MODES.has(wd.mode)) out.push(`details[${i}].mode="${wd.mode}" is not a known mode`);
+        if (typeof wd.no_modify !== 'boolean')
+          out.push(`details[${i}].no_modify=${wd.no_modify} is not a boolean`);
+        if (
+          !Array.isArray(wd.allowed_labors) ||
+          wd.allowed_labors.some((l) => typeof l !== 'string' || !l)
+        )
+          out.push(`details[${i}].allowed_labors is not a list of non-empty strings`);
+        if (!(isInt(wd.member_count) && wd.member_count >= 0))
+          out.push(`details[${i}].member_count=${wd.member_count} is not a non-negative integer`);
+        if (typeof wd.members_truncated !== 'boolean')
+          out.push(`details[${i}].members_truncated=${wd.members_truncated} is not a boolean`);
+        if (!Array.isArray(wd.members)) {
+          out.push(`details[${i}].members is not an array`);
+          return;
+        }
+        if (wd.members.some((m) => !isInt(m)))
+          out.push(`details[${i}].members has a non-integer id`);
+        if (wd.members.length > CAP)
+          out.push(`details[${i}].members length ${wd.members.length} exceeds cap ${CAP}`);
+        // members is strictly ascending (id-sorted, no duplicates) …
+        for (let j = 1; j < wd.members.length; j++) {
+          if (!(wd.members[j] > wd.members[j - 1])) {
+            out.push(`details[${i}].members is not strictly ascending at index ${j}`);
+            break;
+          }
+        }
+        // … and, when a cursor was passed, starts strictly after it.
+        if (isInt(after) && wd.members.length && wd.members[0] <= after)
+          out.push(
+            `details[${i}].members starts at ${wd.members[0]} despite members_after=${after}`
+          );
+        // members_cursor appears exactly when truncated, and is the last listed id.
+        if (wd.members_truncated) {
+          if (wd.members_cursor !== wd.members[wd.members.length - 1])
+            out.push(`details[${i}].members_cursor=${wd.members_cursor} != last listed id`);
+        } else if (wd.members_cursor !== undefined) {
+          out.push(
+            `details[${i}].members_cursor=${wd.members_cursor} leaked on an untruncated list`
+          );
+        }
+        if (after === undefined) {
+          // No cursor: members holds the FULL list unless truncated; flag agrees with the cap.
+          const shouldTrunc = isInt(wd.member_count) && wd.member_count > wd.members.length;
+          if (Boolean(wd.members_truncated) !== shouldTrunc)
+            out.push(
+              `details[${i}].members_truncated disagrees with member_count ${wd.member_count} vs listed ${wd.members.length}`
+            );
+          if (
+            !wd.members_truncated &&
+            isInt(wd.member_count) &&
+            wd.member_count !== wd.members.length
+          )
+            out.push(
+              `details[${i}] untruncated member_count ${wd.member_count} != listed ${wd.members.length}`
+            );
+        } else if (isInt(wd.member_count) && wd.members.length > wd.member_count) {
+          // Cursor page: a tail can be any length, but never MORE than the full count.
+          out.push(
+            `details[${i}] pages ${wd.members.length} members, more than member_count ${wd.member_count}`
+          );
+        }
+        if (!Array.isArray(wd.member_names) || wd.member_names.length !== wd.members.length)
+          out.push(`details[${i}].member_names is not parallel to members`);
+      });
+      return out;
+    },
+  },
 ];
