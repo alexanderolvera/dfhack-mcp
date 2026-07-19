@@ -57,6 +57,7 @@ None.
 ```
 
 ## Caveats & limits
+- **Fog of war**: a unit standing on an undiscovered tile (`designation.hidden`, or off-map/unloaded) is filtered out entirely — never counted, grouped, or alerted on — whether loose or caged/chained. Only hostiles the fort has actually found are reported.
 - Distinct groups per (name, containment): a caged beast never masks a loose one of the same kind.
 - Intel comes from the group's first-seen (representative) unit; degrades gracefully — an unresolvable race/caste yields `token: null` and empty `traits`/`ranged_attacks` rather than an error.
 - The `fire` trait unions FIREIMMUNE flags with a name-based scan of attack labels for "fire"/"flame"; `webber` unions the WEBBER flag with "web" attacks.

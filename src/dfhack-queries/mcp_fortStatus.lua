@@ -10,6 +10,10 @@ if df.global.gamemode ~= df.game_mode.DWARF then
   return
 end
 
+-- Fog-of-war gate: mirrors mcp_threats — a hostile the fort hasn't discovered
+-- must never contribute to the count/alert here either.
+local visibility = reqscript('mcp_unitVisibility')
+
 local months = {'Granite','Slate','Felsite','Hematite','Malachite','Galena',
                 'Limestone','Sandstone','Timber','Moonstone','Opal','Obsidian'}
 local seasons = {'Spring','Summer','Autumn','Winter'}
@@ -43,7 +47,8 @@ end
 local hostiles = 0
 for _, u in ipairs(df.global.world.units.active) do
   if dfhack.units.isActive(u) and not dfhack.units.isDead(u)
-     and dfhack.units.isDanger(u) and not dfhack.units.isCitizen(u) then
+     and dfhack.units.isDanger(u) and not dfhack.units.isCitizen(u)
+     and not visibility.is_hidden(u) then
     hostiles = hostiles + 1
   end
 end

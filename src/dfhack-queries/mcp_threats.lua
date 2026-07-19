@@ -4,6 +4,9 @@
 -- !citizen) but classifies each threat and separates ACTIVE hostiles from
 -- CONTAINED ones (caged/chained — a captured beast is a hazard-in-waiting, not
 -- a live attack). Groups identical creatures so "12 goblins" reads as one line.
+-- FOG OF WAR: a unit on an undiscovered tile is filtered via mcp_unitVisibility
+-- before it ever reaches a group/count/alert — the player must have actually
+-- found it (see issue: "threats & fort_status expose undiscovered hostiles").
 -- Invoked by name via DFHack RunCommand; prints ONE JSON object.
 
 local json = require('json')
@@ -13,6 +16,10 @@ if df.global.gamemode ~= df.game_mode.DWARF then
   emit({ error = 'no fort loaded' })
   return
 end
+
+-- Fog-of-war gate: a unit standing on an undiscovered tile must never surface
+-- here, loose OR caged/chained -- see mcp_unitVisibility for the rationale.
+local visibility = reqscript('mcp_unitVisibility')
 
 -- Group dangerous units by a stable key so identical creatures collapse to one
 -- line. Contained (caged/chained) threats are counted apart from active ones.
@@ -96,7 +103,8 @@ end
 
 for _, u in ipairs(df.global.world.units.active) do
   if dfhack.units.isActive(u) and not dfhack.units.isDead(u)
-     and dfhack.units.isDanger(u) and not dfhack.units.isCitizen(u) then
+     and dfhack.units.isDanger(u) and not dfhack.units.isCitizen(u)
+     and not visibility.is_hidden(u) then
     local contained = u.flags1.caged or u.flags1.chained
     local name = dfhack.units.getReadableName(u)
     local flags = classify(u)
