@@ -45,7 +45,9 @@ export const INVARIANTS = [
       const sum = (h.miserable || 0) + (h.unhappy || 0) + (h.content || 0) + (h.happy || 0);
       return sum === p.fort_status.population
         ? []
-        : [`happiness sum ${sum} !== population ${p.fort_status.population} (buckets ${JSON.stringify(h)})`];
+        : [
+            `happiness sum ${sum} !== population ${p.fort_status.population} (buckets ${JSON.stringify(h)})`,
+          ];
     },
   },
   {
@@ -72,7 +74,8 @@ export const INVARIANTS = [
         if (!(typeof v === 'number' && v >= 0)) out.push(`counts.${k}=${v} is negative`);
       }
       for (const k of ['food_days', 'drink_days']) {
-        if (!(typeof d[k] === 'number' && d[k] >= -1)) out.push(`${k}=${d[k]} below the -1 sentinel`);
+        if (!(typeof d[k] === 'number' && d[k] >= -1))
+          out.push(`${k}=${d[k]} below the -1 sentinel`);
       }
       return out;
     },
@@ -151,7 +154,9 @@ export const INVARIANTS = [
         // wells_truncated must agree with whether the full total exceeds what's listed.
         const shouldTrunc = isInt(d.wells_total) && d.wells_total > wells.length;
         if (Boolean(d.wells_truncated) !== shouldTrunc)
-          out.push(`wells_truncated=${d.wells_truncated} disagrees with wells_total ${d.wells_total} vs listed ${wells.length}`);
+          out.push(
+            `wells_truncated=${d.wells_truncated} disagrees with wells_total ${d.wells_total} vs listed ${wells.length}`
+          );
         if (!d.wells_truncated && isInt(d.wells_total) && d.wells_total !== wells.length)
           out.push(`untruncated wells_total ${d.wells_total} !== listed ${wells.length}`);
       }
@@ -169,10 +174,12 @@ export const INVARIANTS = [
       if (h.zoned && h.supplies) {
         const LEVELS = new Set(['none', 'low', 'ok']);
         for (const k of ['thread', 'cloth']) {
-          if (!LEVELS.has(h.supplies[k])) out.push(`hospital.supplies.${k}="${h.supplies[k]}" is not a valid level`);
+          if (!LEVELS.has(h.supplies[k]))
+            out.push(`hospital.supplies.${k}="${h.supplies[k]}" is not a valid level`);
         }
         for (const k of ['splints', 'crutches']) {
-          if (!(isInt(h.supplies[k]) && h.supplies[k] >= 0)) out.push(`hospital.supplies.${k}=${h.supplies[k]} is not a non-negative integer`);
+          if (!(isInt(h.supplies[k]) && h.supplies[k] >= 0))
+            out.push(`hospital.supplies.${k}=${h.supplies[k]} is not a non-negative integer`);
         }
       }
       // A well counted inside the hospital must appear in the fort's well inventory.
@@ -180,8 +187,14 @@ export const INVARIANTS = [
         out.push('hospital.well_in_hospital is true but the fort reports zero wells');
       // An all-inclusive temple satisfies every worshipper (documented mechanic).
       const t = d.temples ?? {};
-      if (t.all_inclusive === true && Array.isArray(t.needed_by_worshippers) && t.needed_by_worshippers.length > 0)
-        out.push(`all-inclusive temple present, yet needed_by_worshippers lists ${t.needed_by_worshippers.length}`);
+      if (
+        t.all_inclusive === true &&
+        Array.isArray(t.needed_by_worshippers) &&
+        t.needed_by_worshippers.length > 0
+      )
+        out.push(
+          `all-inclusive temple present, yet needed_by_worshippers lists ${t.needed_by_worshippers.length}`
+        );
       return out;
     },
   },
@@ -193,18 +206,21 @@ export const INVARIANTS = [
       const d = p.trade;
       const out = [];
       const g = d.goods_at_depot ?? {};
-      if (!(isInt(g.count) && g.count >= 0)) out.push(`goods_at_depot.count=${g.count} not a non-negative integer`);
+      if (!(isInt(g.count) && g.count >= 0))
+        out.push(`goods_at_depot.count=${g.count} not a non-negative integer`);
       if (!(typeof g.approx_value === 'number' && g.approx_value >= 0))
         out.push(`goods_at_depot.approx_value=${g.approx_value} is negative`);
       const KNOWN = new Set(['None', 'Approaching', 'AtDepot', 'Leaving', 'Stuck']);
       if (!Array.isArray(d.caravans)) return [...out, 'caravans is not an array'];
       let atDepot = 0;
       d.caravans.forEach((c, i) => {
-        if (!KNOWN.has(c.state)) out.push(`caravans[${i}].state="${c.state}" is not a known trade_state`);
+        if (!KNOWN.has(c.state))
+          out.push(`caravans[${i}].state="${c.state}" is not a known trade_state`);
         if (c.state === 'AtDepot') atDepot += 1;
       });
       // A caravan can only be AtDepot if a depot exists to dock at.
-      if (atDepot > 0 && !d.depot?.exists) out.push(`${atDepot} caravan(s) AtDepot but depot.exists is false`);
+      if (atDepot > 0 && !d.depot?.exists)
+        out.push(`${atDepot} caravan(s) AtDepot but depot.exists is false`);
       return out;
     },
   },
@@ -220,19 +236,25 @@ export const INVARIANTS = [
       const out = [];
       d.active.forEach((m, i) => {
         if (!isInt(m?.unit_id)) out.push(`active[${i}].unit_id=${m?.unit_id} is not an integer`);
-        if (!MOODS.has(m?.mood)) out.push(`active[${i}].mood="${m?.mood}" is not a strange-mood type`);
+        if (!MOODS.has(m?.mood))
+          out.push(`active[${i}].mood="${m?.mood}" is not a strange-mood type`);
         if (!STATUS.has(m?.workshop_status))
           out.push(`active[${i}].workshop_status="${m?.workshop_status}" is unknown`);
-        if (!isInt(m?.mood_timeout)) out.push(`active[${i}].mood_timeout=${m?.mood_timeout} is not an integer`);
+        if (!isInt(m?.mood_timeout))
+          out.push(`active[${i}].mood_timeout=${m?.mood_timeout} is not an integer`);
         if (!Array.isArray(m?.demands)) {
           out.push(`active[${i}].demands is not an array`);
           return;
         }
         m.demands.forEach((dem, j) => {
           if (!(isInt(dem?.needed) && dem.needed >= 0))
-            out.push(`active[${i}].demands[${j}].needed=${dem?.needed} is not a non-negative integer`);
+            out.push(
+              `active[${i}].demands[${j}].needed=${dem?.needed} is not a non-negative integer`
+            );
           if (!(isInt(dem?.gathered) && dem.gathered >= 0))
-            out.push(`active[${i}].demands[${j}].gathered=${dem?.gathered} is not a non-negative integer`);
+            out.push(
+              `active[${i}].demands[${j}].gathered=${dem?.gathered} is not a non-negative integer`
+            );
           if (!(isInt(dem?.have) && dem.have >= -1))
             out.push(`active[${i}].demands[${j}].have=${dem?.have} is below the -1 sentinel`);
         });
@@ -331,16 +353,23 @@ export const INVARIANTS = [
         'restraints_built',
         'restraints_free',
       ]) {
-        if (!(isInt(j[k]) && j[k] >= 0)) out.push(`justice.${k}=${j[k]} is not a non-negative integer`);
+        if (!(isInt(j[k]) && j[k] >= 0))
+          out.push(`justice.${k}=${j[k]} is not a non-negative integer`);
       }
       // A prison sentence / scheduled beating is itself a pending punishment, so
       // it can never exceed the total; a free restraint can't exceed those built.
       if (!inRange(j.prison_sentences, 0, j.pending_punishments))
-        out.push(`prison_sentences=${j.prison_sentences} exceeds pending_punishments=${j.pending_punishments}`);
+        out.push(
+          `prison_sentences=${j.prison_sentences} exceeds pending_punishments=${j.pending_punishments}`
+        );
       if (!inRange(j.scheduled_beatings, 0, j.pending_punishments))
-        out.push(`scheduled_beatings=${j.scheduled_beatings} exceeds pending_punishments=${j.pending_punishments}`);
+        out.push(
+          `scheduled_beatings=${j.scheduled_beatings} exceeds pending_punishments=${j.pending_punishments}`
+        );
       if (!inRange(j.restraints_free, 0, j.restraints_built))
-        out.push(`restraints_free=${j.restraints_free} outside [0, restraints_built=${j.restraints_built}]`);
+        out.push(
+          `restraints_free=${j.restraints_free} outside [0, restraints_built=${j.restraints_built}]`
+        );
       // Mandate rows: remaining is between zero and the total quota.
       (d.mandates ?? []).forEach((m, i) => {
         if (!inRange(m.remaining, 0, m.count))
@@ -350,6 +379,53 @@ export const INVARIANTS = [
       (d.demands ?? []).forEach((dm, i) => {
         if (dm.met !== false) out.push(`demands[${i}].met=${dm.met} is not false`);
       });
+      return out;
+    },
+  },
+  {
+    name: 'tile_region_grid_wellformed',
+    tools: ['tile_region'],
+    desc: 'the grid matches its declared size, honors the 100x100 cap, its legend covers every glyph used, and fog-of-war tiles are never painted over',
+    check(p) {
+      const d = p.tile_region;
+      const out = [];
+      const size = d.size;
+      if (!Array.isArray(size) || !isInt(size[0]) || !isInt(size[1]))
+        return ['size is not a [w,h] integer pair'];
+      const [w, h] = size;
+      // Hard cap (AC): neither side may exceed 100, and a window is at least 1x1.
+      if (!inRange(w, 1, 100) || !inRange(h, 1, 100))
+        out.push(`size ${w}x${h} outside the 1..100 cap`);
+      if (!Array.isArray(d.grid)) return [...out, 'grid is not an array'];
+      // Row count == declared height; every row's length == declared width.
+      if (d.grid.length !== h) out.push(`grid has ${d.grid.length} rows but height is ${h}`);
+      let qcount = 0;
+      d.grid.forEach((row, i) => {
+        if (typeof row !== 'string') {
+          out.push(`grid[${i}] is not a string`);
+          return;
+        }
+        if (row.length !== w) out.push(`grid[${i}] length ${row.length} !== width ${w}`);
+        for (const ch of row) if (ch === '?') qcount++;
+      });
+      // Self-describing: every distinct glyph in the grid has a legend entry.
+      const legend = d.legend ?? {};
+      for (const g of new Set(d.grid.join(''))) {
+        if (!(g in legend)) out.push(`glyph "${g}" appears in grid but is missing from legend`);
+      }
+      // Fog-of-war honest: the count of '?' in the grid must equal the reported
+      // hidden-tile count. An overlay that painted a class/liquid glyph over a
+      // hidden tile would drop the '?' count below hidden_tiles — this catches it.
+      if (isInt(d.hidden_tiles) && qcount !== d.hidden_tiles)
+        out.push(
+          `grid shows ${qcount} '?' tiles but hidden_tiles=${d.hidden_tiles} (fog overwritten?)`
+        );
+      // truncated must carry the original requested size; an untruncated window
+      // must not (the flag and the echo agree).
+      if (d.truncated === true && !Array.isArray(d.requested))
+        out.push('truncated is true but requested [w,h] is absent');
+      if (d.truncated === false && d.requested !== undefined)
+        out.push('truncated is false yet requested is present');
       return out;
     },
   },
