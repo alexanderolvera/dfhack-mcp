@@ -46,6 +46,7 @@ Top-level fields:
 
 ## Caveats & limits
 - Alerts are facts pre-triaged for attention (e.g. hostiles on map), not recommendations.
+- **Fog of war**: the hostile count/alert excludes any unit standing on an undiscovered tile — an undiscovered cavern's inhabitants never surface here (same gate as [threats](threats.md)).
 - Small fixed-size payload; no parameters, no pagination.
 - Returns `{"error":"no fort loaded"}` if no fort is active — this is also the canonical probe for whether a fort is loaded at all.
 
