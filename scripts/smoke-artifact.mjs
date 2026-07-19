@@ -36,11 +36,11 @@ try {
   run(`npm install "${tgz}"`, room);
   const bin = join(room, 'node_modules', 'dfhack-mcp', 'dist', 'index.js');
 
-  // 3) Boot the INSTALLED bundle over MCP (actuators on → full 32-tool surface)
+  // 3) Boot the INSTALLED bundle over MCP (actuators on → full 33-tool surface)
   //    and assert the handshake version + expected tools. Pin the gates
   //    explicitly — actuators ON, dev OFF — so the tool count is deterministic
   //    regardless of any DFHACK_MCP_* the caller happens to have in their shell
-  //    (a stray DFHACK_MCP_DEV would register run_lua and blow the 32 assertion).
+  //    (a stray DFHACK_MCP_DEV would register run_lua and blow the 33 assertion).
   const childEnv = { ...process.env, DFHACK_MCP_ACTUATORS: '1' };
   delete childEnv.DFHACK_MCP_DEV;
   const transport = new StdioClientTransport({
@@ -67,7 +67,7 @@ try {
   const problems = [];
   if (handshakeVersion !== version)
     problems.push(`handshake version ${handshakeVersion} != package ${version}`);
-  if (tools.length !== 32) problems.push(`expected 32 tools (actuators on), got ${tools.length}`);
+  if (tools.length !== 33) problems.push(`expected 33 tools (actuators on), got ${tools.length}`);
   if (missing.length) problems.push(`missing tools: ${missing.join(', ')}`);
 
   if (problems.length) {

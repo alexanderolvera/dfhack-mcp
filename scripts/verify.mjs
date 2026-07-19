@@ -101,14 +101,17 @@ const GOLDEN_NO_ARG = new Set(['tile_region', 'work_details']);
 // against a committed save). game_data/identify fuse world raws — kept in T2.
 const NETWORK_TOOLS = new Set(['wiki_search', 'wiki_lookup']);
 
-// Tools reached in every tier but NOT captured as T2 goldens. The two actuators
+// Tools reached in every tier but NOT captured as T2 goldens. The actuators
 // return a fresh random confirm_token in their dry-run preview (non-deterministic);
 // work_order_list is a large, fort-specific order set better checked by a
-// structural invariant than a brittle 200+-line snapshot. All three are still
+// structural invariant than a brittle 200+-line snapshot. All are still
 // exercised for reachability (T1) and, for list, feed the work_order invariant.
+// game_save's dry-run only reads facts + mints a token — its apply (the actual
+// save) is async/irreversible, so it's verified live by hand, not in the harness.
 const NO_GOLDEN = new Set([
   'blueprint_apply',
   'blueprint_undo',
+  'game_save',
   'work_order_create',
   'work_order_cancel',
   'work_order_list',

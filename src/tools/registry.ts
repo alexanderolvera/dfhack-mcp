@@ -16,6 +16,7 @@ import { environmentDef } from './environment.ts';
 import { findUnitDef } from './findUnit.ts';
 import { fortStatusDef } from './fortStatus.ts';
 import { gameDataDef } from './gameData.ts';
+import { gameSaveDef } from './gameSave.ts';
 import { geologyDef } from './geology.ts';
 import { identifyDef } from './identify/index.ts';
 import { injuriesAndHealthDef } from './injuriesAndHealth.ts';
@@ -38,8 +39,8 @@ import { wikiSearchDef } from './wikiSearch.ts';
 import { workOrderCancelDef, workOrderCreateDef, workOrderListDef } from './workOrder.ts';
 
 // Alphabetical by tool name. run_lua carries devOnly:true; assign_work_detail /
-// blueprint_apply / blueprint_undo / work_order_create / work_order_cancel carry
-// actuator:true; the caller filters both via isGatedOff.
+// blueprint_apply / blueprint_undo / game_save / work_order_create / work_order_cancel
+// carry actuator:true; the caller filters both via isGatedOff.
 export const ALL_TOOLS: ToolDef[] = [
   artifactsAndEngravingsDef,
   assignWorkDetailDef,
@@ -52,6 +53,7 @@ export const ALL_TOOLS: ToolDef[] = [
   findUnitDef,
   fortStatusDef,
   gameDataDef,
+  gameSaveDef,
   geologyDef,
   identifyDef,
   injuriesAndHealthDef,

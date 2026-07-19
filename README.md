@@ -175,6 +175,10 @@ own reversal path.
 - **`work_details()`** — _read-only, always available._ Every work detail (the game's labor groups): name, mode, the labor tokens it enables, and its assigned citizens (id-sorted, capped at 200 with the full `member_count`).
 - **`assign_work_detail(unit_id, detail, enabled)`** — add or remove one citizen to/from one detail. The preview reports `currently_member`, `resulting_members_count`, and `only_member`; an already-satisfied request previews as a no-op. Reversal: the same call with `enabled` inverted.
 
+**Saving the game**
+
+- **`game_save()`** — checkpoint the fort with a quicksave before a large or risky change, so a bad batch can be rolled back by loading the save. Takes no arguments; the dry-run previews the fort and game date being frozen. Two facts to know: the write is **asynchronous** (DF commits it over the next few frames — the readback confirms the quicksave _dispatched_, not that the file landed) and it routes through DF's **autosave**, so it lands in a rotating "autosave" folder per your DF settings rather than overwriting the loaded save. Irreversible: to roll back, load the appropriate save/autosave in DF. Fortress mode only.
+
 ## Configuration
 
 All optional, set in your MCP client's `env` for the server:
