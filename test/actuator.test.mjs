@@ -159,3 +159,20 @@ test('a token minted for one tool is not accepted by another', async () => {
     /invalid or expired/
   );
 });
+
+test('a QueryError from plan() (e.g. the no-fort guard) passes straight through', async () => {
+  _resetTokens();
+  const guard = defineActuator({
+    name: 'guarded',
+    title: 'Guarded',
+    description: 'test',
+    tokenPrefix: 'g',
+    shape: { target: z.string() },
+    plan: async () => ({ error: 'no fort loaded' }),
+    apply: async () => ({ changes: {}, undo: {}, readback: {} }),
+  });
+  // The dry-run path returns the guard verbatim — not thrown, no confirm_token.
+  const res = await guard.run({ target: 'a' });
+  assert.deepEqual(res, { error: 'no fort loaded' });
+  assert.equal(res.confirm_token, undefined);
+});

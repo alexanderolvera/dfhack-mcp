@@ -584,4 +584,43 @@ export const INVARIANTS = [
       return out;
     },
   },
+  {
+    name: 'work_order_list_wellformed',
+    tools: ['work_order_list'],
+    desc: 'each order has a valid id/frequency, amount_left in [0, amount_total], and count is consistent with the (uncapped) list',
+    check(p) {
+      const out = [];
+      const d = p.work_order_list;
+      if (!isInt(d.count) || d.count < 0) out.push(`count=${d.count} is not a non-negative integer`);
+      if (typeof d.manager_present !== 'boolean')
+        out.push(`manager_present=${d.manager_present} is not a boolean`);
+      if (typeof d.truncated !== 'boolean') out.push(`truncated=${d.truncated} is not a boolean`);
+      if (!Array.isArray(d.orders)) {
+        out.push('orders is not an array');
+        return out;
+      }
+      // When NOT truncated, the returned rows account for every order.
+      if (d.truncated === false && d.orders.length !== d.count)
+        out.push(`untruncated but orders.length=${d.orders.length} != count=${d.count}`);
+      if (d.truncated === true && d.orders.length >= d.count)
+        out.push(`truncated but orders.length=${d.orders.length} >= count=${d.count}`);
+      const FREQ = ['OneTime', 'Daily', 'Monthly', 'Seasonally', 'Yearly'];
+      let lastId = -Infinity;
+      for (const o of d.orders) {
+        if (!isInt(o.id) || o.id < 0) out.push(`order id=${o.id} is not a non-negative integer`);
+        if (o.id < lastId) out.push(`orders not sorted by id (${o.id} after ${lastId})`);
+        lastId = o.id;
+        if (typeof o.job_type !== 'string' || !o.job_type)
+          out.push(`order ${o.id} job_type is not a non-empty string`);
+        if (!FREQ.includes(o.frequency)) out.push(`order ${o.id} frequency="${o.frequency}" invalid`);
+        if (!(isInt(o.amount_total) && o.amount_total >= 1))
+          out.push(`order ${o.id} amount_total=${o.amount_total} is not >= 1`);
+        if (!inRange(o.amount_left, 0, o.amount_total))
+          out.push(`order ${o.id} amount_left=${o.amount_left} not in [0, ${o.amount_total}]`);
+        if (!(isInt(o.conditions) && o.conditions >= 0))
+          out.push(`order ${o.id} conditions=${o.conditions} is not a non-negative integer`);
+      }
+      return out;
+    },
+  },
 ];

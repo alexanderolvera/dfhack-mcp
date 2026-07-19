@@ -175,8 +175,24 @@ so an agent drives them all the same way:
 
 Tokens are single-use and target-scoped: an unrelated change elsewhere in the fort
 does **not** invalidate them, but a change to the thing you're about to act on does.
-Each actuator's reversal path (order cancel / `blueprint_undo` / inverse assign) is
-named in its tool description.
+Any apply attempt spends the token — after a rejection, re-preview. Each actuator's
+reversal path (order cancel / `blueprint_undo` / inverse assign) is named in its
+tool description.
+
+Shipped so far (behind the gate):
+
+- **`work_order_list()`** — the fort's active manager (work) orders as facts: id,
+  job type, output item/material tokens, amount total/left, repeat frequency, bound
+  workshop, condition count, and whether a manager noble is assigned. Sorted by id,
+  capped at 256 with `truncated`. Read-only; also the readback sensor for the two
+  below and a standalone Q1 manager-screen view.
+- **`work_order_create(job_type, amount, frequency?, material?, item_type?)`** —
+  queue a new manager order. The dry-run preview flags `would_duplicate` (an
+  identical active order already exists) and `manager_present`; apply returns the
+  new order id. Reversal: `work_order_cancel`. (v1: advanced prerequisite conditions
+  are rejected — specify material/item_type directly.)
+- **`work_order_cancel(order_id)`** — remove one order by id; the preview shows the
+  exact order, apply returns a recreate spec as the undo handle.
 
 ## Layout
 
