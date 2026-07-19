@@ -21,9 +21,9 @@ don't clone it to work on the server.
   headless mode yet (that's [#27](https://github.com/alexanderolvera/dfhack-mcp/issues/27)).
 - **Don't expose the fort.** Never enable `allow_remote` in `remote-server.json`
   — that would let _other machines_ reach your DFHack RPC. The server connects to
-  `localhost:5000` by default; `DFHACK_HOST` / `DFHACK_PORT` only redirect it to
-  where DF actually runs (e.g. a VM or WSL), which is a separate concern from
-  `allow_remote` and still a connection _you_ initiate.
+  `localhost:5000` by default. If DF runs in a VM, WSL, or container, keep
+  `allow_remote:false` and expose it through a loopback-only port forward/bridge;
+  point `DFHACK_HOST` / `DFHACK_PORT` at that local endpoint.
 
 ## Setup — one command
 
