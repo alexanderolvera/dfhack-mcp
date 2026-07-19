@@ -24,6 +24,9 @@ Two kinds of tools:
 It returns **facts, not advice** — already-summarized JSON that reads like a
 glance at the screen, leaving the judgment to the agent.
 
+Every tool has a reference page — parameters, return shape, real example
+output, caveats — in [docs/tools](docs/tools/README.md).
+
 ## Quick start
 
 The package is published to npm and ships a **prebuilt bundle** — there is
