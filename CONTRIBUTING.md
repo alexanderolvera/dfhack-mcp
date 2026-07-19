@@ -76,6 +76,22 @@ rather than trusting it's coded, and is the no-fort reachability path for
 Lua runs *inside* DF, so "test infra" is provisioned frozen-save fixtures, not
 unit tests. Keep `npm run typecheck` and `npm run lint` clean.
 
+**Gotcha — DFHack caches loaded scripts by name, across server processes.**
+`addScriptPath` (`src/dfclient.ts`) registers a directory per connection, but
+DFHack's Lua VM is process-wide and persists for the life of the running game —
+if you point a *second* server checkout (a different worktree, an older build)
+at the same live DF/DFHack instance, a script already loaded under a given name
+(e.g. `mcp_threats`) is NOT guaranteed to be re-resolved from the new path; you
+can get silently stale output that looks like your fix didn't take effect. This
+is distinct from the cold-start "runScript warm-up" issue — it bites mid-session,
+when comparing before/after behavior live. If a live A/B test against one
+running fort gives suspiciously identical results, bypass script-name resolution
+to get a trustworthy read: `run_lua` (dev-gated) with
+`dofile('<absolute path to the .lua file>')` (forward slashes even on Windows)
+executes that exact file fresh, ignoring whatever DFHack has cached under its
+script name. Cleanest alternative: restart DF/DFHack between checkouts so there's
+nothing to have cached.
+
 ## Working overlapping issues in parallel
 
 Multiple agents can work different issues at once, each in an **isolated git
