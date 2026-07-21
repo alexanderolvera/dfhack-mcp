@@ -1,25 +1,23 @@
 // identify(query): "what is this creature and how do I handle it" as ONE call.
 // Fuses THIS WORLD's raws (ground truth) with the DF wiki (strategy). It does not
 // re-read raws or re-implement wiki fetching — it COMPOSES game_data (resolution +
-// dossier) and wiki_lookup (cleaned article text), then derives the decisive
-// tactical traits (tactics.ts) so a caller can't miss them, and selects the
-// worth-fetching wiki pages (wiki.ts).
+// dossier) and wiki_lookup (cleaned article text), and selects the worth-fetching
+// wiki pages (wiki.ts). The creature dossier's own `flags[]`/`interactions[]`
+// already carry the decisive traits (TRAPAVOID, FLIER, WEBBER, ...); this tool
+// doesn't re-derive a separate summary of them.
 
 import { gameData, type CreatureDossier, type GameDataStub } from '../gameData.ts';
 import { wikiLookupTool } from '../wikiLookup.ts';
-import { deriveTactics, type Tactic } from './tactics.ts';
 import { excerpt, isProcedural, wikiPlan, type WikiExcerpt } from './wiki.ts';
 import { z } from 'zod';
 import type { ToolDef } from '../../register.ts';
 
-export type { Tactic } from './tactics.ts';
 export type { WikiExcerpt } from './wiki.ts';
 
 /** The fused answer for a single strong creature match. */
 export interface Identify {
   query: string;
   creature: CreatureDossier;
-  tactics: Tactic[];
   wiki: WikiExcerpt[];
   notes?: string[];
 }
@@ -55,11 +53,7 @@ export async function identify(
   }
   const creature = data;
 
-  // Step 2 — decisive traits + factual implications, front-and-center.
-  const tactics = deriveTactics(creature);
-  const traitSet = new Set(tactics.map((t) => t.trait));
-
-  // Step 3 — trimmed wiki strategy context. Best-effort: a missing page or a
+  // Step 2 — trimmed wiki strategy context. Best-effort: a missing page or a
   // network error becomes a note, never a throw.
   const wiki: WikiExcerpt[] = [];
   const notes: string[] = [];
@@ -70,7 +64,7 @@ export async function identify(
     );
   }
 
-  for (const { topic, title } of wikiPlan(creature, traitSet)) {
+  for (const { topic, title } of wikiPlan(creature)) {
     let res;
     try {
       res = await wikiLookupTool(title);
@@ -90,7 +84,7 @@ export async function identify(
     notes.push('No wiki context was looked up for this creature.');
   }
 
-  const out: Identify = { query, creature, tactics, wiki };
+  const out: Identify = { query, creature, wiki };
   if (notes.length) out.notes = notes;
   return out;
 }
@@ -102,14 +96,13 @@ export const identifyDef: ToolDef = {
     'One-call "what is this creature and how do I handle it": fuses THIS WORLD\'s ' +
     'raws (ground truth) with the DF wiki (strategy). Pass a creature token ' +
     '(e.g. "DEMON_4"), a name ("flame phantom"), or a live unit_id (all digits) — ' +
-    'same contract as game_data. Returns the creature dossier, a "tactics" list of ' +
-    'the decisive traits with hard-fact implications (trapavoid, flier, fire, ' +
-    'building_destroyer, webber, ranged breath weapons), and 1-2 trimmed wiki ' +
-    'strategy excerpts. Procedural creatures (demons, forgotten beasts, titans) have ' +
-    'no wiki page, so strategy leans on their traits plus the most relevant trait ' +
-    'page. Use this instead of a bare wiki lookup so world-specific facts (e.g. a ' +
-    'TRAPAVOID demon that cage traps cannot hold) are never missed. Multiple matches ' +
-    'return a disambiguation list; returns {"error":"no game loaded"} if no game is active.',
+    'same contract as game_data. Returns the creature dossier (flags, attacks, ' +
+    'interactions — e.g. a TRAPAVOID flag means cage traps cannot hold it) plus 1-2 ' +
+    'trimmed wiki strategy excerpts. Procedural creatures (demons, forgotten beasts, ' +
+    'titans) have no wiki page, so strategy leans on their traits plus the most ' +
+    'relevant trait page (fire, building destroyer). Use this instead of a bare wiki ' +
+    'lookup so world-specific facts are never missed. Multiple matches return a ' +
+    'disambiguation list; returns {"error":"no game loaded"} if no game is active.',
   shape: {
     query: z
       .string()

@@ -8,20 +8,6 @@ While the major version is `0`, the tool surface is still stabilizing: **minor**
 releases (`0.x.0`) may change or remove tool output, and **patch** releases
 (`0.0.x`) are backwards-compatible fixes.
 
-## [Unreleased]
-
-### Added
-
-- **`game_save` actuator** ([#62](https://github.com/alexanderolvera/dfhack-mcp/issues/62))
-  — checkpoint the fort with a quicksave so an agent can save before a large or risky
-  change. The 6th opt-in actuator (behind `DFHACK_MCP_ACTUATORS`); follows the same §A0
-  preview → confirm → apply loop and delegates to DFHack's maintained `quicksave` (robust
-  against field renames). Reports the fort + game date being frozen; surfaces two facts
-  as first-class output — the save is **asynchronous** (readback confirms the command
-  dispatched, not that the file landed) and it routes through DF's **autosave** (a rotating
-  "autosave" folder, not an in-place overwrite). Verified live against a headless Dreamfort
-  container. Actuators-on tool surface is now 33.
-
 ## [1.0.0] - 2026-07-19
 
 The tool surface is complete and stable: **27 read-only sensors + reference

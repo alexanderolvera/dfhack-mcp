@@ -14,6 +14,18 @@ export interface WikiExcerpt {
 
 const WIKI_EXCERPT_CHARS = 700;
 
+// Interaction names that signal a fire breath weapon even without a FIREIMMUNE flag.
+const FIRE_INTERACTION = /fire|flame|magma|jet|fireball/i;
+
+/** True if the creature is fire-immune or breathes a fire-family attack — used
+ *  only to pick the more relevant trait wiki page, below. */
+function isFireCreature(d: CreatureDossier): boolean {
+  return (
+    d.flags.some((f) => f.startsWith('FIREIMMUNE')) ||
+    (d.interactions ?? []).some((i) => FIRE_INTERACTION.test(i.name))
+  );
+}
+
 /** Trim cleaned wiki text to a short excerpt on a word boundary (never dump the page). */
 export function excerpt(text: string, max = WIKI_EXCERPT_CHARS): string {
   const clean = (text ?? '').trim();
@@ -32,14 +44,11 @@ export function isProcedural(d: CreatureDossier): boolean {
 
 /** Pick at most ~2 wiki pages: the creature's own page (unless procedural) plus
  *  the single most relevant trait page (fire beats building_destroyer). */
-export function wikiPlan(
-  d: CreatureDossier,
-  traits: Set<string>
-): { topic: string; title: string }[] {
+export function wikiPlan(d: CreatureDossier): { topic: string; title: string }[] {
   const plan: { topic: string; title: string }[] = [];
   if (!isProcedural(d)) plan.push({ topic: `creature: ${d.name}`, title: d.name });
-  if (traits.has('fire')) plan.push({ topic: 'fire', title: 'Fire' });
-  else if (traits.has('building_destroyer'))
+  if (isFireCreature(d)) plan.push({ topic: 'fire', title: 'Fire' });
+  else if (d.flags.includes('BUILDINGDESTROYER'))
     plan.push({ topic: 'building destroyer', title: 'Building destroyer' });
   return plan.slice(0, 2);
 }

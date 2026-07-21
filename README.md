@@ -122,7 +122,7 @@ No arguments; each reports on the loaded fort.
 loaded world.
 
 - **`game_data(query, kind?)`** — your world's raws across six kinds (`creature`, `material`, `plant`, `reaction`, `item`, `building`; default `creature`). Ground truth for procedural creatures (demons, forgotten beasts, titans) that never reach the wiki. `query` is a token (`DEMON_4`, `INORGANIC:IRON`), a name (`"plump helmet"`), or — for creatures — a live `unit_id`. One strong hit → a full dossier; several → a disambiguation list; none → `{"match_count":0,"matches":[]}`.
-- **`identify(query)`** — _"what is this creature and how do I handle it"_ in one call: fuses `game_data` (your world's raws) with `wiki_lookup` (strategy). Returns the dossier, a `tactics` list pairing each decisive trait with a hard-fact implication (e.g. _TRAPAVOID → mechanical traps don't work_), and 1–2 trimmed wiki excerpts. Reach for it when a threat appears.
+- **`identify(query)`** — _"what is this creature and how do I handle it"_ in one call: fuses `game_data` (your world's raws) with `wiki_lookup` (strategy). Returns the dossier (its `flags[]`/`interactions[]` carry facts like _TRAPAVOID → mechanical traps don't work_) plus 1–2 trimmed wiki excerpts. Reach for it when a threat appears.
 - **`wiki_search(query)`** — search the DF wiki for candidate titles + cleaned snippets (biased to the `DF2014` namespace).
 - **`wiki_lookup(title, section?, refresh?)`** — fetch a wiki article as clean text, pinned to `DF2014`; follows redirects, honors section fragments, cached ~30 days.
 

@@ -124,7 +124,8 @@ local function creature_flags(cr)
     -- Building destroyer is NOT a caste.flags bit in this build; it's a numeric
     -- at caste.misc.buildingdestroyer (confirmed: DEMON_4 = 2, TROLL = 2). Surface
     -- it as a synthetic BUILDINGDESTROYER flag so the whitelisted token isn't dead
-    -- and consumers (identify's tactics) see it alongside the real flags.
+    -- and consumers (e.g. identify's wiki-page selection) see it alongside the
+    -- real flags.
     local bd = 0
     pcall(function() bd = caste.misc.buildingdestroyer or 0 end)
     if bd and bd > 0 then set.BUILDINGDESTROYER = true end
