@@ -36,14 +36,26 @@ so the image tag is the fixture version.
 Catches registration / schema / "server won't start" regressions that CI was
 previously blind to. The expected set is filtered by the SAME predicate the server
 registers with (`isGatedOff` in [`src/register.ts`](../src/register.ts)), so the
-two can't drift. With neither gate env var set — CI's default — both the dev-only
-`run_lua` (`DFHACK_MCP_DEV`) and the mutating actuators (`DFHACK_MCP_ACTUATORS`,
-e.g. `work_order_*`) are excluded, leaving exactly the read-only shipping tools;
-setting a gate (e.g. `DFHACK_MCP_ACTUATORS=1 npm run verify:t0`) adds its tools to
-both sides of the comparison. Both the server's `tools/list` and the expected set
-derive from the same `ALL_TOOLS` registry, so adding or renaming a tool is a
-one-line edit in `src/tools/registry.ts` (plus the tool's own module); that diff is
-the deliberate, reviewable record that the surface changed.
+two can't drift.
+
+T0 runs this check **twice**, each against its own subprocess with an explicit,
+from-scratch env (any `DFHACK_MCP_DEV` / `DFHACK_MCP_ACTUATORS` inherited from
+your shell is stripped first, so a pass never leaks into the other or picks up
+ambient state):
+
+- **default surface (gates off)** — neither gate var set. This is the surface an
+  npm/npx install actually ships: the read-only curated tools, no `run_lua`, no
+  actuators.
+- **full surface (gates on)** — both `DFHACK_MCP_DEV=1` and `DFHACK_MCP_ACTUATORS=1`
+  set. Adds the dev-only `run_lua` and the mutating actuators (e.g. `work_order_*`)
+  to the expected set, so their schemas get the same description/input-schema
+  checks as everything else — this is the only coverage `run_lua` gets anywhere in
+  the harness.
+
+Both the server's `tools/list` and each pass's expected set derive from the same
+`ALL_TOOLS` registry, so adding or renaming a tool is a one-line edit in
+`src/tools/registry.ts` (plus the tool's own module); that diff is the deliberate,
+reviewable record that the surface changed.
 
 ### T1 — reachability (live fort)
 

@@ -24,21 +24,35 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..');
 const GOLDEN_DIR = join(ROOT, 'test', 'golden');
 
-// The harness always exercises the FULL surface, including the gated actuators, so
-// their schemas (T0) and dry-run reachability (T1) are covered. We only ever call
-// actuators WITHOUT a confirm_token — a dry-run/preview that never mutates the
-// fixture. Set before the expected set is derived and before the server is spawned
-// (the child inherits process.env), so both sides agree on the tool list.
-process.env.DFHACK_MCP_ACTUATORS = '1';
+// --- tiny CLI (moved up: tier must be known before we decide whether to force
+// the actuator gate below) ---------------------------------------------------
+const argv = process.argv.slice(2);
+const tier = Number((argv.find((a) => a.startsWith('--tier=')) ?? '--tier=0').split('=')[1]);
+const update = argv.includes('--update');
+const requireFort = argv.includes('--require-fort');
+const noFort = argv.includes('--no-fort');
+const invariantsOnly = argv.includes('--invariants');
+if (noFort && requireFort) {
+  console.error('--no-fort and --require-fort are mutually exclusive (opposite fixtures).');
+  process.exit(2);
+}
+if (noFort && tier !== 1) {
+  console.error('--no-fort is a T1 mode; run it with --tier=1.');
+  process.exit(2);
+}
+
+
+if (tier !== 0 || invariantsOnly) {
+  process.env.DFHACK_MCP_ACTUATORS = '1';
+}
 
 // The expected tool surface is DERIVED from the same registry the server builds
 // its list from — no static JSON to keep in sync. Apply the SAME env gates the
 // server does (index.ts): devOnly needs DFHACK_MCP_DEV, actuator needs
-// DFHACK_MCP_ACTUATORS — so with neither set the expected set is the read-only
-// curated tools, and `DFHACK_MCP_ACTUATORS=1 npm run verify:t0` expects the
-// actuators too. The server subprocess (spawned with our env) builds its
-// tools/list independently from ALL_TOOLS, so a registration that throws still
-// surfaces here as a mismatch — the check holds.
+// DFHACK_MCP_ACTUATORS. Used by T1/T2/invariants; T0 derives its own expected
+// sets per gate state (see tier0()). The server subprocess (spawned with our
+// env) builds its tools/list independently from ALL_TOOLS, so a registration
+// that throws still surfaces here as a mismatch — the check holds.
 const { ALL_TOOLS } = await import('../src/tools/registry.ts');
 const { isGatedOff } = await import('../src/register.ts');
 const EXPECTED = {
@@ -118,32 +132,6 @@ const NO_GOLDEN = new Set([
   'assign_work_detail',
 ]);
 
-// --- tiny CLI ---------------------------------------------------------------
-const argv = process.argv.slice(2);
-const tier = Number((argv.find((a) => a.startsWith('--tier=')) ?? '--tier=0').split('=')[1]);
-const update = argv.includes('--update');
-// When set, "no fort loaded" is a FAILURE, not a pass. Use it against a fixture
-// or a container that is supposed to have a fort loaded, so a broken headless
-// load can't be reported as a verified instance.
-const requireFort = argv.includes('--require-fort');
-// The MIRROR of --require-fort: assert against a NO-FORT fixture (title screen,
-// RPC up, no fort loaded) that EVERY game-dependent tool returns its "no fort
-// loaded" guard CLEANLY — as normal output, never isError / a crash / real data.
-// This EXERCISES the guard (#6) instead of merely trusting it's coded. T1-only,
-// and mutually exclusive with --require-fort (they assert opposite fixtures).
-const noFort = argv.includes('--no-fort');
-// Run ONLY the relational invariants against a live fort — the Red/Green surface
-// that needs no committed golden. Tier-independent (treat like a T1.5).
-const invariantsOnly = argv.includes('--invariants');
-if (noFort && requireFort) {
-  console.error('--no-fort and --require-fort are mutually exclusive (opposite fixtures).');
-  process.exit(2);
-}
-if (noFort && tier !== 1) {
-  console.error('--no-fort is a T1 mode; run it with --tier=1.');
-  process.exit(2);
-}
-
 // --- helpers ----------------------------------------------------------------
 let failures = 0;
 const fail = (msg) => {
@@ -167,11 +155,11 @@ function canonicalize(value) {
   return value;
 }
 
-function connect() {
+function connect(env = process.env) {
   const transport = new StdioClientTransport({
     command: process.execPath,
     args: [join(ROOT, 'src', 'index.ts')],
-    env: { ...process.env },
+    env: { ...env },
     cwd: ROOT,
   });
   const client = new Client({ name: 'dfhack-mcp-verify', version: '1.0.0' });
@@ -197,27 +185,64 @@ const isNoFort = (d) =>
   d && typeof d.error === 'string' && /^no (fort|game) loaded$/i.test(d.error.trim());
 
 // --- T0: contract -----------------------------------------------------------
-async function tier0(client) {
+// Runs TWICE, each against its OWN subprocess: once with neither gate set (the
+// default read-only surface actual npm users get) and once with BOTH gates set
+// (the full surface, including the devOnly run_lua and the actuators) — so both
+// the shipped default and the full tool set get their tools/list + schema
+// checks, and run_lua (previously covered nowhere) is exercised by the second
+// pass. `env` is built from scratch rather than mutating process.env so the two
+// passes can't leak into each other or into T1/T2/invariants.
+async function tier0() {
   console.log('\nT0 — handshake + tools/list + schemas');
-  const { tools } = await client.listTools();
-  const got = tools.map((t) => t.name).sort();
-  const want = [...EXPECTED.tools].sort();
+  const base = { ...process.env };
+  delete base.DFHACK_MCP_DEV;
+  delete base.DFHACK_MCP_ACTUATORS;
+  await tier0Pass('default surface (gates off)', base);
+  await tier0Pass('full surface (gates on: DFHACK_MCP_DEV + DFHACK_MCP_ACTUATORS)', {
+    ...base,
+    DFHACK_MCP_DEV: '1',
+    DFHACK_MCP_ACTUATORS: '1',
+  });
+}
 
-  const missing = want.filter((n) => !got.includes(n));
-  const extra = got.filter((n) => !want.includes(n));
-  if (missing.length) fail(`missing tools: ${missing.join(', ')}`);
-  if (extra.length)
-    fail(`unexpected tools: ${extra.join(', ')} (update src/tools/registry.ts if intended)`);
-  if (!missing.length && !extra.length) ok(`tools/list matches expected set (${got.length} tools)`);
+async function tier0Pass(label, env) {
+  console.log(`  -- ${label} --`);
+  const want = ALL_TOOLS.filter((d) => !isGatedOff(d, env))
+    .map((d) => d.name)
+    .sort();
+  const client = await connect(env);
+  try {
+    const { tools } = await client.listTools();
+    const got = tools.map((t) => t.name).sort();
 
-  for (const t of tools) {
-    if (!t.description || t.description.length < 20) fail(`${t.name}: missing/short description`);
-    // The SDK emits a JSON Schema for inputSchema; no-arg tools get an empty
-    // object schema. Assert it's at least a well-formed object schema.
-    const s = t.inputSchema;
-    if (!s || s.type !== 'object') fail(`${t.name}: inputSchema is not an object schema`);
+    const missing = want.filter((n) => !got.includes(n));
+    const extra = got.filter((n) => !want.includes(n));
+    if (missing.length) fail(`[${label}] missing tools: ${missing.join(', ')}`);
+    if (extra.length)
+      fail(
+        `[${label}] unexpected tools: ${extra.join(', ')} (update src/tools/registry.ts if intended)`
+      );
+    if (!missing.length && !extra.length)
+      ok(`[${label}] tools/list matches expected set (${got.length} tools)`);
+
+    let schemaFailures = 0;
+    for (const t of tools) {
+      if (!t.description || t.description.length < 20) {
+        fail(`[${label}] ${t.name}: missing/short description`);
+        schemaFailures++;
+      }
+      // The SDK emits a JSON Schema for inputSchema; no-arg tools get an empty
+      // object schema. Assert it's at least a well-formed object schema.
+      const s = t.inputSchema;
+      if (!s || s.type !== 'object') {
+        fail(`[${label}] ${t.name}: inputSchema is not an object schema`);
+        schemaFailures++;
+      }
+    }
+    if (!schemaFailures) ok(`[${label}] every tool has a description and a valid input schema`);
+  } finally {
+    await client.close();
   }
-  if (!failures) ok('every tool has a description and a valid input schema');
 }
 
 // --- T1: reachability -------------------------------------------------------
@@ -615,25 +640,31 @@ async function invariantsMode(client) {
 }
 
 // --- run --------------------------------------------------------------------
-const client = await connect();
-try {
-  if (invariantsOnly) {
-    // Tier-independent: resolves its own live args, needs no golden.
-    await invariantsMode(client);
-  } else {
-    // Loaded tiers resolve save-specific args (e.g. citizen's unit_id) from live
-    // discovery tools first; --no-fort/T0 need no fort so they skip this.
-    if ((tier === 1 && !noFort) || tier === 2) await resolveLiveArgs(client);
-    if (tier === 0) await tier0(client);
-    else if (tier === 1) await tier1(client);
-    else if (tier === 2) await tier2(client);
-    else {
-      console.error(`unknown tier: ${tier} (use --tier=0|1|2)`);
-      failures++;
+// T0 needs no live DFHack and manages its own two subprocesses (one per gate
+// state — see tier0()), so it connects nothing here. Every other mode shares
+// one client/subprocess.
+if (tier === 0 && !invariantsOnly) {
+  await tier0();
+} else {
+  const client = await connect();
+  try {
+    if (invariantsOnly) {
+      // Tier-independent: resolves its own live args, needs no golden.
+      await invariantsMode(client);
+    } else {
+      // Loaded tiers resolve save-specific args (e.g. citizen's unit_id) from live
+      // discovery tools first; --no-fort needs no fort so it skips this.
+      if ((tier === 1 && !noFort) || tier === 2) await resolveLiveArgs(client);
+      if (tier === 1) await tier1(client);
+      else if (tier === 2) await tier2(client);
+      else {
+        console.error(`unknown tier: ${tier} (use --tier=0|1|2)`);
+        failures++;
+      }
     }
+  } finally {
+    await client.close();
   }
-} finally {
-  await client.close();
 }
 
 const label = invariantsOnly ? 'invariants' : `T${tier}`;
