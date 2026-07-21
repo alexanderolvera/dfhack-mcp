@@ -1,14 +1,22 @@
-// Disk cache for cleaned wiki lookups: a git-ignored cache/ dir at the repo root,
-// cache-first with a ~30-day TTL (the wiki changes slowly). Best-effort — a
-// failed read/write never fails a lookup, it just misses the cache.
+// Disk cache for cleaned wiki lookups: an OS per-user cache dir, cache-first
+// with a ~30-day TTL (the wiki changes slowly). Best-effort — a failed
+// read/write never fails a lookup, it just misses the cache.
 
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
+import { homedir } from 'node:os';
 
 const CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000; // ~30 days.
-// cache/ lives at the repo root (this file is src/wiki/cache.ts → ../../cache).
-export const CACHE_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'cache');
+
+export const CACHE_DIR =
+  process.env.DFHACK_MCP_CACHE_DIR ??
+  join(
+    process.env.XDG_CACHE_HOME ||
+      (process.platform === 'win32'
+        ? (process.env.LOCALAPPDATA ?? join(homedir(), 'AppData', 'Local'))
+        : join(homedir(), '.cache')),
+    'dfhack-mcp'
+  );
 
 export interface CacheEntry {
   title: string;
