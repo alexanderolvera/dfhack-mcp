@@ -32,7 +32,7 @@ Retrieves an article from dwarffortresswiki.org as cleaned plain text, pinned to
 No golden exists for this tool (it is pure HTTP, not part of the DF-fixture harness).
 
 ## Caveats & limits
-- Cache-first to a git-ignored `cache/` dir at the repo root with a ~30-day TTL; the cache is best-effort (a failed read/write never fails a lookup). `refresh: true` bypasses it.
+- Cache-first to an OS per-user cache dir (`$XDG_CACHE_HOME/dfhack-mcp`, `%LOCALAPPDATA%\dfhack-mcp` on Windows, or `~/.cache/dfhack-mcp`; override with `DFHACK_MCP_CACHE_DIR`) with a ~30-day TTL; the cache is best-effort (a failed read/write never fails a lookup). `refresh: true` bypasses it.
 - A section name that doesn't match any heading falls back to the whole page (no error).
 - Errors come back as `{error}`: empty title, `wiki page not found: "<title>"`, or `wiki lookup failed: <message>` on network/API failure.
 - Requires internet access; does NOT require DFHack or a loaded fort.
