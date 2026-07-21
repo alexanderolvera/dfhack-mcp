@@ -9,7 +9,7 @@
 // no string escaping.
 
 import { fileURLToPath } from 'node:url';
-import { DwarfClient } from 'dfhack-remote-node';
+import { DwarfClient, RpcError } from 'dfhack-remote-node';
 
 const HOST = process.env.DFHACK_HOST ?? '127.0.0.1';
 const PORT = Number(process.env.DFHACK_PORT ?? 5000);
@@ -70,12 +70,16 @@ export class NotConnectedError extends Error {}
 export async function runLua(snippet: string): Promise<string> {
   try {
     return await (await ensureConnected()).runLuaSnippet(snippet);
-  } catch {
+  } catch (err) {
+    // A FAIL frame means DFHack was reachable and the snippet ran and failed —
+    // rethrow as-is rather than reconnecting and re-running it.
+    if (err instanceof RpcError) throw err;
     // Reset and retry once — covers a stale socket after a DF restart.
     client = null;
     try {
       return await (await ensureConnected()).runLuaSnippet(snippet);
     } catch (err2) {
+      if (err2 instanceof RpcError) throw err2;
       throw new NotConnectedError(
         `cannot reach DFHack on ${HOST}:${PORT} — is Dwarf Fortress running with DFHack? (${(err2 as Error).message})`
       );
@@ -94,12 +98,18 @@ export async function runScript(name: string, args: string[] = []): Promise<stri
   const command = 'mcp_' + name;
   try {
     return await (await ensureConnected()).runCommand(command, args);
-  } catch {
+  } catch (err) {
+    // A FAIL frame means DFHack was reachable and the script ran and failed —
+    // rethrow as-is. Retrying here would re-run the script, which for actuators
+    // (work_order_create, blueprint_apply, assign_work_detail) risks repeated
+    // side effects from a script that already partially executed.
+    if (err instanceof RpcError) throw err;
     // Reset and retry once — a fresh ensureConnected re-registers the path.
     client = null;
     try {
       return await (await ensureConnected()).runCommand(command, args);
     } catch (err2) {
+      if (err2 instanceof RpcError) throw err2;
       throw new NotConnectedError(
         `cannot reach DFHack on ${HOST}:${PORT} — is Dwarf Fortress running with DFHack? (${(err2 as Error).message})`
       );
