@@ -21,6 +21,12 @@ backwards-compatible fixes only.
   common, previously invisible cause of `work_order_create`/`trade`/justice-punishment
   failures; `superseded_by` explains the expected vacancies (sheriff → captain of the
   guard, expedition leader → mayor) so they don't read as problems.
+- **`farming` sensor** ([#76](https://github.com/alexanderolvera/dfhack-mcp/issues/76))
+  — the early-survival pipeline between `game_data`'s abstract "what's plantable" and
+  `stocks`'s food *outputs*: each farm plot's tile size, surface/underground status,
+  crop assignment per season (fallow if none), and seed availability for that crop;
+  plus fort-wide seed totals by plant. `no_crop_assigned` flags an idle plot before it
+  becomes a food crisis.
 
 ## [1.1.0] - 2026-07-21
 

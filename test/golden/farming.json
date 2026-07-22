@@ -1,0 +1,880 @@
+{
+  "plots": [
+    {
+      "id": 100,
+      "no_crop_assigned": false,
+      "seasons": [
+        {
+          "crop": "POD_SWEET",
+          "season": "SPRING",
+          "seeds_available": 50
+        },
+        {
+          "crop": "GRASS_TAIL_PIG",
+          "season": "SUMMER",
+          "seeds_available": 33
+        },
+        {
+          "crop": "MUSHROOM_CUP_DIMPLE",
+          "season": "AUTUMN",
+          "seeds_available": 19
+        },
+        {
+          "crop": "MUSHROOM_HELMET_PLUMP",
+          "season": "WINTER",
+          "seeds_available": 62
+        }
+      ],
+      "size": 3,
+      "surface": false
+    },
+    {
+      "id": 101,
+      "no_crop_assigned": false,
+      "seasons": [
+        {
+          "crop": "POD_SWEET",
+          "season": "SPRING",
+          "seeds_available": 50
+        },
+        {
+          "crop": "MUSHROOM_CUP_DIMPLE",
+          "season": "SUMMER",
+          "seeds_available": 19
+        },
+        {
+          "crop": "MUSHROOM_CUP_DIMPLE",
+          "season": "AUTUMN",
+          "seeds_available": 19
+        },
+        {
+          "crop": "MUSHROOM_HELMET_PLUMP",
+          "season": "WINTER",
+          "seeds_available": 62
+        }
+      ],
+      "size": 3,
+      "surface": false
+    },
+    {
+      "id": 108,
+      "no_crop_assigned": false,
+      "seasons": [
+        {
+          "crop": "POD_SWEET",
+          "season": "SPRING",
+          "seeds_available": 50
+        },
+        {
+          "crop": "GRASS_TAIL_PIG",
+          "season": "SUMMER",
+          "seeds_available": 33
+        },
+        {
+          "crop": "MUSHROOM_CUP_DIMPLE",
+          "season": "AUTUMN",
+          "seeds_available": 19
+        },
+        {
+          "crop": "MUSHROOM_HELMET_PLUMP",
+          "season": "WINTER",
+          "seeds_available": 62
+        }
+      ],
+      "size": 3,
+      "surface": false
+    },
+    {
+      "id": 111,
+      "no_crop_assigned": false,
+      "seasons": [
+        {
+          "crop": "MUSHROOM_CUP_DIMPLE",
+          "season": "SPRING",
+          "seeds_available": 19
+        },
+        {
+          "crop": "GRASS_TAIL_PIG",
+          "season": "SUMMER",
+          "seeds_available": 33
+        },
+        {
+          "crop": "MUSHROOM_CUP_DIMPLE",
+          "season": "AUTUMN",
+          "seeds_available": 19
+        },
+        {
+          "crop": "MUSHROOM_HELMET_PLUMP",
+          "season": "WINTER",
+          "seeds_available": 62
+        }
+      ],
+      "size": 3,
+      "surface": false
+    },
+    {
+      "id": 114,
+      "no_crop_assigned": false,
+      "seasons": [
+        {
+          "crop": "MUSHROOM_CUP_DIMPLE",
+          "season": "SPRING",
+          "seeds_available": 19
+        },
+        {
+          "crop": "GRASS_WHEAT_CAVE",
+          "season": "SUMMER",
+          "seeds_available": 31
+        },
+        {
+          "crop": "MUSHROOM_CUP_DIMPLE",
+          "season": "AUTUMN",
+          "seeds_available": 19
+        },
+        {
+          "crop": "MUSHROOM_HELMET_PLUMP",
+          "season": "WINTER",
+          "seeds_available": 62
+        }
+      ],
+      "size": 3,
+      "surface": false
+    },
+    {
+      "id": 115,
+      "no_crop_assigned": false,
+      "seasons": [
+        {
+          "crop": "BUSH_QUARRY",
+          "season": "SPRING",
+          "seeds_available": 29
+        },
+        {
+          "crop": "GRASS_WHEAT_CAVE",
+          "season": "SUMMER",
+          "seeds_available": 31
+        },
+        {
+          "crop": "MUSHROOM_CUP_DIMPLE",
+          "season": "AUTUMN",
+          "seeds_available": 19
+        },
+        {
+          "crop": "MUSHROOM_HELMET_PLUMP",
+          "season": "WINTER",
+          "seeds_available": 62
+        }
+      ],
+      "size": 3,
+      "surface": false
+    },
+    {
+      "id": 118,
+      "no_crop_assigned": false,
+      "seasons": [
+        {
+          "crop": "BUSH_QUARRY",
+          "season": "SPRING",
+          "seeds_available": 29
+        },
+        {
+          "crop": "BUSH_QUARRY",
+          "season": "SUMMER",
+          "seeds_available": 29
+        },
+        {
+          "crop": "MUSHROOM_CUP_DIMPLE",
+          "season": "AUTUMN",
+          "seeds_available": 19
+        },
+        {
+          "crop": "MUSHROOM_HELMET_PLUMP",
+          "season": "WINTER",
+          "seeds_available": 62
+        }
+      ],
+      "size": 3,
+      "surface": false
+    },
+    {
+      "id": 122,
+      "no_crop_assigned": false,
+      "seasons": [
+        {
+          "crop": "MUSHROOM_CUP_DIMPLE",
+          "season": "SPRING",
+          "seeds_available": 19
+        },
+        {
+          "crop": "BUSH_QUARRY",
+          "season": "SUMMER",
+          "seeds_available": 29
+        },
+        {
+          "crop": "MUSHROOM_CUP_DIMPLE",
+          "season": "AUTUMN",
+          "seeds_available": 19
+        },
+        {
+          "crop": "MUSHROOM_HELMET_PLUMP",
+          "season": "WINTER",
+          "seeds_available": 62
+        }
+      ],
+      "size": 3,
+      "surface": false
+    },
+    {
+      "id": 123,
+      "no_crop_assigned": false,
+      "seasons": [
+        {
+          "crop": "BUSH_QUARRY",
+          "season": "SPRING",
+          "seeds_available": 29
+        },
+        {
+          "crop": "MUSHROOM_CUP_DIMPLE",
+          "season": "SUMMER",
+          "seeds_available": 19
+        },
+        {
+          "crop": "MUSHROOM_CUP_DIMPLE",
+          "season": "AUTUMN",
+          "seeds_available": 19
+        },
+        {
+          "crop": "MUSHROOM_HELMET_PLUMP",
+          "season": "WINTER",
+          "seeds_available": 62
+        }
+      ],
+      "size": 3,
+      "surface": false
+    },
+    {
+      "id": 473,
+      "no_crop_assigned": false,
+      "seasons": [
+        {
+          "crop": "GRAPE",
+          "season": "SPRING",
+          "seeds_available": 81
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "season": "AUTUMN",
+          "seeds_available": 199
+        },
+        {
+          "crop": "REED_ROPE",
+          "season": "WINTER",
+          "seeds_available": 199
+        }
+      ],
+      "size": 1,
+      "surface": false
+    },
+    {
+      "id": 474,
+      "no_crop_assigned": false,
+      "seasons": [
+        {
+          "crop": "GRAPE",
+          "season": "SPRING",
+          "seeds_available": 81
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "season": "AUTUMN",
+          "seeds_available": 199
+        },
+        {
+          "crop": "REED_ROPE",
+          "season": "WINTER",
+          "seeds_available": 199
+        }
+      ],
+      "size": 1,
+      "surface": false
+    },
+    {
+      "id": 475,
+      "no_crop_assigned": false,
+      "seasons": [
+        {
+          "crop": "GRAPE",
+          "season": "SPRING",
+          "seeds_available": 81
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "season": "AUTUMN",
+          "seeds_available": 199
+        },
+        {
+          "crop": "REED_ROPE",
+          "season": "WINTER",
+          "seeds_available": 199
+        }
+      ],
+      "size": 1,
+      "surface": false
+    },
+    {
+      "id": 476,
+      "no_crop_assigned": false,
+      "seasons": [
+        {
+          "crop": "GRAPE",
+          "season": "SPRING",
+          "seeds_available": 81
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "season": "AUTUMN",
+          "seeds_available": 199
+        },
+        {
+          "crop": "REED_ROPE",
+          "season": "WINTER",
+          "seeds_available": 199
+        }
+      ],
+      "size": 1,
+      "surface": false
+    },
+    {
+      "id": 477,
+      "no_crop_assigned": false,
+      "seasons": [
+        {
+          "crop": "REED_ROPE",
+          "season": "SPRING",
+          "seeds_available": 199
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "season": "AUTUMN",
+          "seeds_available": 199
+        },
+        {
+          "crop": "REED_ROPE",
+          "season": "WINTER",
+          "seeds_available": 199
+        }
+      ],
+      "size": 1,
+      "surface": false
+    },
+    {
+      "id": 478,
+      "no_crop_assigned": false,
+      "seasons": [
+        {
+          "crop": "REED_ROPE",
+          "season": "SPRING",
+          "seeds_available": 199
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "season": "AUTUMN",
+          "seeds_available": 199
+        },
+        {
+          "crop": "REED_ROPE",
+          "season": "WINTER",
+          "seeds_available": 199
+        }
+      ],
+      "size": 1,
+      "surface": false
+    },
+    {
+      "id": 479,
+      "no_crop_assigned": false,
+      "seasons": [
+        {
+          "crop": "REED_ROPE",
+          "season": "SPRING",
+          "seeds_available": 199
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "season": "AUTUMN",
+          "seeds_available": 199
+        },
+        {
+          "crop": "REED_ROPE",
+          "season": "WINTER",
+          "seeds_available": 199
+        }
+      ],
+      "size": 1,
+      "surface": false
+    },
+    {
+      "id": 480,
+      "no_crop_assigned": false,
+      "seasons": [
+        {
+          "crop": "REED_ROPE",
+          "season": "SPRING",
+          "seeds_available": 199
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "season": "AUTUMN",
+          "seeds_available": 199
+        },
+        {
+          "crop": "REED_ROPE",
+          "season": "WINTER",
+          "seeds_available": 199
+        }
+      ],
+      "size": 1,
+      "surface": false
+    },
+    {
+      "id": 483,
+      "no_crop_assigned": false,
+      "seasons": [
+        {
+          "crop": "REED_ROPE",
+          "season": "SPRING",
+          "seeds_available": 199
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "season": "AUTUMN",
+          "seeds_available": 199
+        },
+        {
+          "crop": "REED_ROPE",
+          "season": "WINTER",
+          "seeds_available": 199
+        }
+      ],
+      "size": 1,
+      "surface": false
+    },
+    {
+      "id": 484,
+      "no_crop_assigned": false,
+      "seasons": [
+        {
+          "crop": "REED_ROPE",
+          "season": "SPRING",
+          "seeds_available": 199
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "season": "AUTUMN",
+          "seeds_available": 199
+        },
+        {
+          "crop": "REED_ROPE",
+          "season": "WINTER",
+          "seeds_available": 199
+        }
+      ],
+      "size": 1,
+      "surface": false
+    },
+    {
+      "id": 485,
+      "no_crop_assigned": false,
+      "seasons": [
+        {
+          "crop": "REED_ROPE",
+          "season": "SPRING",
+          "seeds_available": 199
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "season": "AUTUMN",
+          "seeds_available": 199
+        },
+        {
+          "crop": "REED_ROPE",
+          "season": "WINTER",
+          "seeds_available": 199
+        }
+      ],
+      "size": 1,
+      "surface": false
+    },
+    {
+      "id": 486,
+      "no_crop_assigned": false,
+      "seasons": [
+        {
+          "crop": "REED_ROPE",
+          "season": "SPRING",
+          "seeds_available": 199
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "season": "AUTUMN",
+          "seeds_available": 199
+        },
+        {
+          "crop": "FOXTAIL_MILLET",
+          "season": "WINTER",
+          "seeds_available": 60
+        }
+      ],
+      "size": 1,
+      "surface": false
+    },
+    {
+      "id": 487,
+      "no_crop_assigned": false,
+      "seasons": [
+        {
+          "crop": "GRAPE",
+          "season": "SPRING",
+          "seeds_available": 81
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "season": "AUTUMN",
+          "seeds_available": 199
+        },
+        {
+          "crop": "FOXTAIL_MILLET",
+          "season": "WINTER",
+          "seeds_available": 60
+        }
+      ],
+      "size": 1,
+      "surface": false
+    },
+    {
+      "id": 488,
+      "no_crop_assigned": false,
+      "seasons": [
+        {
+          "crop": "REED_ROPE",
+          "season": "SPRING",
+          "seeds_available": 199
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "season": "AUTUMN",
+          "seeds_available": 199
+        },
+        {
+          "crop": "FOXTAIL_MILLET",
+          "season": "WINTER",
+          "seeds_available": 60
+        }
+      ],
+      "size": 1,
+      "surface": false
+    },
+    {
+      "id": 490,
+      "no_crop_assigned": false,
+      "seasons": [
+        {
+          "crop": "REED_ROPE",
+          "season": "SPRING",
+          "seeds_available": 199
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "season": "AUTUMN",
+          "seeds_available": 199
+        },
+        {
+          "crop": "FOXTAIL_MILLET",
+          "season": "WINTER",
+          "seeds_available": 60
+        }
+      ],
+      "size": 1,
+      "surface": false
+    },
+    {
+      "id": 491,
+      "no_crop_assigned": false,
+      "seasons": [
+        {
+          "crop": "GRAPE",
+          "season": "SPRING",
+          "seeds_available": 81
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "season": "AUTUMN",
+          "seeds_available": 199
+        },
+        {
+          "crop": "FOXTAIL_MILLET",
+          "season": "WINTER",
+          "seeds_available": 60
+        }
+      ],
+      "size": 1,
+      "surface": false
+    },
+    {
+      "id": 492,
+      "no_crop_assigned": false,
+      "seasons": [
+        {
+          "crop": "GRAPE",
+          "season": "SPRING",
+          "seeds_available": 81
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "season": "AUTUMN",
+          "seeds_available": 199
+        },
+        {
+          "crop": "FOXTAIL_MILLET",
+          "season": "WINTER",
+          "seeds_available": 60
+        }
+      ],
+      "size": 1,
+      "surface": false
+    },
+    {
+      "id": 493,
+      "no_crop_assigned": false,
+      "seasons": [
+        {
+          "crop": "GRAPE",
+          "season": "SPRING",
+          "seeds_available": 81
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "season": "AUTUMN",
+          "seeds_available": 199
+        },
+        {
+          "crop": "FOXTAIL_MILLET",
+          "season": "WINTER",
+          "seeds_available": 60
+        }
+      ],
+      "size": 1,
+      "surface": false
+    },
+    {
+      "id": 494,
+      "no_crop_assigned": false,
+      "seasons": [
+        {
+          "crop": "GRAPE",
+          "season": "SPRING",
+          "seeds_available": 81
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "season": "AUTUMN",
+          "seeds_available": 199
+        },
+        {
+          "crop": "FOXTAIL_MILLET",
+          "season": "WINTER",
+          "seeds_available": 60
+        }
+      ],
+      "size": 1,
+      "surface": false
+    },
+    {
+      "id": 495,
+      "no_crop_assigned": false,
+      "seasons": [
+        {
+          "crop": "GRAPE",
+          "season": "SPRING",
+          "seeds_available": 81
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "season": "AUTUMN",
+          "seeds_available": 199
+        },
+        {
+          "crop": "FOXTAIL_MILLET",
+          "season": "WINTER",
+          "seeds_available": 60
+        }
+      ],
+      "size": 1,
+      "surface": false
+    },
+    {
+      "id": 496,
+      "no_crop_assigned": false,
+      "seasons": [
+        {
+          "crop": "GRAPE",
+          "season": "SPRING",
+          "seeds_available": 81
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "season": "AUTUMN",
+          "seeds_available": 199
+        },
+        {
+          "crop": "FOXTAIL_MILLET",
+          "season": "WINTER",
+          "seeds_available": 60
+        }
+      ],
+      "size": 1,
+      "surface": false
+    }
+  ],
+  "seed_totals": [
+    {
+      "count": 55,
+      "plant": "ALMOND"
+    },
+    {
+      "count": 85,
+      "plant": "BILBERRY"
+    },
+    {
+      "count": 96,
+      "plant": "BLACKBERRY"
+    },
+    {
+      "count": 29,
+      "plant": "BUSH_QUARRY"
+    },
+    {
+      "count": 9,
+      "plant": "CHERRY"
+    },
+    {
+      "count": 60,
+      "plant": "FOXTAIL_MILLET"
+    },
+    {
+      "count": 75,
+      "plant": "GINKGO"
+    },
+    {
+      "count": 81,
+      "plant": "GRAPE"
+    },
+    {
+      "count": 33,
+      "plant": "GRASS_TAIL_PIG"
+    },
+    {
+      "count": 31,
+      "plant": "GRASS_WHEAT_CAVE"
+    },
+    {
+      "count": 70,
+      "plant": "HAZEL"
+    },
+    {
+      "count": 19,
+      "plant": "MUSHROOM_CUP_DIMPLE"
+    },
+    {
+      "count": 62,
+      "plant": "MUSHROOM_HELMET_PLUMP"
+    },
+    {
+      "count": 3,
+      "plant": "PEACH"
+    },
+    {
+      "count": 5,
+      "plant": "PEAR"
+    },
+    {
+      "count": 50,
+      "plant": "POD_SWEET"
+    },
+    {
+      "count": 199,
+      "plant": "REED_ROPE"
+    },
+    {
+      "count": 55,
+      "plant": "WALNUT"
+    },
+    {
+      "count": 48,
+      "plant": "WILD_CARROT"
+    }
+  ]
+}

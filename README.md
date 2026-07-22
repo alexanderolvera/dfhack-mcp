@@ -6,7 +6,7 @@ not an autopilot. Point Claude (or any MCP client) at it and ask _"how's my fort
 doing?"_ — it reads happiness, threats, stocks, jobs, health, and defenses
 straight from the running game and answers in plain language.
 
-**Read-only by default.** The 28 sensor and reference tools only observe the
+**Read-only by default.** The 29 sensor and reference tools only observe the
 game. A handful of **actuators** that _change_ the fort — queue manager orders,
 apply quickfort blueprints, assign labor — ship behind an explicit opt-in and
 stay hidden until you enable them (see [Taking action](#taking-action-actuators)).

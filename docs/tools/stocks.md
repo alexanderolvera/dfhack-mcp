@@ -59,4 +59,4 @@ None.
 - The population-normalized vs. absolute-threshold split (food/drink by days-of-supply, materials by a flat count) was a deliberate design decision reviewed under issue #5, not an oversight — a future pass tempted to "normalize everything by population" should treat the absolute material floors as intentional: a fort needs a baseline working reserve to keep forges/looms fed regardless of size, and `notable_low`/`notable_high` are a factual classification, not an alert, so a large fort tripping them is a genuinely thin reserve rather than statistical noise.
 
 ## Related
-[fort_status](fort_status.md) (overall dashboard), [trade](trade.md) (goods staged at the depot), [jobs_and_labor](jobs_and_labor.md) (who is producing), [work_order_create](work_order_create.md) (queueing production once a gap is known).
+[fort_status](fort_status.md) (overall dashboard), [trade](trade.md) (goods staged at the depot), [jobs_and_labor](jobs_and_labor.md) (who is producing), [work_order_create](work_order_create.md) (queueing production once a gap is known), [farming](farming.md) (the food pipeline upstream of these counts).

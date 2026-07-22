@@ -469,6 +469,34 @@ export const INVARIANTS = [
     },
   },
   {
+    name: 'farming_plots_and_seeds_wellformed',
+    tools: ['farming'],
+    desc: 'plot size/seasons are well-formed, no_crop_assigned agrees with the season crops, and each season seeds_available matches the fort-wide seed_totals',
+    check(p) {
+      const d = p.farming;
+      const out = [];
+      const seedTotal = new Map((d.seed_totals ?? []).map((s) => [s.plant, s.count]));
+      for (const [plant, count] of seedTotal) {
+        if (!(isInt(count) && count > 0)) out.push(`seed_totals[${plant}]=${count} is not a positive integer`);
+      }
+      (d.plots ?? []).forEach((plot) => {
+        if (!(isInt(plot.size) && plot.size > 0)) out.push(`plots[${plot.id}].size=${plot.size} is not positive`);
+        if (plot.seasons.length !== 4) out.push(`plots[${plot.id}] has ${plot.seasons.length} seasons, expected 4`);
+        const anyCrop = plot.seasons.some((s) => s.crop !== undefined);
+        if (plot.no_crop_assigned !== !anyCrop)
+          out.push(`plots[${plot.id}].no_crop_assigned=${plot.no_crop_assigned} disagrees with its season crops`);
+        plot.seasons.forEach((s) => {
+          const expected = seedTotal.get(s.crop) ?? 0;
+          if (s.crop !== undefined && s.seeds_available !== expected)
+            out.push(
+              `plots[${plot.id}].${s.season}.seeds_available=${s.seeds_available} !== seed_totals[${s.crop}]=${expected}`
+            );
+        });
+      });
+      return out;
+    },
+  },
+  {
     name: 'tile_region_grid_wellformed',
     tools: ['tile_region'],
     desc: 'the grid matches its declared size, honors the 100x100 cap, its legend is a bijection with the glyphs actually used, fog-of-war tiles are never painted over, and the sparse liquids list agrees with the grid',

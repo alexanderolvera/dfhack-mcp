@@ -5,6 +5,7 @@ import { chronicleDef } from './chronicle.ts';
 import { citizenDef } from './citizen.ts';
 import { defensesDef } from './defenses.ts';
 import { environmentDef } from './environment.ts';
+import { farmingDef } from './farming.ts';
 import { findUnitDef } from './findUnit.ts';
 import { fortStatusDef } from './fortStatus.ts';
 import { gameDataDef } from './gameData.ts';
@@ -40,6 +41,7 @@ export const ALL_TOOLS: ToolDef[] = [
   citizenDef,
   defensesDef,
   environmentDef,
+  farmingDef,
   findUnitDef,
   fortStatusDef,
   gameDataDef,
