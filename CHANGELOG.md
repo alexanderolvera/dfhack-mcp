@@ -27,6 +27,12 @@ backwards-compatible fixes only.
   crop assignment per season (fallow if none), and seed availability for that crop;
   plus fort-wide seed totals by plant. `no_crop_assigned` flags an idle plot before it
   becomes a food crisis.
+- **`livestock_and_pastures` sensor** ([#74](https://github.com/alexanderolvera/dfhack-mcp/issues/74))
+  — the single largest post-v1.0 blind spot: every fort manages animals and `threats`
+  only ever saw hostiles. Reports tame animal counts by species/sex/adult, pets vs.
+  livestock, which grazers have no pasture (they can't graze — silent starvation),
+  egg-layer/nestbox coverage, animals marked for slaughter, war/hunting training
+  state, occupied cages, and how many animals are roaming unassigned.
 
 ## [1.1.0] - 2026-07-21
 

@@ -497,6 +497,36 @@ export const INVARIANTS = [
     },
   },
   {
+    name: 'livestock_counts_self_consistent',
+    tools: ['livestock_and_pastures'],
+    desc: 'tame_total partitions into pets+livestock and sums by_group, grazer/egg_layer sub-counts stay within their totals, and every listed animal carries an integer unit_id',
+    check(p) {
+      const d = p.livestock_and_pastures;
+      const out = [];
+      if (d.pets + d.livestock !== d.tame_total)
+        out.push(`pets=${d.pets} + livestock=${d.livestock} !== tame_total=${d.tame_total}`);
+      const groupSum = (d.by_group ?? []).reduce((s, g) => s + g.count, 0);
+      if (groupSum !== d.tame_total)
+        out.push(`sum(by_group[].count)=${groupSum} !== tame_total=${d.tame_total}`);
+      if (!inRange(d.grazers.pastured, 0, d.grazers.total))
+        out.push(`grazers.pastured=${d.grazers.pastured} outside [0, total=${d.grazers.total}]`);
+      if (!d.grazers.unpastured_truncated && d.grazers.pastured + d.grazers.unpastured.length !== d.grazers.total)
+        out.push(
+          `grazers.pastured=${d.grazers.pastured} + unpastured.length=${d.grazers.unpastured.length} !== total=${d.grazers.total}`
+        );
+      const e = d.egg_layers;
+      if (!inRange(e.pastured_without_nestbox + e.unpastured, 0, e.total))
+        out.push(`egg_layers pastured_without_nestbox+unpastured exceeds total=${e.total}`);
+      if (!inRange(d.unassigned_count, 0, d.tame_total))
+        out.push(`unassigned_count=${d.unassigned_count} outside [0, tame_total=${d.tame_total}]`);
+      const rows = [...d.grazers.unpastured, ...d.marked_for_slaughter, ...d.trained, ...d.cages.flatMap((c) => c.occupants)];
+      rows.forEach((r, i) => {
+        if (!isInt(r.unit_id)) out.push(`animal row [${i}] unit_id=${r.unit_id} is not an integer`);
+      });
+      return out;
+    },
+  },
+  {
     name: 'tile_region_grid_wellformed',
     tools: ['tile_region'],
     desc: 'the grid matches its declared size, honors the 100x100 cap, its legend is a bijection with the glyphs actually used, fog-of-war tiles are never painted over, and the sparse liquids list agrees with the grid',

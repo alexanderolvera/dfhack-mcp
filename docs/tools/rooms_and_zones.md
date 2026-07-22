@@ -76,4 +76,4 @@ None.
 - Hospital supply counts resolve each item's location with `dfhack.items.getPosition`, which follows the item through its container — thread and cloth normally sit in a coffer/bag on a hospital tile, so the raw `it.pos` field (stale for contained items) would under-count a stocked hospital.
 
 ## Related
-[unmet_needs](unmet_needs.md) · [injuries_and_health](injuries_and_health.md) · [mandates_and_justice](mandates_and_justice.md) · [citizen](citizen.md) · [fort_status](fort_status.md)
+[unmet_needs](unmet_needs.md) · [injuries_and_health](injuries_and_health.md) · [mandates_and_justice](mandates_and_justice.md) · [citizen](citizen.md) · [fort_status](fort_status.md) · [livestock_and_pastures](livestock_and_pastures.md) (the same civzone model, applied to Pen zones)

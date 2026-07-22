@@ -14,6 +14,7 @@ import { geologyDef } from './geology.ts';
 import { identifyDef } from './identify/index.ts';
 import { injuriesAndHealthDef } from './injuriesAndHealth.ts';
 import { jobsAndLaborDef } from './jobsAndLabor.ts';
+import { livestockAndPasturesDef } from './livestockAndPastures.ts';
 import { mapOverviewDef } from './mapOverview.ts';
 import { mandatesAndJusticeDef } from './mandatesAndJustice.ts';
 import { militaryDef } from './military.ts';
@@ -50,6 +51,7 @@ export const ALL_TOOLS: ToolDef[] = [
   identifyDef,
   injuriesAndHealthDef,
   jobsAndLaborDef,
+  livestockAndPasturesDef,
   mapOverviewDef,
   mandatesAndJusticeDef,
   militaryDef,
