@@ -8,6 +8,99 @@ While the major version is `0`, the tool surface is still stabilizing: **minor**
 releases (`0.x.0`) may change or remove tool output, and **patch** releases
 (`0.0.x`) are backwards-compatible fixes.
 
+## [Unreleased]
+
+### Fixed
+
+- **`dfclient` retry re-executes failing scripts** ([#64](https://github.com/alexanderolvera/dfhack-mcp/issues/64))
+  — a script failure (DFHack reachable, the script ran and errored) was indistinguishable
+  from a transport failure, so it triggered a reconnect-and-retry — risking a second
+  execution of an actuator that had already partially run. `RpcError` (a real FAIL frame)
+  is now rethrown as-is; only genuine transport errors reconnect and retry once.
+- **wiki cache dir escaped the npm package** ([#65](https://github.com/alexanderolvera/dfhack-mcp/issues/65))
+  — the cache path was computed relative to the source module's depth, which doesn't
+  survive tsup's single-file bundle: for an npm/npx install it resolved to
+  `node_modules/cache`, outside the package. Now uses an OS per-user cache dir
+  (`$XDG_CACHE_HOME`/`%LOCALAPPDATA%`/`~/.cache`, under `dfhack-mcp`), overridable via
+  `DFHACK_MCP_CACHE_DIR`.
+- **`verify` T0 always forced the actuator gate** ([#68](https://github.com/alexanderolvera/dfhack-mcp/issues/68))
+  — T0 unconditionally set `DFHACK_MCP_ACTUATORS=1` before deriving the expected tool
+  set, so it only ever asserted the full actuators-on surface and never the default
+  read-only surface npm users actually get; the dev-only `run_lua` also had zero
+  coverage anywhere. T0 now runs twice against isolated subprocesses — gates off
+  (default surface) and gates on (full surface, including `run_lua`) — and
+  `docs/VERIFY.md` documents both passes.
+- **`docs/tools/game_save.md` was missing entirely** — the actuator shipped without
+  its doc page. Added, and `docs/tools/README.md`'s tool/actuator counts corrected
+  (34 tools, 6 actuators — they'd gone stale when `game_save` landed).
+- Two orphaned-but-functional live-verification scripts (`scripts/verify-game-data.mjs`,
+  `scripts/verify-wiki.mjs`) weren't wired to any npm script or doc, the same way
+  `verify-identify.mjs` had silently rotted (see Removed). Added `npm run verify:game-data`
+  / `npm run verify:wiki` and a `docs/VERIFY.md` section so they can't quietly stop working
+  again.
+
+### Removed
+
+- **`identify`'s `tactics[]` field** — a hand-curated summary (`trapavoid`, `flier`,
+  `fire`, `building_destroyer`, `webber`, `ranged`) that mostly restated values already
+  present in the returned `creature.flags[]`/`interactions[]`, for the cost of a second,
+  driftable source of truth. Its `ranged` derivation had its own overfire bug
+  ([#66](https://github.com/alexanderolvera/dfhack-mcp/issues/66) — it fired on any
+  interaction, including a cat's "Clean"/"Head bump") before the field was cut entirely.
+  The dossier's own `flags[]`/`interactions[]` carry the same facts directly; `identify`'s
+  fire-vs-building-destroyer wiki-page selection (unrelated to this field) is unaffected.
+  The orphaned dev script `scripts/verify-identify.mjs` (a stale import predating
+  `identify`'s split into a directory) was removed alongside it.
+- **A handful of redundant output fields and `alerts[]` lines**, each a second encoding
+  of a fact already present elsewhere in the same response, found in a repo-wide audit
+  for the same pattern as `tactics[]`:
+  - `game_data`/`identify` creature dossier: `blurb` (a duplicate of `description`,
+    already redundant once both are present — `blurb` still appears alone on
+    disambiguation-list stubs, where `description` isn't returned).
+  - `game_data` plant dossier: `subterranean` (the exact negation of `surface`, sitting
+    next to it).
+  - `artifacts_and_engravings` maker: `is_current_citizen` (a boolean restating whether
+    `unit_id` is present — `top_engravers[]` in the same tool already uses the
+    presence-of-`unit_id` convention alone, with no such twin).
+  - `environment`: `temperature_band` (a 3-state string restating the 3-state
+    `water_frozen`/`null`).
+  - `fort_status` alert: "N dwarves miserable" (restates `happiness.miserable`, already
+    a labeled count in the same response).
+  - `injuries_and_health` alerts: "N dwarves need medical care" and "top care need: ..."
+    (restate the already-emitted `patients` count and `care_needs[0]`).
+  - `moods` alert: the unclaimed-workshop line (restates each `active[]` row's own
+    `workshop_status`/`name`/`mood` fields).
+  - `military` alert: the base "N hostiles on map vs M soldiers in K squads" sentence
+    (re-concatenates `hostiles_on_map`/`soldiers`/`squad_count`, all already top-level
+    fields); the genuine "NO defenders against a great-danger creature" callout is kept.
+  - `threats` alert: "N dangerous creatures caged/chained" (restates the already-emitted
+    `contained` field).
+  - `geology`'s `alerts[]` field is removed entirely — both of its lines (aquifer range,
+    magma reached) were pure restatements of the already-emitted `aquifer` object and
+    `magma_reached` boolean, and nothing legitimate was left in the array once they were
+    cut.
+
+  Two similar-looking cases were reviewed and deliberately **kept**: `game_data`
+  material's `name` (duplicates `state_names.solid`, but every dossier kind shares a
+  uniform `{kind, token, name, ...}` envelope, so dropping it only for `material` would
+  break that consistency) and `chronicle`'s `cursor` (duplicates `newest_retained_id`,
+  but is the ergonomic, self-documenting name for the specific "pass this back as
+  `since`" use case).
+
+### Changed
+
+- **Repo-wide comment-hygiene pass.** All 28 `dfhack-queries/*.lua` scripts and the
+  TypeScript source, scripts, and tests were swept per a new convention recorded in
+  `AGENTS.md`: no comment blocks in code — confirmed DFHack field paths, version
+  quirks, and design rationale now live in each tool's `docs/tools/*.md` page (a new
+  "Implementation notes" section on most of them) or, for cross-cutting internals with
+  no single tool doc (`mcp_readTerrain.lua`/`mcp_unitVisibility.lua`'s fog-of-war gates,
+  the actuator contract, connection retry), a new "Shared internals" section in
+  `CONTRIBUTING.md`. JSDoc is now reserved for functions genuinely consumed across a
+  module boundary, written as a tagged summary rather than untagged prose. No output,
+  schema, or logic changed — verified via `luac -p` on all 28 Lua files, `tsc --noEmit`,
+  the full lint/unit-test suite, and a live T0 run.
+
 ## [1.0.0] - 2026-07-19
 
 The tool surface is complete and stable: **27 read-only sensors + reference
