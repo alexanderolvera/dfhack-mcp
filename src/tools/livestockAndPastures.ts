@@ -29,6 +29,8 @@ export interface LivestockAndPastures {
   pets: number;
   livestock: number;
   by_group: SpeciesGroup[];
+  by_group_total: number;
+  by_group_truncated: boolean;
   grazers: {
     total: number;
     pastured: number;
@@ -68,12 +70,16 @@ export const livestockAndPasturesDef: ToolDef = {
   description:
     "The fort's tame animal economy as facts — every prior tool sees hostiles " +
     '(threats) or nothing at all here. tame_total/pets/livestock split ownership; ' +
-    'by_group[] counts tame animals by species/sex/adult-or-not. grazers reports ' +
-    'total vs pastured, plus the individual animals NOT in any pasture zone — a ' +
-    'grazer with no pasture cannot graze and silently starves; this is normally ' +
-    'invisible. egg_layers reports counts only (total, fort-wide nestbox count, how ' +
-    'many are pastured without a nestbox in reach, how many are unpastured) since ' +
-    'the consequence (missed eggs) is mild and the population is usually large. ' +
+    'by_group[]/by_group_total/by_group_truncated count tame animals by ' +
+    'species/sex/adult-or-not, capped at 100 distinct combinations. grazers ' +
+    'reports total vs pastured, plus the individual animals NOT in any pasture ' +
+    'zone — a grazer with no pasture cannot graze and silently starves; this is ' +
+    'normally invisible (juveniles graze too, so grazer status is NOT gated on ' +
+    'adulthood). egg_layers reports counts only (total, fort-wide nestbox count, ' +
+    'how many are pastured without a nestbox in reach, how many are unpastured) ' +
+    'since the consequence (missed eggs) is mild and the population is usually ' +
+    'large — gated on adulthood (a juvenile of an egg-laying caste cannot ' +
+    'actually lay yet, matching DFHack\'s own autonestbox behavior). ' +
     'marked_for_slaughter and trained (training_level Trained..MasterfullyTrained — ' +
     'DF\'s single shared training-quality scale, NOT which discipline the animal was ' +
     'trained for; it does not persist war-vs-hunting per animal) list individual ' +

@@ -1,8 +1,8 @@
 {
   "clothing": {
     "no_shoes_count": 0,
-    "tattered_citizens": [],
-    "tattered_citizens_truncated": false
+    "worn_citizens": [],
+    "worn_citizens_truncated": false
   },
   "counts": {
     "cloth": 209,

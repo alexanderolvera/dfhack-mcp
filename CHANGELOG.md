@@ -38,8 +38,9 @@ backwards-compatible fixes only.
   - `rooms_and_zones`: `ghosts` — active apparitions currently on the map, plus a
     count of this civ's dead who are world-flagged unquiet ghosts
     (`historical_figure.flags.ghost`) with no apparition currently active locally.
-  - `stocks`: `clothing` — citizens wearing tattered (`wear >= 2`) shoes, armor,
-    pants, gloves, or a helm, plus a fort-wide no-shoes-worn count — a chronic,
+  - `stocks`: `clothing` — citizens wearing worn (`wear >= 2` — DF's "X" heavily-
+    worn/threadbare or "XX" tattered/mangled stages) shoes, armor, pants,
+    gloves, or a helm, plus a fort-wide no-shoes-worn count — a chronic,
     easy-to-miss stress source.
   - `jobs_and_labor`: `cancellations` — recent job-cancellation announcements
     aggregated by reason (`chronicle` reports each one individually but never
@@ -131,6 +132,29 @@ backwards-compatible fixes only.
 - **`docs/VERIFY.md` documented a stale artifact-smoke tool count** (33) after
   the actual assertion in `scripts/smoke-artifact.mjs` moved to 36 across this
   release's four new/extended tools. Updated to match.
+- **`livestock_and_pastures.egg_layers` counted juveniles that can't lay yet**
+  — `LAYS_EGGS` is a caste *capability*, not an age-independent fact; the
+  fixture proved it live: the reported 96 egg layers were exactly 83 juvenile
+  + 12 adult female geese + 1 adult female guineafowl. Now gated on the
+  already-computed `adult` flag (matching DFHack's own `autonestbox` behavior,
+  which likewise waits for adulthood), collapsing the fixture's count to the
+  correct 13. `grazers` intentionally has no such gate — a juvenile still
+  grazes.
+- **`livestock_and_pastures.by_group[]` was the one list left uncapped** — a
+  large or heavily-modded creature roster could grow this without bound. Now
+  capped at 100 distinct species/sex/adult combinations, with the established
+  `by_group_total`/`by_group_truncated` pair.
+- **`jobs_and_labor`'s cancellation-reason regex matched the first colon
+  reachable, not the last one the documentation promised** — a cancellation
+  reason containing its own colon would retain extra prefix text and split
+  aggregation buckets that should have merged. Switched to a greedy `.*:`
+  prefix, the standard Lua idiom for "match after the last occurrence."
+- **`stocks`'s `tattered_citizens` field name overstated the wear threshold it
+  actually reports** — DF's wear scale has 4 stages (pristine → `x`item`x` →
+  `X`item`X` "heavily worn"/threadbare → `XX`item`XX` "tattered"/mangled →
+  destroyed); the `wear >= 2` threshold this field always used includes BOTH
+  the `X` and `XX` stages, not tattered alone. Renamed to `worn_citizens` /
+  `worn_citizens_truncated`; the threshold itself is unchanged.
 
 ## [1.1.0] - 2026-07-21
 

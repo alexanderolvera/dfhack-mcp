@@ -13,6 +13,7 @@ local TRAINED_CAP = 50
 local UNPASTURED_GRAZER_CAP = 50
 local CAGES_CAP = 50
 local CAGE_OCCUPANTS_CAP = 20
+local BY_GROUP_CAP = 100
 
 local function safe(fn, default)
   local ok, v = pcall(fn)
@@ -112,7 +113,7 @@ for _, u in ipairs(df.global.world.units.active) do
       end
     end
 
-    if caste and caste.flags.LAYS_EGGS then
+    if caste and caste.flags.LAYS_EGGS and adult then
       egg_total = egg_total + 1
       if pen_of_unit[u.id] then
         if not nestbox_pen_of_unit[u.id] then egg_pastured_no_nestbox = egg_pastured_no_nestbox + 1 end
@@ -165,6 +166,10 @@ grazer_unpastured, grazer_unpastured_truncated = cap(grazer_unpastured, UNPASTUR
 slaughter, slaughter_truncated = cap(slaughter, SLAUGHTER_CAP)
 trained, trained_truncated = cap(trained, TRAINED_CAP)
 
+local by_group_total = #by_group
+local by_group_truncated
+by_group, by_group_truncated = cap(by_group, BY_GROUP_CAP)
+
 local cages = {}
 for _, c in ipairs(df.global.world.buildings.other.CAGE) do
   local occupants = safe(function() return dfhack.buildings.getCageOccupants(c) end, {}) or {}
@@ -197,6 +202,8 @@ emit({
   pets = pets,
   livestock = livestock,
   by_group = by_group,
+  by_group_total = by_group_total,
+  by_group_truncated = by_group_truncated,
   grazers = {
     total = grazer_total,
     pastured = grazer_pastured,

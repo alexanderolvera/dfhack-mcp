@@ -40,10 +40,10 @@ for _, item in ipairs(df.global.world.items.other.IN_PLAY) do
   end
 end
 
-local TATTERED_WEAR = 2
-local TATTERED_CAP = 50
+local WORN_WEAR_THRESHOLD = 2
+local WORN_CAP = 50
 local WORN_SLOT = { SHOES = true, ARMOR = true, PANTS = true, GLOVES = true, HELM = true }
-local tattered, no_shoes_count = {}, 0
+local worn, no_shoes_count = {}, 0
 for _, u in ipairs(dfhack.units.getCitizens(true)) do
   local has_shoes, max_wear = false, 0
   for _, inv in ipairs(u.inventory) do
@@ -54,17 +54,17 @@ for _, u in ipairs(dfhack.units.getCitizens(true)) do
     end
   end
   if not has_shoes then no_shoes_count = no_shoes_count + 1 end
-  if max_wear >= TATTERED_WEAR then
-    tattered[#tattered + 1] = { unit_id = u.id, name = dfhack.units.getReadableName(u) }
+  if max_wear >= WORN_WEAR_THRESHOLD then
+    worn[#worn + 1] = { unit_id = u.id, name = dfhack.units.getReadableName(u) }
   end
 end
-table.sort(tattered, function(a, b) return a.unit_id < b.unit_id end)
-local tattered_truncated = false
-if #tattered > TATTERED_CAP then
+table.sort(worn, function(a, b) return a.unit_id < b.unit_id end)
+local worn_truncated = false
+if #worn > WORN_CAP then
   local capped = {}
-  for i = 1, TATTERED_CAP do capped[i] = tattered[i] end
-  tattered = capped
-  tattered_truncated = true
+  for i = 1, WORN_CAP do capped[i] = worn[i] end
+  worn = capped
+  worn_truncated = true
 end
 
 local pop = #dfhack.units.getCitizens(true)
@@ -88,8 +88,8 @@ emit({
   notable_high = high,
   counts = c,
   clothing = {
-    tattered_citizens = tattered,
-    tattered_citizens_truncated = tattered_truncated,
+    worn_citizens = worn,
+    worn_citizens_truncated = worn_truncated,
     no_shoes_count = no_shoes_count,
   },
 })

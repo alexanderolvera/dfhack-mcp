@@ -26,9 +26,9 @@ None.
 | `notable_low` | materials under a documented floor: food/drink under 14 days, fuel < 5, wood < 20, cloth < 10 |
 | `notable_high` | materials over a ceiling: stone > 500 |
 | `counts` | exact raw counts: `food`, `prepared_meals`, `drink`, `wood`, `fuel`, `cloth`, `tanned_hides`, `stone` |
-| `clothing` | `{ tattered_citizens[], tattered_citizens_truncated, no_shoes_count }` — see below |
+| `clothing` | `{ worn_citizens[], worn_citizens_truncated, no_shoes_count }` — see below |
 
-`clothing.tattered_citizens[]` is `{ unit_id, name }` for each citizen wearing at least one worn-out (`wear >= 2`, i.e. "XX" or worse) shoe/armor/pants/glove/helm, capped at 50 (`tattered_citizens_truncated` flags overflow). `clothing.no_shoes_count` is how many citizens currently have no `SHOES`-type item worn at all — reported as a count, not a list, since it's normally the whole fort or nothing.
+`clothing.worn_citizens[]` is `{ unit_id, name }` for each citizen wearing at least one worn item (`wear >= 2`) — shoe/armor/pants/glove/helm — capped at 50 (`worn_citizens_truncated` flags overflow). DF's own wear scale has 4 stages as an item degrades: pristine → `x`item`x` (wear 1) → `X`item`X` (wear 2, "heavily worn"/threadbare) → `XX`item`XX` (wear 3, "in tatters"/mangled) → destroyed. `wear >= 2` therefore covers BOTH the `X` and `XX` stages, not tattered alone — hence `worn_citizens`, not "tattered". `clothing.no_shoes_count` is how many citizens currently have no `SHOES`-type item worn at all — reported as a count, not a list, since it's normally the whole fort or nothing.
 
 ```json
 {
@@ -43,8 +43,8 @@ None.
     "wood": 305
   },
   "clothing": {
-    "tattered_citizens": [],
-    "tattered_citizens_truncated": false,
+    "worn_citizens": [],
+    "worn_citizens_truncated": false,
     "no_shoes_count": 0
   },
   "drink_days": 662,

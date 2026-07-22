@@ -65,8 +65,8 @@ export const INVARIANTS = [
       const cl = d.clothing ?? {};
       if (!(isInt(cl.no_shoes_count) && cl.no_shoes_count >= 0))
         out.push(`clothing.no_shoes_count=${cl.no_shoes_count} is not a non-negative integer`);
-      (cl.tattered_citizens ?? []).forEach((c, i) => {
-        if (!isInt(c.unit_id)) out.push(`clothing.tattered_citizens[${i}].unit_id=${c.unit_id} is not an integer`);
+      (cl.worn_citizens ?? []).forEach((c, i) => {
+        if (!isInt(c.unit_id)) out.push(`clothing.worn_citizens[${i}].unit_id=${c.unit_id} is not an integer`);
       });
       return out;
     },
@@ -537,15 +537,19 @@ export const INVARIANTS = [
   {
     name: 'livestock_counts_self_consistent',
     tools: ['livestock_and_pastures'],
-    desc: 'tame_total partitions into pets+livestock and sums by_group, grazer/egg_layer sub-counts stay within their totals, each cage honors its occupants_total/occupants_truncated pair, and every listed animal carries an integer unit_id',
+    desc: 'tame_total partitions into pets+livestock, by_group honors its total/truncated pair (and sums to tame_total when untruncated), grazer/egg_layer sub-counts stay within their totals, each cage honors its occupants_total/occupants_truncated pair, and every listed animal carries an integer unit_id',
     check(p) {
       const d = p.livestock_and_pastures;
       const out = [];
       if (d.pets + d.livestock !== d.tame_total)
         out.push(`pets=${d.pets} + livestock=${d.livestock} !== tame_total=${d.tame_total}`);
       const groupSum = (d.by_group ?? []).reduce((s, g) => s + g.count, 0);
-      if (groupSum !== d.tame_total)
-        out.push(`sum(by_group[].count)=${groupSum} !== tame_total=${d.tame_total}`);
+      if (!d.by_group_truncated && groupSum !== d.tame_total)
+        out.push(`sum(by_group[].count)=${groupSum} !== tame_total=${d.tame_total} (untruncated)`);
+      if (!(isInt(d.by_group_total) && d.by_group_total >= (d.by_group ?? []).length))
+        out.push(`by_group_total=${d.by_group_total} is not >= listed ${(d.by_group ?? []).length}`);
+      if (!d.by_group_truncated && d.by_group_total !== (d.by_group ?? []).length)
+        out.push(`untruncated by_group_total=${d.by_group_total} !== listed ${(d.by_group ?? []).length}`);
       if (!inRange(d.grazers.pastured, 0, d.grazers.total))
         out.push(`grazers.pastured=${d.grazers.pastured} outside [0, total=${d.grazers.total}]`);
       if (!d.grazers.unpastured_truncated && d.grazers.pastured + d.grazers.unpastured.length !== d.grazers.total)

@@ -253,13 +253,15 @@
       "species": "YAK"
     }
   ],
+  "by_group_total": 42,
+  "by_group_truncated": false,
   "cages": [],
   "cages_truncated": false,
   "egg_layers": {
     "nestbox_count": 14,
     "pastured_without_nestbox": 1,
-    "total": 96,
-    "unpastured": 83
+    "total": 13,
+    "unpastured": 0
   },
   "grazers": {
     "pastured": 17,

@@ -47,11 +47,9 @@ local cancel_counts = {}
 local cancel_total = 0
 for _, r in ipairs(df.global.world.status.reports) do
   if AT[r.type] == 'CANCEL_JOB' then
-    -- DF collapses consecutive identical cancellations into one report and
-    -- tallies the extras in repeat_count, so weight by occurrence, not row.
     local n = 1 + ((r.repeat_count and r.repeat_count > 0) and r.repeat_count or 0)
     cancel_total = cancel_total + n
-    local reason = r.text:match(':%s*(.-)%.?$') or 'unknown'
+    local reason = r.text:match('.*:%s*(.-)%.?$') or 'unknown'
     cancel_counts[reason] = (cancel_counts[reason] or 0) + n
   end
 end
