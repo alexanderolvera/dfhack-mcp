@@ -5,6 +5,7 @@ import { chronicleDef } from './chronicle.ts';
 import { citizenDef } from './citizen.ts';
 import { defensesDef } from './defenses.ts';
 import { environmentDef } from './environment.ts';
+import { farmingDef } from './farming.ts';
 import { findUnitDef } from './findUnit.ts';
 import { fortStatusDef } from './fortStatus.ts';
 import { gameDataDef } from './gameData.ts';
@@ -13,10 +14,12 @@ import { geologyDef } from './geology.ts';
 import { identifyDef } from './identify/index.ts';
 import { injuriesAndHealthDef } from './injuriesAndHealth.ts';
 import { jobsAndLaborDef } from './jobsAndLabor.ts';
+import { livestockAndPasturesDef } from './livestockAndPastures.ts';
 import { mapOverviewDef } from './mapOverview.ts';
 import { mandatesAndJusticeDef } from './mandatesAndJustice.ts';
 import { militaryDef } from './military.ts';
 import { moodsDef } from './moods.ts';
+import { noblesAndAdministratorsDef } from './noblesAndAdministrators.ts';
 import { roomsAndZonesDef } from './roomsAndZones.ts';
 import { runLuaDef } from './runLua.ts';
 import { siteHistoryDef } from './siteHistory.ts';
@@ -39,6 +42,7 @@ export const ALL_TOOLS: ToolDef[] = [
   citizenDef,
   defensesDef,
   environmentDef,
+  farmingDef,
   findUnitDef,
   fortStatusDef,
   gameDataDef,
@@ -47,10 +51,12 @@ export const ALL_TOOLS: ToolDef[] = [
   identifyDef,
   injuriesAndHealthDef,
   jobsAndLaborDef,
+  livestockAndPasturesDef,
   mapOverviewDef,
   mandatesAndJusticeDef,
   militaryDef,
   moodsDef,
+  noblesAndAdministratorsDef,
   roomsAndZonesDef,
   runLuaDef,
   siteHistoryDef,

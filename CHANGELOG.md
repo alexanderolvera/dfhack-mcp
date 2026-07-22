@@ -8,6 +8,194 @@ loosely while the tool surface is still evolving: **minor** releases (`1.x.0`)
 may change or remove tool output, and **patch** releases (`1.0.x`) are
 backwards-compatible fixes only.
 
+## [1.2.0] - 2026-07-21
+
+### Added
+
+- **`nobles_and_administrators` sensor** ([#75](https://github.com/alexanderolvera/dfhack-mcp/issues/75))
+  — every appointed fort position (manager, bookkeeper, broker, chief medical dwarf,
+  sheriff, captain of the guard, expedition leader/mayor, militia commander/captain,
+  hammerer, dungeon master, messenger, champion, and any baron+ the site has grown
+  into) with its holder(s) or vacancy, plus the bookkeeper's precision level, whether
+  a mayoral election is pending, and monarch arrival state. A vacant position is a
+  common, previously invisible cause of `work_order_create`/`trade`/justice-punishment
+  failures; `superseded_by` explains the expected vacancies (sheriff → captain of the
+  guard, expedition leader → mayor) so they don't read as problems.
+- **`farming` sensor** ([#76](https://github.com/alexanderolvera/dfhack-mcp/issues/76))
+  — the early-survival pipeline between `game_data`'s abstract "what's plantable" and
+  `stocks`'s food *outputs*: each farm plot's tile size, surface/underground status,
+  crop assignment per season (fallow if none), and seed availability for that crop;
+  plus fort-wide seed totals by plant. `no_crop_assigned` flags an idle plot before it
+  becomes a food crisis.
+- **`livestock_and_pastures` sensor** ([#74](https://github.com/alexanderolvera/dfhack-mcp/issues/74))
+  — the single largest post-v1.0 blind spot: every fort manages animals and `threats`
+  only ever saw hostiles. Reports tame animal counts by species/sex/adult, pets vs.
+  livestock, which grazers have no pasture (they can't graze — silent starvation),
+  egg-layer/nestbox coverage, animals marked for slaughter, war/hunting training
+  state, occupied cages, and how many animals are roaming unassigned.
+- **Cheap sensor extensions bundle** ([#87](https://github.com/alexanderolvera/dfhack-mcp/issues/87))
+  — three small additions to existing tools:
+  - `rooms_and_zones`: `ghosts` — active apparitions currently on the map, plus a
+    count of this civ's dead who are world-flagged unquiet ghosts
+    (`historical_figure.flags.ghost`) with no apparition currently active locally.
+  - `stocks`: `clothing` — citizens wearing worn (`wear >= 2` — DF's "X" heavily-
+    worn/threadbare or "XX" tattered/mangled stages) shoes, armor, pants,
+    gloves, or a helm, plus a fort-wide no-shoes-worn count — a chronic,
+    easy-to-miss stress source.
+  - `jobs_and_labor`: `cancellations` — recent job-cancellation announcements
+    aggregated by reason (`chronicle` reports each one individually but never
+    summed them), surfacing a repeating systemic cause (e.g. 7x "Equipment
+    mismatch") that would otherwise read as unrelated one-off events.
+
+  Two items from the original issue were scoped out rather than shipped
+  unreliable or duplicated: `stocks`' proposed "seed totals by plant" is now
+  `farming`'s `seed_totals[]` (shipped in this same release, #76) — adding a
+  second copy in `stocks` would have been exactly the kind of second-source-of-
+  truth drift this project avoids. `rooms_and_zones`' proposed "unmemorialized
+  dead with no corpse" was dropped after live verification showed the natural
+  heuristic (a dead citizen with no loose `CORPSE`/`CORPSEPIECE` item) can't
+  distinguish "buried long ago" from "corpse lost forever" — both look identical
+  once the item is gone — so it would have misreported safely-buried citizens as
+  ghost-risk. `ghosts.unquiet_dead_count` (above) reports the same underlying
+  concern from a field DF itself computes, instead.
+
+### Fixed
+
+- **`environment_wellformed` invariant checked a removed field** — `environment`'s
+  `temperature_band` was cut in 1.1.0 (a redundant 3rd encoding of `water_frozen`),
+  but `test/invariants.mjs` still asserted it was one of `freezing`/`above_freezing`/
+  `unknown`. Since the field no longer exists, the check always failed on `undefined`
+  — a stale test, not a live-data bug. Rewritten to check the surviving
+  `temperature`/`water_frozen` pair only.
+- **`livestock_and_pastures` and `rooms_and_zones.ghosts` leaked undiscovered-map
+  units** — both new sensors enumerated `world.units.active` without the mandatory
+  `mcp_unitVisibility` fog-of-war gate CONTRIBUTING.md requires of every unit-listing
+  tool (the same class of bug fixed on `threats`/`fort_status` before v1.0). Fixed by
+  filtering every unit fact (the tame-animal enumeration, cage occupants, active
+  ghosts) through `is_hidden(u)`; the tame-animal enumeration also now requires
+  `dfhack.units.isOwnCiv(u)` so a visiting caravan's or diplomat's pack animal is
+  never counted as this fort's livestock.
+- **`nobles_and_administrators` holders could omit their only stable id** — a
+  position holder living off-map (no loaded unit) had neither field the shipped
+  invariant required. Holders now always carry `histfig_id`; `unit_id` remains
+  present only when a live unit exists.
+- **`farming` claimed "no eligible crop" but only checked "no crop assigned"** — a
+  plot with a crop assigned in every season, none of them actually eligible for
+  their season, read as fine. Added a per-season `eligible` fact (the plant raw's
+  own season flag) and a plot-level `no_eligible_crop`, deliberately NOT extended to
+  surface/depth eligibility — live verification found a plant flagged surface-only
+  (`REED_ROPE`, `underground_depth_min == max == 0`) successfully planted
+  underground in the fixture, so asserting a depth rule would have been wrong, not
+  just incomplete.
+- **Unbounded payload risk on two new list fields** — `farming.plots[]` (no cap:
+  an old/modded fort's plot count could grow without bound) and
+  `livestock_and_pastures.cages[]` (same, for occupied cages) now cap at 200 and 50
+  respectively. `plots[]` gets the established `plots_total`/`plots_truncated`
+  pair; `cages[]` gets `cages_truncated` only (a `cages_total` scalar would just
+  restate `cages.length` when untruncated, so it's omitted — unlike `plots`,
+  where the pre-cap total is otherwise unrecoverable from the response). `NEST_BOX`
+  buildings still under construction no longer count toward nestbox coverage.
+- **`nobles_and_administrators` position `holders[]` could arrive as `{}`** — a
+  vacant position's empty nested Lua table wasn't coerced to `[]` like every other
+  nested list field in this release, so `.length`/`.forEach()` would have thrown
+  for a vacant position.
+- **`farming.seasons[].seeds_available` duplicated `seed_totals[]`** — the exact
+  same fort-wide count was repeated under every plot/season growing that crop
+  (the shipped invariant literally required the two copies stay identical — a
+  clear sign it was pure duplication, not new information, contrary to this
+  project's own rule against re-packaging a fact already in the same payload).
+  Removed; join a season's `crop` token against `seed_totals[]` instead.
+- **`jobs_and_labor.cancellations` counted report rows, not occurrences** — DF
+  collapses consecutive identical job cancellations into one report and tallies
+  the extras in that report's `repeat_count` (the same field `chronicle` already
+  exposes), so a reason repeating for months could still read as a handful of
+  rows. Now weighted by `1 + repeat_count` per report; verified live against the
+  fixture, a 7-row "Equipment mismatch" cluster was actually 61 occurrences once
+  weighted.
+- **`livestock_and_pastures` nestbox coverage used a same-z bounding-box check**
+  — an irregularly-shaped or hole-containing pen could report nestbox coverage
+  for a tile that was never actually part of the zone. Switched to
+  `dfhack.buildings.containsTile`, the same containment check `tile_region`
+  already uses for building extents.
+- **`rooms_and_zones`'s active-ghost alert reported the capped count, not the
+  real one** — with more than 50 active ghosts, the alert would read exactly
+  "50 active ghosts" regardless of the true total, silently hiding the overflow
+  `active_truncated` was meant to flag. The alert now uses the pre-cap total,
+  with a `+` suffix when truncated.
+- **`livestock_and_pastures.cages[].occupants[]` was itself unbounded** — the
+  50-cage cap only bounded the number of cage rows; a single densely-packed
+  cage trap could still serialize an unlimited occupant list. Each cage's own
+  `occupants[]` now caps at 20 with its own `occupants_total`/
+  `occupants_truncated` pair.
+- **`livestock_and_pastures`'s tool description overstated its own civ-ownership
+  gate** — it read as if every unit fact were restricted to this fort's civ, but
+  `cages[].occupants[]` deliberately isn't (a cage's contents are a structural
+  fact independent of ownership). Reworded: fog-of-war applies to every unit
+  fact; civ-ownership applies only to the tame-animal enumeration.
+- **`docs/VERIFY.md` documented a stale artifact-smoke tool count** (33) after
+  the actual assertion in `scripts/smoke-artifact.mjs` moved to 36 across this
+  release's four new/extended tools. Updated to match.
+- **`livestock_and_pastures.egg_layers` counted juveniles that can't lay yet**
+  — `LAYS_EGGS` is a caste *capability*, not an age-independent fact; the
+  fixture proved it live: the reported 96 egg layers were exactly 83 juvenile
+  + 12 adult female geese + 1 adult female guineafowl. Now gated on the
+  already-computed `adult` flag (matching DFHack's own `autonestbox` behavior,
+  which likewise waits for adulthood), collapsing the fixture's count to the
+  correct 13. `grazers` intentionally has no such gate — a juvenile still
+  grazes.
+- **`livestock_and_pastures.by_group[]` was the one list left uncapped** — a
+  large or heavily-modded creature roster could grow this without bound. Now
+  capped at 100 distinct species/sex/adult combinations, with the established
+  `by_group_total`/`by_group_truncated` pair.
+- **`jobs_and_labor`'s cancellation-reason regex matched the first colon
+  reachable, not the last one the documentation promised** — a cancellation
+  reason containing its own colon would retain extra prefix text and split
+  aggregation buckets that should have merged. Switched to a greedy `.*:`
+  prefix, the standard Lua idiom for "match after the last occurrence."
+- **`stocks`'s `tattered_citizens` field name overstated the wear threshold it
+  actually reports** — DF's wear scale has 4 stages (pristine → `x`item`x` →
+  `X`item`X` "heavily worn"/threadbare → `XX`item`XX` "tattered"/mangled →
+  destroyed); the `wear >= 2` threshold this field always used includes BOTH
+  the `X` and `XX` stages, not tattered alone. Renamed to `worn_citizens` /
+  `worn_citizens_truncated`; the threshold itself is unchanged.
+- **`livestock_and_pastures` counted dead animals as living tame livestock** —
+  a severe overcounting bug, not an edge case: on the Dreamfort fixture, 187 of
+  the 264 `isTame` matches in `world.units.active` were already-dead corpses
+  (mostly slaughtered geese) whose unit records simply linger. Added the same
+  `isActive(u)`/`not isDead(u)` guard `threats` already uses. The fixture's
+  real numbers: `tame_total` 264 → 77, `unassigned_count` 206 → 19, all 17
+  grazers now correctly show pastured (was 19 falsely "unpastured" dead
+  animals). Every downstream count and list was affected.
+- **`farming.plots[].surface` conflated "open to the sky" with "aboveground"**
+  — `designation.outside` means light/weather exposure, not a subterranean
+  designation; a roofed surface plot and a genuinely underground plot both
+  read `outside: false` and were indistinguishable. Renamed the field to
+  `open_to_sky` (Lua, TS, docs) rather than keep a name implying a fact it
+  doesn't check — no depth/subterranean claim is made at all now.
+- **`farming.seed_totals[]` was the one list left uncapped** — a heavily
+  modded plant raw set could grow this without bound, same class of gap as
+  `plots[]` (already capped) and `by_group[]` on the other new tool. Now
+  capped at 100 distinct plants, with `seed_totals_count`/
+  `seed_totals_truncated`.
+- **`stocks.md`'s clothing caveat wrongly excluded cloaks and shirts** — both
+  use DF's `ARMOR` item type, which the query's `WORN_SLOT` already includes;
+  only unworn spares (and slot types genuinely outside the checked set, e.g. a
+  backpack) are actually excluded. Corrected.
+- **`rooms_and_zones.unquiet_dead_count`'s description overstated its own
+  fog-of-war honesty** — it read as "no apparition currently active locally,"
+  but a ghost hidden behind fog of war is excluded from `active[]` (never
+  leaked) while still counted in `unquiet_dead_count`, since the world-level
+  ghost fact is fair game even when its exact location isn't. Reworded to
+  "not represented in the visible `active[]` list," which is what the code
+  actually guarantees.
+- **CHANGELOG wording overstated `cages[]`'s cap metadata** — an earlier entry
+  said both `plots[]` and `cages[]` got "the established total/truncated
+  pair," but `cages[]` only ever exposed `cages_truncated` (no `cages_total`
+  scalar — omitted because it would just restate `cages.length` when
+  untruncated, unlike `plots_total`, which is otherwise unrecoverable).
+  Corrected the earlier entry rather than add a field the design didn't call
+  for.
+
 ## [1.1.0] - 2026-07-21
 
 ### Fixed
@@ -249,7 +437,8 @@ server stays strictly read-only). First release published to npm — install wit
   by name with argv (`src/dfhack-queries/`), so a DF/DFHack version bump is a
   localized fix.
 
-[Unreleased]: https://github.com/alexanderolvera/dfhack-mcp/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/alexanderolvera/dfhack-mcp/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/alexanderolvera/dfhack-mcp/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/alexanderolvera/dfhack-mcp/compare/v1.0.1...v1.1.0
 [1.0.0]: https://github.com/alexanderolvera/dfhack-mcp/compare/v0.1.0...v1.0.0
 [0.1.0]: https://github.com/alexanderolvera/dfhack-mcp/releases/tag/v0.1.0

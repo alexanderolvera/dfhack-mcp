@@ -6,6 +6,8 @@ if df.global.gamemode ~= df.game_mode.DWARF then
   return
 end
 
+local visibility = reqscript('mcp_unitVisibility')
+
 local WELLS_CAP = 20
 local DEITY_WORSHIP_MIN = 1
 local CIVZONE = df.global.world.buildings.other.ACTIVITY_ZONE
@@ -192,6 +194,38 @@ for _, it in ipairs(corpse_items) do
   end
 end
 
+local GHOSTS_CAP = 50
+local civ_id = df.global.plotinfo.civ_id
+local active_ghosts = {}
+local active_ghost_hf = {}
+for _, u in ipairs(df.global.world.units.active) do
+  if u.flags3.ghostly and not visibility.is_hidden(u) then
+    active_ghosts[#active_ghosts + 1] = {
+      unit_id = u.id,
+      name = dfhack.units.getReadableName(u),
+      histfig_id = u.hist_figure_id,
+    }
+    if u.hist_figure_id and u.hist_figure_id ~= -1 then active_ghost_hf[u.hist_figure_id] = true end
+  end
+end
+table.sort(active_ghosts, function(a, b) return a.unit_id < b.unit_id end)
+local active_ghosts_total = #active_ghosts
+local active_ghosts_truncated = false
+if #active_ghosts > GHOSTS_CAP then
+  local capped = {}
+  for i = 1, GHOSTS_CAP do capped[i] = active_ghosts[i] end
+  active_ghosts = capped
+  active_ghosts_truncated = true
+end
+
+local unquiet_dead_count = 0
+for _, hf in ipairs(df.global.world.history.figures) do
+  if hf.race == fort_race and hf.civ_id == civ_id and hf.died_year ~= -1
+    and hf.flags.ghost and not active_ghost_hf[hf.id] then
+    unquiet_dead_count = unquiet_dead_count + 1
+  end
+end
+
 local adults_without = math.max(0, adults - bed_assigned)
 local alerts = {}
 if adults_without > 0 then
@@ -204,6 +238,10 @@ end
 if #needed > 0 then
   alerts[#alerts + 1] = #needed .. ' worshipped deit' .. (#needed == 1 and 'y' or 'ies') ..
     ' without a dedicated temple'
+end
+if active_ghosts_total > 0 then
+  local suffix = active_ghosts_truncated and '+' or ''
+  alerts[#alerts + 1] = active_ghosts_total .. suffix .. ' active ghost' .. (active_ghosts_total == 1 and '' or 's')
 end
 
 emit({
@@ -220,5 +258,10 @@ emit({
   coffins_free = coffins_free,
   coffins_used = coffins_used,
   dead_unburied = dead_unburied,
+  ghosts = {
+    active = active_ghosts,
+    active_truncated = active_ghosts_truncated,
+    unquiet_dead_count = unquiet_dead_count,
+  },
   alerts = alerts,
 })

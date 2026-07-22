@@ -1,0 +1,196 @@
+{
+  "by_group": [
+    {
+      "adult": false,
+      "count": 1,
+      "sex": "female",
+      "species": "ALPACA"
+    },
+    {
+      "adult": true,
+      "count": 4,
+      "sex": "female",
+      "species": "ALPACA"
+    },
+    {
+      "adult": true,
+      "count": 2,
+      "sex": "male",
+      "species": "ALPACA"
+    },
+    {
+      "adult": false,
+      "count": 1,
+      "sex": "male",
+      "species": "BIRD_CHICKEN"
+    },
+    {
+      "adult": true,
+      "count": 1,
+      "sex": "male",
+      "species": "BIRD_CHICKEN"
+    },
+    {
+      "adult": false,
+      "count": 10,
+      "sex": "female",
+      "species": "BIRD_GOOSE"
+    },
+    {
+      "adult": true,
+      "count": 12,
+      "sex": "female",
+      "species": "BIRD_GOOSE"
+    },
+    {
+      "adult": false,
+      "count": 10,
+      "sex": "male",
+      "species": "BIRD_GOOSE"
+    },
+    {
+      "adult": true,
+      "count": 2,
+      "sex": "male",
+      "species": "BIRD_GOOSE"
+    },
+    {
+      "adult": true,
+      "count": 1,
+      "sex": "female",
+      "species": "BIRD_GUINEAFOWL"
+    },
+    {
+      "adult": true,
+      "count": 2,
+      "sex": "male",
+      "species": "BIRD_GUINEAFOWL"
+    },
+    {
+      "adult": false,
+      "count": 2,
+      "sex": "female",
+      "species": "CAT"
+    },
+    {
+      "adult": true,
+      "count": 4,
+      "sex": "female",
+      "species": "CAT"
+    },
+    {
+      "adult": false,
+      "count": 1,
+      "sex": "male",
+      "species": "CAT"
+    },
+    {
+      "adult": true,
+      "count": 2,
+      "sex": "male",
+      "species": "CAT"
+    },
+    {
+      "adult": false,
+      "count": 4,
+      "sex": "female",
+      "species": "DOG"
+    },
+    {
+      "adult": true,
+      "count": 4,
+      "sex": "female",
+      "species": "DOG"
+    },
+    {
+      "adult": false,
+      "count": 2,
+      "sex": "male",
+      "species": "DOG"
+    },
+    {
+      "adult": true,
+      "count": 2,
+      "sex": "male",
+      "species": "DOG"
+    },
+    {
+      "adult": false,
+      "count": 1,
+      "sex": "female",
+      "species": "GOAT"
+    },
+    {
+      "adult": true,
+      "count": 2,
+      "sex": "female",
+      "species": "GOAT"
+    },
+    {
+      "adult": true,
+      "count": 1,
+      "sex": "male",
+      "species": "GOAT"
+    },
+    {
+      "adult": false,
+      "count": 1,
+      "sex": "female",
+      "species": "LLAMA"
+    },
+    {
+      "adult": true,
+      "count": 1,
+      "sex": "female",
+      "species": "RABBIT"
+    },
+    {
+      "adult": true,
+      "count": 1,
+      "sex": "male",
+      "species": "RABBIT"
+    },
+    {
+      "adult": false,
+      "count": 1,
+      "sex": "female",
+      "species": "SHEEP"
+    },
+    {
+      "adult": true,
+      "count": 1,
+      "sex": "female",
+      "species": "SHEEP"
+    },
+    {
+      "adult": true,
+      "count": 1,
+      "sex": "male",
+      "species": "SHEEP"
+    }
+  ],
+  "by_group_total": 28,
+  "by_group_truncated": false,
+  "cages": [],
+  "cages_truncated": false,
+  "egg_layers": {
+    "nestbox_count": 14,
+    "pastured_without_nestbox": 1,
+    "total": 13,
+    "unpastured": 0
+  },
+  "grazers": {
+    "pastured": 17,
+    "total": 17,
+    "unpastured": [],
+    "unpastured_truncated": false
+  },
+  "livestock": 65,
+  "marked_for_slaughter": [],
+  "marked_for_slaughter_truncated": false,
+  "pets": 12,
+  "tame_total": 77,
+  "trained": [],
+  "trained_truncated": false,
+  "unassigned_count": 19
+}

@@ -72,4 +72,4 @@ None.
 - Building-destroyer capability reads the numeric `caste.misc.buildingdestroyer` field (`> 0` means capable); there is no `BUILDINGDESTROYER` flag bit and no `caste.building_destroyer` field in this build — verified live against TROLL (`= 2`) and the Flame Phantom demons (`= 0`).
 
 ## Related
-[defenses](defenses.md) (per-structure defensive posture), [military](military.md) (the fort's own squads), [identify](identify.md) and [game_data](game_data.md) (deep-dive a creature via its `token`), [wiki_lookup](wiki_lookup.md) (creature background knowledge).
+[defenses](defenses.md) (per-structure defensive posture), [military](military.md) (the fort's own squads), [identify](identify.md) and [game_data](game_data.md) (deep-dive a creature via its `token`), [wiki_lookup](wiki_lookup.md) (creature background knowledge), [livestock_and_pastures](livestock_and_pastures.md) (the fort's own TAME animals — this tool only sees hostiles).

@@ -1,0 +1,914 @@
+{
+  "plots": [
+    {
+      "id": 100,
+      "no_crop_assigned": false,
+      "no_eligible_crop": false,
+      "open_to_sky": false,
+      "seasons": [
+        {
+          "crop": "POD_SWEET",
+          "eligible": true,
+          "season": "SPRING"
+        },
+        {
+          "crop": "GRASS_TAIL_PIG",
+          "eligible": true,
+          "season": "SUMMER"
+        },
+        {
+          "crop": "MUSHROOM_CUP_DIMPLE",
+          "eligible": true,
+          "season": "AUTUMN"
+        },
+        {
+          "crop": "MUSHROOM_HELMET_PLUMP",
+          "eligible": true,
+          "season": "WINTER"
+        }
+      ],
+      "size": 3
+    },
+    {
+      "id": 101,
+      "no_crop_assigned": false,
+      "no_eligible_crop": false,
+      "open_to_sky": false,
+      "seasons": [
+        {
+          "crop": "POD_SWEET",
+          "eligible": true,
+          "season": "SPRING"
+        },
+        {
+          "crop": "MUSHROOM_CUP_DIMPLE",
+          "eligible": true,
+          "season": "SUMMER"
+        },
+        {
+          "crop": "MUSHROOM_CUP_DIMPLE",
+          "eligible": true,
+          "season": "AUTUMN"
+        },
+        {
+          "crop": "MUSHROOM_HELMET_PLUMP",
+          "eligible": true,
+          "season": "WINTER"
+        }
+      ],
+      "size": 3
+    },
+    {
+      "id": 108,
+      "no_crop_assigned": false,
+      "no_eligible_crop": false,
+      "open_to_sky": false,
+      "seasons": [
+        {
+          "crop": "POD_SWEET",
+          "eligible": true,
+          "season": "SPRING"
+        },
+        {
+          "crop": "GRASS_TAIL_PIG",
+          "eligible": true,
+          "season": "SUMMER"
+        },
+        {
+          "crop": "MUSHROOM_CUP_DIMPLE",
+          "eligible": true,
+          "season": "AUTUMN"
+        },
+        {
+          "crop": "MUSHROOM_HELMET_PLUMP",
+          "eligible": true,
+          "season": "WINTER"
+        }
+      ],
+      "size": 3
+    },
+    {
+      "id": 111,
+      "no_crop_assigned": false,
+      "no_eligible_crop": false,
+      "open_to_sky": false,
+      "seasons": [
+        {
+          "crop": "MUSHROOM_CUP_DIMPLE",
+          "eligible": true,
+          "season": "SPRING"
+        },
+        {
+          "crop": "GRASS_TAIL_PIG",
+          "eligible": true,
+          "season": "SUMMER"
+        },
+        {
+          "crop": "MUSHROOM_CUP_DIMPLE",
+          "eligible": true,
+          "season": "AUTUMN"
+        },
+        {
+          "crop": "MUSHROOM_HELMET_PLUMP",
+          "eligible": true,
+          "season": "WINTER"
+        }
+      ],
+      "size": 3
+    },
+    {
+      "id": 114,
+      "no_crop_assigned": false,
+      "no_eligible_crop": false,
+      "open_to_sky": false,
+      "seasons": [
+        {
+          "crop": "MUSHROOM_CUP_DIMPLE",
+          "eligible": true,
+          "season": "SPRING"
+        },
+        {
+          "crop": "GRASS_WHEAT_CAVE",
+          "eligible": true,
+          "season": "SUMMER"
+        },
+        {
+          "crop": "MUSHROOM_CUP_DIMPLE",
+          "eligible": true,
+          "season": "AUTUMN"
+        },
+        {
+          "crop": "MUSHROOM_HELMET_PLUMP",
+          "eligible": true,
+          "season": "WINTER"
+        }
+      ],
+      "size": 3
+    },
+    {
+      "id": 115,
+      "no_crop_assigned": false,
+      "no_eligible_crop": false,
+      "open_to_sky": false,
+      "seasons": [
+        {
+          "crop": "BUSH_QUARRY",
+          "eligible": true,
+          "season": "SPRING"
+        },
+        {
+          "crop": "GRASS_WHEAT_CAVE",
+          "eligible": true,
+          "season": "SUMMER"
+        },
+        {
+          "crop": "MUSHROOM_CUP_DIMPLE",
+          "eligible": true,
+          "season": "AUTUMN"
+        },
+        {
+          "crop": "MUSHROOM_HELMET_PLUMP",
+          "eligible": true,
+          "season": "WINTER"
+        }
+      ],
+      "size": 3
+    },
+    {
+      "id": 118,
+      "no_crop_assigned": false,
+      "no_eligible_crop": false,
+      "open_to_sky": false,
+      "seasons": [
+        {
+          "crop": "BUSH_QUARRY",
+          "eligible": true,
+          "season": "SPRING"
+        },
+        {
+          "crop": "BUSH_QUARRY",
+          "eligible": true,
+          "season": "SUMMER"
+        },
+        {
+          "crop": "MUSHROOM_CUP_DIMPLE",
+          "eligible": true,
+          "season": "AUTUMN"
+        },
+        {
+          "crop": "MUSHROOM_HELMET_PLUMP",
+          "eligible": true,
+          "season": "WINTER"
+        }
+      ],
+      "size": 3
+    },
+    {
+      "id": 122,
+      "no_crop_assigned": false,
+      "no_eligible_crop": false,
+      "open_to_sky": false,
+      "seasons": [
+        {
+          "crop": "MUSHROOM_CUP_DIMPLE",
+          "eligible": true,
+          "season": "SPRING"
+        },
+        {
+          "crop": "BUSH_QUARRY",
+          "eligible": true,
+          "season": "SUMMER"
+        },
+        {
+          "crop": "MUSHROOM_CUP_DIMPLE",
+          "eligible": true,
+          "season": "AUTUMN"
+        },
+        {
+          "crop": "MUSHROOM_HELMET_PLUMP",
+          "eligible": true,
+          "season": "WINTER"
+        }
+      ],
+      "size": 3
+    },
+    {
+      "id": 123,
+      "no_crop_assigned": false,
+      "no_eligible_crop": false,
+      "open_to_sky": false,
+      "seasons": [
+        {
+          "crop": "BUSH_QUARRY",
+          "eligible": true,
+          "season": "SPRING"
+        },
+        {
+          "crop": "MUSHROOM_CUP_DIMPLE",
+          "eligible": true,
+          "season": "SUMMER"
+        },
+        {
+          "crop": "MUSHROOM_CUP_DIMPLE",
+          "eligible": true,
+          "season": "AUTUMN"
+        },
+        {
+          "crop": "MUSHROOM_HELMET_PLUMP",
+          "eligible": true,
+          "season": "WINTER"
+        }
+      ],
+      "size": 3
+    },
+    {
+      "id": 473,
+      "no_crop_assigned": false,
+      "no_eligible_crop": false,
+      "open_to_sky": false,
+      "seasons": [
+        {
+          "crop": "GRAPE",
+          "eligible": true,
+          "season": "SPRING"
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "AUTUMN"
+        },
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "WINTER"
+        }
+      ],
+      "size": 1
+    },
+    {
+      "id": 474,
+      "no_crop_assigned": false,
+      "no_eligible_crop": false,
+      "open_to_sky": false,
+      "seasons": [
+        {
+          "crop": "GRAPE",
+          "eligible": true,
+          "season": "SPRING"
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "AUTUMN"
+        },
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "WINTER"
+        }
+      ],
+      "size": 1
+    },
+    {
+      "id": 475,
+      "no_crop_assigned": false,
+      "no_eligible_crop": false,
+      "open_to_sky": false,
+      "seasons": [
+        {
+          "crop": "GRAPE",
+          "eligible": true,
+          "season": "SPRING"
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "AUTUMN"
+        },
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "WINTER"
+        }
+      ],
+      "size": 1
+    },
+    {
+      "id": 476,
+      "no_crop_assigned": false,
+      "no_eligible_crop": false,
+      "open_to_sky": false,
+      "seasons": [
+        {
+          "crop": "GRAPE",
+          "eligible": true,
+          "season": "SPRING"
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "AUTUMN"
+        },
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "WINTER"
+        }
+      ],
+      "size": 1
+    },
+    {
+      "id": 477,
+      "no_crop_assigned": false,
+      "no_eligible_crop": false,
+      "open_to_sky": false,
+      "seasons": [
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "SPRING"
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "AUTUMN"
+        },
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "WINTER"
+        }
+      ],
+      "size": 1
+    },
+    {
+      "id": 478,
+      "no_crop_assigned": false,
+      "no_eligible_crop": false,
+      "open_to_sky": false,
+      "seasons": [
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "SPRING"
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "AUTUMN"
+        },
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "WINTER"
+        }
+      ],
+      "size": 1
+    },
+    {
+      "id": 479,
+      "no_crop_assigned": false,
+      "no_eligible_crop": false,
+      "open_to_sky": false,
+      "seasons": [
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "SPRING"
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "AUTUMN"
+        },
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "WINTER"
+        }
+      ],
+      "size": 1
+    },
+    {
+      "id": 480,
+      "no_crop_assigned": false,
+      "no_eligible_crop": false,
+      "open_to_sky": false,
+      "seasons": [
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "SPRING"
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "AUTUMN"
+        },
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "WINTER"
+        }
+      ],
+      "size": 1
+    },
+    {
+      "id": 483,
+      "no_crop_assigned": false,
+      "no_eligible_crop": false,
+      "open_to_sky": false,
+      "seasons": [
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "SPRING"
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "AUTUMN"
+        },
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "WINTER"
+        }
+      ],
+      "size": 1
+    },
+    {
+      "id": 484,
+      "no_crop_assigned": false,
+      "no_eligible_crop": false,
+      "open_to_sky": false,
+      "seasons": [
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "SPRING"
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "AUTUMN"
+        },
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "WINTER"
+        }
+      ],
+      "size": 1
+    },
+    {
+      "id": 485,
+      "no_crop_assigned": false,
+      "no_eligible_crop": false,
+      "open_to_sky": false,
+      "seasons": [
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "SPRING"
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "AUTUMN"
+        },
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "WINTER"
+        }
+      ],
+      "size": 1
+    },
+    {
+      "id": 486,
+      "no_crop_assigned": false,
+      "no_eligible_crop": false,
+      "open_to_sky": false,
+      "seasons": [
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "SPRING"
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "AUTUMN"
+        },
+        {
+          "crop": "FOXTAIL_MILLET",
+          "eligible": true,
+          "season": "WINTER"
+        }
+      ],
+      "size": 1
+    },
+    {
+      "id": 487,
+      "no_crop_assigned": false,
+      "no_eligible_crop": false,
+      "open_to_sky": false,
+      "seasons": [
+        {
+          "crop": "GRAPE",
+          "eligible": true,
+          "season": "SPRING"
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "AUTUMN"
+        },
+        {
+          "crop": "FOXTAIL_MILLET",
+          "eligible": true,
+          "season": "WINTER"
+        }
+      ],
+      "size": 1
+    },
+    {
+      "id": 488,
+      "no_crop_assigned": false,
+      "no_eligible_crop": false,
+      "open_to_sky": false,
+      "seasons": [
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "SPRING"
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "AUTUMN"
+        },
+        {
+          "crop": "FOXTAIL_MILLET",
+          "eligible": true,
+          "season": "WINTER"
+        }
+      ],
+      "size": 1
+    },
+    {
+      "id": 490,
+      "no_crop_assigned": false,
+      "no_eligible_crop": false,
+      "open_to_sky": false,
+      "seasons": [
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "SPRING"
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "AUTUMN"
+        },
+        {
+          "crop": "FOXTAIL_MILLET",
+          "eligible": true,
+          "season": "WINTER"
+        }
+      ],
+      "size": 1
+    },
+    {
+      "id": 491,
+      "no_crop_assigned": false,
+      "no_eligible_crop": false,
+      "open_to_sky": false,
+      "seasons": [
+        {
+          "crop": "GRAPE",
+          "eligible": true,
+          "season": "SPRING"
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "AUTUMN"
+        },
+        {
+          "crop": "FOXTAIL_MILLET",
+          "eligible": true,
+          "season": "WINTER"
+        }
+      ],
+      "size": 1
+    },
+    {
+      "id": 492,
+      "no_crop_assigned": false,
+      "no_eligible_crop": false,
+      "open_to_sky": false,
+      "seasons": [
+        {
+          "crop": "GRAPE",
+          "eligible": true,
+          "season": "SPRING"
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "AUTUMN"
+        },
+        {
+          "crop": "FOXTAIL_MILLET",
+          "eligible": true,
+          "season": "WINTER"
+        }
+      ],
+      "size": 1
+    },
+    {
+      "id": 493,
+      "no_crop_assigned": false,
+      "no_eligible_crop": false,
+      "open_to_sky": false,
+      "seasons": [
+        {
+          "crop": "GRAPE",
+          "eligible": true,
+          "season": "SPRING"
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "AUTUMN"
+        },
+        {
+          "crop": "FOXTAIL_MILLET",
+          "eligible": true,
+          "season": "WINTER"
+        }
+      ],
+      "size": 1
+    },
+    {
+      "id": 494,
+      "no_crop_assigned": false,
+      "no_eligible_crop": false,
+      "open_to_sky": false,
+      "seasons": [
+        {
+          "crop": "GRAPE",
+          "eligible": true,
+          "season": "SPRING"
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "AUTUMN"
+        },
+        {
+          "crop": "FOXTAIL_MILLET",
+          "eligible": true,
+          "season": "WINTER"
+        }
+      ],
+      "size": 1
+    },
+    {
+      "id": 495,
+      "no_crop_assigned": false,
+      "no_eligible_crop": false,
+      "open_to_sky": false,
+      "seasons": [
+        {
+          "crop": "GRAPE",
+          "eligible": true,
+          "season": "SPRING"
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "AUTUMN"
+        },
+        {
+          "crop": "FOXTAIL_MILLET",
+          "eligible": true,
+          "season": "WINTER"
+        }
+      ],
+      "size": 1
+    },
+    {
+      "id": 496,
+      "no_crop_assigned": false,
+      "no_eligible_crop": false,
+      "open_to_sky": false,
+      "seasons": [
+        {
+          "crop": "GRAPE",
+          "eligible": true,
+          "season": "SPRING"
+        },
+        {
+          "season": "SUMMER"
+        },
+        {
+          "crop": "REED_ROPE",
+          "eligible": true,
+          "season": "AUTUMN"
+        },
+        {
+          "crop": "FOXTAIL_MILLET",
+          "eligible": true,
+          "season": "WINTER"
+        }
+      ],
+      "size": 1
+    }
+  ],
+  "plots_total": 30,
+  "plots_truncated": false,
+  "seed_totals": [
+    {
+      "count": 55,
+      "plant": "ALMOND"
+    },
+    {
+      "count": 85,
+      "plant": "BILBERRY"
+    },
+    {
+      "count": 96,
+      "plant": "BLACKBERRY"
+    },
+    {
+      "count": 29,
+      "plant": "BUSH_QUARRY"
+    },
+    {
+      "count": 9,
+      "plant": "CHERRY"
+    },
+    {
+      "count": 60,
+      "plant": "FOXTAIL_MILLET"
+    },
+    {
+      "count": 75,
+      "plant": "GINKGO"
+    },
+    {
+      "count": 81,
+      "plant": "GRAPE"
+    },
+    {
+      "count": 33,
+      "plant": "GRASS_TAIL_PIG"
+    },
+    {
+      "count": 31,
+      "plant": "GRASS_WHEAT_CAVE"
+    },
+    {
+      "count": 70,
+      "plant": "HAZEL"
+    },
+    {
+      "count": 19,
+      "plant": "MUSHROOM_CUP_DIMPLE"
+    },
+    {
+      "count": 62,
+      "plant": "MUSHROOM_HELMET_PLUMP"
+    },
+    {
+      "count": 3,
+      "plant": "PEACH"
+    },
+    {
+      "count": 5,
+      "plant": "PEAR"
+    },
+    {
+      "count": 50,
+      "plant": "POD_SWEET"
+    },
+    {
+      "count": 199,
+      "plant": "REED_ROPE"
+    },
+    {
+      "count": 55,
+      "plant": "WALNUT"
+    },
+    {
+      "count": 48,
+      "plant": "WILD_CARROT"
+    }
+  ],
+  "seed_totals_count": 19,
+  "seed_totals_truncated": false
+}

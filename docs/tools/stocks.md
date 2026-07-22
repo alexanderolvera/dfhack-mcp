@@ -26,6 +26,9 @@ None.
 | `notable_low` | materials under a documented floor: food/drink under 14 days, fuel < 5, wood < 20, cloth < 10 |
 | `notable_high` | materials over a ceiling: stone > 500 |
 | `counts` | exact raw counts: `food`, `prepared_meals`, `drink`, `wood`, `fuel`, `cloth`, `tanned_hides`, `stone` |
+| `clothing` | `{ worn_citizens[], worn_citizens_truncated, no_shoes_count }` — see below |
+
+`clothing.worn_citizens[]` is `{ unit_id, name }` for each citizen wearing at least one worn item (`wear >= 2`) — shoe/armor/pants/glove/helm — capped at 50 (`worn_citizens_truncated` flags overflow). DF's own wear scale has 4 stages as an item degrades: pristine → `x`item`x` (wear 1) → `X`item`X` (wear 2, "heavily worn"/threadbare) → `XX`item`XX` (wear 3, "in tatters"/mangled) → destroyed. `wear >= 2` therefore covers BOTH the `X` and `XX` stages, not tattered alone — hence `worn_citizens`, not "tattered". `clothing.no_shoes_count` is how many citizens currently have no `SHOES`-type item worn at all — reported as a count, not a list, since it's normally the whole fort or nothing.
 
 ```json
 {
@@ -38,6 +41,11 @@ None.
     "stone": 2075,
     "tanned_hides": 956,
     "wood": 305
+  },
+  "clothing": {
+    "worn_citizens": [],
+    "worn_citizens_truncated": false,
+    "no_shoes_count": 0
   },
   "drink_days": 662,
   "food_days": 1505,
@@ -53,10 +61,11 @@ None.
 - `fuel` counts only coal/charcoal bars (`BAR` items of material COAL).
 - Food/drink low-lines are population-normalized (days-of-supply); the material floors (fuel/wood/cloth/stone) are deliberate absolute working-buffer thresholds, not per-capita.
 - With zero population, `food_days` / `drink_days` are `-1`.
+- `clothing` only checks WORN items (`unit_inventory_item.mode == 2`) of the 5 clothing/armor slot types (SHOES/ARMOR/PANTS/GLOVES/HELM — cloaks and shirts are DF's `ARMOR` item type too, so they ARE covered) — unworn spares sitting in inventory, and slot types outside this list (e.g. a backpack or quiver), aren't part of either fact.
 - Returns `{"error":"no fort loaded"}` if no fort is active.
 
 ## Implementation notes
 - The population-normalized vs. absolute-threshold split (food/drink by days-of-supply, materials by a flat count) was a deliberate design decision reviewed under issue #5, not an oversight — a future pass tempted to "normalize everything by population" should treat the absolute material floors as intentional: a fort needs a baseline working reserve to keep forges/looms fed regardless of size, and `notable_low`/`notable_high` are a factual classification, not an alert, so a large fort tripping them is a genuinely thin reserve rather than statistical noise.
 
 ## Related
-[fort_status](fort_status.md) (overall dashboard), [trade](trade.md) (goods staged at the depot), [jobs_and_labor](jobs_and_labor.md) (who is producing), [work_order_create](work_order_create.md) (queueing production once a gap is known).
+[fort_status](fort_status.md) (overall dashboard), [trade](trade.md) (goods staged at the depot), [jobs_and_labor](jobs_and_labor.md) (who is producing), [work_order_create](work_order_create.md) (queueing production once a gap is known), [farming](farming.md) (the food pipeline upstream of these counts).

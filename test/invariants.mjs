@@ -62,6 +62,12 @@ export const INVARIANTS = [
         if (!(typeof d[k] === 'number' && d[k] >= -1))
           out.push(`${k}=${d[k]} below the -1 sentinel`);
       }
+      const cl = d.clothing ?? {};
+      if (!(isInt(cl.no_shoes_count) && cl.no_shoes_count >= 0))
+        out.push(`clothing.no_shoes_count=${cl.no_shoes_count} is not a non-negative integer`);
+      (cl.worn_citizens ?? []).forEach((c, i) => {
+        if (!isInt(c.unit_id)) out.push(`clothing.worn_citizens[${i}].unit_id=${c.unit_id} is not an integer`);
+      });
       return out;
     },
   },
@@ -76,6 +82,30 @@ export const INVARIANTS = [
       for (const k of [...(d.notable_low ?? []), ...(d.notable_high ?? [])]) {
         if (!known.has(k)) out.push(`notable entry "${k}" is not a known stock key`);
       }
+      return out;
+    },
+  },
+  {
+    name: 'jobs_and_labor_wellformed',
+    tools: ['jobs_and_labor'],
+    desc: 'working+idle=workforce, and cancellations.by_reason is a sorted, positive-count breakdown consistent with its total',
+    check(p) {
+      const d = p.jobs_and_labor;
+      const out = [];
+      if (d.working + d.idle !== d.workforce)
+        out.push(`working=${d.working} + idle=${d.idle} !== workforce=${d.workforce}`);
+      const c = d.cancellations ?? {};
+      if (!(isInt(c.total) && c.total >= 0))
+        out.push(`cancellations.total=${c.total} is not a non-negative integer`);
+      let prevCount = Infinity;
+      const reasonSum = (c.by_reason ?? []).reduce((sum, r, i) => {
+        if (!(isInt(r.count) && r.count > 0)) out.push(`cancellations.by_reason[${i}].count=${r.count} is not positive`);
+        if (r.count > prevCount) out.push(`cancellations.by_reason not sorted descending at index ${i}`);
+        prevCount = r.count;
+        return sum + (r.count || 0);
+      }, 0);
+      if (!c.by_reason_truncated && reasonSum !== c.total)
+        out.push(`sum(by_reason[].count)=${reasonSum} !== total=${c.total} (untruncated)`);
       return out;
     },
   },
@@ -145,6 +175,13 @@ export const INVARIANTS = [
         if (!d.wells_truncated && isInt(d.wells_total) && d.wells_total !== wells.length)
           out.push(`untruncated wells_total ${d.wells_total} !== listed ${wells.length}`);
       }
+      const g = d.ghosts ?? {};
+      if (!(isInt(g.unquiet_dead_count) && g.unquiet_dead_count >= 0))
+        out.push(`ghosts.unquiet_dead_count=${g.unquiet_dead_count} is not a non-negative integer`);
+      (g.active ?? []).forEach((a, i) => {
+        if (!isInt(a.unit_id)) out.push(`ghosts.active[${i}].unit_id=${a.unit_id} is not an integer`);
+        if (!isInt(a.histfig_id)) out.push(`ghosts.active[${i}].histfig_id=${a.histfig_id} is not an integer`);
+      });
       return out;
     },
   },
@@ -334,10 +371,10 @@ export const INVARIANTS = [
     // OUTPUT WELL-FORMEDNESS only. The fog-of-war guarantee (every listed cavern is
     // one the fort actually breached) is enforced in Lua against DF's Discovered flag
     // and can't be independently re-derived cheaply here — so this spec asserts SHAPE,
-    // not provenance: known enums, a coherent temperature triple, and a bounded caverns
-    // list of in-range layer numbers. A leaked-but-shape-valid layer would pass; that's
-    // the Lua guard's job, not this one's.
-    desc: 'season/weather/temperature/biome are in their known sets with a coherent temperature triple, and caverns is a bounded, well-formed list of layer numbers in 1..3 (output shape, not fog-of-war provenance)',
+    // not provenance: known enums, a coherent temperature/water_frozen pair, and a
+    // bounded caverns list of in-range layer numbers. A leaked-but-shape-valid layer
+    // would pass; that's the Lua guard's job, not this one's.
+    desc: 'season/weather/temperature/biome are in their known sets with a coherent temperature/water_frozen pair, and caverns is a bounded, well-formed list of layer numbers in 1..3 (output shape, not fog-of-war provenance)',
     check(p) {
       const d = p.environment;
       const out = [];
@@ -345,22 +382,18 @@ export const INVARIANTS = [
       const SEASONS = new Set(['spring', 'summer', 'autumn', 'winter']);
       if (!SEASONS.has(d.season_name))
         out.push(`season_name="${d.season_name}" is not a known season`);
-      // Surface: weather / band from fixed enums; the temperature triple is coherent.
+      // Surface: weather from a fixed enum; the temperature pair is coherent.
       const s = d.surface ?? {};
       if (!new Set(['none', 'rain', 'snow']).has(s.weather))
         out.push(`surface.weather="${s.weather}" unknown`);
-      if (!new Set(['freezing', 'above_freezing', 'unknown']).has(s.temperature_band))
-        out.push(`surface.temperature_band="${s.temperature_band}" unknown`);
       // Unknown temperature (no surface sample) must be honest all the way through:
-      // temperature null, water_frozen null, band 'unknown' — never a fabricated false.
+      // temperature null, water_frozen null — never a fabricated false.
       const tempKnown = typeof s.temperature === 'number';
       if (!(tempKnown || s.temperature === null))
         out.push(`surface.temperature=${s.temperature} is neither a number nor null`);
       if (!tempKnown) {
         if (s.water_frozen !== null)
           out.push(`temperature unknown but water_frozen=${s.water_frozen} is not null`);
-        if (s.temperature_band !== 'unknown')
-          out.push(`temperature unknown but band="${s.temperature_band}" is not 'unknown'`);
       } else {
         if (typeof s.water_frozen !== 'boolean')
           out.push(`surface.water_frozen=${s.water_frozen} not boolean with a known temperature`);
@@ -368,11 +401,6 @@ export const INVARIANTS = [
           out.push(
             `water_frozen=${s.water_frozen} disagrees with temperature ${s.temperature} vs freeze point 10000`
           );
-        // band and water_frozen are the same fact stated two ways — they must not conflict.
-        if (s.temperature_band === 'freezing' && s.water_frozen !== true)
-          out.push('temperature_band=freezing but water_frozen is not true');
-        if (s.temperature_band === 'above_freezing' && s.water_frozen !== false)
-          out.push('temperature_band=above_freezing but water_frozen is not false');
       }
       // Biome alignment is three booleans (the embark-known flags).
       const b = d.biome ?? {};
@@ -441,6 +469,113 @@ export const INVARIANTS = [
       // Every listed demand is an UNMET one (met === false), by construction.
       (d.demands ?? []).forEach((dm, i) => {
         if (dm.met !== false) out.push(`demands[${i}].met=${dm.met} is not false`);
+      });
+      return out;
+    },
+  },
+  {
+    name: 'nobles_positions_wellformed',
+    tools: ['nobles_and_administrators'],
+    desc: 'vacant agrees with holders[], holders carry an integer histfig_id (unit_id only when a live unit is loaded), superseded_by (if any) names a real position code, and bookkeeper_precision_level is 0-4',
+    check(p) {
+      const d = p.nobles_and_administrators;
+      const out = [];
+      const codes = new Set((d.positions ?? []).map((row) => row.code));
+      (d.positions ?? []).forEach((row) => {
+        if (row.vacant !== (row.holders.length === 0))
+          out.push(`positions[${row.code}].vacant=${row.vacant} disagrees with holders=${row.holders.length}`);
+        row.holders.forEach((h, i) => {
+          if (!isInt(h.histfig_id))
+            out.push(`positions[${row.code}].holders[${i}].histfig_id=${h.histfig_id} is not an integer`);
+          if (h.unit_id !== undefined && !isInt(h.unit_id))
+            out.push(`positions[${row.code}].holders[${i}].unit_id=${h.unit_id} is present but not an integer`);
+        });
+        if (row.superseded_by !== undefined && !codes.has(row.superseded_by))
+          out.push(`positions[${row.code}].superseded_by=${row.superseded_by} names no known position`);
+      });
+      if (!inRange(d.bookkeeper_precision_level, 0, 4))
+        out.push(`bookkeeper_precision_level=${d.bookkeeper_precision_level} outside [0, 4]`);
+      return out;
+    },
+  },
+  {
+    name: 'farming_plots_and_seeds_wellformed',
+    tools: ['farming'],
+    desc: 'plot size/seasons are well-formed, no_crop_assigned/no_eligible_crop agree with the season crops, seed_totals holds positive counts and honors its count/truncated pair, and plots_total/plots_truncated honor the 200 cap',
+    check(p) {
+      const d = p.farming;
+      const out = [];
+      const seedTotal = new Map((d.seed_totals ?? []).map((s) => [s.plant, s.count]));
+      for (const [plant, count] of seedTotal) {
+        if (!(isInt(count) && count > 0)) out.push(`seed_totals[${plant}]=${count} is not a positive integer`);
+      }
+      (d.plots ?? []).forEach((plot) => {
+        if (!(isInt(plot.size) && plot.size > 0)) out.push(`plots[${plot.id}].size=${plot.size} is not positive`);
+        if (plot.seasons.length !== 4) out.push(`plots[${plot.id}] has ${plot.seasons.length} seasons, expected 4`);
+        const anyCrop = plot.seasons.some((s) => s.crop !== undefined);
+        if (plot.no_crop_assigned !== !anyCrop)
+          out.push(`plots[${plot.id}].no_crop_assigned=${plot.no_crop_assigned} disagrees with its season crops`);
+        const anyEligible = plot.seasons.some((s) => s.crop !== undefined && s.eligible === true);
+        if (plot.no_eligible_crop !== !anyEligible)
+          out.push(`plots[${plot.id}].no_eligible_crop=${plot.no_eligible_crop} disagrees with its season eligibility`);
+        plot.seasons.forEach((s) => {
+          if (s.crop === undefined && s.eligible !== undefined)
+            out.push(`plots[${plot.id}].${s.season}.eligible=${s.eligible} present on a fallow season`);
+          if (s.crop !== undefined && typeof s.eligible !== 'boolean')
+            out.push(`plots[${plot.id}].${s.season}.eligible=${s.eligible} is not a boolean despite a crop being assigned`);
+        });
+      });
+      if (!(isInt(d.plots_total) && d.plots_total >= 0))
+        out.push(`plots_total=${d.plots_total} is not a non-negative integer`);
+      if (!d.plots_truncated && isInt(d.plots_total) && d.plots_total !== (d.plots ?? []).length)
+        out.push(`untruncated plots_total ${d.plots_total} !== listed ${(d.plots ?? []).length}`);
+      if (d.plots_truncated && (d.plots ?? []).length !== 200)
+        out.push(`plots_truncated=true but listed ${(d.plots ?? []).length} !== cap 200`);
+      if (!(isInt(d.seed_totals_count) && d.seed_totals_count >= (d.seed_totals ?? []).length))
+        out.push(`seed_totals_count=${d.seed_totals_count} is not >= listed ${(d.seed_totals ?? []).length}`);
+      if (!d.seed_totals_truncated && d.seed_totals_count !== (d.seed_totals ?? []).length)
+        out.push(`untruncated seed_totals_count ${d.seed_totals_count} !== listed ${(d.seed_totals ?? []).length}`);
+      return out;
+    },
+  },
+  {
+    name: 'livestock_counts_self_consistent',
+    tools: ['livestock_and_pastures'],
+    desc: 'tame_total partitions into pets+livestock, by_group honors its total/truncated pair (and sums to tame_total when untruncated), grazer/egg_layer sub-counts stay within their totals, each cage honors its occupants_total/occupants_truncated pair, and every listed animal carries an integer unit_id',
+    check(p) {
+      const d = p.livestock_and_pastures;
+      const out = [];
+      if (d.pets + d.livestock !== d.tame_total)
+        out.push(`pets=${d.pets} + livestock=${d.livestock} !== tame_total=${d.tame_total}`);
+      const groupSum = (d.by_group ?? []).reduce((s, g) => s + g.count, 0);
+      if (!d.by_group_truncated && groupSum !== d.tame_total)
+        out.push(`sum(by_group[].count)=${groupSum} !== tame_total=${d.tame_total} (untruncated)`);
+      if (!(isInt(d.by_group_total) && d.by_group_total >= (d.by_group ?? []).length))
+        out.push(`by_group_total=${d.by_group_total} is not >= listed ${(d.by_group ?? []).length}`);
+      if (!d.by_group_truncated && d.by_group_total !== (d.by_group ?? []).length)
+        out.push(`untruncated by_group_total=${d.by_group_total} !== listed ${(d.by_group ?? []).length}`);
+      if (!inRange(d.grazers.pastured, 0, d.grazers.total))
+        out.push(`grazers.pastured=${d.grazers.pastured} outside [0, total=${d.grazers.total}]`);
+      if (!d.grazers.unpastured_truncated && d.grazers.pastured + d.grazers.unpastured.length !== d.grazers.total)
+        out.push(
+          `grazers.pastured=${d.grazers.pastured} + unpastured.length=${d.grazers.unpastured.length} !== total=${d.grazers.total}`
+        );
+      const e = d.egg_layers;
+      if (!inRange(e.pastured_without_nestbox + e.unpastured, 0, e.total))
+        out.push(`egg_layers pastured_without_nestbox+unpastured exceeds total=${e.total}`);
+      if (!inRange(d.unassigned_count, 0, d.tame_total))
+        out.push(`unassigned_count=${d.unassigned_count} outside [0, tame_total=${d.tame_total}]`);
+      (d.cages ?? []).forEach((c) => {
+        if (!(isInt(c.occupants_total) && c.occupants_total >= c.occupants.length))
+          out.push(`cages[${c.building_id}].occupants_total=${c.occupants_total} is not >= listed ${c.occupants.length}`);
+        if (!c.occupants_truncated && c.occupants_total !== c.occupants.length)
+          out.push(
+            `cages[${c.building_id}] untruncated occupants_total=${c.occupants_total} !== listed ${c.occupants.length}`
+          );
+      });
+      const rows = [...d.grazers.unpastured, ...d.marked_for_slaughter, ...d.trained, ...d.cages.flatMap((c) => c.occupants)];
+      rows.forEach((r, i) => {
+        if (!isInt(r.unit_id)) out.push(`animal row [${i}] unit_id=${r.unit_id} is not an integer`);
       });
       return out;
     },

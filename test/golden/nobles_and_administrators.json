@@ -1,0 +1,144 @@
+{
+  "bookkeeper_precision_level": 4,
+  "mayor_election_pending": false,
+  "monarch": {
+    "arrived": false,
+    "hasty": false
+  },
+  "positions": [
+    {
+      "code": "BOOKKEEPER",
+      "holders": [
+        {
+          "histfig_id": 261,
+          "name": "Ingish Lorbambecor \"Standardtempted\", bookkeeper",
+          "unit_id": 421
+        }
+      ],
+      "name": "bookkeeper",
+      "vacant": false
+    },
+    {
+      "code": "BROKER",
+      "holders": [
+        {
+          "histfig_id": 306,
+          "name": "Unib Egastkeskal \"Clenchedshoots\", broker",
+          "unit_id": 514
+        }
+      ],
+      "name": "broker",
+      "vacant": false
+    },
+    {
+      "code": "CAPTAIN_OF_THE_GUARD",
+      "holders": [
+        {
+          "histfig_id": 214,
+          "name": "�nul Kolmegid \"Wheeledslides\", captain of the guard",
+          "unit_id": 335
+        }
+      ],
+      "name": "captain of the guard",
+      "vacant": false
+    },
+    {
+      "code": "CHAMPION",
+      "holders": [],
+      "name": "champion",
+      "vacant": true
+    },
+    {
+      "code": "CHIEF_MEDICAL_DWARF",
+      "holders": [
+        {
+          "histfig_id": 218,
+          "name": "Rig�th Kosothlisid \"Palaceclash\", chief medical dwarf",
+          "unit_id": 340
+        }
+      ],
+      "name": "chief medical dwarf",
+      "vacant": false
+    },
+    {
+      "code": "DUNGEON_MASTER",
+      "holders": [],
+      "name": "dungeon master",
+      "vacant": true
+    },
+    {
+      "code": "EXPEDITION_LEADER",
+      "holders": [],
+      "name": "expedition leader",
+      "superseded_by": "MAYOR",
+      "vacant": true
+    },
+    {
+      "code": "HAMMERER",
+      "holders": [],
+      "name": "hammerer",
+      "vacant": true
+    },
+    {
+      "code": "MANAGER",
+      "holders": [
+        {
+          "histfig_id": 177,
+          "name": "Melbil Monangerib \"Drillgorge\", manager",
+          "unit_id": 260
+        }
+      ],
+      "name": "manager",
+      "vacant": false
+    },
+    {
+      "code": "MAYOR",
+      "holders": [
+        {
+          "histfig_id": 287,
+          "name": "Zefon Zanosoddom \"Hopefulcloister\", mayor",
+          "unit_id": 488
+        }
+      ],
+      "name": "mayor",
+      "vacant": false
+    },
+    {
+      "code": "MESSENGER",
+      "holders": [],
+      "name": "messenger",
+      "vacant": true
+    },
+    {
+      "code": "MILITIA_CAPTAIN",
+      "holders": [
+        {
+          "histfig_id": 296,
+          "name": "Kad�l Sterusathel \"Driverings\", militia captain",
+          "unit_id": 498
+        }
+      ],
+      "name": "militia captain",
+      "vacant": false
+    },
+    {
+      "code": "MILITIA_COMMANDER",
+      "holders": [
+        {
+          "histfig_id": 173,
+          "name": "Tun Lolumavuz \"Woodenmines\", militia commander",
+          "unit_id": 111
+        }
+      ],
+      "name": "militia commander",
+      "vacant": false
+    },
+    {
+      "code": "SHERIFF",
+      "holders": [],
+      "name": "sheriff",
+      "superseded_by": "CAPTAIN_OF_THE_GUARD",
+      "vacant": true
+    }
+  ]
+}

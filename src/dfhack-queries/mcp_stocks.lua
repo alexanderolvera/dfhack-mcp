@@ -40,6 +40,33 @@ for _, item in ipairs(df.global.world.items.other.IN_PLAY) do
   end
 end
 
+local WORN_WEAR_THRESHOLD = 2
+local WORN_CAP = 50
+local WORN_SLOT = { SHOES = true, ARMOR = true, PANTS = true, GLOVES = true, HELM = true }
+local worn, no_shoes_count = {}, 0
+for _, u in ipairs(dfhack.units.getCitizens(true)) do
+  local has_shoes, max_wear = false, 0
+  for _, inv in ipairs(u.inventory) do
+    if inv.mode == 2 and WORN_SLOT[T[inv.item:getType()]] then
+      local w = inv.item.wear or 0
+      if w > max_wear then max_wear = w end
+      if T[inv.item:getType()] == 'SHOES' then has_shoes = true end
+    end
+  end
+  if not has_shoes then no_shoes_count = no_shoes_count + 1 end
+  if max_wear >= WORN_WEAR_THRESHOLD then
+    worn[#worn + 1] = { unit_id = u.id, name = dfhack.units.getReadableName(u) }
+  end
+end
+table.sort(worn, function(a, b) return a.unit_id < b.unit_id end)
+local worn_truncated = false
+if #worn > WORN_CAP then
+  local capped = {}
+  for i = 1, WORN_CAP do capped[i] = worn[i] end
+  worn = capped
+  worn_truncated = true
+end
+
 local pop = #dfhack.units.getCitizens(true)
 local function days(total, per) return pop > 0 and math.floor(total * SEASON_DAYS / (pop * per)) or -1 end
 local food_days = days(c.food, FOOD_PER_SEASON)
@@ -60,4 +87,9 @@ emit({
   notable_low = low,
   notable_high = high,
   counts = c,
+  clothing = {
+    worn_citizens = worn,
+    worn_citizens_truncated = worn_truncated,
+    no_shoes_count = no_shoes_count,
+  },
 })
