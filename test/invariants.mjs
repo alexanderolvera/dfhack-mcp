@@ -371,10 +371,10 @@ export const INVARIANTS = [
     // OUTPUT WELL-FORMEDNESS only. The fog-of-war guarantee (every listed cavern is
     // one the fort actually breached) is enforced in Lua against DF's Discovered flag
     // and can't be independently re-derived cheaply here — so this spec asserts SHAPE,
-    // not provenance: known enums, a coherent temperature triple, and a bounded caverns
-    // list of in-range layer numbers. A leaked-but-shape-valid layer would pass; that's
-    // the Lua guard's job, not this one's.
-    desc: 'season/weather/temperature/biome are in their known sets with a coherent temperature triple, and caverns is a bounded, well-formed list of layer numbers in 1..3 (output shape, not fog-of-war provenance)',
+    // not provenance: known enums, a coherent temperature/water_frozen pair, and a
+    // bounded caverns list of in-range layer numbers. A leaked-but-shape-valid layer
+    // would pass; that's the Lua guard's job, not this one's.
+    desc: 'season/weather/temperature/biome are in their known sets with a coherent temperature/water_frozen pair, and caverns is a bounded, well-formed list of layer numbers in 1..3 (output shape, not fog-of-war provenance)',
     check(p) {
       const d = p.environment;
       const out = [];
@@ -382,22 +382,20 @@ export const INVARIANTS = [
       const SEASONS = new Set(['spring', 'summer', 'autumn', 'winter']);
       if (!SEASONS.has(d.season_name))
         out.push(`season_name="${d.season_name}" is not a known season`);
-      // Surface: weather / band from fixed enums; the temperature triple is coherent.
+      // Surface: weather from a fixed enum; the temperature pair is coherent.
       const s = d.surface ?? {};
       if (!new Set(['none', 'rain', 'snow']).has(s.weather))
         out.push(`surface.weather="${s.weather}" unknown`);
-      if (!new Set(['freezing', 'above_freezing', 'unknown']).has(s.temperature_band))
-        out.push(`surface.temperature_band="${s.temperature_band}" unknown`);
       // Unknown temperature (no surface sample) must be honest all the way through:
-      // temperature null, water_frozen null, band 'unknown' — never a fabricated false.
+      // temperature null, water_frozen null — never a fabricated false. (temperature_band
+      // was a redundant 3rd encoding of this same pair — removed in 1.1.0 — so there's
+      // nothing to check here beyond the surviving temperature/water_frozen pair.)
       const tempKnown = typeof s.temperature === 'number';
       if (!(tempKnown || s.temperature === null))
         out.push(`surface.temperature=${s.temperature} is neither a number nor null`);
       if (!tempKnown) {
         if (s.water_frozen !== null)
           out.push(`temperature unknown but water_frozen=${s.water_frozen} is not null`);
-        if (s.temperature_band !== 'unknown')
-          out.push(`temperature unknown but band="${s.temperature_band}" is not 'unknown'`);
       } else {
         if (typeof s.water_frozen !== 'boolean')
           out.push(`surface.water_frozen=${s.water_frozen} not boolean with a known temperature`);
@@ -405,11 +403,6 @@ export const INVARIANTS = [
           out.push(
             `water_frozen=${s.water_frozen} disagrees with temperature ${s.temperature} vs freeze point 10000`
           );
-        // band and water_frozen are the same fact stated two ways — they must not conflict.
-        if (s.temperature_band === 'freezing' && s.water_frozen !== true)
-          out.push('temperature_band=freezing but water_frozen is not true');
-        if (s.temperature_band === 'above_freezing' && s.water_frozen !== false)
-          out.push('temperature_band=above_freezing but water_frozen is not false');
       }
       // Biome alignment is three booleans (the embark-known flags).
       const b = d.biome ?? {};

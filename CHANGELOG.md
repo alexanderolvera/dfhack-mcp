@@ -8,7 +8,7 @@ loosely while the tool surface is still evolving: **minor** releases (`1.x.0`)
 may change or remove tool output, and **patch** releases (`1.0.x`) are
 backwards-compatible fixes only.
 
-## [Unreleased]
+## [1.2.0] - 2026-07-21
 
 ### Added
 
@@ -57,6 +57,15 @@ backwards-compatible fixes only.
   once the item is gone — so it would have misreported safely-buried citizens as
   ghost-risk. `ghosts.unquiet_dead_count` (above) reports the same underlying
   concern from a field DF itself computes, instead.
+
+### Fixed
+
+- **`environment_wellformed` invariant checked a removed field** — `environment`'s
+  `temperature_band` was cut in 1.1.0 (a redundant 3rd encoding of `water_frozen`),
+  but `test/invariants.mjs` still asserted it was one of `freezing`/`above_freezing`/
+  `unknown`. Since the field no longer exists, the check always failed on `undefined`
+  — a stale test, not a live-data bug. Rewritten to check the surviving
+  `temperature`/`water_frozen` pair only.
 
 ## [1.1.0] - 2026-07-21
 
@@ -299,7 +308,8 @@ server stays strictly read-only). First release published to npm — install wit
   by name with argv (`src/dfhack-queries/`), so a DF/DFHack version bump is a
   localized fix.
 
-[Unreleased]: https://github.com/alexanderolvera/dfhack-mcp/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/alexanderolvera/dfhack-mcp/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/alexanderolvera/dfhack-mcp/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/alexanderolvera/dfhack-mcp/compare/v1.0.1...v1.1.0
 [1.0.0]: https://github.com/alexanderolvera/dfhack-mcp/compare/v0.1.0...v1.0.0
 [0.1.0]: https://github.com/alexanderolvera/dfhack-mcp/releases/tag/v0.1.0
