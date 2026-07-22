@@ -20,6 +20,8 @@ export interface SpeciesGroup {
 export interface CageRow {
   building_id: number;
   occupants: AnimalRow[];
+  occupants_total: number;
+  occupants_truncated: boolean;
 }
 
 export interface LivestockAndPastures {
@@ -75,8 +77,11 @@ export const livestockAndPasturesDef: ToolDef = {
     'marked_for_slaughter and trained (training_level Trained..MasterfullyTrained — ' +
     'DF\'s single shared training-quality scale, NOT which discipline the animal was ' +
     'trained for; it does not persist war-vs-hunting per animal) list individual ' +
-    'animals, capped. cages[] lists occupied cages with their occupants ' +
-    '(dfhack.buildings.getCageOccupants), also capped. unassigned_count is animals ' +
+    'animals, capped. cages[]/cages_truncated lists occupied cages with their ' +
+    'occupants (dfhack.buildings.getCageOccupants); each cage\'s own occupants[] ' +
+    'is independently capped too (occupants_total/occupants_truncated), so a ' +
+    'single densely-packed cage trap can\'t inflate the response either. ' +
+    'unassigned_count is animals ' +
     'with no pasture, cage, or chain — DFHack\'s zone tool calls this "unassigned" ' +
     '(roaming loose); reported as a count only since it is commonly large and often ' +
     'intentional (e.g. free-roaming cats). Every unit fact here is gated through the ' +

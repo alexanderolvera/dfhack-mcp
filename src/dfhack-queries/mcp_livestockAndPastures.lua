@@ -12,6 +12,7 @@ local SLAUGHTER_CAP = 50
 local TRAINED_CAP = 50
 local UNPASTURED_GRAZER_CAP = 50
 local CAGES_CAP = 50
+local CAGE_OCCUPANTS_CAP = 20
 
 local function safe(fn, default)
   local ok, v = pcall(fn)
@@ -175,7 +176,16 @@ for _, c in ipairs(df.global.world.buildings.other.CAGE) do
     end
   end
   if #rows > 0 then
-    cages[#cages + 1] = { building_id = c.id, occupants = rows }
+    table.sort(rows, function(a, b) return a.unit_id < b.unit_id end)
+    local occupants_total = #rows
+    local occupants_truncated
+    rows, occupants_truncated = cap(rows, CAGE_OCCUPANTS_CAP)
+    cages[#cages + 1] = {
+      building_id = c.id,
+      occupants = rows,
+      occupants_total = occupants_total,
+      occupants_truncated = occupants_truncated,
+    }
   end
 end
 table.sort(cages, function(a, b) return a.building_id < b.building_id end)

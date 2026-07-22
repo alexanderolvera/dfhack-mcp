@@ -118,6 +118,11 @@ backwards-compatible fixes only.
   "50 active ghosts" regardless of the true total, silently hiding the overflow
   `active_truncated` was meant to flag. The alert now uses the pre-cap total,
   with a `+` suffix when truncated.
+- **`livestock_and_pastures.cages[].occupants[]` was itself unbounded** — the
+  50-cage cap only bounded the number of cage rows; a single densely-packed
+  cage trap could still serialize an unlimited occupant list. Each cage's own
+  `occupants[]` now caps at 20 with its own `occupants_total`/
+  `occupants_truncated` pair.
 
 ## [1.1.0] - 2026-07-21
 

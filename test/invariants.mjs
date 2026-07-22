@@ -537,7 +537,7 @@ export const INVARIANTS = [
   {
     name: 'livestock_counts_self_consistent',
     tools: ['livestock_and_pastures'],
-    desc: 'tame_total partitions into pets+livestock and sums by_group, grazer/egg_layer sub-counts stay within their totals, and every listed animal carries an integer unit_id',
+    desc: 'tame_total partitions into pets+livestock and sums by_group, grazer/egg_layer sub-counts stay within their totals, each cage honors its occupants_total/occupants_truncated pair, and every listed animal carries an integer unit_id',
     check(p) {
       const d = p.livestock_and_pastures;
       const out = [];
@@ -557,6 +557,14 @@ export const INVARIANTS = [
         out.push(`egg_layers pastured_without_nestbox+unpastured exceeds total=${e.total}`);
       if (!inRange(d.unassigned_count, 0, d.tame_total))
         out.push(`unassigned_count=${d.unassigned_count} outside [0, tame_total=${d.tame_total}]`);
+      (d.cages ?? []).forEach((c) => {
+        if (!(isInt(c.occupants_total) && c.occupants_total >= c.occupants.length))
+          out.push(`cages[${c.building_id}].occupants_total=${c.occupants_total} is not >= listed ${c.occupants.length}`);
+        if (!c.occupants_truncated && c.occupants_total !== c.occupants.length)
+          out.push(
+            `cages[${c.building_id}] untruncated occupants_total=${c.occupants_total} !== listed ${c.occupants.length}`
+          );
+      });
       const rows = [...d.grazers.unpastured, ...d.marked_for_slaughter, ...d.trained, ...d.cages.flatMap((c) => c.occupants)];
       rows.forEach((r, i) => {
         if (!isInt(r.unit_id)) out.push(`animal row [${i}] unit_id=${r.unit_id} is not an integer`);
