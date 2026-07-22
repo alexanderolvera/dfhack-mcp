@@ -123,6 +123,14 @@ backwards-compatible fixes only.
   cage trap could still serialize an unlimited occupant list. Each cage's own
   `occupants[]` now caps at 20 with its own `occupants_total`/
   `occupants_truncated` pair.
+- **`livestock_and_pastures`'s tool description overstated its own civ-ownership
+  gate** — it read as if every unit fact were restricted to this fort's civ, but
+  `cages[].occupants[]` deliberately isn't (a cage's contents are a structural
+  fact independent of ownership). Reworded: fog-of-war applies to every unit
+  fact; civ-ownership applies only to the tame-animal enumeration.
+- **`docs/VERIFY.md` documented a stale artifact-smoke tool count** (33) after
+  the actual assertion in `scripts/smoke-artifact.mjs` moved to 36 across this
+  release's four new/extended tools. Updated to match.
 
 ## [1.1.0] - 2026-07-21
 

@@ -85,8 +85,13 @@ export const livestockAndPasturesDef: ToolDef = {
     'with no pasture, cage, or chain — DFHack\'s zone tool calls this "unassigned" ' +
     '(roaming loose); reported as a count only since it is commonly large and often ' +
     'intentional (e.g. free-roaming cats). Every unit fact here is gated through the ' +
-    "fog-of-war visibility check and this fort's own civ — a caravan's pack animal or " +
-    'an undiscovered cavern\'s wildlife never leaks in. ' +
+    'fog-of-war visibility check — an undiscovered cavern\'s wildlife never leaks in. ' +
+    'The tame-animal enumeration (tame_total/pets/livestock/by_group/grazers/' +
+    'egg_layers/marked_for_slaughter/trained/unassigned_count) is ADDITIONALLY ' +
+    'restricted to this fort\'s own civ, so a caravan\'s or diplomat\'s pack animal ' +
+    'is excluded; cages[].occupants[] intentionally skips that restriction — a ' +
+    'cage\'s contents (which may include a captured wild or hostile creature) are ' +
+    'a structural fact independent of ownership, still fog-of-war gated. ' +
     'Returns {"error":"no fort loaded"} if no fort is active.',
   run: livestockAndPastures,
 };
