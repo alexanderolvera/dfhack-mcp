@@ -61,7 +61,7 @@ None.
 - `fuel` counts only coal/charcoal bars (`BAR` items of material COAL).
 - Food/drink low-lines are population-normalized (days-of-supply); the material floors (fuel/wood/cloth/stone) are deliberate absolute working-buffer thresholds, not per-capita.
 - With zero population, `food_days` / `drink_days` are `-1`.
-- `clothing` only checks WORN items (`unit_inventory_item.mode == 2`) of the 5 clothing/armor slot types (SHOES/ARMOR/PANTS/GLOVES/HELM) — cloaks, shirts, and unworn spares in inventory aren't part of either fact.
+- `clothing` only checks WORN items (`unit_inventory_item.mode == 2`) of the 5 clothing/armor slot types (SHOES/ARMOR/PANTS/GLOVES/HELM — cloaks and shirts are DF's `ARMOR` item type too, so they ARE covered) — unworn spares sitting in inventory, and slot types outside this list (e.g. a backpack or quiver), aren't part of either fact.
 - Returns `{"error":"no fort loaded"}` if no fort is active.
 
 ## Implementation notes

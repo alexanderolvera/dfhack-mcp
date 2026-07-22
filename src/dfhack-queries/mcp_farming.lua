@@ -7,6 +7,7 @@ if df.global.gamemode ~= df.game_mode.DWARF then
 end
 
 local PLOTS_CAP = 200
+local SEED_TOTALS_CAP = 100
 local SEASONS = { 'SPRING', 'SUMMER', 'AUTUMN', 'WINTER' }
 local plants = df.global.world.raws.plants.all
 
@@ -36,6 +37,14 @@ for tok, count in pairs(seed_counts) do
   seed_totals[#seed_totals + 1] = { plant = tok, count = count }
 end
 table.sort(seed_totals, function(a, b) return a.plant < b.plant end)
+local seed_totals_count = #seed_totals
+local seed_totals_truncated = false
+if #seed_totals > SEED_TOTALS_CAP then
+  local capped = {}
+  for i = 1, SEED_TOTALS_CAP do capped[i] = seed_totals[i] end
+  seed_totals = capped
+  seed_totals_truncated = true
+end
 
 local plots = {}
 for _, f in ipairs(df.global.world.buildings.other.FARM_PLOT) do
@@ -43,7 +52,7 @@ for _, f in ipairs(df.global.world.buildings.other.FARM_PLOT) do
   local height = f.y2 - f.y1 + 1
   local lx, ly = f.x1 % 16, f.y1 % 16
   local blk = dfhack.maps.getTileBlock(f.x1, f.y1, f.z)
-  local outside = (blk and blk.designation[lx][ly].outside) or false
+  local open_to_sky = (blk and blk.designation[lx][ly].outside) or false
 
   local seasons = {}
   local any_crop, any_eligible = false, false
@@ -67,7 +76,7 @@ for _, f in ipairs(df.global.world.buildings.other.FARM_PLOT) do
   plots[#plots + 1] = {
     id = f.id,
     size = width * height,
-    surface = outside,
+    open_to_sky = open_to_sky,
     seasons = seasons,
     no_crop_assigned = not any_crop,
     no_eligible_crop = not any_eligible,
@@ -89,4 +98,6 @@ emit({
   plots_total = plots_total,
   plots_truncated = plots_truncated,
   seed_totals = seed_totals,
+  seed_totals_count = seed_totals_count,
+  seed_totals_truncated = seed_totals_truncated,
 })

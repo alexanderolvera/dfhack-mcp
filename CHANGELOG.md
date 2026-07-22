@@ -90,7 +90,10 @@ backwards-compatible fixes only.
 - **Unbounded payload risk on two new list fields** — `farming.plots[]` (no cap:
   an old/modded fort's plot count could grow without bound) and
   `livestock_and_pastures.cages[]` (same, for occupied cages) now cap at 200 and 50
-  respectively, each with the established `total`/`truncated` pair. `NEST_BOX`
+  respectively. `plots[]` gets the established `plots_total`/`plots_truncated`
+  pair; `cages[]` gets `cages_truncated` only (a `cages_total` scalar would just
+  restate `cages.length` when untruncated, so it's omitted — unlike `plots`,
+  where the pre-cap total is otherwise unrecoverable from the response). `NEST_BOX`
   buildings still under construction no longer count toward nestbox coverage.
 - **`nobles_and_administrators` position `holders[]` could arrive as `{}`** — a
   vacant position's empty nested Lua table wasn't coerced to `[]` like every other
@@ -155,6 +158,43 @@ backwards-compatible fixes only.
   destroyed); the `wear >= 2` threshold this field always used includes BOTH
   the `X` and `XX` stages, not tattered alone. Renamed to `worn_citizens` /
   `worn_citizens_truncated`; the threshold itself is unchanged.
+- **`livestock_and_pastures` counted dead animals as living tame livestock** —
+  a severe overcounting bug, not an edge case: on the Dreamfort fixture, 187 of
+  the 264 `isTame` matches in `world.units.active` were already-dead corpses
+  (mostly slaughtered geese) whose unit records simply linger. Added the same
+  `isActive(u)`/`not isDead(u)` guard `threats` already uses. The fixture's
+  real numbers: `tame_total` 264 → 77, `unassigned_count` 206 → 19, all 17
+  grazers now correctly show pastured (was 19 falsely "unpastured" dead
+  animals). Every downstream count and list was affected.
+- **`farming.plots[].surface` conflated "open to the sky" with "aboveground"**
+  — `designation.outside` means light/weather exposure, not a subterranean
+  designation; a roofed surface plot and a genuinely underground plot both
+  read `outside: false` and were indistinguishable. Renamed the field to
+  `open_to_sky` (Lua, TS, docs) rather than keep a name implying a fact it
+  doesn't check — no depth/subterranean claim is made at all now.
+- **`farming.seed_totals[]` was the one list left uncapped** — a heavily
+  modded plant raw set could grow this without bound, same class of gap as
+  `plots[]` (already capped) and `by_group[]` on the other new tool. Now
+  capped at 100 distinct plants, with `seed_totals_count`/
+  `seed_totals_truncated`.
+- **`stocks.md`'s clothing caveat wrongly excluded cloaks and shirts** — both
+  use DF's `ARMOR` item type, which the query's `WORN_SLOT` already includes;
+  only unworn spares (and slot types genuinely outside the checked set, e.g. a
+  backpack) are actually excluded. Corrected.
+- **`rooms_and_zones.unquiet_dead_count`'s description overstated its own
+  fog-of-war honesty** — it read as "no apparition currently active locally,"
+  but a ghost hidden behind fog of war is excluded from `active[]` (never
+  leaked) while still counted in `unquiet_dead_count`, since the world-level
+  ghost fact is fair game even when its exact location isn't. Reworded to
+  "not represented in the visible `active[]` list," which is what the code
+  actually guarantees.
+- **CHANGELOG wording overstated `cages[]`'s cap metadata** — an earlier entry
+  said both `plots[]` and `cages[]` got "the established total/truncated
+  pair," but `cages[]` only ever exposed `cages_truncated` (no `cages_total`
+  scalar — omitted because it would just restate `cages.length` when
+  untruncated, unlike `plots_total`, which is otherwise unrecoverable).
+  Corrected the earlier entry rather than add a field the design didn't call
+  for.
 
 ## [1.1.0] - 2026-07-21
 

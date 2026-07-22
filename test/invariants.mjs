@@ -501,7 +501,7 @@ export const INVARIANTS = [
   {
     name: 'farming_plots_and_seeds_wellformed',
     tools: ['farming'],
-    desc: 'plot size/seasons are well-formed, no_crop_assigned/no_eligible_crop agree with the season crops, seed_totals holds positive counts, and plots_total/plots_truncated honor the 200 cap',
+    desc: 'plot size/seasons are well-formed, no_crop_assigned/no_eligible_crop agree with the season crops, seed_totals holds positive counts and honors its count/truncated pair, and plots_total/plots_truncated honor the 200 cap',
     check(p) {
       const d = p.farming;
       const out = [];
@@ -531,6 +531,10 @@ export const INVARIANTS = [
         out.push(`untruncated plots_total ${d.plots_total} !== listed ${(d.plots ?? []).length}`);
       if (d.plots_truncated && (d.plots ?? []).length !== 200)
         out.push(`plots_truncated=true but listed ${(d.plots ?? []).length} !== cap 200`);
+      if (!(isInt(d.seed_totals_count) && d.seed_totals_count >= (d.seed_totals ?? []).length))
+        out.push(`seed_totals_count=${d.seed_totals_count} is not >= listed ${(d.seed_totals ?? []).length}`);
+      if (!d.seed_totals_truncated && d.seed_totals_count !== (d.seed_totals ?? []).length)
+        out.push(`untruncated seed_totals_count ${d.seed_totals_count} !== listed ${(d.seed_totals ?? []).length}`);
       return out;
     },
   },

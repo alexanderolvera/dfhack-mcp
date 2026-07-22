@@ -97,7 +97,9 @@ export const livestockAndPasturesDef: ToolDef = {
     'restricted to this fort\'s own civ, so a caravan\'s or diplomat\'s pack animal ' +
     'is excluded; cages[].occupants[] intentionally skips that restriction — a ' +
     'cage\'s contents (which may include a captured wild or hostile creature) are ' +
-    'a structural fact independent of ownership, still fog-of-war gated. ' +
+    'a structural fact independent of ownership, still fog-of-war gated. The ' +
+    'tame-animal enumeration also requires isActive/not isDead (a dead animal\'s ' +
+    'unit record never counts). ' +
     'Returns {"error":"no fort loaded"} if no fort is active.',
   run: livestockAndPastures,
 };

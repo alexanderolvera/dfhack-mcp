@@ -87,7 +87,8 @@ local unassigned_count = 0
 
 for _, u in ipairs(df.global.world.units.active) do
   local ok, tame = pcall(dfhack.units.isTame, u)
-  if ok and tame and dfhack.units.isOwnCiv(u) and not visibility.is_hidden(u) then
+  if ok and tame and dfhack.units.isActive(u) and not dfhack.units.isDead(u)
+    and dfhack.units.isOwnCiv(u) and not visibility.is_hidden(u) then
     tame_total = tame_total + 1
     local race = df.global.world.raws.creatures.all[u.race]
     local token = race and tostring(race.creature_id) or 'UNKNOWN'

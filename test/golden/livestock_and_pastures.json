@@ -8,13 +8,13 @@
     },
     {
       "adult": true,
-      "count": 5,
+      "count": 4,
       "sex": "female",
       "species": "ALPACA"
     },
     {
       "adult": true,
-      "count": 4,
+      "count": 2,
       "sex": "male",
       "species": "ALPACA"
     },
@@ -32,7 +32,7 @@
     },
     {
       "adult": false,
-      "count": 83,
+      "count": 10,
       "sex": "female",
       "species": "BIRD_GOOSE"
     },
@@ -44,13 +44,13 @@
     },
     {
       "adult": false,
-      "count": 68,
+      "count": 10,
       "sex": "male",
       "species": "BIRD_GOOSE"
     },
     {
       "adult": true,
-      "count": 19,
+      "count": 2,
       "sex": "male",
       "species": "BIRD_GOOSE"
     },
@@ -68,37 +68,31 @@
     },
     {
       "adult": false,
+      "count": 2,
+      "sex": "female",
+      "species": "CAT"
+    },
+    {
+      "adult": true,
       "count": 4,
       "sex": "female",
       "species": "CAT"
     },
     {
-      "adult": true,
-      "count": 6,
-      "sex": "female",
-      "species": "CAT"
-    },
-    {
       "adult": false,
-      "count": 7,
-      "sex": "male",
-      "species": "CAT"
-    },
-    {
-      "adult": true,
-      "count": 5,
-      "sex": "male",
-      "species": "CAT"
-    },
-    {
-      "adult": true,
       "count": 1,
       "sex": "male",
-      "species": "COW"
+      "species": "CAT"
+    },
+    {
+      "adult": true,
+      "count": 2,
+      "sex": "male",
+      "species": "CAT"
     },
     {
       "adult": false,
-      "count": 8,
+      "count": 4,
       "sex": "female",
       "species": "DOG"
     },
@@ -110,27 +104,15 @@
     },
     {
       "adult": false,
-      "count": 3,
+      "count": 2,
       "sex": "male",
       "species": "DOG"
     },
     {
       "adult": true,
-      "count": 4,
+      "count": 2,
       "sex": "male",
       "species": "DOG"
-    },
-    {
-      "adult": false,
-      "count": 1,
-      "sex": "male",
-      "species": "DONKEY"
-    },
-    {
-      "adult": true,
-      "count": 1,
-      "sex": "male",
-      "species": "DONKEY"
     },
     {
       "adult": false,
@@ -149,30 +131,6 @@
       "count": 1,
       "sex": "male",
       "species": "GOAT"
-    },
-    {
-      "adult": false,
-      "count": 1,
-      "sex": "female",
-      "species": "HORSE"
-    },
-    {
-      "adult": true,
-      "count": 1,
-      "sex": "female",
-      "species": "HORSE"
-    },
-    {
-      "adult": false,
-      "count": 2,
-      "sex": "male",
-      "species": "HORSE"
-    },
-    {
-      "adult": true,
-      "count": 1,
-      "sex": "male",
-      "species": "HORSE"
     },
     {
       "adult": false,
@@ -183,12 +141,6 @@
     {
       "adult": true,
       "count": 1,
-      "sex": "male",
-      "species": "MULE"
-    },
-    {
-      "adult": true,
-      "count": 1,
       "sex": "female",
       "species": "RABBIT"
     },
@@ -201,18 +153,6 @@
     {
       "adult": false,
       "count": 1,
-      "sex": "male",
-      "species": "REINDEER"
-    },
-    {
-      "adult": true,
-      "count": 1,
-      "sex": "male",
-      "species": "REINDEER"
-    },
-    {
-      "adult": false,
-      "count": 1,
       "sex": "female",
       "species": "SHEEP"
     },
@@ -227,33 +167,9 @@
       "count": 1,
       "sex": "male",
       "species": "SHEEP"
-    },
-    {
-      "adult": false,
-      "count": 1,
-      "sex": "female",
-      "species": "WATER_BUFFALO"
-    },
-    {
-      "adult": true,
-      "count": 1,
-      "sex": "male",
-      "species": "WATER_BUFFALO"
-    },
-    {
-      "adult": true,
-      "count": 1,
-      "sex": "female",
-      "species": "YAK"
-    },
-    {
-      "adult": false,
-      "count": 2,
-      "sex": "male",
-      "species": "YAK"
     }
   ],
-  "by_group_total": 42,
+  "by_group_total": 28,
   "by_group_truncated": false,
   "cages": [],
   "cages_truncated": false,
@@ -265,501 +181,16 @@
   },
   "grazers": {
     "pastured": 17,
-    "total": 36,
-    "unpastured": [
-      {
-        "adult": true,
-        "name": "Horse (tame)",
-        "sex": "female",
-        "species": "HORSE",
-        "unit_id": 128
-      },
-      {
-        "adult": true,
-        "name": "Horse (tame)",
-        "sex": "male",
-        "species": "HORSE",
-        "unit_id": 129
-      },
-      {
-        "adult": false,
-        "name": "Horse Foal (tame)",
-        "sex": "male",
-        "species": "HORSE",
-        "unit_id": 289
-      },
-      {
-        "adult": true,
-        "name": "Bull (tame)",
-        "sex": "male",
-        "species": "COW",
-        "unit_id": 339
-      },
-      {
-        "adult": true,
-        "name": "Donkey (tame)",
-        "sex": "male",
-        "species": "DONKEY",
-        "unit_id": 343
-      },
-      {
-        "adult": true,
-        "name": "Mule (tame)",
-        "sex": "male",
-        "species": "MULE",
-        "unit_id": 344
-      },
-      {
-        "adult": true,
-        "name": "Water Buffalo Bull (tame)",
-        "sex": "male",
-        "species": "WATER_BUFFALO",
-        "unit_id": 352
-      },
-      {
-        "adult": false,
-        "name": "Reindeer Calf (tame)",
-        "sex": "male",
-        "species": "REINDEER",
-        "unit_id": 355
-      },
-      {
-        "adult": false,
-        "name": "Yak Calf (tame)",
-        "sex": "male",
-        "species": "YAK",
-        "unit_id": 356
-      },
-      {
-        "adult": false,
-        "name": "Horse Foal (tame)",
-        "sex": "female",
-        "species": "HORSE",
-        "unit_id": 422
-      },
-      {
-        "adult": false,
-        "name": "Horse Foal (tame)",
-        "sex": "male",
-        "species": "HORSE",
-        "unit_id": 423
-      },
-      {
-        "adult": true,
-        "name": "Reindeer Bull (tame)",
-        "sex": "male",
-        "species": "REINDEER",
-        "unit_id": 489
-      },
-      {
-        "adult": true,
-        "name": "Yak Cow (tame)",
-        "sex": "female",
-        "species": "YAK",
-        "unit_id": 505
-      },
-      {
-        "adult": false,
-        "name": "Water Buffalo Calf (tame)",
-        "sex": "female",
-        "species": "WATER_BUFFALO",
-        "unit_id": 509
-      },
-      {
-        "adult": false,
-        "name": "Donkey Foal (tame)",
-        "sex": "male",
-        "species": "DONKEY",
-        "unit_id": 512
-      },
-      {
-        "adult": false,
-        "name": "Yak Calf (tame)",
-        "sex": "male",
-        "species": "YAK",
-        "unit_id": 531
-      },
-      {
-        "adult": true,
-        "name": "Alpaca (tame)",
-        "sex": "male",
-        "species": "ALPACA",
-        "unit_id": 592
-      },
-      {
-        "adult": true,
-        "name": "Alpaca (tame)",
-        "sex": "female",
-        "species": "ALPACA",
-        "unit_id": 593
-      },
-      {
-        "adult": true,
-        "name": "Alpaca (tame)",
-        "sex": "male",
-        "species": "ALPACA",
-        "unit_id": 595
-      }
-    ],
+    "total": 17,
+    "unpastured": [],
     "unpastured_truncated": false
   },
-  "livestock": 252,
-  "marked_for_slaughter": [
-    {
-      "adult": true,
-      "name": "Cat (tame)",
-      "sex": "female",
-      "species": "CAT",
-      "unit_id": 121
-    },
-    {
-      "adult": true,
-      "name": "Gander (tame)",
-      "sex": "male",
-      "species": "BIRD_GOOSE",
-      "unit_id": 127
-    },
-    {
-      "adult": true,
-      "name": "Horse (tame)",
-      "sex": "female",
-      "species": "HORSE",
-      "unit_id": 128
-    },
-    {
-      "adult": true,
-      "name": "Horse (tame)",
-      "sex": "male",
-      "species": "HORSE",
-      "unit_id": 129
-    },
-    {
-      "adult": true,
-      "name": "Gander (tame)",
-      "sex": "male",
-      "species": "BIRD_GOOSE",
-      "unit_id": 232
-    },
-    {
-      "adult": false,
-      "name": "Gosling (tame)",
-      "sex": "female",
-      "species": "BIRD_GOOSE",
-      "unit_id": 233
-    },
-    {
-      "adult": false,
-      "name": "Gosling (tame)",
-      "sex": "female",
-      "species": "BIRD_GOOSE",
-      "unit_id": 234
-    },
-    {
-      "adult": true,
-      "name": "Gander (tame)",
-      "sex": "male",
-      "species": "BIRD_GOOSE",
-      "unit_id": 235
-    },
-    {
-      "adult": true,
-      "name": "Gander (tame)",
-      "sex": "male",
-      "species": "BIRD_GOOSE",
-      "unit_id": 236
-    },
-    {
-      "adult": true,
-      "name": "Gander (tame)",
-      "sex": "male",
-      "species": "BIRD_GOOSE",
-      "unit_id": 237
-    },
-    {
-      "adult": true,
-      "name": "Gander (tame)",
-      "sex": "male",
-      "species": "BIRD_GOOSE",
-      "unit_id": 238
-    },
-    {
-      "adult": true,
-      "name": "Gander (tame)",
-      "sex": "male",
-      "species": "BIRD_GOOSE",
-      "unit_id": 239
-    },
-    {
-      "adult": true,
-      "name": "Gander (tame)",
-      "sex": "male",
-      "species": "BIRD_GOOSE",
-      "unit_id": 240
-    },
-    {
-      "adult": true,
-      "name": "Cat (tame)",
-      "sex": "male",
-      "species": "CAT",
-      "unit_id": 286
-    },
-    {
-      "adult": true,
-      "name": "Cat (tame)",
-      "sex": "male",
-      "species": "CAT",
-      "unit_id": 288
-    },
-    {
-      "adult": false,
-      "name": "Horse Foal (tame)",
-      "sex": "male",
-      "species": "HORSE",
-      "unit_id": 289
-    },
-    {
-      "adult": false,
-      "name": "Gosling (tame)",
-      "sex": "female",
-      "species": "BIRD_GOOSE",
-      "unit_id": 292
-    },
-    {
-      "adult": true,
-      "name": "Gander (tame)",
-      "sex": "male",
-      "species": "BIRD_GOOSE",
-      "unit_id": 293
-    },
-    {
-      "adult": false,
-      "name": "Gosling (tame)",
-      "sex": "female",
-      "species": "BIRD_GOOSE",
-      "unit_id": 294
-    },
-    {
-      "adult": true,
-      "name": "Gander (tame)",
-      "sex": "male",
-      "species": "BIRD_GOOSE",
-      "unit_id": 296
-    },
-    {
-      "adult": true,
-      "name": "Gander (tame)",
-      "sex": "male",
-      "species": "BIRD_GOOSE",
-      "unit_id": 297
-    },
-    {
-      "adult": false,
-      "name": "Gosling (tame)",
-      "sex": "male",
-      "species": "BIRD_GOOSE",
-      "unit_id": 301
-    },
-    {
-      "adult": false,
-      "name": "Gosling (tame)",
-      "sex": "male",
-      "species": "BIRD_GOOSE",
-      "unit_id": 302
-    },
-    {
-      "adult": false,
-      "name": "Kitten (tame)",
-      "sex": "male",
-      "species": "CAT",
-      "unit_id": 310
-    },
-    {
-      "adult": false,
-      "name": "Kitten (tame)",
-      "sex": "male",
-      "species": "CAT",
-      "unit_id": 311
-    },
-    {
-      "adult": false,
-      "name": "Kitten (tame)",
-      "sex": "male",
-      "species": "CAT",
-      "unit_id": 312
-    },
-    {
-      "adult": false,
-      "name": "Gosling (tame)",
-      "sex": "male",
-      "species": "BIRD_GOOSE",
-      "unit_id": 314
-    },
-    {
-      "adult": false,
-      "name": "Gosling (tame)",
-      "sex": "male",
-      "species": "BIRD_GOOSE",
-      "unit_id": 317
-    },
-    {
-      "adult": false,
-      "name": "Gosling (tame)",
-      "sex": "male",
-      "species": "BIRD_GOOSE",
-      "unit_id": 320
-    },
-    {
-      "adult": false,
-      "name": "Gosling (tame)",
-      "sex": "male",
-      "species": "BIRD_GOOSE",
-      "unit_id": 322
-    },
-    {
-      "adult": true,
-      "name": "Dog (tame)",
-      "sex": "male",
-      "species": "DOG",
-      "unit_id": 333
-    },
-    {
-      "adult": true,
-      "name": "Bull (tame)",
-      "sex": "male",
-      "species": "COW",
-      "unit_id": 339
-    },
-    {
-      "adult": true,
-      "name": "Donkey (tame)",
-      "sex": "male",
-      "species": "DONKEY",
-      "unit_id": 343
-    },
-    {
-      "adult": true,
-      "name": "Mule (tame)",
-      "sex": "male",
-      "species": "MULE",
-      "unit_id": 344
-    },
-    {
-      "adult": true,
-      "name": "Water Buffalo Bull (tame)",
-      "sex": "male",
-      "species": "WATER_BUFFALO",
-      "unit_id": 352
-    },
-    {
-      "adult": false,
-      "name": "Reindeer Calf (tame)",
-      "sex": "male",
-      "species": "REINDEER",
-      "unit_id": 355
-    },
-    {
-      "adult": false,
-      "name": "Yak Calf (tame)",
-      "sex": "male",
-      "species": "YAK",
-      "unit_id": 356
-    },
-    {
-      "adult": true,
-      "name": "Cat (tame)",
-      "sex": "female",
-      "species": "CAT",
-      "unit_id": 358
-    },
-    {
-      "adult": true,
-      "name": "Dog (tame)",
-      "sex": "male",
-      "species": "DOG",
-      "unit_id": 411
-    },
-    {
-      "adult": false,
-      "name": "Kitten (tame)",
-      "sex": "female",
-      "species": "CAT",
-      "unit_id": 412
-    },
-    {
-      "adult": true,
-      "name": "Cat (tame)",
-      "sex": "male",
-      "species": "CAT",
-      "unit_id": 413
-    },
-    {
-      "adult": true,
-      "name": "Gander (tame)",
-      "sex": "male",
-      "species": "BIRD_GOOSE",
-      "unit_id": 414
-    },
-    {
-      "adult": false,
-      "name": "Gosling (tame)",
-      "sex": "female",
-      "species": "BIRD_GOOSE",
-      "unit_id": 415
-    },
-    {
-      "adult": false,
-      "name": "Gosling (tame)",
-      "sex": "female",
-      "species": "BIRD_GOOSE",
-      "unit_id": 416
-    },
-    {
-      "adult": true,
-      "name": "Gander (tame)",
-      "sex": "male",
-      "species": "BIRD_GOOSE",
-      "unit_id": 417
-    },
-    {
-      "adult": false,
-      "name": "Gosling (tame)",
-      "sex": "female",
-      "species": "BIRD_GOOSE",
-      "unit_id": 419
-    },
-    {
-      "adult": true,
-      "name": "Gander (tame)",
-      "sex": "male",
-      "species": "BIRD_GOOSE",
-      "unit_id": 420
-    },
-    {
-      "adult": false,
-      "name": "Horse Foal (tame)",
-      "sex": "female",
-      "species": "HORSE",
-      "unit_id": 422
-    },
-    {
-      "adult": false,
-      "name": "Horse Foal (tame)",
-      "sex": "male",
-      "species": "HORSE",
-      "unit_id": 423
-    },
-    {
-      "adult": false,
-      "name": "Kitten (tame)",
-      "sex": "female",
-      "species": "CAT",
-      "unit_id": 431
-    }
-  ],
-  "marked_for_slaughter_truncated": true,
+  "livestock": 65,
+  "marked_for_slaughter": [],
+  "marked_for_slaughter_truncated": false,
   "pets": 12,
-  "tame_total": 264,
+  "tame_total": 77,
   "trained": [],
   "trained_truncated": false,
-  "unassigned_count": 206
+  "unassigned_count": 19
 }

@@ -94,9 +94,13 @@ export const roomsAndZonesDef: ToolDef = {
     'worshipped by citizens that lack a dedicated temple), taverns, libraries, ' +
     'guildhalls, and coffins free vs. dead awaiting burial (loose corpses of ' +
     "the fort's own race). ghosts reports active apparitions currently on the " +
-    'map (`active[]`) plus unquiet_dead_count — this civ\'s dead who are ' +
-    'world-flagged as unquiet ghosts but have no apparition currently active ' +
-    'locally. The supply-side companion to unmet_needs(). Reports ' +
+    'map (`active[]`, fog-of-war gated) plus unquiet_dead_count — this civ\'s ' +
+    'dead who are world-flagged as unquiet ghosts (`flags.ghost`) and NOT ' +
+    'represented in the visible `active[]` list. This is deliberately not the ' +
+    'same as "confirmed absent locally": a ghost hidden behind fog of war is ' +
+    'excluded from `active[]` (never leaked) but still counted here, since the ' +
+    'world-level ghost fact is fair game even when its exact location isn\'t. ' +
+    'The supply-side companion to unmet_needs(). Reports ' +
     'what the fort has, not what to build. ' +
     'Wells are capped (wells_truncated flags the overflow); bedroom and coffin ' +
     'detail is aggregated to counts. Returns {"error":"no fort loaded"} if no ' +

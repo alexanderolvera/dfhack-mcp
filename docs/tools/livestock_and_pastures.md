@@ -31,18 +31,18 @@ Animal rows (`grazers.unpastured[]`, `marked_for_slaughter[]`, `trained[]`, `cag
 
 ```json
 {
-  "tame_total": 264,
+  "tame_total": 77,
   "pets": 12,
-  "livestock": 252,
-  "by_group_total": 42,
+  "livestock": 65,
+  "by_group_total": 28,
   "by_group_truncated": false,
-  "grazers": { "total": 36, "pastured": 17, "unpastured": [ { "unit_id": 128, "name": "Horse (tame)", "species": "HORSE", "sex": "female", "adult": true } ], "unpastured_truncated": false },
+  "grazers": { "total": 17, "pastured": 17, "unpastured": [], "unpastured_truncated": false },
   "egg_layers": { "total": 13, "nestbox_count": 14, "pastured_without_nestbox": 1, "unpastured": 0 },
-  "marked_for_slaughter_truncated": true,
+  "marked_for_slaughter_truncated": false,
   "trained_truncated": false,
   "cages": [],
   "cages_truncated": false,
-  "unassigned_count": 206
+  "unassigned_count": 19
 }
 ```
 
@@ -55,7 +55,7 @@ Animal rows (`grazers.unpastured[]`, `marked_for_slaughter[]`, `trained[]`, `cag
 - Fog-of-war and civ-ownership gated: every unit fact (the main tame-animal enumeration, active-ghost-style facts, and each cage's occupants) is filtered through `mcp_unitVisibility`'s `is_hidden(u)` — an animal on an undiscovered tile is never reported — and the main enumeration additionally requires `dfhack.units.isOwnCiv(u)`, so a visiting caravan's or diplomat's pack animal (also "tame", but not this fort's) is excluded from `tame_total` and everything derived from it. Cage occupants intentionally skip the own-civ filter: a cage's physical contents (including a captured wild or hostile creature) are a structural fact independent of who owns them, but still hidden-gated.
 
 ## Implementation notes
-Tame animals are every unit in `df.global.world.units.active` where `dfhack.units.isTame(u)`, `dfhack.units.isOwnCiv(u)`, and NOT `mcp_unitVisibility.is_hidden(u)` all hold. Pasture assignment comes from `Pen`-type civzones (`df.global.world.buildings.other.ACTIVITY_ZONE`, same civzone model `rooms_and_zones` uses) and their `assigned_units[]`. Nestbox containment uses `dfhack.buildings.containsTile(pen, nestbox.x1, nestbox.y1)` (same-z, wrapped in `pcall`) rather than a raw `x1..x2`/`y1..y2` range check. Grazer/egg-layer status is the creature's caste `flags.GRAZER`/`flags.LAYS_EGGS` (caste-specific — e.g. only female birds usually lay); egg-layer status is additionally gated on the already-computed `adult` flag — confirmed live the fixture's raw `LAYS_EGGS` count (96) was almost entirely juvenile geese that can't lay yet (83 juvenile + 12 adult female geese + 1 adult female guineafowl = 96), collapsing to the correct 13 once adult-gated; grazing has no such gate, since a juvenile still eats grass. Slaughter marking is `unit.flags2.slaughter`; unassigned is the absence of a pasture plus `unit.flags1.caged`/`.chained` both false. Cage occupants use the documented `dfhack.buildings.getCageOccupants(cage)` (distinct from `cage.assigned_units`, which is who's *assigned*, not who's *inside*), each still passed through the same `is_hidden` gate. Confirmed live on DFHack 53.15-r2 against the Dreamfort fixture (264 tame animals, 19 unpastured grazers, 13 adult egg layers, 14 nestbox-covered pens of 19 total).
+Tame animals are every unit in `df.global.world.units.active` where `dfhack.units.isTame(u)`, `dfhack.units.isActive(u)`, NOT `dfhack.units.isDead(u)`, `dfhack.units.isOwnCiv(u)`, and NOT `mcp_unitVisibility.is_hidden(u)` all hold — the same activity/liveness guard `threats` uses, so a dead animal's corpse (which can still carry stale `tame`/caste flags while its unit record lingers) never inflates the census. Pasture assignment comes from `Pen`-type civzones (`df.global.world.buildings.other.ACTIVITY_ZONE`, same civzone model `rooms_and_zones` uses) and their `assigned_units[]`. Nestbox containment uses `dfhack.buildings.containsTile(pen, nestbox.x1, nestbox.y1)` (same-z, wrapped in `pcall`) rather than a raw `x1..x2`/`y1..y2` range check. Grazer/egg-layer status is the creature's caste `flags.GRAZER`/`flags.LAYS_EGGS` (caste-specific — e.g. only female birds usually lay); egg-layer status is additionally gated on the already-computed `adult` flag — confirmed live the fixture's raw `LAYS_EGGS` count (96) was almost entirely juvenile geese that can't lay yet (83 juvenile + 12 adult female geese + 1 adult female guineafowl = 96), collapsing to the correct 13 once adult-gated; grazing has no such gate, since a juvenile still eats grass. Slaughter marking is `unit.flags2.slaughter`; unassigned is the absence of a pasture plus `unit.flags1.caged`/`.chained` both false. Cage occupants use the documented `dfhack.buildings.getCageOccupants(cage)` (distinct from `cage.assigned_units`, which is who's *assigned*, not who's *inside*), each still passed through the same `is_hidden` gate. Confirmed live on DFHack 53.15-r2 against the Dreamfort fixture (77 living tame animals — 187 of the raw 264 `isTame` matches were dead corpses the `isActive`/`isDead` guard excludes — 17 grazers all pastured, 13 adult egg layers, 14 nestbox-covered pens of 19 total).
 
 ## Related
 [rooms_and_zones](rooms_and_zones.md) · [mandates_and_justice](mandates_and_justice.md) (restraint capacity) · [stocks](stocks.md) · [threats](threats.md)
