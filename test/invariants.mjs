@@ -446,6 +446,29 @@ export const INVARIANTS = [
     },
   },
   {
+    name: 'nobles_positions_wellformed',
+    tools: ['nobles_and_administrators'],
+    desc: 'vacant agrees with holders[], holders carry an integer unit_id, superseded_by (if any) names a real position code, and bookkeeper_precision_level is 0-4',
+    check(p) {
+      const d = p.nobles_and_administrators;
+      const out = [];
+      const codes = new Set((d.positions ?? []).map((row) => row.code));
+      (d.positions ?? []).forEach((row) => {
+        if (row.vacant !== (row.holders.length === 0))
+          out.push(`positions[${row.code}].vacant=${row.vacant} disagrees with holders=${row.holders.length}`);
+        row.holders.forEach((h, i) => {
+          if (!isInt(h.unit_id))
+            out.push(`positions[${row.code}].holders[${i}].unit_id=${h.unit_id} is not an integer`);
+        });
+        if (row.superseded_by !== undefined && !codes.has(row.superseded_by))
+          out.push(`positions[${row.code}].superseded_by=${row.superseded_by} names no known position`);
+      });
+      if (!inRange(d.bookkeeper_precision_level, 0, 4))
+        out.push(`bookkeeper_precision_level=${d.bookkeeper_precision_level} outside [0, 4]`);
+      return out;
+    },
+  },
+  {
     name: 'tile_region_grid_wellformed',
     tools: ['tile_region'],
     desc: 'the grid matches its declared size, honors the 100x100 cap, its legend is a bijection with the glyphs actually used, fog-of-war tiles are never painted over, and the sparse liquids list agrees with the grid',

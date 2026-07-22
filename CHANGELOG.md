@@ -8,6 +8,20 @@ loosely while the tool surface is still evolving: **minor** releases (`1.x.0`)
 may change or remove tool output, and **patch** releases (`1.0.x`) are
 backwards-compatible fixes only.
 
+## [Unreleased]
+
+### Added
+
+- **`nobles_and_administrators` sensor** ([#75](https://github.com/alexanderolvera/dfhack-mcp/issues/75))
+  — every appointed fort position (manager, bookkeeper, broker, chief medical dwarf,
+  sheriff, captain of the guard, expedition leader/mayor, militia commander/captain,
+  hammerer, dungeon master, messenger, champion, and any baron+ the site has grown
+  into) with its holder(s) or vacancy, plus the bookkeeper's precision level, whether
+  a mayoral election is pending, and monarch arrival state. A vacant position is a
+  common, previously invisible cause of `work_order_create`/`trade`/justice-punishment
+  failures; `superseded_by` explains the expected vacancies (sheriff → captain of the
+  guard, expedition leader → mayor) so they don't read as problems.
+
 ## [1.1.0] - 2026-07-21
 
 ### Fixed

@@ -77,4 +77,4 @@ Justice data is read from `df.global.world.crimes.all` (open cases) and `df.glob
 `mandates`/`export_bans`/`demands` are capped at 50 even though a fort's noble overhead is normally small — an old or heavily-modded fort can't be trusted to stay small, so the caps (with their `*_truncated` flags) are a payload-size backstop, not an expected ceiling.
 
 ## Related
-[rooms_and_zones](rooms_and_zones.md) · [stocks](stocks.md) · [work_order_create](work_order_create.md) · [citizen](citizen.md) · [unmet_needs](unmet_needs.md)
+[rooms_and_zones](rooms_and_zones.md) · [stocks](stocks.md) · [work_order_create](work_order_create.md) · [citizen](citizen.md) · [unmet_needs](unmet_needs.md) · [nobles_and_administrators](nobles_and_administrators.md)
