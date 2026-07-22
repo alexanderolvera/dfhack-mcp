@@ -7,6 +7,7 @@ if df.global.gamemode ~= df.game_mode.DWARF then
 end
 
 local IDLE_FRACTION_ALERT = 0.30
+local CANCEL_SPAM_ALERT = 10
 
 local citizens = dfhack.units.getCitizens(true)
 local JT = df.job_type
@@ -40,11 +41,39 @@ end)
 local top_jobs = {}
 for i = 1, math.min(#jobs, 10) do top_jobs[i] = jobs[i] end
 
+local REASON_CAP = 20
+local AT = df.announcement_type
+local cancel_counts = {}
+local cancel_total = 0
+for _, r in ipairs(df.global.world.status.reports) do
+  if AT[r.type] == 'CANCEL_JOB' then
+    cancel_total = cancel_total + 1
+    local reason = r.text:match(':%s*(.-)%.?$') or 'unknown'
+    cancel_counts[reason] = (cancel_counts[reason] or 0) + 1
+  end
+end
+local cancel_reasons = {}
+for reason, n in pairs(cancel_counts) do cancel_reasons[#cancel_reasons + 1] = { reason = reason, count = n } end
+table.sort(cancel_reasons, function(a, b)
+  if a.count ~= b.count then return a.count > b.count end
+  return a.reason < b.reason
+end)
+local cancel_reasons_truncated = false
+if #cancel_reasons > REASON_CAP then
+  local capped = {}
+  for i = 1, REASON_CAP do capped[i] = cancel_reasons[i] end
+  cancel_reasons = capped
+  cancel_reasons_truncated = true
+end
+
 local idle_pct = adults > 0 and math.floor(idle * 100 / adults) or 0
 
 local alerts = {}
 if adults > 0 and (idle / adults) >= IDLE_FRACTION_ALERT then
   alerts[#alerts+1] = idle .. ' of ' .. adults .. ' working-age dwarves idle (' .. idle_pct .. '%)'
+end
+if #cancel_reasons > 0 and cancel_reasons[1].count >= CANCEL_SPAM_ALERT then
+  alerts[#alerts+1] = cancel_reasons[1].count .. 'x job cancellation: ' .. cancel_reasons[1].reason
 end
 
 emit({
@@ -54,5 +83,10 @@ emit({
   idle = idle,
   idle_pct = idle_pct,
   top_jobs = top_jobs,
+  cancellations = {
+    total = cancel_total,
+    by_reason = cancel_reasons,
+    by_reason_truncated = cancel_reasons_truncated,
+  },
   alerts = alerts,
 })

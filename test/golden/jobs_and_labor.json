@@ -2,6 +2,40 @@
   "alerts": [
     "27 of 77 working-age dwarves idle (35%)"
   ],
+  "cancellations": {
+    "by_reason": [
+      {
+        "count": 7,
+        "reason": "Equipment mismatch"
+      },
+      {
+        "count": 1,
+        "reason": "Needs 1 unused collected yarn thread"
+      },
+      {
+        "count": 1,
+        "reason": "Needs 2 steel bars"
+      },
+      {
+        "count": 1,
+        "reason": "Needs foxtail millet"
+      },
+      {
+        "count": 1,
+        "reason": "Needs melt-designated item"
+      },
+      {
+        "count": 1,
+        "reason": "Needs rope reed seeds"
+      },
+      {
+        "count": 1,
+        "reason": "Taken by mood"
+      }
+    ],
+    "by_reason_truncated": false,
+    "total": 13
+  },
   "children": 1,
   "idle": 27,
   "idle_pct": 35,

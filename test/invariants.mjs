@@ -62,6 +62,12 @@ export const INVARIANTS = [
         if (!(typeof d[k] === 'number' && d[k] >= -1))
           out.push(`${k}=${d[k]} below the -1 sentinel`);
       }
+      const cl = d.clothing ?? {};
+      if (!(isInt(cl.no_shoes_count) && cl.no_shoes_count >= 0))
+        out.push(`clothing.no_shoes_count=${cl.no_shoes_count} is not a non-negative integer`);
+      (cl.tattered_citizens ?? []).forEach((c, i) => {
+        if (!isInt(c.unit_id)) out.push(`clothing.tattered_citizens[${i}].unit_id=${c.unit_id} is not an integer`);
+      });
       return out;
     },
   },
@@ -76,6 +82,30 @@ export const INVARIANTS = [
       for (const k of [...(d.notable_low ?? []), ...(d.notable_high ?? [])]) {
         if (!known.has(k)) out.push(`notable entry "${k}" is not a known stock key`);
       }
+      return out;
+    },
+  },
+  {
+    name: 'jobs_and_labor_wellformed',
+    tools: ['jobs_and_labor'],
+    desc: 'working+idle=workforce, and cancellations.by_reason is a sorted, positive-count breakdown consistent with its total',
+    check(p) {
+      const d = p.jobs_and_labor;
+      const out = [];
+      if (d.working + d.idle !== d.workforce)
+        out.push(`working=${d.working} + idle=${d.idle} !== workforce=${d.workforce}`);
+      const c = d.cancellations ?? {};
+      if (!(isInt(c.total) && c.total >= 0))
+        out.push(`cancellations.total=${c.total} is not a non-negative integer`);
+      let prevCount = Infinity;
+      const reasonSum = (c.by_reason ?? []).reduce((sum, r, i) => {
+        if (!(isInt(r.count) && r.count > 0)) out.push(`cancellations.by_reason[${i}].count=${r.count} is not positive`);
+        if (r.count > prevCount) out.push(`cancellations.by_reason not sorted descending at index ${i}`);
+        prevCount = r.count;
+        return sum + (r.count || 0);
+      }, 0);
+      if (!c.by_reason_truncated && reasonSum !== c.total)
+        out.push(`sum(by_reason[].count)=${reasonSum} !== total=${c.total} (untruncated)`);
       return out;
     },
   },
@@ -145,6 +175,13 @@ export const INVARIANTS = [
         if (!d.wells_truncated && isInt(d.wells_total) && d.wells_total !== wells.length)
           out.push(`untruncated wells_total ${d.wells_total} !== listed ${wells.length}`);
       }
+      const g = d.ghosts ?? {};
+      if (!(isInt(g.unquiet_dead_count) && g.unquiet_dead_count >= 0))
+        out.push(`ghosts.unquiet_dead_count=${g.unquiet_dead_count} is not a non-negative integer`);
+      (g.active ?? []).forEach((a, i) => {
+        if (!isInt(a.unit_id)) out.push(`ghosts.active[${i}].unit_id=${a.unit_id} is not an integer`);
+        if (!isInt(a.histfig_id)) out.push(`ghosts.active[${i}].histfig_id=${a.histfig_id} is not an integer`);
+      });
       return out;
     },
   },

@@ -40,6 +40,33 @@ for _, item in ipairs(df.global.world.items.other.IN_PLAY) do
   end
 end
 
+local TATTERED_WEAR = 2
+local TATTERED_CAP = 50
+local WORN_SLOT = { SHOES = true, ARMOR = true, PANTS = true, GLOVES = true, HELM = true }
+local tattered, no_shoes_count = {}, 0
+for _, u in ipairs(dfhack.units.getCitizens(true)) do
+  local has_shoes, max_wear = false, 0
+  for _, inv in ipairs(u.inventory) do
+    if inv.mode == 2 and WORN_SLOT[T[inv.item:getType()]] then
+      local w = inv.item.wear or 0
+      if w > max_wear then max_wear = w end
+      if T[inv.item:getType()] == 'SHOES' then has_shoes = true end
+    end
+  end
+  if not has_shoes then no_shoes_count = no_shoes_count + 1 end
+  if max_wear >= TATTERED_WEAR then
+    tattered[#tattered + 1] = { unit_id = u.id, name = dfhack.units.getReadableName(u) }
+  end
+end
+table.sort(tattered, function(a, b) return a.unit_id < b.unit_id end)
+local tattered_truncated = false
+if #tattered > TATTERED_CAP then
+  local capped = {}
+  for i = 1, TATTERED_CAP do capped[i] = tattered[i] end
+  tattered = capped
+  tattered_truncated = true
+end
+
 local pop = #dfhack.units.getCitizens(true)
 local function days(total, per) return pop > 0 and math.floor(total * SEASON_DAYS / (pop * per)) or -1 end
 local food_days = days(c.food, FOOD_PER_SEASON)
@@ -60,4 +87,9 @@ emit({
   notable_low = low,
   notable_high = high,
   counts = c,
+  clothing = {
+    tattered_citizens = tattered,
+    tattered_citizens_truncated = tattered_truncated,
+    no_shoes_count = no_shoes_count,
+  },
 })

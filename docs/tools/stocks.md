@@ -26,6 +26,9 @@ None.
 | `notable_low` | materials under a documented floor: food/drink under 14 days, fuel < 5, wood < 20, cloth < 10 |
 | `notable_high` | materials over a ceiling: stone > 500 |
 | `counts` | exact raw counts: `food`, `prepared_meals`, `drink`, `wood`, `fuel`, `cloth`, `tanned_hides`, `stone` |
+| `clothing` | `{ tattered_citizens[], tattered_citizens_truncated, no_shoes_count }` — see below |
+
+`clothing.tattered_citizens[]` is `{ unit_id, name }` for each citizen wearing at least one worn-out (`wear >= 2`, i.e. "XX" or worse) shoe/armor/pants/glove/helm, capped at 50 (`tattered_citizens_truncated` flags overflow). `clothing.no_shoes_count` is how many citizens currently have no `SHOES`-type item worn at all — reported as a count, not a list, since it's normally the whole fort or nothing.
 
 ```json
 {
@@ -38,6 +41,11 @@ None.
     "stone": 2075,
     "tanned_hides": 956,
     "wood": 305
+  },
+  "clothing": {
+    "tattered_citizens": [],
+    "tattered_citizens_truncated": false,
+    "no_shoes_count": 0
   },
   "drink_days": 662,
   "food_days": 1505,
@@ -53,6 +61,7 @@ None.
 - `fuel` counts only coal/charcoal bars (`BAR` items of material COAL).
 - Food/drink low-lines are population-normalized (days-of-supply); the material floors (fuel/wood/cloth/stone) are deliberate absolute working-buffer thresholds, not per-capita.
 - With zero population, `food_days` / `drink_days` are `-1`.
+- `clothing` only checks WORN items (`unit_inventory_item.mode == 2`) of the 5 clothing/armor slot types (SHOES/ARMOR/PANTS/GLOVES/HELM) — cloaks, shirts, and unworn spares in inventory aren't part of either fact.
 - Returns `{"error":"no fort loaded"}` if no fort is active.
 
 ## Implementation notes

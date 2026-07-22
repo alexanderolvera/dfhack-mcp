@@ -33,6 +33,30 @@ backwards-compatible fixes only.
   livestock, which grazers have no pasture (they can't graze — silent starvation),
   egg-layer/nestbox coverage, animals marked for slaughter, war/hunting training
   state, occupied cages, and how many animals are roaming unassigned.
+- **Cheap sensor extensions bundle** ([#87](https://github.com/alexanderolvera/dfhack-mcp/issues/87))
+  — three small additions to existing tools:
+  - `rooms_and_zones`: `ghosts` — active apparitions currently on the map, plus a
+    count of this civ's dead who are world-flagged unquiet ghosts
+    (`historical_figure.flags.ghost`) with no apparition currently active locally.
+  - `stocks`: `clothing` — citizens wearing tattered (`wear >= 2`) shoes, armor,
+    pants, gloves, or a helm, plus a fort-wide no-shoes-worn count — a chronic,
+    easy-to-miss stress source.
+  - `jobs_and_labor`: `cancellations` — recent job-cancellation announcements
+    aggregated by reason (`chronicle` reports each one individually but never
+    summed them), surfacing a repeating systemic cause (e.g. 7x "Equipment
+    mismatch") that would otherwise read as unrelated one-off events.
+
+  Two items from the original issue were scoped out rather than shipped
+  unreliable or duplicated: `stocks`' proposed "seed totals by plant" is now
+  `farming`'s `seed_totals[]` (shipped in this same release, #76) — adding a
+  second copy in `stocks` would have been exactly the kind of second-source-of-
+  truth drift this project avoids. `rooms_and_zones`' proposed "unmemorialized
+  dead with no corpse" was dropped after live verification showed the natural
+  heuristic (a dead citizen with no loose `CORPSE`/`CORPSEPIECE` item) can't
+  distinguish "buried long ago" from "corpse lost forever" — both look identical
+  once the item is gone — so it would have misreported safely-buried citizens as
+  ghost-risk. `ghosts.unquiet_dead_count` (above) reports the same underlying
+  concern from a field DF itself computes, instead.
 
 ## [1.1.0] - 2026-07-21
 

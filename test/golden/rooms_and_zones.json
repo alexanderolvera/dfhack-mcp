@@ -13,6 +13,11 @@
     "halls": 4,
     "seats": 36
   },
+  "ghosts": {
+    "active": [],
+    "active_truncated": false,
+    "unquiet_dead_count": 0
+  },
   "guildhalls": 3,
   "hospital": {
     "beds": 8,
