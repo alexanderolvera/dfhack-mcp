@@ -387,9 +387,7 @@ export const INVARIANTS = [
       if (!new Set(['none', 'rain', 'snow']).has(s.weather))
         out.push(`surface.weather="${s.weather}" unknown`);
       // Unknown temperature (no surface sample) must be honest all the way through:
-      // temperature null, water_frozen null — never a fabricated false. (temperature_band
-      // was a redundant 3rd encoding of this same pair — removed in 1.1.0 — so there's
-      // nothing to check here beyond the surviving temperature/water_frozen pair.)
+      // temperature null, water_frozen null — never a fabricated false.
       const tempKnown = typeof s.temperature === 'number';
       if (!(tempKnown || s.temperature === null))
         out.push(`surface.temperature=${s.temperature} is neither a number nor null`);
@@ -478,7 +476,7 @@ export const INVARIANTS = [
   {
     name: 'nobles_positions_wellformed',
     tools: ['nobles_and_administrators'],
-    desc: 'vacant agrees with holders[], holders carry an integer unit_id, superseded_by (if any) names a real position code, and bookkeeper_precision_level is 0-4',
+    desc: 'vacant agrees with holders[], holders carry an integer histfig_id (unit_id only when a live unit is loaded), superseded_by (if any) names a real position code, and bookkeeper_precision_level is 0-4',
     check(p) {
       const d = p.nobles_and_administrators;
       const out = [];
@@ -487,8 +485,10 @@ export const INVARIANTS = [
         if (row.vacant !== (row.holders.length === 0))
           out.push(`positions[${row.code}].vacant=${row.vacant} disagrees with holders=${row.holders.length}`);
         row.holders.forEach((h, i) => {
-          if (!isInt(h.unit_id))
-            out.push(`positions[${row.code}].holders[${i}].unit_id=${h.unit_id} is not an integer`);
+          if (!isInt(h.histfig_id))
+            out.push(`positions[${row.code}].holders[${i}].histfig_id=${h.histfig_id} is not an integer`);
+          if (h.unit_id !== undefined && !isInt(h.unit_id))
+            out.push(`positions[${row.code}].holders[${i}].unit_id=${h.unit_id} is present but not an integer`);
         });
         if (row.superseded_by !== undefined && !codes.has(row.superseded_by))
           out.push(`positions[${row.code}].superseded_by=${row.superseded_by} names no known position`);
@@ -501,7 +501,7 @@ export const INVARIANTS = [
   {
     name: 'farming_plots_and_seeds_wellformed',
     tools: ['farming'],
-    desc: 'plot size/seasons are well-formed, no_crop_assigned agrees with the season crops, and each season seeds_available matches the fort-wide seed_totals',
+    desc: 'plot size/seasons are well-formed, no_crop_assigned/no_eligible_crop agree with the season crops, each season seeds_available matches the fort-wide seed_totals, and plots_total/plots_truncated honor the 200 cap',
     check(p) {
       const d = p.farming;
       const out = [];
@@ -515,14 +515,27 @@ export const INVARIANTS = [
         const anyCrop = plot.seasons.some((s) => s.crop !== undefined);
         if (plot.no_crop_assigned !== !anyCrop)
           out.push(`plots[${plot.id}].no_crop_assigned=${plot.no_crop_assigned} disagrees with its season crops`);
+        const anyEligible = plot.seasons.some((s) => s.crop !== undefined && s.eligible === true);
+        if (plot.no_eligible_crop !== !anyEligible)
+          out.push(`plots[${plot.id}].no_eligible_crop=${plot.no_eligible_crop} disagrees with its season eligibility`);
         plot.seasons.forEach((s) => {
           const expected = seedTotal.get(s.crop) ?? 0;
           if (s.crop !== undefined && s.seeds_available !== expected)
             out.push(
               `plots[${plot.id}].${s.season}.seeds_available=${s.seeds_available} !== seed_totals[${s.crop}]=${expected}`
             );
+          if (s.crop === undefined && s.eligible !== undefined)
+            out.push(`plots[${plot.id}].${s.season}.eligible=${s.eligible} present on a fallow season`);
+          if (s.crop !== undefined && typeof s.eligible !== 'boolean')
+            out.push(`plots[${plot.id}].${s.season}.eligible=${s.eligible} is not a boolean despite a crop being assigned`);
         });
       });
+      if (!(isInt(d.plots_total) && d.plots_total >= 0))
+        out.push(`plots_total=${d.plots_total} is not a non-negative integer`);
+      if (!d.plots_truncated && isInt(d.plots_total) && d.plots_total !== (d.plots ?? []).length)
+        out.push(`untruncated plots_total ${d.plots_total} !== listed ${(d.plots ?? []).length}`);
+      if (d.plots_truncated && (d.plots ?? []).length !== 200)
+        out.push(`plots_truncated=true but listed ${(d.plots ?? []).length} !== cap 200`);
       return out;
     },
   },

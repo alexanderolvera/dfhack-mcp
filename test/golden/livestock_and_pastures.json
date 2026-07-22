@@ -254,6 +254,7 @@
     }
   ],
   "cages": [],
+  "cages_truncated": false,
   "egg_layers": {
     "nestbox_count": 14,
     "pastured_without_nestbox": 1,

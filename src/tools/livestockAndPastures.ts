@@ -44,16 +44,20 @@ export interface LivestockAndPastures {
   trained: AnimalRow[];
   trained_truncated: boolean;
   cages: CageRow[];
+  cages_truncated: boolean;
   unassigned_count: number;
 }
 
-export function livestockAndPastures(): Promise<LivestockAndPastures | { error: string }> {
-  return runJsonScript<LivestockAndPastures>('livestockAndPastures', [], [
+export async function livestockAndPastures(): Promise<LivestockAndPastures | { error: string }> {
+  const data = await runJsonScript<LivestockAndPastures>('livestockAndPastures', [], [
     'by_group',
     'marked_for_slaughter',
     'trained',
     'cages',
   ]);
+  if ('error' in data) return data;
+  if (data.grazers && !Array.isArray(data.grazers.unpastured)) data.grazers.unpastured = [];
+  return data;
 }
 
 export const livestockAndPasturesDef: ToolDef = {
@@ -68,12 +72,16 @@ export const livestockAndPasturesDef: ToolDef = {
     'invisible. egg_layers reports counts only (total, fort-wide nestbox count, how ' +
     'many are pastured without a nestbox in reach, how many are unpastured) since ' +
     'the consequence (missed eggs) is mild and the population is usually large. ' +
-    'marked_for_slaughter and trained (training_level Trained..MasterfullyTrained) ' +
-    'list individual animals, capped. cages[] lists occupied cages with their ' +
-    'occupants (dfhack.buildings.getCageOccupants). unassigned_count is animals ' +
+    'marked_for_slaughter and trained (training_level Trained..MasterfullyTrained — ' +
+    'DF\'s single shared training-quality scale, NOT which discipline the animal was ' +
+    'trained for; it does not persist war-vs-hunting per animal) list individual ' +
+    'animals, capped. cages[] lists occupied cages with their occupants ' +
+    '(dfhack.buildings.getCageOccupants), also capped. unassigned_count is animals ' +
     'with no pasture, cage, or chain — DFHack\'s zone tool calls this "unassigned" ' +
     '(roaming loose); reported as a count only since it is commonly large and often ' +
-    'intentional (e.g. free-roaming cats). Returns {"error":"no fort loaded"} if no ' +
-    'fort is active.',
+    'intentional (e.g. free-roaming cats). Every unit fact here is gated through the ' +
+    "fog-of-war visibility check and this fort's own civ — a caravan's pack animal or " +
+    'an undiscovered cavern\'s wildlife never leaks in. ' +
+    'Returns {"error":"no fort loaded"} if no fort is active.',
   run: livestockAndPastures,
 };

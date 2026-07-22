@@ -2,6 +2,7 @@ import { runJsonScript } from '../query.ts';
 import type { ToolDef } from '../register.ts';
 
 export interface PositionHolder {
+  histfig_id: number;
   unit_id?: number;
   name: string;
 }
@@ -32,7 +33,9 @@ export const noblesAndAdministratorsDef: ToolDef = {
     "The fort's appointed positions (manager, bookkeeper, broker, chief medical " +
     'dwarf, sheriff, expedition leader/mayor, militia commander/captain, hammerer, ' +
     'and any higher noble the site has grown into) as facts: each position\'s ' +
-    'holder(s) or vacancy. A vacant position is a common, otherwise-invisible ' +
+    'holder(s) or vacancy — each holder always carries histfig_id, plus unit_id ' +
+    'when that historical figure has a loaded unit on this map (a holder living ' +
+    'off-map still has no unit_id). A vacant position is a common, otherwise-invisible ' +
     'cause of "why won\'t this validate" — work_order_create needs a manager, ' +
     'trade needs a broker, mandates_and_justice punishments need a hammerer. ' +
     'superseded_by names the position a role hands its responsibilities to once ' +

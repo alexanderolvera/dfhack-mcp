@@ -18,11 +18,13 @@ tags: [dfhack-mcp/tool]
 None.
 
 ## Returns
-- `plots[]` — one row per farm plot: `{ id, size, surface, seasons[], no_crop_assigned }`.
+- `plots[]` — one row per farm plot (capped at 200 — see `plots_total`/`plots_truncated`): `{ id, size, surface, seasons[], no_crop_assigned, no_eligible_crop }`.
   - `size` — tile count (`width * height`).
   - `surface` — true if the plot's tile is open to the sky, false if underground.
-  - `seasons[]` — always 4 entries, one per `SPRING`/`SUMMER`/`AUTUMN`/`WINTER`: `{ season, crop?, seeds_available? }`. `crop` (a plant token, e.g. `"MUSHROOM_HELMET_PLUMP"`) and `seeds_available` are both absent when that season is fallow (no crop assigned).
+  - `seasons[]` — always 4 entries, one per `SPRING`/`SUMMER`/`AUTUMN`/`WINTER`: `{ season, crop?, eligible?, seeds_available? }`. `crop` (a plant token, e.g. `"MUSHROOM_HELMET_PLUMP"`), `eligible`, and `seeds_available` are all absent when that season is fallow (no crop assigned). When a crop IS assigned, `eligible` is whether the plant raw's own season flag allows it to grow in that season.
   - `no_crop_assigned` — true iff every season is fallow — a plot doing nothing.
+  - `no_eligible_crop` — true iff no season holds BOTH an assigned crop AND `eligible: true` — a strict superset of `no_crop_assigned` (a plot can have every season "filled" and still trip this if none of the assignments are actually eligible for their season).
+- `plots_total` (number), `plots_truncated` (boolean) — the real plot count and whether the 200-row cap dropped any.
 - `seed_totals[]` — `{ plant, count }`, fort-wide seed counts by plant, sorted by plant token. Only plants with at least one seed in stock are listed. Excludes forbidden/dumped/rotten/under-construction/trader-bound seed items.
 
 ```json
@@ -33,14 +35,17 @@ None.
       "size": 3,
       "surface": false,
       "no_crop_assigned": false,
+      "no_eligible_crop": false,
       "seasons": [
-        { "season": "SPRING", "crop": "POD_SWEET", "seeds_available": 50 },
-        { "season": "SUMMER", "crop": "GRASS_TAIL_PIG", "seeds_available": 33 },
-        { "season": "AUTUMN", "crop": "MUSHROOM_CUP_DIMPLE", "seeds_available": 19 },
-        { "season": "WINTER", "crop": "MUSHROOM_HELMET_PLUMP", "seeds_available": 62 }
+        { "season": "SPRING", "crop": "POD_SWEET", "eligible": true, "seeds_available": 50 },
+        { "season": "SUMMER", "crop": "GRASS_TAIL_PIG", "eligible": true, "seeds_available": 33 },
+        { "season": "AUTUMN", "crop": "MUSHROOM_CUP_DIMPLE", "eligible": true, "seeds_available": 19 },
+        { "season": "WINTER", "crop": "MUSHROOM_HELMET_PLUMP", "eligible": true, "seeds_available": 62 }
       ]
     }
   ],
+  "plots_total": 30,
+  "plots_truncated": false,
   "seed_totals": [
     { "plant": "MUSHROOM_HELMET_PLUMP", "count": 62 },
     { "plant": "POD_SWEET", "count": 50 }
@@ -50,12 +55,13 @@ None.
 
 ## Caveats & limits
 - Returns `{"error":"no fort loaded"}` when no fort is active.
-- `no_crop_assigned` reports a plot with literally nothing assigned in any season — it does NOT evaluate whether an assigned crop is actually eligible for that plot's biome/depth (that agronomic eligibility check is out of scope; compose with `game_data`'s plant dossier `surface`/`depth_min`/`depth_max`/`biomes` fields for that).
+- `eligible` checks ONLY the plant raw's own season flag (`SPRING`/`SUMMER`/`AUTUMN`/`WINTER` — does DF consider this plant plantable in this season at all). It does NOT check surface/underground depth compatibility: live verification found a plant flagged surface-only via `underground_depth_min == underground_depth_max == 0` (`REED_ROPE`) successfully planted in an underground plot in the fixture — `underground_depth_min`/`max` describe where a plant grows WILD, not farm-plot eligibility, so asserting a depth/surface rule here would have been actively wrong rather than merely incomplete. Compose with `game_data`'s plant dossier `surface`/`depth_min`/`depth_max`/`biomes` fields if you need those facts directly, without this tool implying they gate plantability.
 - `seeds_available` on a season entry is the SAME fort-wide count as that plant's `seed_totals[]` entry, not seed reserved for that specific plot — DF doesn't reserve seed per plot.
 - `surface` is read from the plot's own anchor tile's map designation, not inferred from a fort-wide surface z-level — accurate per-plot even in a fort with plots at mixed depths.
+- `plots[]` is capped at 200 rows; `plots_total`/`plots_truncated` track the real count regardless.
 
 ## Implementation notes
-Plots come from `df.global.world.buildings.other.FARM_PLOT`; each plot's `plant_id[0..3]` indexes `df.global.world.raws.plants.all[]` and maps to season by DF's standard farm-plot convention (index 0-3 = spring/summer/autumn/winter), `-1` meaning fallow. Seed counts come from `df.global.world.items.other.SEEDS`, summed by `mat_index` (the same raw index as `plant_id`) with the same forbidden/dump/rotten/construction/trader/garbage_collect exclusion `stocks` uses. `surface` reads `dfhack.maps.getTileBlock(...).designation[lx][ly].outside` at the plot's `(x1, y1, z)`. Confirmed live on DFHack 53.15-r2 against the Dreamfort fixture (all 30 plots underground, `outside=false`).
+Plots come from `df.global.world.buildings.other.FARM_PLOT`; each plot's `plant_id[0..3]` indexes `df.global.world.raws.plants.all[]` and maps to season by DF's standard farm-plot convention (index 0-3 = spring/summer/autumn/winter), `-1` meaning fallow. `eligible` reads that plant raw's `flags[SEASON]` boolean directly — confirmed live against every crop this fixture had already assigned (all matched their season flag). Seed counts come from `df.global.world.items.other.SEEDS`, summed by `mat_index` (the same raw index as `plant_id`) with the same forbidden/dump/rotten/construction/trader/garbage_collect exclusion `stocks` uses. `surface` reads `dfhack.maps.getTileBlock(...).designation[lx][ly].outside` at the plot's `(x1, y1, z)`. Confirmed live on DFHack 53.15-r2 against the Dreamfort fixture (all 30 plots underground, `outside=false`).
 
 ## Related
 [stocks](stocks.md) · [game_data](game_data.md) · [environment](environment.md)

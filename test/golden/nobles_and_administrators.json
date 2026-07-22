@@ -10,6 +10,7 @@
       "code": "BOOKKEEPER",
       "holders": [
         {
+          "histfig_id": 261,
           "name": "Ingish Lorbambecor \"Standardtempted\", bookkeeper",
           "unit_id": 421
         }
@@ -21,6 +22,7 @@
       "code": "BROKER",
       "holders": [
         {
+          "histfig_id": 306,
           "name": "Unib Egastkeskal \"Clenchedshoots\", broker",
           "unit_id": 514
         }
@@ -32,6 +34,7 @@
       "code": "CAPTAIN_OF_THE_GUARD",
       "holders": [
         {
+          "histfig_id": 214,
           "name": "�nul Kolmegid \"Wheeledslides\", captain of the guard",
           "unit_id": 335
         }
@@ -49,6 +52,7 @@
       "code": "CHIEF_MEDICAL_DWARF",
       "holders": [
         {
+          "histfig_id": 218,
           "name": "Rig�th Kosothlisid \"Palaceclash\", chief medical dwarf",
           "unit_id": 340
         }
@@ -79,6 +83,7 @@
       "code": "MANAGER",
       "holders": [
         {
+          "histfig_id": 177,
           "name": "Melbil Monangerib \"Drillgorge\", manager",
           "unit_id": 260
         }
@@ -90,6 +95,7 @@
       "code": "MAYOR",
       "holders": [
         {
+          "histfig_id": 287,
           "name": "Zefon Zanosoddom \"Hopefulcloister\", mayor",
           "unit_id": 488
         }
@@ -107,6 +113,7 @@
       "code": "MILITIA_CAPTAIN",
       "holders": [
         {
+          "histfig_id": 296,
           "name": "Kad�l Sterusathel \"Driverings\", militia captain",
           "unit_id": 498
         }
@@ -118,6 +125,7 @@
       "code": "MILITIA_COMMANDER",
       "holders": [
         {
+          "histfig_id": 173,
           "name": "Tun Lolumavuz \"Woodenmines\", militia commander",
           "unit_id": 111
         }

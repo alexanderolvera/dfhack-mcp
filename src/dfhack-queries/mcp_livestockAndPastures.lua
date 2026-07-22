@@ -6,9 +6,12 @@ if df.global.gamemode ~= df.game_mode.DWARF then
   return
 end
 
+local visibility = reqscript('mcp_unitVisibility')
+
 local SLAUGHTER_CAP = 50
 local TRAINED_CAP = 50
 local UNPASTURED_GRAZER_CAP = 50
+local CAGES_CAP = 50
 
 local function safe(fn, default)
   local ok, v = pcall(fn)
@@ -42,7 +45,9 @@ end
 
 local nestboxes = {}
 for _, nb in ipairs(df.global.world.buildings.other.NEST_BOX) do
-  nestboxes[#nestboxes + 1] = { x = nb.x1, y = nb.y1, z = nb.z }
+  if nb:getBuildStage() == nb:getMaxBuildStage() then
+    nestboxes[#nestboxes + 1] = { x = nb.x1, y = nb.y1, z = nb.z }
+  end
 end
 local function pen_has_nestbox(z)
   for _, nb in ipairs(nestboxes) do
@@ -76,7 +81,7 @@ local unassigned_count = 0
 
 for _, u in ipairs(df.global.world.units.active) do
   local ok, tame = pcall(dfhack.units.isTame, u)
-  if ok and tame then
+  if ok and tame and dfhack.units.isOwnCiv(u) and not visibility.is_hidden(u) then
     tame_total = tame_total + 1
     local race = df.global.world.raws.creatures.all[u.race]
     local token = race and tostring(race.creature_id) or 'UNKNOWN'
@@ -158,16 +163,20 @@ trained, trained_truncated = cap(trained, TRAINED_CAP)
 local cages = {}
 for _, c in ipairs(df.global.world.buildings.other.CAGE) do
   local occupants = safe(function() return dfhack.buildings.getCageOccupants(c) end, {}) or {}
-  if #occupants > 0 then
-    local rows = {}
-    for _, u in ipairs(occupants) do
+  local rows = {}
+  for _, u in ipairs(occupants) do
+    if not visibility.is_hidden(u) then
       local race = df.global.world.raws.creatures.all[u.race]
       rows[#rows + 1] = animal_row(u, race and tostring(race.creature_id) or 'UNKNOWN')
     end
+  end
+  if #rows > 0 then
     cages[#cages + 1] = { building_id = c.id, occupants = rows }
   end
 end
 table.sort(cages, function(a, b) return a.building_id < b.building_id end)
+local cages_truncated
+cages, cages_truncated = cap(cages, CAGES_CAP)
 
 emit({
   tame_total = tame_total,
@@ -191,5 +200,6 @@ emit({
   trained = trained,
   trained_truncated = trained_truncated,
   cages = cages,
+  cages_truncated = cages_truncated,
   unassigned_count = unassigned_count,
 })

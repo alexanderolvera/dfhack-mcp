@@ -66,6 +66,31 @@ backwards-compatible fixes only.
   `unknown`. Since the field no longer exists, the check always failed on `undefined`
   — a stale test, not a live-data bug. Rewritten to check the surviving
   `temperature`/`water_frozen` pair only.
+- **`livestock_and_pastures` and `rooms_and_zones.ghosts` leaked undiscovered-map
+  units** — both new sensors enumerated `world.units.active` without the mandatory
+  `mcp_unitVisibility` fog-of-war gate CONTRIBUTING.md requires of every unit-listing
+  tool (the same class of bug fixed on `threats`/`fort_status` before v1.0). Fixed by
+  filtering every unit fact (the tame-animal enumeration, cage occupants, active
+  ghosts) through `is_hidden(u)`; the tame-animal enumeration also now requires
+  `dfhack.units.isOwnCiv(u)` so a visiting caravan's or diplomat's pack animal is
+  never counted as this fort's livestock.
+- **`nobles_and_administrators` holders could omit their only stable id** — a
+  position holder living off-map (no loaded unit) had neither field the shipped
+  invariant required. Holders now always carry `histfig_id`; `unit_id` remains
+  present only when a live unit exists.
+- **`farming` claimed "no eligible crop" but only checked "no crop assigned"** — a
+  plot with a crop assigned in every season, none of them actually eligible for
+  their season, read as fine. Added a per-season `eligible` fact (the plant raw's
+  own season flag) and a plot-level `no_eligible_crop`, deliberately NOT extended to
+  surface/depth eligibility — live verification found a plant flagged surface-only
+  (`REED_ROPE`, `underground_depth_min == max == 0`) successfully planted
+  underground in the fixture, so asserting a depth rule would have been wrong, not
+  just incomplete.
+- **Unbounded payload risk on two new list fields** — `farming.plots[]` (no cap:
+  an old/modded fort's plot count could grow without bound) and
+  `livestock_and_pastures.cages[]` (same, for occupied cages) now cap at 200 and 50
+  respectively, each with the established `total`/`truncated` pair. `NEST_BOX`
+  buildings still under construction no longer count toward nestbox coverage.
 
 ## [1.1.0] - 2026-07-21
 

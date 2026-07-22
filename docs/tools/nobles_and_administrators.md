@@ -22,7 +22,7 @@ None.
   - `code` — the position's stable raw token (e.g. `"MANAGER"`, `"BOOKKEEPER"`).
   - `name` — the position's display name (e.g. `"manager"`); falls back to `code` if unset.
   - `vacant` — true iff `holders` is empty.
-  - `holders[]` — `{ unit_id, name }` for each dwarf assigned to the position. Almost always 0 or 1 entries; some positions (e.g. `MILITIA_CAPTAIN`) can have more than one filled slot in a fort with multiple squads.
+  - `holders[]` — `{ histfig_id, unit_id?, name }` for each dwarf assigned to the position. `histfig_id` is always present; `unit_id` is present only when that historical figure has a loaded unit on this map (a holder living off-map — e.g. sent on a mission, or a to-be-fetched migrant — still has no `unit_id`). Almost always 0 or 1 entries; some positions (e.g. `MILITIA_CAPTAIN`) can have more than one filled slot in a fort with multiple squads.
   - `superseded_by` (optional) — the position `code` this role's responsibilities move to once that position is filled (e.g. `SHERIFF` → `CAPTAIN_OF_THE_GUARD`, `EXPEDITION_LEADER` → `MAYOR`). A vacancy here is expected once the successor position is filled, not a problem.
 - `bookkeeper_precision_level` (number, 0-4) — the bookkeeper's stock-count precision, set on the Nobles screen; higher is more accurate but needs a better-equipped, more skilled bookkeeper.
 - `mayor_election_pending` (boolean) — a mayoral election is currently forced/pending.
@@ -38,7 +38,7 @@ None.
       "code": "BOOKKEEPER",
       "name": "bookkeeper",
       "vacant": false,
-      "holders": [{ "unit_id": 421, "name": "Ingish Lorbambecor \"Standardtempted\", bookkeeper" }]
+      "holders": [{ "histfig_id": 261, "unit_id": 421, "name": "Ingish Lorbambecor \"Standardtempted\", bookkeeper" }]
     },
     {
       "code": "SHERIFF",

@@ -38,6 +38,7 @@ if ent then
       local list = holders_by_pos[asg.position_id]
       if not list then list = {}; holders_by_pos[asg.position_id] = list end
       list[#list + 1] = {
+        histfig_id = asg.histfig,
         unit_id = u and u.id or nil,
         name = u and unit_name(u) or hf_name(hf),
       }

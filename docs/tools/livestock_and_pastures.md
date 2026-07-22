@@ -24,7 +24,7 @@ None.
 - `egg_layers` — `{ total, nestbox_count, pastured_without_nestbox, unpastured }`. Counts only, not a list — the population is usually large (dozens of birds) and the consequence (missed eggs) is mild, unlike grazer starvation.
 - `marked_for_slaughter[]` / `marked_for_slaughter_truncated` — animals with `unit.flags2.slaughter` set (capped 50).
 - `trained[]` / `trained_truncated` — animals with a war/hunting training level between `Trained` and `MasterfullyTrained` (capped 50); each row carries `training_level` (the state name).
-- `cages[]` — `{ building_id, occupants[] }`, one entry per currently-occupied cage (empty cages are omitted).
+- `cages[]` / `cages_truncated` — `{ building_id, occupants[] }`, one entry per currently-occupied cage (empty cages are omitted), capped 50.
 - `unassigned_count` (number) — tame animals with no pasture, cage, or chain. DFHack's `zone` tool calls this state "unassigned" (its `-unassigned` filter); reported as a count only, since it's commonly large and often intentional (free-roaming cats, for instance).
 
 Animal rows (`grazers.unpastured[]`, `marked_for_slaughter[]`, `trained[]`, `cages[].occupants[]`) share a shape: `{ unit_id, name, species, sex?, adult, training_level? }`.
@@ -39,6 +39,7 @@ Animal rows (`grazers.unpastured[]`, `marked_for_slaughter[]`, `trained[]`, `cag
   "marked_for_slaughter_truncated": true,
   "trained_truncated": false,
   "cages": [],
+  "cages_truncated": false,
   "unassigned_count": 206
 }
 ```
@@ -46,12 +47,13 @@ Animal rows (`grazers.unpastured[]`, `marked_for_slaughter[]`, `trained[]`, `cag
 ## Caveats & limits
 - Returns `{"error":"no fort loaded"}` when no fort is active.
 - `training_level` covers DF's single shared training scale (`SemiWild`→...→`Domesticated`); DF does not persist which discipline (war vs. hunting) an animal was trained under as separate per-animal state, so this tool reports the level only, not the discipline.
-- Nestbox coverage is a spatial check: a pen "has a nestbox" if a `NEST_BOX` building's tile falls within the pen's bounds — this mirrors how DFHack's `autonestbox` sets up its zones, but a hand-built pen with a nestbox placed unconventionally is still detected correctly since it's a pure position check, not a naming convention.
+- Nestbox coverage is a spatial check: a pen "has a nestbox" if a fully-built `NEST_BOX` building's tile falls within the pen's bounds (a nestbox still under construction doesn't count) — this mirrors how DFHack's `autonestbox` sets up its zones, but a hand-built pen with a nestbox placed unconventionally is still detected correctly since it's a pure position check, not a naming convention.
 - `unassigned_count` doesn't distinguish "problem" from "intentional" — a fort's cats are commonly, deliberately unassigned.
-- Caps (50 each, with `*_truncated` flags) apply to `grazers.unpastured`, `marked_for_slaughter`, and `trained` — a large or old fort can exceed these; `by_group[]` and the scalar counts are never capped.
+- Caps (50 each, with `*_truncated` flags) apply to `grazers.unpastured`, `marked_for_slaughter`, `trained`, and `cages` — a large or old fort can exceed these; `by_group[]` and the scalar counts are never capped.
+- Fog-of-war and civ-ownership gated: every unit fact (the main tame-animal enumeration, active-ghost-style facts, and each cage's occupants) is filtered through `mcp_unitVisibility`'s `is_hidden(u)` — an animal on an undiscovered tile is never reported — and the main enumeration additionally requires `dfhack.units.isOwnCiv(u)`, so a visiting caravan's or diplomat's pack animal (also "tame", but not this fort's) is excluded from `tame_total` and everything derived from it. Cage occupants intentionally skip the own-civ filter: a cage's physical contents (including a captured wild or hostile creature) are a structural fact independent of who owns them, but still hidden-gated.
 
 ## Implementation notes
-Tame animals are every unit in `df.global.world.units.active` where `dfhack.units.isTame(u)` is true. Pasture assignment comes from `Pen`-type civzones (`df.global.world.buildings.other.ACTIVITY_ZONE`, same civzone model `rooms_and_zones` uses) and their `assigned_units[]`. Grazer/egg-layer status is the creature's caste `flags.GRAZER`/`flags.LAYS_EGGS` (caste-specific — e.g. only female birds usually lay). Slaughter marking is `unit.flags2.slaughter`; unassigned is the absence of a pasture plus `unit.flags1.caged`/`.chained` both false. Cage occupants use the documented `dfhack.buildings.getCageOccupants(cage)` (distinct from `cage.assigned_units`, which is who's *assigned*, not who's *inside*). Confirmed live on DFHack 53.15-r2 against the Dreamfort fixture (264 tame animals, 19 unpastured grazers, 14 nestbox-covered pens of 19 total).
+Tame animals are every unit in `df.global.world.units.active` where `dfhack.units.isTame(u)`, `dfhack.units.isOwnCiv(u)`, and NOT `mcp_unitVisibility.is_hidden(u)` all hold. Pasture assignment comes from `Pen`-type civzones (`df.global.world.buildings.other.ACTIVITY_ZONE`, same civzone model `rooms_and_zones` uses) and their `assigned_units[]`. Grazer/egg-layer status is the creature's caste `flags.GRAZER`/`flags.LAYS_EGGS` (caste-specific — e.g. only female birds usually lay). Slaughter marking is `unit.flags2.slaughter`; unassigned is the absence of a pasture plus `unit.flags1.caged`/`.chained` both false. Cage occupants use the documented `dfhack.buildings.getCageOccupants(cage)` (distinct from `cage.assigned_units`, which is who's *assigned*, not who's *inside*), each still passed through the same `is_hidden` gate. Confirmed live on DFHack 53.15-r2 against the Dreamfort fixture (264 tame animals, 19 unpastured grazers, 14 nestbox-covered pens of 19 total).
 
 ## Related
 [rooms_and_zones](rooms_and_zones.md) · [mandates_and_justice](mandates_and_justice.md) (restraint capacity) · [stocks](stocks.md) · [threats](threats.md)

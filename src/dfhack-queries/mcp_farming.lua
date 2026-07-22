@@ -6,12 +6,17 @@ if df.global.gamemode ~= df.game_mode.DWARF then
   return
 end
 
+local PLOTS_CAP = 200
 local SEASONS = { 'SPRING', 'SUMMER', 'AUTUMN', 'WINTER' }
 local plants = df.global.world.raws.plants.all
 
-local function plant_token(idx)
+local function plant_at(idx)
   if not idx or idx < 0 then return nil end
-  local p = plants[idx]
+  return plants[idx]
+end
+
+local function plant_token(idx)
+  local p = plant_at(idx)
   return p and tostring(p.id) or nil
 end
 
@@ -41,13 +46,21 @@ for _, f in ipairs(df.global.world.buildings.other.FARM_PLOT) do
   local outside = (blk and blk.designation[lx][ly].outside) or false
 
   local seasons = {}
-  local any_crop = false
+  local any_crop, any_eligible = false, false
   for i, season in ipairs(SEASONS) do
-    local tok = plant_token(f.plant_id[i - 1])
-    if tok then any_crop = true end
+    local idx = f.plant_id[i - 1]
+    local tok = plant_token(idx)
+    local eligible = nil
+    if tok then
+      any_crop = true
+      local p = plant_at(idx)
+      eligible = (p ~= nil) and (p.flags[season] == true)
+      if eligible then any_eligible = true end
+    end
     seasons[#seasons + 1] = {
       season = season,
       crop = tok,
+      eligible = eligible,
       seeds_available = tok and (seed_counts[tok] or 0) or nil,
     }
   end
@@ -58,11 +71,23 @@ for _, f in ipairs(df.global.world.buildings.other.FARM_PLOT) do
     surface = outside,
     seasons = seasons,
     no_crop_assigned = not any_crop,
+    no_eligible_crop = not any_eligible,
   }
 end
 table.sort(plots, function(a, b) return a.id < b.id end)
 
+local plots_total = #plots
+local plots_truncated = false
+if #plots > PLOTS_CAP then
+  local capped = {}
+  for i = 1, PLOTS_CAP do capped[i] = plots[i] end
+  plots = capped
+  plots_truncated = true
+end
+
 emit({
   plots = plots,
+  plots_total = plots_total,
+  plots_truncated = plots_truncated,
   seed_totals = seed_totals,
 })

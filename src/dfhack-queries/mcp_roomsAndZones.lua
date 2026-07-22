@@ -6,6 +6,8 @@ if df.global.gamemode ~= df.game_mode.DWARF then
   return
 end
 
+local visibility = reqscript('mcp_unitVisibility')
+
 local WELLS_CAP = 20
 local DEITY_WORSHIP_MIN = 1
 local CIVZONE = df.global.world.buildings.other.ACTIVITY_ZONE
@@ -197,7 +199,7 @@ local civ_id = df.global.plotinfo.civ_id
 local active_ghosts = {}
 local active_ghost_hf = {}
 for _, u in ipairs(df.global.world.units.active) do
-  if u.flags3.ghostly then
+  if u.flags3.ghostly and not visibility.is_hidden(u) then
     active_ghosts[#active_ghosts + 1] = {
       unit_id = u.id,
       name = dfhack.units.getReadableName(u),

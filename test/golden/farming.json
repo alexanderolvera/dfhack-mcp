@@ -3,24 +3,29 @@
     {
       "id": 100,
       "no_crop_assigned": false,
+      "no_eligible_crop": false,
       "seasons": [
         {
           "crop": "POD_SWEET",
+          "eligible": true,
           "season": "SPRING",
           "seeds_available": 50
         },
         {
           "crop": "GRASS_TAIL_PIG",
+          "eligible": true,
           "season": "SUMMER",
           "seeds_available": 33
         },
         {
           "crop": "MUSHROOM_CUP_DIMPLE",
+          "eligible": true,
           "season": "AUTUMN",
           "seeds_available": 19
         },
         {
           "crop": "MUSHROOM_HELMET_PLUMP",
+          "eligible": true,
           "season": "WINTER",
           "seeds_available": 62
         }
@@ -31,24 +36,29 @@
     {
       "id": 101,
       "no_crop_assigned": false,
+      "no_eligible_crop": false,
       "seasons": [
         {
           "crop": "POD_SWEET",
+          "eligible": true,
           "season": "SPRING",
           "seeds_available": 50
         },
         {
           "crop": "MUSHROOM_CUP_DIMPLE",
+          "eligible": true,
           "season": "SUMMER",
           "seeds_available": 19
         },
         {
           "crop": "MUSHROOM_CUP_DIMPLE",
+          "eligible": true,
           "season": "AUTUMN",
           "seeds_available": 19
         },
         {
           "crop": "MUSHROOM_HELMET_PLUMP",
+          "eligible": true,
           "season": "WINTER",
           "seeds_available": 62
         }
@@ -59,24 +69,29 @@
     {
       "id": 108,
       "no_crop_assigned": false,
+      "no_eligible_crop": false,
       "seasons": [
         {
           "crop": "POD_SWEET",
+          "eligible": true,
           "season": "SPRING",
           "seeds_available": 50
         },
         {
           "crop": "GRASS_TAIL_PIG",
+          "eligible": true,
           "season": "SUMMER",
           "seeds_available": 33
         },
         {
           "crop": "MUSHROOM_CUP_DIMPLE",
+          "eligible": true,
           "season": "AUTUMN",
           "seeds_available": 19
         },
         {
           "crop": "MUSHROOM_HELMET_PLUMP",
+          "eligible": true,
           "season": "WINTER",
           "seeds_available": 62
         }
@@ -87,24 +102,29 @@
     {
       "id": 111,
       "no_crop_assigned": false,
+      "no_eligible_crop": false,
       "seasons": [
         {
           "crop": "MUSHROOM_CUP_DIMPLE",
+          "eligible": true,
           "season": "SPRING",
           "seeds_available": 19
         },
         {
           "crop": "GRASS_TAIL_PIG",
+          "eligible": true,
           "season": "SUMMER",
           "seeds_available": 33
         },
         {
           "crop": "MUSHROOM_CUP_DIMPLE",
+          "eligible": true,
           "season": "AUTUMN",
           "seeds_available": 19
         },
         {
           "crop": "MUSHROOM_HELMET_PLUMP",
+          "eligible": true,
           "season": "WINTER",
           "seeds_available": 62
         }
@@ -115,24 +135,29 @@
     {
       "id": 114,
       "no_crop_assigned": false,
+      "no_eligible_crop": false,
       "seasons": [
         {
           "crop": "MUSHROOM_CUP_DIMPLE",
+          "eligible": true,
           "season": "SPRING",
           "seeds_available": 19
         },
         {
           "crop": "GRASS_WHEAT_CAVE",
+          "eligible": true,
           "season": "SUMMER",
           "seeds_available": 31
         },
         {
           "crop": "MUSHROOM_CUP_DIMPLE",
+          "eligible": true,
           "season": "AUTUMN",
           "seeds_available": 19
         },
         {
           "crop": "MUSHROOM_HELMET_PLUMP",
+          "eligible": true,
           "season": "WINTER",
           "seeds_available": 62
         }
@@ -143,24 +168,29 @@
     {
       "id": 115,
       "no_crop_assigned": false,
+      "no_eligible_crop": false,
       "seasons": [
         {
           "crop": "BUSH_QUARRY",
+          "eligible": true,
           "season": "SPRING",
           "seeds_available": 29
         },
         {
           "crop": "GRASS_WHEAT_CAVE",
+          "eligible": true,
           "season": "SUMMER",
           "seeds_available": 31
         },
         {
           "crop": "MUSHROOM_CUP_DIMPLE",
+          "eligible": true,
           "season": "AUTUMN",
           "seeds_available": 19
         },
         {
           "crop": "MUSHROOM_HELMET_PLUMP",
+          "eligible": true,
           "season": "WINTER",
           "seeds_available": 62
         }
@@ -171,24 +201,29 @@
     {
       "id": 118,
       "no_crop_assigned": false,
+      "no_eligible_crop": false,
       "seasons": [
         {
           "crop": "BUSH_QUARRY",
+          "eligible": true,
           "season": "SPRING",
           "seeds_available": 29
         },
         {
           "crop": "BUSH_QUARRY",
+          "eligible": true,
           "season": "SUMMER",
           "seeds_available": 29
         },
         {
           "crop": "MUSHROOM_CUP_DIMPLE",
+          "eligible": true,
           "season": "AUTUMN",
           "seeds_available": 19
         },
         {
           "crop": "MUSHROOM_HELMET_PLUMP",
+          "eligible": true,
           "season": "WINTER",
           "seeds_available": 62
         }
@@ -199,24 +234,29 @@
     {
       "id": 122,
       "no_crop_assigned": false,
+      "no_eligible_crop": false,
       "seasons": [
         {
           "crop": "MUSHROOM_CUP_DIMPLE",
+          "eligible": true,
           "season": "SPRING",
           "seeds_available": 19
         },
         {
           "crop": "BUSH_QUARRY",
+          "eligible": true,
           "season": "SUMMER",
           "seeds_available": 29
         },
         {
           "crop": "MUSHROOM_CUP_DIMPLE",
+          "eligible": true,
           "season": "AUTUMN",
           "seeds_available": 19
         },
         {
           "crop": "MUSHROOM_HELMET_PLUMP",
+          "eligible": true,
           "season": "WINTER",
           "seeds_available": 62
         }
@@ -227,24 +267,29 @@
     {
       "id": 123,
       "no_crop_assigned": false,
+      "no_eligible_crop": false,
       "seasons": [
         {
           "crop": "BUSH_QUARRY",
+          "eligible": true,
           "season": "SPRING",
           "seeds_available": 29
         },
         {
           "crop": "MUSHROOM_CUP_DIMPLE",
+          "eligible": true,
           "season": "SUMMER",
           "seeds_available": 19
         },
         {
           "crop": "MUSHROOM_CUP_DIMPLE",
+          "eligible": true,
           "season": "AUTUMN",
           "seeds_available": 19
         },
         {
           "crop": "MUSHROOM_HELMET_PLUMP",
+          "eligible": true,
           "season": "WINTER",
           "seeds_available": 62
         }
@@ -255,9 +300,11 @@
     {
       "id": 473,
       "no_crop_assigned": false,
+      "no_eligible_crop": false,
       "seasons": [
         {
           "crop": "GRAPE",
+          "eligible": true,
           "season": "SPRING",
           "seeds_available": 81
         },
@@ -266,11 +313,13 @@
         },
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "AUTUMN",
           "seeds_available": 199
         },
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "WINTER",
           "seeds_available": 199
         }
@@ -281,9 +330,11 @@
     {
       "id": 474,
       "no_crop_assigned": false,
+      "no_eligible_crop": false,
       "seasons": [
         {
           "crop": "GRAPE",
+          "eligible": true,
           "season": "SPRING",
           "seeds_available": 81
         },
@@ -292,11 +343,13 @@
         },
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "AUTUMN",
           "seeds_available": 199
         },
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "WINTER",
           "seeds_available": 199
         }
@@ -307,9 +360,11 @@
     {
       "id": 475,
       "no_crop_assigned": false,
+      "no_eligible_crop": false,
       "seasons": [
         {
           "crop": "GRAPE",
+          "eligible": true,
           "season": "SPRING",
           "seeds_available": 81
         },
@@ -318,11 +373,13 @@
         },
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "AUTUMN",
           "seeds_available": 199
         },
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "WINTER",
           "seeds_available": 199
         }
@@ -333,9 +390,11 @@
     {
       "id": 476,
       "no_crop_assigned": false,
+      "no_eligible_crop": false,
       "seasons": [
         {
           "crop": "GRAPE",
+          "eligible": true,
           "season": "SPRING",
           "seeds_available": 81
         },
@@ -344,11 +403,13 @@
         },
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "AUTUMN",
           "seeds_available": 199
         },
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "WINTER",
           "seeds_available": 199
         }
@@ -359,9 +420,11 @@
     {
       "id": 477,
       "no_crop_assigned": false,
+      "no_eligible_crop": false,
       "seasons": [
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "SPRING",
           "seeds_available": 199
         },
@@ -370,11 +433,13 @@
         },
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "AUTUMN",
           "seeds_available": 199
         },
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "WINTER",
           "seeds_available": 199
         }
@@ -385,9 +450,11 @@
     {
       "id": 478,
       "no_crop_assigned": false,
+      "no_eligible_crop": false,
       "seasons": [
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "SPRING",
           "seeds_available": 199
         },
@@ -396,11 +463,13 @@
         },
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "AUTUMN",
           "seeds_available": 199
         },
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "WINTER",
           "seeds_available": 199
         }
@@ -411,9 +480,11 @@
     {
       "id": 479,
       "no_crop_assigned": false,
+      "no_eligible_crop": false,
       "seasons": [
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "SPRING",
           "seeds_available": 199
         },
@@ -422,11 +493,13 @@
         },
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "AUTUMN",
           "seeds_available": 199
         },
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "WINTER",
           "seeds_available": 199
         }
@@ -437,9 +510,11 @@
     {
       "id": 480,
       "no_crop_assigned": false,
+      "no_eligible_crop": false,
       "seasons": [
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "SPRING",
           "seeds_available": 199
         },
@@ -448,11 +523,13 @@
         },
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "AUTUMN",
           "seeds_available": 199
         },
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "WINTER",
           "seeds_available": 199
         }
@@ -463,9 +540,11 @@
     {
       "id": 483,
       "no_crop_assigned": false,
+      "no_eligible_crop": false,
       "seasons": [
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "SPRING",
           "seeds_available": 199
         },
@@ -474,11 +553,13 @@
         },
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "AUTUMN",
           "seeds_available": 199
         },
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "WINTER",
           "seeds_available": 199
         }
@@ -489,9 +570,11 @@
     {
       "id": 484,
       "no_crop_assigned": false,
+      "no_eligible_crop": false,
       "seasons": [
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "SPRING",
           "seeds_available": 199
         },
@@ -500,11 +583,13 @@
         },
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "AUTUMN",
           "seeds_available": 199
         },
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "WINTER",
           "seeds_available": 199
         }
@@ -515,9 +600,11 @@
     {
       "id": 485,
       "no_crop_assigned": false,
+      "no_eligible_crop": false,
       "seasons": [
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "SPRING",
           "seeds_available": 199
         },
@@ -526,11 +613,13 @@
         },
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "AUTUMN",
           "seeds_available": 199
         },
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "WINTER",
           "seeds_available": 199
         }
@@ -541,9 +630,11 @@
     {
       "id": 486,
       "no_crop_assigned": false,
+      "no_eligible_crop": false,
       "seasons": [
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "SPRING",
           "seeds_available": 199
         },
@@ -552,11 +643,13 @@
         },
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "AUTUMN",
           "seeds_available": 199
         },
         {
           "crop": "FOXTAIL_MILLET",
+          "eligible": true,
           "season": "WINTER",
           "seeds_available": 60
         }
@@ -567,9 +660,11 @@
     {
       "id": 487,
       "no_crop_assigned": false,
+      "no_eligible_crop": false,
       "seasons": [
         {
           "crop": "GRAPE",
+          "eligible": true,
           "season": "SPRING",
           "seeds_available": 81
         },
@@ -578,11 +673,13 @@
         },
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "AUTUMN",
           "seeds_available": 199
         },
         {
           "crop": "FOXTAIL_MILLET",
+          "eligible": true,
           "season": "WINTER",
           "seeds_available": 60
         }
@@ -593,9 +690,11 @@
     {
       "id": 488,
       "no_crop_assigned": false,
+      "no_eligible_crop": false,
       "seasons": [
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "SPRING",
           "seeds_available": 199
         },
@@ -604,11 +703,13 @@
         },
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "AUTUMN",
           "seeds_available": 199
         },
         {
           "crop": "FOXTAIL_MILLET",
+          "eligible": true,
           "season": "WINTER",
           "seeds_available": 60
         }
@@ -619,9 +720,11 @@
     {
       "id": 490,
       "no_crop_assigned": false,
+      "no_eligible_crop": false,
       "seasons": [
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "SPRING",
           "seeds_available": 199
         },
@@ -630,11 +733,13 @@
         },
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "AUTUMN",
           "seeds_available": 199
         },
         {
           "crop": "FOXTAIL_MILLET",
+          "eligible": true,
           "season": "WINTER",
           "seeds_available": 60
         }
@@ -645,9 +750,11 @@
     {
       "id": 491,
       "no_crop_assigned": false,
+      "no_eligible_crop": false,
       "seasons": [
         {
           "crop": "GRAPE",
+          "eligible": true,
           "season": "SPRING",
           "seeds_available": 81
         },
@@ -656,11 +763,13 @@
         },
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "AUTUMN",
           "seeds_available": 199
         },
         {
           "crop": "FOXTAIL_MILLET",
+          "eligible": true,
           "season": "WINTER",
           "seeds_available": 60
         }
@@ -671,9 +780,11 @@
     {
       "id": 492,
       "no_crop_assigned": false,
+      "no_eligible_crop": false,
       "seasons": [
         {
           "crop": "GRAPE",
+          "eligible": true,
           "season": "SPRING",
           "seeds_available": 81
         },
@@ -682,11 +793,13 @@
         },
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "AUTUMN",
           "seeds_available": 199
         },
         {
           "crop": "FOXTAIL_MILLET",
+          "eligible": true,
           "season": "WINTER",
           "seeds_available": 60
         }
@@ -697,9 +810,11 @@
     {
       "id": 493,
       "no_crop_assigned": false,
+      "no_eligible_crop": false,
       "seasons": [
         {
           "crop": "GRAPE",
+          "eligible": true,
           "season": "SPRING",
           "seeds_available": 81
         },
@@ -708,11 +823,13 @@
         },
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "AUTUMN",
           "seeds_available": 199
         },
         {
           "crop": "FOXTAIL_MILLET",
+          "eligible": true,
           "season": "WINTER",
           "seeds_available": 60
         }
@@ -723,9 +840,11 @@
     {
       "id": 494,
       "no_crop_assigned": false,
+      "no_eligible_crop": false,
       "seasons": [
         {
           "crop": "GRAPE",
+          "eligible": true,
           "season": "SPRING",
           "seeds_available": 81
         },
@@ -734,11 +853,13 @@
         },
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "AUTUMN",
           "seeds_available": 199
         },
         {
           "crop": "FOXTAIL_MILLET",
+          "eligible": true,
           "season": "WINTER",
           "seeds_available": 60
         }
@@ -749,9 +870,11 @@
     {
       "id": 495,
       "no_crop_assigned": false,
+      "no_eligible_crop": false,
       "seasons": [
         {
           "crop": "GRAPE",
+          "eligible": true,
           "season": "SPRING",
           "seeds_available": 81
         },
@@ -760,11 +883,13 @@
         },
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "AUTUMN",
           "seeds_available": 199
         },
         {
           "crop": "FOXTAIL_MILLET",
+          "eligible": true,
           "season": "WINTER",
           "seeds_available": 60
         }
@@ -775,9 +900,11 @@
     {
       "id": 496,
       "no_crop_assigned": false,
+      "no_eligible_crop": false,
       "seasons": [
         {
           "crop": "GRAPE",
+          "eligible": true,
           "season": "SPRING",
           "seeds_available": 81
         },
@@ -786,11 +913,13 @@
         },
         {
           "crop": "REED_ROPE",
+          "eligible": true,
           "season": "AUTUMN",
           "seeds_available": 199
         },
         {
           "crop": "FOXTAIL_MILLET",
+          "eligible": true,
           "season": "WINTER",
           "seeds_available": 60
         }
@@ -799,6 +928,8 @@
       "surface": false
     }
   ],
+  "plots_total": 30,
+  "plots_truncated": false,
   "seed_totals": [
     {
       "count": 55,
