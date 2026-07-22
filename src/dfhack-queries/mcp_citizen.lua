@@ -1,38 +1,3 @@
--- mcp_citizen(unit_id): a deep dossier on ONE citizen, chained by unit_id from
--- find_unit / chronicle. Facts only — labeled facts, never advice.
---
--- The query arrives as native argv (args[1] = unit_id, all digits), so there is
--- NO escaping. Returns ONE JSON object; a missing/invalid unit yields a labeled
--- {error}, never a traceback. Every version-fragile field is read through pcall
--- so a raws change on a future DF build degrades to a labeled fact, not a crash.
---
--- Field paths probed live on DFHack 53.15-r2 against "Fortress of Dreams":
---   * unit.status.current_soul.personality.traits[i]  (0..100, indexed by
---     df.personality_facet_type) — notable extremes only (<=24 low, >=76 high).
---   * .personality.emotions[] — {type=df.emotion_type, thought=df.unit_thought_type,
---     subthought, severity, year, year_tick}. Thought text = the game's own
---     df.unit_thought_type.attrs[thought].caption. Entries with thought<0 are
---     stress-decay artifacts and are skipped. Chronological; we take the tail.
---   * .personality.stress / .longterm_stress; dfhack.units.getStressCategory.
---   * soul.skills[] — {id=df.job_skill, rating (df.skill_rating), rusty}.
---   * soul.preferences[] — df.unitpref_type; HateCreature = detest, else like.
---     Targets resolved via matinfo / raws.creatures / raws.descriptors / plants.
---   * RELATIONSHIPS (the walkable social graph):
---     - spouse: unit.relationship_ids.Spouse is a LIVE unit_id (primary); the
---       histfig SPOUSE link is the fallback for an off-map/absent spouse.
---     - parents/children: hf.histfig_links MOTHER/FATHER/CHILD -> target_hf;
---       df.historical_figure.find(hf).unit_id maps a hf to a live unit (or nil).
---     - friends/grudges: hf.info.relationships.hf_visual[] carries per-figure
---       core scores {love,trust,respect,loyalty,fear} + meet_count. In this save
---       the only negative dimension observed is trust (min -25); love/respect
---       never go negative. So: love>0 with no negative dim = friend; ANY negative
---       dim (trust/love/respect/loyalty < 0) = grudge. Family figures are excluded
---       from both lists. Both lists are capped; *_total reports the full count.
---   * worship: hf.histfig_links DEITY -> target_hf name + link_strength (0..100).
---   * physical: unit.body.size_info.size_cur (cm^3) + appearance.size_modifier
---     (100 = average build).
--- Invoked by name via DFHack RunCommand; prints ONE JSON object.
-
 local args = {...}
 local query = args[1] or ''
 
@@ -62,19 +27,16 @@ local SKILL_CAP = 10
 local PREF_CAP = 12
 local THOUGHT_CAP = 10
 
--- Safe read: return fn() or a default if the field path is absent on this build.
 local function safe(fn, default)
   local ok, v = pcall(fn)
   if ok and v ~= nil then return v end
   return default
 end
 
--- Humanize an ENUM_TOKEN into "enum token" for glanceable prose.
 local function humanize(tok)
   return (tostring(tok):gsub('_', ' '):lower())
 end
 
--- Readable name for a historical figure id (translated name), or nil.
 local function hf_name(hfid)
   if not hfid or hfid < 0 then return nil end
   local hf = df.historical_figure.find(hfid)
@@ -82,7 +44,6 @@ local function hf_name(hfid)
   return safe(function() return dfhack.translation.translateName(hf.name, true) end, nil)
 end
 
--- Live unit_id backing a historical figure, or nil (dead / off-map / non-hf).
 local function hf_unit_id(hfid)
   if not hfid or hfid < 0 then return nil end
   local hf = df.historical_figure.find(hfid)
@@ -94,7 +55,6 @@ end
 
 local soul = u.status.current_soul
 
--- ---- identity ------------------------------------------------------------
 local name = safe(function() return dfhack.units.getReadableName(u) end, 'unit ' .. query)
 local profession = safe(function() return dfhack.units.getProfessionName(u) end, '')
 local age = safe(function() return math.floor(dfhack.units.getAge(u, true)) end, nil)
@@ -110,14 +70,12 @@ local out = {
   is_child = is_child or nil,
 }
 
--- ---- stress --------------------------------------------------------------
 out.stress = {
   level = sc and (STRESS[sc] or tostring(sc)) or 'unknown',
   value = safe(function() return soul.personality.stress end, nil),
   longterm = safe(function() return soul.personality.longterm_stress end, nil),
 }
 
--- ---- personality: notable extreme facets only ----------------------------
 local function facet_level(v)
   if v <= 9 then return 'very low'
   elseif v <= 24 then return 'low'
@@ -140,16 +98,13 @@ safe(function()
   end
 end)
 table.sort(extremes, function(a, b)
-  -- most-extreme first (distance from the midpoint 50)
   return math.abs(a.value - 50) > math.abs(b.value - 50)
 end)
 out.personality = { extremes = extremes }
 
--- ---- relationships (the walkable social graph) ---------------------------
 local rel = { children = {}, parents = {}, friends = {}, grudges = {} }
-local family_hf = {}  -- hfids to exclude from friend/grudge lists
+local family_hf = {}
 
--- spouse: prefer the live unit_id in relationship_ids.
 local spouse_uid = safe(function() return u.relationship_ids.Spouse end, -1)
 if spouse_uid and spouse_uid >= 0 then
   local su = df.unit.find(spouse_uid)
@@ -161,7 +116,6 @@ if spouse_uid and spouse_uid >= 0 then
   if shf and shf >= 0 then family_hf[shf] = true end
 end
 
--- family + deity via histfig links.
 local worship = {}
 safe(function()
   local hf = df.historical_figure.find(u.hist_figure_id)
@@ -189,7 +143,6 @@ end)
 table.sort(worship, function(a, b) return (a.strength or 0) > (b.strength or 0) end)
 out.worship = worship
 
--- friends / grudges from the fort acquaintance store (hf_visual).
 local friends_all, grudges_all = {}, {}
 safe(function()
   local hf = df.historical_figure.find(u.hist_figure_id)
@@ -204,16 +157,11 @@ safe(function()
       local loyalty = safe(function() return c.loyalty end, 0)
       local fear = safe(function() return c.fear end, 0)
       local meet = safe(function() return e.meet_count end, nil)
-      -- Which bond dimensions are actually negative (the discriminating facts).
       local neg_dims = {}
       if love < 0 then neg_dims[#neg_dims+1] = 'love' end
       if trust < 0 then neg_dims[#neg_dims+1] = 'trust' end
       if respect < 0 then neg_dims[#neg_dims+1] = 'respect' end
       if loyalty < 0 then neg_dims[#neg_dims+1] = 'loyalty' end
-      -- A grudge is an outright negative bond: negative love, or a negative
-      -- feeling with no positive love to offset it. A relationship the dwarf
-      -- still LOVES (love > 0) is not a grudge even if e.g. trust is negative —
-      -- it falls through to friends, which carries the raw scores anyway.
       local is_grudge = (love < 0) or (#neg_dims > 0 and love <= 0)
       if is_grudge then
         grudges_all[#grudges_all+1] = {
@@ -230,7 +178,6 @@ safe(function()
     end
   end
 end)
--- friends: strongest affection first; grudges: most-distrusted first.
 table.sort(friends_all, function(a, b) return a.affection > b.affection end)
 table.sort(grudges_all, function(a, b) return a.trust < b.trust end)
 for i = 1, math.min(#friends_all, FRIEND_CAP) do rel.friends[i] = friends_all[i] end
@@ -239,7 +186,6 @@ rel.friends_total = #friends_all
 rel.grudges_total = #grudges_all
 out.relationships = rel
 
--- ---- skills of note ------------------------------------------------------
 local skills = {}
 safe(function()
   local tmp = {}
@@ -259,7 +205,6 @@ safe(function()
 end)
 out.skills = skills
 
--- ---- preferences (likes / detests) ---------------------------------------
 local PT = df.unitpref_type
 local function pref_target(pr)
   local ty = pr.type
@@ -302,7 +247,6 @@ safe(function()
 end)
 out.preferences = { likes = likes, detests = detests }
 
--- ---- physical highlights -------------------------------------------------
 local physical = {}
 physical.body_size_cm3 = safe(function() return u.body.size_info.size_cur end, nil)
 local sizemod = safe(function() return u.appearance.size_modifier end, nil)
@@ -314,7 +258,6 @@ if sizemod then
 end
 out.physical = physical
 
--- ---- recent thoughts (capped; the game's own phrasing) -------------------
 local thoughts = {}
 safe(function()
   local em = soul.personality.emotions
@@ -323,7 +266,6 @@ safe(function()
     local th = safe(function() return e.thought end, -1)
     if th and th >= 0 then real[#real+1] = e end
   end
-  -- emotions are appended chronologically; take the tail (most recent), newest first.
   local startv = math.max(1, #real - THOUGHT_CAP + 1)
   for i = #real, startv, -1 do
     local e = real[i]

@@ -1,24 +1,7 @@
-// A2 — quickfort blueprint actuators. Two gated tools backed by mcp_blueprint.lua:
-//   blueprint_apply  designate dig/zone from a quickfort CSV at an explicit anchor.
-//   blueprint_undo   revert that designation (quickfort's native undo).
-//
-// The highest-value actuator: an agent drafts a quickfort CSV and applies it. Both
-// tools are thin — the §A0 dry-run/confirm/apply/undo loop is the shared
-// defineActuator wrapper (src/actuator.ts); each supplies only plan()/apply(),
-// which forward to the Lua subcommands. There is NO separate read sensor:
-// blueprint_apply WITHOUT a confirm_token IS the preview (the foundation's
-// single-tool preview→apply model), and its dry-run parses quickfort's own stats.
-//
-// v1 scope: dig + zone. build/place are rejected in plan() (blocked, NO token) so
-// nothing partially applies. The malformed-CSV gate (spike #11) lives in Lua: a bad
-// blueprint does NOT error in quickfort — it PARTIALLY applies — so the dry-run
-// blocks whenever it reports invalid key sequences or undesignatable tiles.
-
 import { z } from 'zod';
 import { runJsonScript } from '../query.ts';
 import { defineActuator, type PlanResult, type ApplyResult } from '../actuator.ts';
 
-// Shared arg coercion: everything crosses to Lua as a native argv string.
 const s = (v: unknown): string => (v === undefined || v === null || v === '' ? '' : String(v));
 
 interface BlueprintArgs {
@@ -30,8 +13,6 @@ interface BlueprintArgs {
   confirm_token?: string;
 }
 
-// argv layout mirrors Lua `local a={...}`: a[1]=subcommand, a[2]=csv (multi-line,
-// unescaped — verified to survive intact), a[3..5]=anchor, a[6]=mode.
 function blueprintArgv(
   kind: 'plan_apply' | 'apply_apply' | 'plan_undo' | 'apply_undo',
   a: BlueprintArgs
@@ -46,7 +27,6 @@ const MODE_DESC =
   'blueprint mode — only "dig" and "zone" are supported in v1 (build/place are ' +
   'rejected with no token so nothing partially applies)';
 
-// ---- blueprint_apply (actuator) --------------------------------------------
 export const blueprintApplyDef = defineActuator<BlueprintArgs>({
   name: 'blueprint_apply',
   title: 'Apply blueprint',
@@ -84,7 +64,6 @@ export const blueprintApplyDef = defineActuator<BlueprintArgs>({
   },
 });
 
-// ---- blueprint_undo (actuator) ---------------------------------------------
 export const blueprintUndoDef = defineActuator<BlueprintArgs>({
   name: 'blueprint_undo',
   title: 'Undo blueprint',

@@ -1,27 +1,18 @@
-// citizen(unit_id): a deep dossier on ONE citizen, chained by unit_id from
-// find_unit / chronicle. Where find_unit stays compact, this is the depth: the
-// walkable social graph (spouse, parents, children, friends, grudges — each with
-// a unit_id), worshipped deities, notable personality extremes, skills of note,
-// likes/detests, physical highlights, and recent thoughts tied to current stress.
-// Facts only — labeled facts, never advice. The Lua reads every version-fragile
-// field defensively, so a missing field is a labeled fact, not a traceback.
-
 import { runJsonScript } from '../query.ts';
 import { z } from 'zod';
 import type { ToolDef } from '../register.ts';
 
-/** A walkable edge in the social graph: a name plus the unit_id to chain on. */
 export interface Relation {
   name: string;
-  unit_id?: number; // absent when the figure is dead / off-map / not a live unit
+  unit_id?: number;
 }
 
 export interface ParentRelation extends Relation {
-  relation: string; // "mother" | "father"
+  relation: string;
 }
 
 export interface Friend extends Relation {
-  affection: number; // core "love" score
+  affection: number;
   respect: number;
   meet_count?: number;
 }
@@ -32,7 +23,7 @@ export interface Grudge extends Relation {
   respect: number;
   loyalty: number;
   fear: number;
-  negative_dims: string[]; // which bond dimensions are negative (love|trust|respect|loyalty)
+  negative_dims: string[];
   meet_count?: number;
 }
 
@@ -48,34 +39,32 @@ export interface Relationships {
 
 export interface FacetExtreme {
   facet: string;
-  value: number; // 0..100
-  level: string; // very low | low | high | very high
+  value: number;
+  level: string;
 }
 
 export interface Deity {
   deity: string;
-  strength?: number; // 0..100 worship link strength
+  strength?: number;
 }
 
 export interface SkillNote {
   skill: string;
-  level: string; // Dabbling..Legendary
+  level: string;
   rating: number;
   rusty?: boolean;
 }
 
 export interface Thought {
   emotion?: string;
-  about: string; // the game's own raw thought-caption template; may contain
-  // unfilled DF placeholders like [quality]/[deity]/[relation] that the game UI
-  // substitutes at display time — surfaced verbatim as game data, not reworded.
+  about: string;
   severity?: number;
   year?: number;
 }
 
 export interface Physical {
   body_size_cm3?: number;
-  size_modifier?: number; // 100 = average
+  size_modifier?: number;
   build?: string;
 }
 
@@ -96,9 +85,6 @@ export interface Citizen {
   thoughts: Thought[];
 }
 
-// Nested list fields (dot paths). An empty Lua table encodes as {} not [], so
-// coerce every list back to an array — the generic runJsonScript helper only
-// normalizes top-level fields, and citizen's lists are nested.
 const LIST_PATHS = [
   'personality.extremes',
   'relationships.parents',

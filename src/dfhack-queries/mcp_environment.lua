@@ -1,45 +1,3 @@
--- mcp_environment: the fort's ambient conditions RIGHT NOW -- season, weather,
--- surface temperature (is exposed water frozen?), the alignment of the biomes the
--- player knew at embark, and, for each cavern the fort has ALREADY breached,
--- whether it is currently open to fort pathing or sealed off.
---
--- FACTS ONLY: labeled current-state readings, never advice. Threshold restatements
--- (e.g. "surface water is frozen") go in `alerts`, which mirrors what the game
--- itself would surface -- no "dig deeper" / "wall it off" counsel.
---
--- FOG-OF-WAR HONEST (a HARD invariant): this reports NOTHING about undiscovered
--- cavern layers. A cavern appears in `caverns` only if the game's own Discovered
--- flag is set (the player has breached it); the open/sealed pathing test then
--- considers ONLY revealed (non-hidden) tiles. A world with three caverns none of
--- which the fort has reached emits `caverns: []` and never leaks their existence.
---
--- Small, FIXED-size payload: season/weather/temperature are scalars, biome is three
--- booleans, and caverns is capped at the (<=3) layers actually breached. Nothing in
--- here grows with fort age or map size.
---
--- Data model (verified live on 53.15 vs the frozen 78-pop fixture):
---   * Season   : df.global.cur_season (0..3 = spring/summer/autumn/winter).
---   * Weather  : df.global.current_weather is a 5x5 grid of df.weather_type
---                (0 None / 1 Rain / 2 Snow); the dominant cell is the fort weather.
---   * Temp     : block.temperature_1[lx][ly] at a surface tile, in DF units where
---                10000 == the melting/freezing point of water. <=10000 => exposed
---                water is ice. plotinfo.hi_temp/lo_temp read a 60001 sentinel here
---                and are NOT used.
---   * Biome    : the SURFACE biome per column resolves via
---                dfhack.maps.getTileBiomeRgn(pos) -> (world_x, world_y) THEN the
---                world_region whose region_coords contains it, carrying evil / good
---                / reanimating booleans -- exactly the surroundings shown at embark.
---                (getTileBiomeRgn underground collapses to the site region, so the
---                sample MUST be taken at each column's real surface tile.)
---   * Caverns  : block.global_feature -> dfhack.maps.getGlobalInitFeature(idx); a
---                feature_init_subterranean_from_layerst is a cavern, start_depth+1
---                its number (1..3). f.flags.Discovered gates disclosure. Open ==
---                a revealed cavern tile shares a citizen walkability group (DF's own
---                3D reachability, as in mcp_defenses); else sealed.
--- NOTE: per-tile SAVAGERY lives in world_data.region_map, which HARD-CRASHES this
--- DFHack build on any access, so `savage` is not reported (facts-only: no guess).
--- Invoked by name via DFHack RunCommand; prints ONE JSON object.
-
 local json = require('json')
 local function emit(t) print(json.encode(t)) end
 
@@ -48,19 +6,17 @@ if df.global.gamemode ~= df.game_mode.DWARF then
   return
 end
 
-local WATER_FREEZE = 10000        -- DF temperature units: melting point of water
-local BIOME_STEP   = 11           -- surface-sample grid stride (tiles)
+local WATER_FREEZE = 10000
+local BIOME_STEP   = 11
 local SEASONS = { [0] = 'spring', [1] = 'summer', [2] = 'autumn', [3] = 'winter' }
 local WEATHER = { [0] = 'none', [1] = 'rain', [2] = 'snow' }
 
 local m = df.global.world.map
 local wd = df.global.world.world_data
 
--- ---- season ----
 local season = df.global.cur_season
 local season_name = SEASONS[season] or tostring(season)
 
--- ---- weather: dominant cell over the 5x5 grid ----
 local weather = 'none'
 local raining, snowing = false, false
 pcall(function()
@@ -78,10 +34,6 @@ pcall(function()
   weather = WEATHER[best] or tostring(best)
 end)
 
--- ---- citizen walkability groups (the "reachable by the fort" set) ----
--- Mirrors mcp_defenses: DF precomputes a 3D walk group per walkable tile; two tiles
--- are mutually reachable iff they share one nonzero group. A cavern is "open" when a
--- revealed cavern tile lands in a group a citizen also stands in.
 local citizen_groups = {}
 for _, u in ipairs(dfhack.units.getCitizens(true)) do
   local p = u.pos
@@ -91,10 +43,6 @@ for _, u in ipairs(dfhack.units.getCitizens(true)) do
   end
 end
 
--- ---- surface pass: per-column true-surface biome + ambient temperature ----
--- One downward scan per sampled column to the first DISCOVERED, OUTSIDE, solid tile
--- (the real surface); there we read the tile temperature and the surface biome
--- region. Fog of war stays honest: hidden columns contribute nothing.
 local function region_at(rx, ry)
   for i = 0, #wd.regions - 1 do
     local rc = wd.regions[i].region_coords
@@ -105,7 +53,7 @@ local function region_at(rx, ry)
   return nil
 end
 
-local rgn_seen = {}            -- world-region index -> true (dedup)
+local rgn_seen = {}
 local evil, good, reanimating = false, false, false
 local temps = {}
 for x = math.floor(BIOME_STEP / 2), m.x_count - 1, BIOME_STEP do
@@ -141,30 +89,17 @@ for x = math.floor(BIOME_STEP / 2), m.x_count - 1, BIOME_STEP do
   end
 end
 
--- representative surface temperature = median of the samples (robust to a stray
--- sun-warmed construction tile). No samples (fully roofed/hidden) => UNKNOWN: we
--- leave surface_temp AND water_frozen nil rather than fabricating a `false`, so we
--- never claim water is liquid without having read a temperature. This encoder can't
--- emit JSON null, so nil keys are simply omitted here and the TS wrapper normalizes
--- them to explicit null (keeping the fixed key set + number|null contract).
-local surface_temp   -- nil if no surface sample
+local surface_temp
 if #temps > 0 then
   table.sort(temps)
   surface_temp = temps[math.ceil(#temps / 2)]
 end
-local water_frozen   -- nil (=> unknown) unless a temperature was actually read
-local temperature_band = 'unknown'
+local water_frozen
 if surface_temp ~= nil then
   water_frozen = surface_temp <= WATER_FREEZE
-  temperature_band = water_frozen and 'freezing' or 'above_freezing'
 end
 
--- ---- caverns: only those the fort has BREACHED (Discovered), open vs sealed ----
--- Collect the distinct global-feature ids referenced by loaded blocks, resolve each
--- to its init feature, and keep the DISCOVERED subterranean (cavern) layers. Then a
--- single block pass tests, per discovered cavern, whether a REVEALED tile shares a
--- citizen walk group (open) or none do (sealed).
-local cavern_of_gf = {}        -- global_feature id -> cavern number (1..3)
+local cavern_of_gf = {}
 local seen_gf = {}
 for _, b in ipairs(m.map_blocks) do
   local gf = b.global_feature
@@ -182,7 +117,7 @@ for _, b in ipairs(m.map_blocks) do
   end
 end
 
-local cavern_open = {}         -- cavern number -> bool (open to fort)
+local cavern_open = {}
 for _, num in pairs(cavern_of_gf) do cavern_open[num] = false end
 local any_discovered = next(cavern_of_gf) ~= nil
 if any_discovered then
@@ -192,11 +127,6 @@ if any_discovered then
       local bx, by, bz = b.map_pos.x, b.map_pos.y, b.map_pos.z
       for lx = 0, 15 do
         for ly = 0, 15 do
-          -- Only tiles that ACTUALLY belong to the cavern count: the block-level
-          -- global_feature says "this 16x16 has cavern tiles", but the per-tile
-          -- designation.feature_global flag says WHICH ones. Without it a stray
-          -- revealed, citizen-reachable tunnel tile sharing the block would mark a
-          -- SEALED cavern "open". Gate on both, plus revealed + a shared walk group.
           local des = b.designation[lx][ly]
           if des.feature_global and not des.hidden then
             local g = dfhack.maps.getWalkableGroup(xyz2pos(bx + lx, by + ly, bz))
@@ -215,7 +145,6 @@ for num, open in pairs(cavern_open) do
 end
 table.sort(caverns, function(a, b) return a.cavern < b.cavern end)
 
--- ---- alerts: factual restatements the game would nag about ----
 local alerts = {}
 if water_frozen then alerts[#alerts + 1] = 'surface water is frozen' end
 if evil then alerts[#alerts + 1] = 'evil biome' end
@@ -231,7 +160,6 @@ emit({
   season_name = season_name,
   surface = {
     temperature = surface_temp,
-    temperature_band = temperature_band,
     water_frozen = water_frozen,
     weather = weather,
     raining = raining,

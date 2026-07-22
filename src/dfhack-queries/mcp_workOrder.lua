@@ -1,21 +1,3 @@
--- mcp_workOrder: A1 actuator — manager (work) orders. Backs three MCP tools:
---   work_order_list        (read-only sensor; subcommand "list")
---   work_order_create      (gated actuator; "plan_create" / "apply_create")
---   work_order_cancel      (gated actuator; "apply"/"plan" via "plan_cancel"/"apply_cancel")
---
--- EXECUTE, NEVER DECIDE: every field of the order is supplied by the caller; this
--- script builds/lists/removes the struct and reports facts. No "you should queue
--- X" logic. The §A0 dry-run/confirm/undo loop lives in TS (src/actuator.ts); this
--- script just answers plan_* (preview + signature) and apply_* (mutate + readback).
---
--- Manager orders live in df.global.world.manager_orders.all (vector<manager_order*>)
--- with .manager_order_next_id for fresh ids — the SAME structures the in-game
--- manager screen reads, so a created order appears in-game (spike #11, verified
--- live on 53.15: create 226->227, cancel ->226; :new()/insert/erase+delete).
---
--- Invoked by name via DFHack RunCommand with a subcommand as arg 1; prints ONE
--- JSON object. Args arrive unescaped as `...`.
-
 local json = require('json')
 local function emit(t) print(json.encode(t)) end
 
@@ -31,8 +13,6 @@ local LIST_CAP = 256
 local FREQ = { OneTime = 0, Daily = 1, Monthly = 2, Seasonally = 3, Yearly = 4 }
 local FREQ_NAME = { [0] = 'OneTime', [1] = 'Daily', [2] = 'Monthly', [3] = 'Seasonally', [4] = 'Yearly' }
 
--- Is a citizen assigned to a MANAGE_PRODUCTION position? A manager order can be
--- created without one, but won't be validated/processed — reported as a fact.
 local function manager_present()
   local ent = df.historical_entity.find(df.global.plotinfo.group_id)
   if not ent then return false end
@@ -49,11 +29,6 @@ local function manager_present()
   return false
 end
 
--- Facts for one order. material/item_type are decoded to tokens; the KEY IS OMITTED
--- when unset (this DFHack JSON encoder can't emit null — the TS type marks them
--- optional to match). status.active / status.validated are the per-order validation
--- state: validated=false on an active order means it cannot currently be fulfilled
--- (e.g. required materials unavailable) — a fact, for the agent to interpret.
 local function order_facts(o)
   local mat
   if o.mat_type ~= -1 or o.mat_index ~= -1 then
@@ -77,18 +52,12 @@ local function order_facts(o)
   }
 end
 
--- Identity of an order's output spec — for duplicate detection and cancel stability.
 local function identity(job_type, item_type, item_subtype, mat_type, mat_index)
   return string.format('%d/%d/%d/%d/%d', job_type, item_type, item_subtype, mat_type, mat_index)
 end
 
--- ============================ list ============================
--- args: [2] = after_id (optional pagination cursor). Returns active orders with
--- id > after_id, sorted by id, capped at LIST_CAP. `count` is the TOTAL number of
--- active orders in the fort (unfiltered); when the page is capped, `truncated` is
--- true and `next_cursor` is the id to pass back as after_id for the next page.
 if sub == 'list' then
-  local after = tonumber(a[2]) -- nil => from the start
+  local after = tonumber(a[2])
   local all = df.global.world.manager_orders.all
   local out = {}
   for i = 0, #all - 1 do
@@ -113,9 +82,6 @@ if sub == 'list' then
   return
 end
 
--- ============================ create ============================
--- args: [2]=job_type name, [3]=amount, [4]=frequency, [5]=material token,
---       [6]=item_type name, [7]=conditions JSON (advanced prerequisites; rejected)
 local function parse_create()
   local jt_name = a[2]
   local amount = tonumber(a[3])
@@ -196,15 +162,12 @@ if sub == 'plan_create' or sub == 'apply_create' then
         duplicate_of = dup,
         manager_present = manager_present(),
       },
-      -- target signature: the op's output identity + amount/frequency + whether a
-      -- duplicate already exists (the only target-state that matters here).
       signature = string.format('create/%s/%d/%d/dup=%s',
         identity(p.jt, p.item_type, p.item_subtype, p.mat_type, p.mat_index),
         p.amount, p.freq, tostring(dup ~= nil)),
     })
     return
   end
-  -- apply_create
   local mo = df.global.world.manager_orders
   local o = df.manager_order:new()
   o.id = mo.manager_order_next_id
@@ -235,7 +198,6 @@ if sub == 'plan_create' or sub == 'apply_create' then
   return
 end
 
--- ============================ cancel ============================
 local function find_order(id)
   local all = df.global.world.manager_orders.all
   for i = 0, #all - 1 do
@@ -251,8 +213,6 @@ if sub == 'plan_cancel' or sub == 'apply_cancel' then
   if not o then emit({ blocked = { 'no active manager order with id ' .. id } }) return end
   local facts = order_facts(o)
   local nconds = #o.item_conditions + #o.order_conditions
-  -- Signature captures EVERYTHING the preview shows, so any change to the previewed
-  -- order (progress, frequency, workshop, conditions, validation) voids the token.
   local signature = string.format('cancel/%d/%s/tot=%d/left=%d/%s/ws=%d/cond=%d/sub=%d/val=%s',
     id, identity(o.job_type, o.item_type, o.item_subtype, o.mat_type, o.mat_index),
     o.amount_total, o.amount_left, facts.frequency, o.workshop_id, nconds, o.item_subtype,
@@ -261,14 +221,10 @@ if sub == 'plan_cancel' or sub == 'apply_cancel' then
     emit({ preview = facts, signature = signature })
     return
   end
-  -- apply_cancel: capture the recreate spec (undo handle) BEFORE removing. The spec
-  -- holds only what work_order_create can reproduce; `faithful` is true ONLY when the
-  -- order carries nothing create would drop. When false, `not_reproduced` names the
-  -- lost features as facts, so the agent knows the undo is approximate.
   local faithful = (o.workshop_id == -1) and (nconds == 0) and (o.item_subtype == -1)
   local recreate = {
     job_type = facts.job_type,
-    amount = o.amount_left, -- the REMAINING work, not the original total
+    amount = o.amount_left,
     frequency = facts.frequency,
     material = facts.material,
     item_type = facts.item_type,

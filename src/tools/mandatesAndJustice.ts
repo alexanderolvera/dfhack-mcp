@@ -1,7 +1,3 @@
-// mandates_and_justice(): the fort's nobility overhead — active mandates and
-// export bans, unmet noble room demands, and the state of the justice system.
-// Thin wrapper over the MANDATES_AND_JUSTICE Lua query.
-
 import { runJsonScript } from '../query.ts';
 import type { ToolDef } from '../register.ts';
 

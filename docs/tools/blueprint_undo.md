@@ -47,6 +47,9 @@ No golden fixture exists for this tool (actuators are not golden-tested).
 - Note: if tiles under the footprint were ALREADY designated before the original apply, undo clears them too — blueprint_apply's preview reports this via `pre_existing_designations` and flags the undo handle unfaithful.
 - Returns `{"error":"no fort loaded"}` if no fort is active.
 
+## Implementation notes
+Shares its Lua backend (`mcp_blueprint.lua`) with blueprint_apply — see [blueprint_apply's Implementation notes](blueprint_apply.md#implementation-notes) for the quickfort driver, CSV parsing, footprint derivation, and signature-digest details, which apply to both tools' `undo` subcommands too.
+
 ## Related
 - [blueprint_apply](blueprint_apply.md) — the forward operation; its apply result hands back the exact undo arguments.
 - [tile_region](tile_region.md) — verify tile state around the footprint after reverting.

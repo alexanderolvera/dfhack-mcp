@@ -1,6 +1,3 @@
-// unmet_needs(): the needs system aggregated into the fort's top stressors.
-// Thin wrapper over the UNMET_NEEDS Lua query.
-
 import { runJsonScript } from '../query.ts';
 import type { ToolDef } from '../register.ts';
 

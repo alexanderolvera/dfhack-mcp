@@ -59,6 +59,10 @@ Creates a manager order in `df.global.world.manager_orders` — the same structu
 - Orders are created unbound (`workshop_id: -1`, `max_workshops: 0`); v1 rejects prerequisite `conditions` outright.
 - A missing manager noble doesn't block creation, but the order won't be validated/processed until one is assigned (`manager_present` is surfaced in the preview).
 - Returns `{"error":"no fort loaded"}` if no fort is active.
+- See [work_order_list](work_order_list.md)'s Implementation notes for the confirmed `manager_orders` field paths and a live-verified create/cancel id example.
+
+## Implementation notes
+- Both `work_order_create` and `work_order_cancel` are thin TS actuators: `plan()`/`apply()` just forward to `mcp_workOrder.lua`'s subcommands; the shared dry-run/confirm/apply/undo protocol lives in `src/actuator.ts` (`defineActuator`). Version-fragile DF struct access stays in the Lua query, not the TS wrapper.
 
 ## Related
 [work_order_list](work_order_list.md) (readback/verification), [work_order_cancel](work_order_cancel.md) (the documented reversal), [game_data](game_data.md) (job_type / material / item_type token discovery), [stocks](stocks.md) (material availability).

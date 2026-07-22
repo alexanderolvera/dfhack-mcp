@@ -50,6 +50,9 @@ Top-level fields:
 - Small fixed-size payload; no parameters, no pagination.
 - Returns `{"error":"no fort loaded"}` if no fort is active — this is also the canonical probe for whether a fort is loaded at all.
 
+## Implementation notes
+The unhappy-population alert only fires when BOTH a minimum share (10% of citizens) AND a minimum head count (3+ unhappy dwarves) are met. A share alone would cry wolf on a tiny fort (1 unhappy dwarf on a 7-dwarf embark is already 14%), and a head count alone would flag ordinary churn on a large fort. `miserable` dwarves (stress category <= 0) are not gated this way — one can tantrum or go insane, so they're notable at any count and are surfaced via the always-present `happiness.miserable` field rather than a threshold-gated alert string.
+
 ## Related
 - [threats](threats.md) ↔ [defenses](defenses.md) — drill into a hostile alert.
 - [unmet_needs](unmet_needs.md) / [moods](moods.md) — drill into the happiness breakdown.

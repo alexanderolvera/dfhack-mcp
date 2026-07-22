@@ -1,73 +1,3 @@
--- mcp_gameData(query, kind): look up the LOADED WORLD's raws (df.global.world.raws.*)
--- — ground truth for THIS world, the only source for procedural creatures
--- (demons/forgotten beasts/titans, which are never on the wiki).
---
--- One unified query with a per-kind dispatch. Implemented kinds: CREATURE,
--- MATERIAL, PLANT, REACTION, ITEM, BUILDING. Every kind mirrors the creature
--- matching contract: a single strong (exact) hit -> a curated dossier; several
--- -> a disambiguation list (cap 8); none -> {match_count:0, matches:[]}.
---
--- Field paths for the non-creature kinds were probed live on DFHack 53.15-r2
--- against the Dreamfort fort and are version-fragile. Confirmed paths:
---   * MATERIAL: dfhack.matinfo (find(token) / decode(0, inorganic_index)); the
---     searchable universe is df.global.world.raws.inorganics.all (metals, stones,
---     gems, ores). mi:getToken(), mi.material.state_name.{Solid,Liquid,Gas},
---     .heat.{melting_point,boiling_point,ignite_point} (60001 == none),
---     .solid_density/.liquid_density (-1 == n/a), .flags (bitfield of stable
---     token keys). DF temperature urists convert to Fahrenheit via (urist-9968).
---   * PLANT: df.global.world.raws.plants.all -> plant_raw. .id/.name/.name_plural,
---     .flags (TREE/GRASS decide type, SPRING..WINTER seasons, BIOME_* biomes),
---     .underground_depth_min (0 == surface), .material_defs.type[df.plant_material_def]
---     (>=0 means that yield exists: drink/seed/thread/mill/extract_*), .growths[],
---     .material[] (produced materials).
---   * REACTION: df.global.world.raws.reactions.reactions -> reaction. .code/.name,
---     .skill (df.job_skill), .building.{type,subtype,custom} are PARALLEL vectors
---     (a reaction can run at several buildings — iterate all i, not just [0]):
---     type[i] (df.building_type) + subtype[i] (df.workshop_type / df.furnace_type)
---     + custom[i] (links to a custom building_def by its .id). .reagents[]/.products[]
---     (item_type via df.item_type, reaction_class carries a material class); both
---     reagents and products are POLYMORPHIC — read fields via sget (improvement
---     products lack item_type/count).
---   * ITEM: df.global.world.raws.itemdefs.all -> itemdef_*st. Class from the type
---     name (itemdef_<class>st). .id/.name/.name_plural/.adjective/.value + a
---     per-class stat whitelist read defensively (missing fields pcall-skipped).
---   * BUILDING: df.global.world.raws.buildings.all -> building_def_workshopst
---     (custom, raws-defined workshops only; built-in shops are hardcoded, not in
---     raws). .code/.name/.building_type/.labor_description/.dim_x/.dim_y, plus the
---     reactions where ANY .building.custom[i] == this def's .id (capped at 8).
---
--- Parameters arrive as native argv (args[1]=query, args[2]=kind), so there is NO
--- escaping — the search term is just data.
---
--- CREATURE matching contract:
---   * query is all digits            -> treat as a live unit_id (fusion shortcut):
---                                        df.unit.find(id).race indexes
---                                        raws.creatures.all -> that unit's race.
---   * exact creature_id token match  -> single strong hit (dossier).
---   * exact name/caste_name match    -> single strong hit (dossier).
---   * otherwise case-insensitive substring against creature_id + the name tuple
---     (singular/plural/adjective) + every caste_name. Exactly one match ->
---     dossier; several -> a disambiguation list (cap 8), mirroring find_unit;
---     none -> {match_count:0, matches:[]}.
---
--- Verified live on DFHack 53.15-r2 against the two "Flame Phantom" demons
--- (DEMON_4, unit_id 18393, race 1661). Confirmed version-fragile field paths:
---   * df.global.world.raws.creatures.all[race]  -> creature_raw
---   * cr.creature_id (token), cr.name[0..2] (singular/plural/adjective)
---   * cr.adultsize (body volume, cm^3), cr.caste (vector; the field is `caste`,
---     NOT `castes`), caste.caste_name[0..2], caste.description (a ready blurb),
---     caste.flags (a bitfield whose TRUE keys are stable token names — iterate
---     pairs(); NOT indexed by df.caste_raw_flags, so we never index it by token)
---   * caste.body_info.attacks[].{name,verb_3rd} (dup per left/right bp -> dedupe)
---   * caste.body_info.interactions[].interaction.adv_name (breath weapon label,
---     e.g. "Hurl fireball"/"Spray jet of fire"/"Emit dust") + material_str0..2
---     (the emitted material token, e.g. CREATURE_MAT:DEMON_4:POISON — the dust's
---     syndrome material). The syndrome vector on the resolved material reads 0 in
---     this build, so we surface the emission material token rather than traverse
---     a fragile/empty syndrome path.
---   * df.unit.find(id).race for the unit_id shortcut.
--- Invoked by name via DFHack RunCommand; prints ONE JSON object.
-
 local args = {...}
 local query = args[1] or ''
 local kind = args[2] or ''
@@ -94,7 +24,6 @@ local creatures = df.global.world.raws.creatures.all
 
 local function trim(s) return (tostring(s):gsub('^%s*(.-)%s*$', '%1')) end
 
--- DF body volume (cm^3) -> a glanceable size bucket.
 local function size_label(v)
   if v < 1000 then return 'tiny'
   elseif v < 15000 then return 'small'
@@ -104,7 +33,6 @@ local function size_label(v)
   else return 'gigantic' end
 end
 
--- First sentence of a caste description -> a short human blurb.
 local function first_sentence(desc)
   if not desc or desc == '' then return nil end
   local dot = string.find(desc, '%.')
@@ -112,8 +40,6 @@ local function first_sentence(desc)
   return trim(desc)
 end
 
--- Curated advisor flags, unioned across all castes (a bitfield of stable token
--- keys; we only keep TRUE keys that are whitelisted).
 local function creature_flags(cr)
   local set = {}
   for ci = 0, #cr.caste - 1 do
@@ -121,11 +47,6 @@ local function creature_flags(cr)
     for k, v in pairs(caste.flags) do
       if v == true and FLAG_WL[k] then set[k] = true end
     end
-    -- Building destroyer is NOT a caste.flags bit in this build; it's a numeric
-    -- at caste.misc.buildingdestroyer (confirmed: DEMON_4 = 2, TROLL = 2). Surface
-    -- it as a synthetic BUILDINGDESTROYER flag so the whitelisted token isn't dead
-    -- and consumers (e.g. identify's wiki-page selection) see it alongside the
-    -- real flags.
     local bd = 0
     pcall(function() bd = caste.misc.buildingdestroyer or 0 end)
     if bd and bd > 0 then set.BUILDINGDESTROYER = true end
@@ -136,7 +57,6 @@ local function creature_flags(cr)
   return out
 end
 
--- Melee attacks, deduped by name (raws list one per left/right body part).
 local function creature_attacks(caste)
   local seen, out = {}, {}
   for _, a in ipairs(caste.body_info.attacks) do
@@ -148,8 +68,6 @@ local function creature_attacks(caste)
   return out
 end
 
--- Breath weapons / creature interactions: the human adv_name plus the emitted
--- material token (which carries the syndrome, e.g. dust) when present.
 local function creature_interactions(caste)
   local out = {}
   for _, ci in ipairs(caste.body_info.interactions) do
@@ -173,7 +91,6 @@ local function best_caste(cr)
   return cr.caste[0]
 end
 
--- Full curated dossier for one creature_raw.
 local function dossier(cr, unit_id, unit_name)
   local caste = best_caste(cr)
   local desc = caste.description
@@ -189,13 +106,11 @@ local function dossier(cr, unit_id, unit_name)
     attacks     = creature_attacks(caste),
     interactions = creature_interactions(caste),
     description = (desc ~= '' and desc) or nil,
-    blurb       = first_sentence(desc),
     unit_id     = unit_id,
     unit_name   = unit_name,
   }
 end
 
--- Compact entry for a disambiguation list.
 local function stub(cr)
   local blurb = first_sentence(best_caste(cr).description)
   if not blurb then
@@ -208,9 +123,7 @@ end
 
 local function lc(s) return string.lower(tostring(s)) end
 
--- ---- CREATURE kind -------------------------------------------------------
 local function find_creature(q)
-  -- Fusion shortcut: an all-digits query is a live unit_id.
   if string.match(q, '^%d+$') then
     local u = df.unit.find(tonumber(q))
     if not u then
@@ -232,7 +145,6 @@ local function find_creature(q)
   for i = 0, #creatures - 1 do
     local cr = creatures[i]
     local token = tostring(cr.creature_id)
-    -- gather candidate names: creature name tuple + every caste_name
     local hit, is_exact = false, false
     if lc(token) == ql then is_exact = true; hit = true
     elseif string.find(lc(token), ql, 1, true) then hit = true end
@@ -258,11 +170,9 @@ local function find_creature(q)
     end
   end
 
-  -- One strong (exact) hit, or a single overall hit -> a full dossier.
   if #exact == 1 then emit(dossier(exact[1])); return end
   if #all == 1 then emit(dossier(all[1])); return end
 
-  -- Otherwise a disambiguation list (cap MAX), mirroring find_unit.
   local matches = {}
   for i = 1, math.min(#all, MAX) do matches[#matches+1] = stub(all[i]) end
   emit({
@@ -273,11 +183,6 @@ local function find_creature(q)
   })
 end
 
--- Generic exact-then-substring searcher shared by every non-creature kind.
--- `entries` is a list of records; `keys(rec)` returns that record's searchable
--- strings; `dossier1(rec)` builds a full dossier; `stub1(rec)` a compact entry.
--- Mirrors the creature contract: one exact hit, or one overall hit -> dossier;
--- else a capped disambiguation list.
 local function search(q, entries, keys, dossier1, stub1)
   local ql = lc(q)
   local all, exact = {}, {}
@@ -297,8 +202,6 @@ local function search(q, entries, keys, dossier1, stub1)
   if #exact == 1 then emit(dossier1(exact[1])); return true end
   if #all == 1 then emit(dossier1(all[1])); return true end
   if #all == 0 then return false end
-  -- Cap the disambiguation list at MAX, but list exact matches first so the
-  -- record the caller most likely meant is never truncated out of view.
   local matches, seen = {}, {}
   for _, rec in ipairs(exact) do
     if #matches >= MAX then break end
@@ -316,18 +219,12 @@ local function emit_empty()
   emit({ query = query, match_count = 0, matches = {} })
 end
 
--- Safe field read: DFHack raises when a field is absent from a polymorphic
--- subclass (e.g. a non-item reaction product), so read subclass-specific or
--- optional fields through pcall and treat a miss as nil.
 local function sget(obj, field)
   local ok, v = pcall(function() return obj[field] end)
   if ok then return v end
   return nil
 end
 
--- Assemble an ITEM_TYPE[:SUBTYPE] token from a reagent or product. item_type /
--- item_str live only on the *_itemst subclasses, so read them defensively — a
--- non-item reagent/product (e.g. an improvement) yields nil instead of raising.
 local function item_token(obj)
   local parts = {}
   local it = sget(obj, 'item_type')
@@ -337,9 +234,6 @@ local function item_token(obj)
   return (#parts > 0) and table.concat(parts, ':') or nil
 end
 
--- ---- MATERIAL kind -------------------------------------------------------
--- DF temperature is stored in "urists": degF = urist - 9968. 60001 is the
--- sentinel for "no such point" (won't melt / boil / ignite); a real 60000 is kept.
 local function temp_fact(urist)
   if not urist or urist > 60000 then return nil end
   local f = urist - 9968
@@ -392,8 +286,6 @@ local function material_stub(mi)
 end
 
 local function find_material(q)
-  -- A fully-qualified token (has a ':') is a direct matinfo lookup — this reaches
-  -- non-inorganic materials (PLANT/CREATURE tissues) the inorganic index misses.
   if string.find(q, ':', 1, true) then
     local ok, mi = pcall(dfhack.matinfo.find, q)
     if ok and mi then emit(material_dossier(mi)); return end
@@ -408,16 +300,12 @@ local function find_material(q)
     function(rec) return material_stub(dfhack.matinfo.decode(0, rec.idx)) end
   )
   if handled then return end
-  -- No inorganic matched: try a bare-token matinfo lookup (builtin materials
-  -- like WATER / COAL), else report no matches.
   local ok, mi = pcall(dfhack.matinfo.find, q)
   if ok and mi then emit(material_dossier(mi)); return end
   emit_empty()
 end
 
--- ---- PLANT kind ----------------------------------------------------------
 local PLANT_SEASONS = { 'SPRING', 'SUMMER', 'AUTUMN', 'WINTER' }
--- df.plant_material_def index -> yield label (0 basic_mat / 1 tree omitted).
 local PLANT_YIELDS = {
   { idx = 2, label = 'drink' }, { idx = 3, label = 'seed' },
   { idx = 4, label = 'thread' }, { idx = 5, label = 'mill' },
@@ -431,12 +319,6 @@ local function plant_type(p)
   else return 'shrub' end
 end
 
--- Farm-plot eligibility, DF's own rule as a labeled fact: a plant is plantable in
--- a farm plot iff it carries the SEED flag (has a plantable seed) and is neither a
--- tree nor a grass. Verified live on 53.15: this yields exactly the vanilla crop
--- roster (110 plants) and excludes precisely the gather-only wild shrubs that have
--- no seed (kobold bulb, valley herb) and the 47 seeded trees you cannot farm. Not
--- advice — the same classification the game uses to build a plot's planting list.
 local function plant_farm_plantable(p)
   return (not p.flags.TREE and not p.flags.GRASS and p.flags.SEED) and true or false
 end
@@ -496,7 +378,6 @@ local function plant_dossier(p)
     growth_time = p.growdur,
     seasons = plant_seasons(p),
     surface = p.underground_depth_min == 0,
-    subterranean = p.underground_depth_min > 0,
     depth_min = p.underground_depth_min,
     depth_max = p.underground_depth_max,
     biomes = plant_biomes(p),
@@ -523,10 +404,6 @@ local function find_plant(q)
   ) then emit_empty() end
 end
 
--- ---- REACTION kind -------------------------------------------------------
--- A reaction can list SEVERAL buildings (parallel type/subtype/custom vectors) —
--- e.g. MAKE_PEARLASH runs at both the Kiln and the Magma Kiln, and ~35% of raws
--- reactions do. Return every aligned entry, not just index 0.
 local function reaction_buildings(r)
   local b = r.building
   local out = {}
@@ -549,7 +426,6 @@ local function reaction_buildings(r)
   return out
 end
 
--- reaction_reagent is polymorphic too; item_token reads its fields defensively.
 local function reagent_item(rg)
   return item_token(rg)
 end
@@ -579,10 +455,6 @@ local function reaction_reagents(r)
   return out
 end
 
--- reaction.products is polymorphic: reaction_product_itemst carries
--- item_type/count, but improvement products (glaze/encrust/stud/sew-image) do
--- NOT — reading those fields on them raises. Read everything defensively and,
--- for a non-item product, report the improvement kind as a labeled fact.
 local function reaction_products(r)
   local out = {}
   for j = 0, #r.products - 1 do
@@ -639,15 +511,10 @@ local function find_reaction(q)
   ) then emit_empty() end
 end
 
--- ---- ITEM kind (itemdefs) ------------------------------------------------
--- Class-defining stat fields; read defensively (a field absent on a class is
--- pcall-skipped) so one reader serves every itemdef_*st.
 local ITEM_STAT_FIELDS = { 'size', 'armorlevel', 'ammo_class', 'container_capacity',
   'hits', 'two_handed', 'minimum_size', 'material_size', 'ubstep', 'lbstep',
   'ranged_ammo' }
 
--- Not every itemdef_*st carries the same fields (foodst has no value /
--- name_plural / adjective), so read optional fields defensively via sget (above).
 local function item_class(it)
   local t = tostring(it._type)
   return string.match(t, 'itemdef_(%a+)st') or 'item'
@@ -729,10 +596,6 @@ local function find_item(q)
   ) then emit_empty() end
 end
 
--- ---- BUILDING kind (custom raws-defined workshops) -----------------------
--- Match ANY of a reaction's custom-building entries (a reaction can run at
--- several), and cap the list at MAX so a modded workshop with dozens of
--- reactions stays glanceable — reporting the full count when truncated.
 local function building_reactions(bd)
   local out, total = {}, 0
   local rs = df.global.world.raws.reactions.reactions

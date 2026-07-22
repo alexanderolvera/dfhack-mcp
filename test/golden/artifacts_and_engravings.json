@@ -9,7 +9,6 @@
       "item_type": "SLAB",
       "maker": {
         "histfig_id": 53,
-        "is_current_citizen": false,
         "name": "Kun the Hood of Spiders"
       },
       "material": {
@@ -65,7 +64,6 @@
       "item_type": "SHOES",
       "maker": {
         "histfig_id": 187,
-        "is_current_citizen": true,
         "name": "Goden Sculptedpainted",
         "unit_id": 306
       },
@@ -112,7 +110,6 @@
       "item_type": "SHIELD",
       "maker": {
         "histfig_id": 222,
-        "is_current_citizen": true,
         "name": "Tun Channelpaint",
         "unit_id": 346
       },
@@ -159,7 +156,6 @@
       "item_type": "BIN",
       "maker": {
         "histfig_id": 168,
-        "is_current_citizen": true,
         "name": "Olin Bronzequakes",
         "unit_id": 116
       },
@@ -206,7 +202,6 @@
       "item_type": "BOX",
       "maker": {
         "histfig_id": 230,
-        "is_current_citizen": true,
         "name": "Al�th Booktrades",
         "unit_id": 357
       },
@@ -287,7 +282,6 @@
       "item_type": "SCEPTER",
       "maker": {
         "histfig_id": 293,
-        "is_current_citizen": true,
         "name": "Eral Blockadefolded",
         "unit_id": 495
       },

@@ -1,13 +1,9 @@
-// find_unit(query): dossier on citizens matching a name or profession.
-// One of the two parameterized tools — passes the search term as native argv to
-// the mcp_findUnit.lua script (no escaping; the term is just data).
-
 import { runJsonScript } from '../query.ts';
 import { z } from 'zod';
 import type { ToolDef } from '../register.ts';
 
 export interface UnitMatch {
-  unit_id: number; // the live unit id — pass to citizen()/identify() to go deeper
+  unit_id: number;
   name: string;
   profession: string;
   age: number;

@@ -1,7 +1,3 @@
-// MediaWiki HTTP layer for the DF wiki: raw API GET, search, and the redirect /
-// namespace / section resolution that pins everything to the DF2014 namespace.
-// PURE HTTP (Node 24 built-in fetch) — no DFHack, no game needed, no new deps.
-
 import { cleanHtml } from './clean.ts';
 
 const API = 'https://dwarffortresswiki.org/api.php';
@@ -23,7 +19,6 @@ export interface Resolved {
   fragment?: string; // section fragment picked up from the redirect chain
 }
 
-/** GET the MediaWiki API as JSON with a polite User-Agent. */
 async function apiGet(params: Record<string, string>): Promise<any> {
   const url = `${API}?${new URLSearchParams({ ...params, format: 'json' })}`;
   const res = await fetch(url, { headers: { 'User-Agent': USER_AGENT } });
@@ -32,7 +27,6 @@ async function apiGet(params: Record<string, string>): Promise<any> {
 }
 
 let df2014NsId: string | null = null;
-/** DF2014's numeric namespace id (cached in-process); biases search into DF2014. */
 async function versionNamespaceId(): Promise<string | null> {
   if (df2014NsId !== null) return df2014NsId;
   try {
@@ -76,7 +70,6 @@ export async function wikiSearch(query: string): Promise<WikiSearch | { error: s
   }
 }
 
-/** Does the title already carry a wiki namespace prefix (e.g. "DF2014:Trap")? */
 function hasNamespace(title: string): boolean {
   return /^[A-Za-z0-9 .]+:/.test(title);
 }
@@ -97,9 +90,10 @@ async function resolveOnce(
 }
 
 /**
- * Resolve a user title to a real DF2014 page. Tries the DF2014-namespaced title
- * first (bare titles like "Trap" do NOT auto-redirect into DF2014), then falls
- * back to the title as given. Returns null if nothing exists.
+ * Resolves a user title to a real DF2014 page, trying the DF2014-namespaced
+ * title first (bare titles do not auto-redirect into DF2014) then the title as given.
+ * @param title The title to resolve.
+ * @returns The resolved title and any redirect section fragment, or null if nothing exists.
  */
 export async function resolveTitle(title: string): Promise<Resolved | null> {
   const candidates = hasNamespace(title) ? [title] : [`${VERSION_NS}:${title}`, title];
@@ -114,7 +108,6 @@ export async function resolveTitle(title: string): Promise<Resolved | null> {
   return null;
 }
 
-/** Normalize a heading/fragment for loose matching (case/space/underscore-insensitive). */
 function normHeading(s: string): string {
   return s
     .replace(/[_\s]+/g, ' ')
@@ -123,8 +116,10 @@ function normHeading(s: string): string {
 }
 
 /**
- * Fetch parsed HTML for a page, optionally scoped to a section identified by a
- * heading name (from an explicit `section` arg or a redirect `#fragment`).
+ * Fetches parsed HTML for a page, optionally scoped to one section.
+ * @param title Page title to fetch.
+ * @param sectionName Heading name to scope to (from an explicit `section` arg or a redirect `#fragment`).
+ * @returns The section's (or whole page's) rendered HTML, and the page's real title.
  */
 export async function fetchParsed(
   title: string,
@@ -153,7 +148,12 @@ export async function fetchParsed(
   return { html, realTitle: data?.parse?.title ?? title };
 }
 
-/** Human-facing article URL for a resolved title (+ optional section fragment). */
+/**
+ * Builds the human-facing article URL for a resolved title.
+ * @param title Resolved page title.
+ * @param fragment Optional section fragment.
+ * @returns The article URL.
+ */
 export function articleUrl(title: string, fragment?: string): string {
   let url = `https://dwarffortresswiki.org/index.php/${encodeURIComponent(title.replace(/ /g, '_'))}`;
   if (fragment) url += `#${encodeURIComponent(fragment.replace(/ /g, '_'))}`;

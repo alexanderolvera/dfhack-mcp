@@ -1,15 +1,3 @@
--- mcp_jobsAndLabor: workforce utilization — who's busy, who's idle, doing what.
---
--- Derives everything from the citizens themselves (not world.jobs.list, which is
--- a linked list, not an array). Children and babies are split out of the labor
--- pool: an idle ADULT is wasted labor; an idle child is just a child. For
--- working adults we tally current_job.job_type so the player sees what the fort
--- is actually spending its hands on.
---
--- Verified live on 53.15-r2: u.job.current_job truthy for busy dwarves;
--- df.job_type[id] yields readable tokens; isChild/isBaby present.
--- Invoked by name via DFHack RunCommand; prints ONE JSON object.
-
 local json = require('json')
 local function emit(t) print(json.encode(t)) end
 
@@ -18,10 +6,7 @@ if df.global.gamemode ~= df.game_mode.DWARF then
   return
 end
 
--- A fort always runs some idle churn (dwarves between tasks, ~10-20%); a third
--- of the workforce standing around is surplus/misallocated labor worth naming.
--- Validated against the live fort (27/77 = 35% idle -> fires correctly).
-local IDLE_FRACTION_ALERT = 0.30   -- tunable: idle adults over this share -> alert
+local IDLE_FRACTION_ALERT = 0.30
 
 local citizens = dfhack.units.getCitizens(true)
 local JT = df.job_type
@@ -46,7 +31,6 @@ for _, u in ipairs(citizens) do
   end
 end
 
--- Rank active job types (desc) so the top lines are where labor is going.
 local jobs = {}
 for name, n in pairs(job_counts) do jobs[#jobs+1] = { job = name, count = n } end
 table.sort(jobs, function(a, b)

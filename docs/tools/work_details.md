@@ -66,5 +66,12 @@ Reads `df.global.plotinfo.labor_info.work_details` — the same structures the i
 - With no arguments, the payload is identical to the pre-parameterized version (goldens stay stable).
 - Returns `{"error":"no fort loaded"}` if no fort is active.
 
+## Implementation notes
+Work details live in `df.global.plotinfo.labor_info.work_details` (`vector<work_detail*>`). Each `work_detail` has `.name` (string), `.assigned_units` (`vector<int32_t>` of unit ids), `.allowed_labors` (bool array indexed by `df.unit_labor` — index `i` true means that labor is enabled by the detail), `.flags.mode` (a `df.work_detail_mode`), and `.icon`. These are the same structures the in-game Labor → Work Details screen reads, so a membership change made through this tool appears in-game (verified live on DFHack 53.15).
+
+Grant semantics by mode: an `EverybodyDoesThis` detail grants its enabled labors to every citizen; `OnlySelectedDoesThis` (and `Default`) grant them only to `assigned_units` members; `NobodyDoesThis` grants nothing. [assign_work_detail](assign_work_detail.md) computes this union (across every detail that enables a given labor) to decide what a citizen's resulting labor set should be.
+
+Labor propagation (the mechanism [assign_work_detail](assign_work_detail.md) relies on): editing `assigned_units` alone does not immediately update a unit's `status.labors` — the game only reconciles that on a frame advance, via its automatic-professions system (gated by `df.global.game.external_flag.automatic_professions_disabled`). `assigned_units` is therefore the durable source of truth, and `status.labors` is a derived cache. `assign_work_detail`'s apply step edits `assigned_units` and also mirrors the affected labors onto `unit.status.labors` immediately — recomputing each as the union across all details — so the change is visible even on a paused fort. Verified live: assigning a unit to "Miners" flips its `MINE` labor true; removing it flips `MINE` false.
+
 ## Related
 [assign_work_detail](assign_work_detail.md) (the actuator this readback verifies), [jobs_and_labor](jobs_and_labor.md) (what dwarves are actually doing), [find_unit](find_unit.md) and [citizen](citizen.md) (resolving the unit ids listed here).

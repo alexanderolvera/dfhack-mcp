@@ -65,8 +65,14 @@ Top-level fields:
 - `squad` is present only for squad members.
 - Returns `{"error":"no fort loaded"}` if no fort is active.
 
+## Implementation notes
+The search term arrives as native DFHack argv (`args[1]`) rather than through any string-escaping layer, so an apostrophe or backslash in the query is just data — there is nothing to escape and nothing that needs to be.
+
+Confirmed live on DFHack 53.15-r2: `dfhack.units.getReadableName`, `getProfessionName`, `getAge`, and `getStressCategory` are all present on this build. Squad names resolve via `df.global.world.squads.all`, filtered to the fort's own `entity_id` and looked up by each unit's `military.squad_id`.
+
 ## Related
 - [citizen](citizen.md) — the deep dossier a match's `unit_id` chains into.
+- [identify](identify.md) — a match's `unit_id` also chains here to go deeper on creature/trait facts.
 - [work_details](work_details.md) — labor-group membership for a found unit.
 - [injuries_and_health](injuries_and_health.md) — details behind the wounded/patient flags.
 - [game_data](game_data.md) — a live unit_id also resolves in the creature kind for species facts.

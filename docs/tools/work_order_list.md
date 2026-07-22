@@ -45,5 +45,10 @@ No golden exists for this tool (the frozen fixture predates the work-order tools
 - `manager_present: false` doesn't block listing or creation, but orders won't be validated/processed until a manager is assigned — reported as a fact.
 - Returns `{"error":"no fort loaded"}` if no fort is active.
 
+## Implementation notes
+Manager orders live in `df.global.world.manager_orders.all` (`vector<manager_order*>`), with `.manager_order_next_id` supplying fresh ids — the same structures the in-game manager screen reads, so a created or cancelled order is reflected in-game immediately. Verified live on DFHack 53.15: creating an order assigns the next id (e.g. 226 → 227) and cancelling frees it back (→ 226); orders are built with `df.manager_order:new()` and inserted/removed with `:insert()`/`:erase()` + `:delete()`.
+
+`manager_present` checks two independent signals for the MANAGE_PRODUCTION responsibility — the position's `code` containing `"MANAGER"`, or its `responsibilities.MANAGE_PRODUCTION` flag — since either can identify the position depending on how the fort's entity positions were set up.
+
 ## Related
 [work_order_create](work_order_create.md) ↔ [work_order_cancel](work_order_cancel.md) (the actuators this readback verifies), [jobs_and_labor](jobs_and_labor.md) (jobs actually in flight), [stocks](stocks.md) (why an order might not validate).

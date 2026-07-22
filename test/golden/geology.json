@@ -1,7 +1,4 @@
 {
-  "alerts": [
-    "light aquifer at z125-128"
-  ],
   "aquifer": {
     "present": true,
     "type": "light",

@@ -27,6 +27,13 @@ don't clone it to work on the server.
   so you must put a **loopback-preserving forward or bridge** in front of it that
   re-originates the connection as local (the `socat` pattern in
   [`docker/README.md`](docker/README.md)), never `allow_remote`.
+- **Query script path.** `dfclient.ts` resolves the DFHack query directory
+  relative to itself — `src/dfhack-queries/` in dev, `dist/dfhack-queries/` in
+  the published bundle — and always converts backslashes to forward slashes
+  before registering it, since `addScriptPath` rejects backslashes on Windows.
+  `DFHACK_MCP_QUERY_DIR` overrides the path for a containerized DFHack, which
+  needs the container-internal path rather than this host's (see
+  [`docker/README.md`](docker/README.md)).
 
 ## Setup — one command
 
@@ -91,6 +98,13 @@ to get a trustworthy read: `run_lua` (dev-gated) with
 executes that exact file fresh, ignoring whatever DFHack has cached under its
 script name. Cleanest alternative: restart DF/DFHack between checkouts so there's
 nothing to have cached.
+
+## Calling a tool by hand
+
+`npm run call [toolName] [key=value ...]` (`scripts/call-tool.mjs`) spawns the
+server over stdio, lists its tools, and calls one — e.g. `npm run call
+find_unit query=medical`. Defaults to `fort_status` with no args. Needs Dwarf
+Fortress running with DFHack and a fort loaded.
 
 ## Working overlapping issues in parallel
 
@@ -173,3 +187,65 @@ Follow the existing split:
    with the code). If the tool has a property true of any valid fort, add an
    invariant in [`test/invariants.mjs`](test/invariants.mjs) too — that's the check
    that survives a fixture bump.
+
+## Shared internals: actuator contract (`actuator.ts`)
+
+`defineActuator` encodes the preview/confirm/apply/undo loop (issue #8 §A0) once,
+so the actuator tools (`work_order_*`, `blueprint_*`, `assign_work_detail`,
+`game_save`) only supply their version-fragile `plan()`/`apply()` bodies — see
+[Taking action](README.md#taking-action-actuators) in the README for the
+user-facing contract this implements. Spike #11 (issue #11) proved the loop is
+drivable over RPC for manager orders, quickfort, and work details.
+
+Confirm tokens live in an in-memory, process-local `Map` (the server handles
+tool calls sequentially, so no locking is needed), keyed by a full UUID and bound
+to both the operation's target-state `signature` and a digest of its own
+arguments (`opDigestOf`) — the latter stops a token minted for one operation
+being redeemed against a different one that happens to share the same target
+signature. Each token is single-use (`redeem` always deletes it), and the store
+is capped at 512 entries with oldest-first eviction so abandoned previews can't
+leak memory over the server's lifetime; an evicted token simply reads as expired
+on redeem.
+
+## Shared internals: connection retry (`dfclient.ts`)
+
+`runLua` and `runScript` own the single RPC connection to DFHack, lazy-connecting
+on first use. Both share one retry rule: an `RpcError` means DFHack was reachable
+and the snippet/script actually ran and failed, so it's rethrown as-is rather than
+retried. Only a connection-level failure (e.g. a stale socket after DF restarted)
+resets the client and retries once, re-registering the query script path via
+`ensureConnected`. This distinction matters most for `runScript`: retrying on an
+`RpcError` would re-run the script, which for actuators (`work_order_create`,
+`blueprint_apply`, `assign_work_detail`) risks repeated side effects from a script
+that already partially executed.
+
+## Shared internals: fog-of-war safety
+
+Two `reqscript`'d Lua modules centralize fog-of-war correctness so individual
+tools never re-derive it. They aren't tools themselves (no `docs/tools/*.md`
+page), so their behavior is documented here instead:
+
+- **`mcp_readTerrain.lua`** — the terrain substrate for spatial tools.
+  Undiscovered tiles (`designation.hidden`) are always rendered as `?`; the
+  real tiletype is never serialized. `read_window(x0, y0, z, w, h)`
+  block-caches reads (~26x faster than per-tile `getTileType`) and is the one
+  place the tile-shape-to-glyph mapping and the hidden-tile convention live.
+  Used by `defenses` and `tile_region` via `reqscript('mcp_readTerrain')`.
+- **`mcp_unitVisibility.lua`** — the fog-of-war gate for UNIT enumeration, the
+  companion to the module above. `is_hidden(u)` is the single source of truth
+  for "has the fort discovered the tile this unit stands on"; every
+  unit-listing tool (`threats`, `fort_status`, and any future wildlife/
+  animal-economy sensor) must `reqscript` this and filter through it rather
+  than re-deriving the `designation.hidden` check inline — that duplication is
+  exactly how a real fog-of-war leak happened once (an undiscovered cavern's
+  hostiles reported as "on the map" — an X-ray leak on `threats`/`fort_status`,
+  since fixed). A caged/chained beast is gated the same as a loose one;
+  off-map/unloaded tiles are treated as unseen (fail closed, never leak).
+
+**Writing a tool that reads terrain or enumerates units? `reqscript` the
+relevant module above — don't re-implement the hidden-tile check.**
+
+Both modules use the standard DFHack `--@ module = true` idiom: a leading
+`if dfhack_flags and dfhack_flags.module then return end` guard so a
+`reqscript` caller gets only the functions, while direct invocation
+(`dfhack-run mcp_readTerrain ...`) still runs the script's tail.

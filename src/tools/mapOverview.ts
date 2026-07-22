@@ -1,9 +1,3 @@
-// map_overview(): cheap spatial orientation before any tile_region read — map
-// extents, the fort-core anchor (the same 3D citizen centroid defenses() uses),
-// the surface z at that center, the z-levels carrying player activity
-// (construction or digging), and stair columns as vertical runs. A fixed-size
-// payload regardless of fort size. Thin wrapper over the MAP_OVERVIEW Lua query.
-
 import { runJsonScript } from '../query.ts';
 import type { ToolDef } from '../register.ts';
 
@@ -21,7 +15,7 @@ export interface FortCore {
 }
 
 export interface MapActivity {
-  z_levels: number[]; // union of construction_z and digging_z, sorted
+  z_levels: number[];
   construction_z: number[];
   digging_z: number[];
 }
@@ -47,18 +41,11 @@ export interface MapOverview {
 export async function mapOverview(): Promise<MapOverview | { error: string }> {
   const data = await runJsonScript<MapOverview>('mapOverview', [], ['stair_columns', 'alerts']);
   if ('error' in data) return data;
-  // The activity lists are nested, so runJsonScript's top-level normalization
-  // doesn't reach them; an empty Lua table encodes as {} rather than []. Keep the
-  // tool's contract of number[] firm at this version-fragile boundary.
   if (data.activity) {
     for (const k of ['z_levels', 'construction_z', 'digging_z'] as const) {
       if (!Array.isArray(data.activity[k])) data.activity[k] = [];
     }
   }
-  // The Lua encoder OMITS nil-valued keys, so surface_z (core not open to sky) and
-  // fort_core (a loaded map with no citizens) come back absent rather than the
-  // null the interface and description promise. Backfill to null so the contract
-  // holds — nullable fields, not sometimes-missing ones.
   if (data.surface_z === undefined) data.surface_z = null;
   if (data.fort_core === undefined) data.fort_core = null;
   return data;

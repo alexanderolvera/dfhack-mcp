@@ -1,10 +1,3 @@
-// One-command bootstrap for the DFHack MCP server.
-//   npm run bootstrap
-//
-// The dfhack-remote-node client is a published npm package (ships prebuilt), so
-// "local" is just: right Node, install, contract-check. Idempotent — safe to
-// re-run any time the tree feels off.
-
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
@@ -22,7 +15,6 @@ function run(cmd, args, cwd) {
   }
 }
 
-// 1. Node version.
 const major = Number(process.versions.node.split('.')[0]);
 if (major < 24) {
   console.error(`✗ Node ${process.versions.node} — this project pins Node 24 (see .nvmrc).`);
@@ -30,7 +22,6 @@ if (major < 24) {
 }
 console.log(`✓ Node ${process.versions.node}`);
 
-// 2. install, 3. contract-check.
 run('npm', ['ci'], ROOT);
 run('npm', ['run', 'verify:t0'], ROOT);
 

@@ -72,6 +72,15 @@ Top-level fields:
 - Empty categories degrade to `[]`; a missing field is a labeled fact, not a traceback (defensive reads in the Lua).
 - Returns `{"error":...}` for a missing unit_id, `{"error":"no fort loaded"}` if no fort is active.
 
+## Implementation notes
+- `friends[].affection` is the citizen relationship's core "love" score, surfaced under the `affection` name.
+- `grudges[].negative_dims` only checks love/trust/respect/loyalty for negative values — `fear` is reported alongside but never contributes to `negative_dims`.
+- Nested list fields (e.g. `relationships.friends`, `worship`, `skills`) are addressed by dot path and coerced back to arrays in the TS wrapper: an empty Lua table encodes as `{}` rather than `[]`, and the generic `runJsonScript` helper only normalizes top-level fields, not citizen's nested ones.
+- Field paths, probed live on DFHack 53.15-r2: `unit.status.current_soul.personality.traits[i]` (0-100, indexed by `df.personality_facet_type`); `.personality.emotions[]` (`{type=df.emotion_type, thought=df.unit_thought_type, subthought, severity, year, year_tick}`, appended chronologically — entries with `thought < 0` are stress-decay artifacts and are skipped, so `thoughts[]` takes the tail of the real ones); `.personality.stress`/`.longterm_stress` plus `dfhack.units.getStressCategory`; `soul.skills[]` (`{id=df.job_skill, rating=df.skill_rating, rusty}`); `soul.preferences[]` (`df.unitpref_type`, where `HateCreature` maps to `detests` and everything else to `likes`, with targets resolved via `matinfo`/`raws.creatures`/`raws.descriptors`/`raws.plants`).
+- Relationship resolution: spouse prefers the live `unit.relationship_ids.Spouse` unit_id, falling back to the histfig `SPOUSE` link for an off-map or deceased spouse; parents/children come from `hf.histfig_links` `MOTHER`/`FATHER`/`CHILD` entries resolved to `target_hf`, then mapped to a live unit via `df.historical_figure.find(hf).unit_id` (nil when not currently alive/loaded); worship comes from the histfig `DEITY` link (`target_hf` name + `link_strength`, 0-100); friends/grudges come from `hf.info.relationships.hf_visual[]`, which carries per-figure core scores (`love`, `trust`, `respect`, `loyalty`, `fear`) plus `meet_count` — a relation the dwarf still loves (`love > 0`) is classified a friend even if another dimension (e.g. trust) is negative, since the raw scores are reported either way; family figures are excluded from both the friends and grudges lists.
+- `physical.body_size_cm3`/`size_modifier` read `unit.body.size_info.size_cur` and `unit.appearance.size_modifier` (100 = average build).
+- Every version-fragile field above is read through a pcall-wrapped `safe()` helper, so a raws/struct change on a future DF build degrades to a default value rather than a crash.
+
 ## Related
 - [find_unit](find_unit.md) — the compact search that yields the `unit_id` to chain here.
 - [unmet_needs](unmet_needs.md) ↔ [moods](moods.md) — the fort-wide view of what this dossier shows per dwarf.

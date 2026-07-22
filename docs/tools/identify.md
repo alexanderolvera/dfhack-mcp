@@ -21,7 +21,7 @@ Resolves a creature query (raw token, name fragment, or live unit_id) to a full 
 ## Returns
 On a single strong match:
 - `query` (string) — the input, echoed.
-- `creature` — the `game_data` creature dossier: `token`, `name`, `plural`, `description`, `blurb`, `size`, `size_label`, `caste_count`, `flags[]`, `attacks[]`, `interactions[]`, `kind: "creature"`.
+- `creature` — the `game_data` creature dossier: `token`, `name`, `plural`, `description`, `size`, `size_label`, `caste_count`, `flags[]`, `attacks[]`, `interactions[]`, `kind: "creature"`.
 - `wiki[]` — `{ topic, title, url, excerpt }`; at most ~2 pages (the creature's own page unless procedural, plus the single most relevant trait page — a fire-immune/fire-breathing creature's page beats a building-destroyer's), each excerpt trimmed to ~700 chars on a word boundary.
 - `notes[]` (optional) — best-effort diagnostics: procedural-creature notice, failed/missing wiki lookups.
 
@@ -35,7 +35,7 @@ On multiple matches, a disambiguation passthrough: `{ query, match_count, trunca
     "token": "CAT",
     "name": "cat",
     "plural": "cats",
-    "blurb": "A small mammalian carnivore.",
+    "description": "A small mammalian carnivore.  It is usually domestic and hunts vermin.",
     "size": 500,
     "size_label": "tiny",
     "caste_count": 2,
@@ -60,6 +60,9 @@ On multiple matches, a disambiguation passthrough: `{ query, match_count, trunca
 - Wiki fetching is best-effort: a missing page or network error becomes a `notes` entry, never a throw. Duplicate wiki titles are deduped.
 - Wiki excerpts are capped at ~700 characters; whole articles are never dumped.
 - Needs network access for the wiki step (dwarffortresswiki.org); the raws step is local.
+
+## Implementation notes
+- Trait-page selection treats a creature as "fire" if it has a `FIREIMMUNE*` flag OR one of its interaction names matches `/fire|flame|magma|jet|fireball/i` — this catches fire breath weapons that don't carry a `FIREIMMUNE` flag. Fire beats `BUILDINGDESTROYER` when picking the single trait page.
 
 ## Related
 [game_data](game_data.md) · [wiki_lookup](wiki_lookup.md) · [wiki_search](wiki_search.md) · [threats](threats.md) · [find_unit](find_unit.md)

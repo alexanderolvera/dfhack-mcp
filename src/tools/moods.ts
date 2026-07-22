@@ -1,15 +1,11 @@
-// moods(): any active strange mood and its material countdown.
-// Thin wrapper over the MOODS Lua query.
-
 import { runJsonScript } from '../query.ts';
 import type { ToolDef } from '../register.ts';
 
-/** One demanded material, cross-referenced against fort stock. */
 export interface MoodDemand {
-  material: string; // human description of the demand (e.g. "bone", "rough gems")
-  needed: number; // how many the mood job requires
-  gathered: number; // how many are already brought to the workshop
-  have: number; // matching items in fort stock (-1 if suitability was unevaluable)
+  material: string;
+  needed: number;
+  gathered: number;
+  have: number;
 }
 
 export type WorkshopStatus = 'unclaimed' | 'gathering' | 'working';
@@ -18,10 +14,10 @@ export interface Mood {
   unit_id: number;
   name: string;
   mood: 'fey' | 'secretive' | 'possessed' | 'macabre' | 'fell';
-  skill: string; // the artifact skill driving the mood (e.g. "Bone Carving")
-  workshop: string | null; // claimed workshop, or null before one is claimed
+  skill: string;
+  workshop: string | null;
   workshop_status: WorkshopStatus;
-  mood_timeout: number; // the game's raw mood countdown (-1 when inactive)
+  mood_timeout: number;
   demands: MoodDemand[];
   demands_truncated: boolean;
 }

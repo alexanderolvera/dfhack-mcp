@@ -1,30 +1,3 @@
--- mcp_blueprint: A2 actuator — quickfort blueprint designations. Backs two gated
--- MCP tools:
---   blueprint_apply   ("plan_apply" / "apply_apply")
---   blueprint_undo    ("plan_undo"  / "apply_undo")
---
--- EXECUTE, NEVER DECIDE: the caller drafts the quickfort CSV, names the anchor and
--- the mode; this script designates exactly that and reports facts. No "you should
--- dig here" logic. The §A0 dry-run/confirm/undo loop lives in TS (src/actuator.ts);
--- this script answers plan_* (preview + signature, no mutation) and apply_* (mutate
--- + readback). Version-fragile struct access (tile designation flags, civzones)
--- stays here.
---
--- v1 scope: dig + zone only. build/place are rejected (blocked, no token) so nothing
--- partially applies. Quickfort is driven over RPC at EXPLICIT coords (no cursor):
--- the CSV is written to a UNIQUE temp file in the blueprints dir, run by basename
--- with `-c x,y,z`, then removed. The MALFORMED-CSV gate (spike #11): quickfort does
--- NOT error on a bad blueprint — it PARTIALLY applies and reports "Invalid key
--- sequences" / "could not be designated". So BOTH plan_apply and plan_undo run a
--- --dry-run (verified live: `quickfort undo ... --dry-run` completes without
--- mutating and reports the same stats), parse those stats, and BLOCK (no
--- confirm_token) when either is > 0. Per-cell diagnostic lines (e.g. `invalid key
--- sequence: "ZZZ" in cell B2`) are captured (bounded) as parse_errors so the
--- caller can locate the bad cell.
---
--- Invoked by name via DFHack RunCommand; args arrive UNESCAPED as `...` (multi-line
--- CSV survives intact — verified live). Prints ONE JSON object.
-
 local json = require('json')
 local function emit(t) print(json.encode(t)) end
 
@@ -44,24 +17,12 @@ local z = tonumber(a[5])
 local mode = a[6]
 
 local SUPPORTED = { dig = true, zone = true }
-local FOG_CAP = 64 -- bounded fog-of-war sample list
-local CONFLICT_CAP = 50 -- bounded conflicts list
-local MSG_CAP = 20 -- bounded quickfort diagnostic-line capture
-local MAX_FOOTPRINT = 10000 -- distinct-cell cap; a (WxH) bomb blocks, never expands
--- Distinct BYTE cap on the raw CSV. The footprint cap bounds occupied CELLS, but
--- blank/comment bytes add zero cells while still being written to the temp
--- blueprint file AND echoed verbatim into the preview/undo handle (memory + disk).
--- So an all-blank 100 KB CSV clears MAX_FOOTPRINT yet is unbounded payload. 64 KiB
--- is far above any legitimate hand-drafted blueprint; over it blocks (no token) in
--- validate(), shared by both blueprint_apply and blueprint_undo.
+local FOG_CAP = 64
+local CONFLICT_CAP = 50
+local MSG_CAP = 20
+local MAX_FOOTPRINT = 10000
 local MAX_CSV_BYTES = 65536
 
--- ---- footprint parsing ----------------------------------------------------
--- Quote-aware CSV field split (RFC-4180-ish): spreadsheet-exported blueprints
--- quote cells with embedded commas ("#comment, note") and escape quotes by
--- doubling (""). Verified live: quickfort itself unquotes — `d,"#comment, x",d`
--- is a 3-cell row (footprint 2) — so a naive comma split would mis-place columns
--- and skew footprint/fog/readback/signature.
 local function csv_fields(line)
   local fields, buf, in_q = {}, {}, false
   local i, n = 1, #line
@@ -92,18 +53,6 @@ local function csv_fields(line)
   return fields
 end
 
--- The occupied cells of the blueprint as distinct {dx,dy} offsets from the anchor.
--- The modeline is row -1; the first data row (directly below it) maps to the anchor
--- (verified live: `#dig`/`d,d` at -c X,Y,Z designates X,Y and X+1,Y). Blank cells
--- and comment (`#...`) cells are not occupied. Quickfort's (WxH) area-expansion
--- suffix is expanded down-and-right from the marked cell (verified: `n(2x2)` at
--- 84,40 covers 84-85,40-41), so the footprint matches what quickfort designates;
--- overlapping cells are de-duplicated so counts never double-report a tile.
---
--- Bounded: expansion happens BEFORE quickfort runs, so a hostile `d(9999x9999)`
--- cell would otherwise loop ~10^8 times here. Any single (WxH) whose area exceeds
--- MAX_FOOTPRINT, or a total distinct footprint past it, aborts with `err` set —
--- validate() turns that into a block (no token). Returns cells, err.
 local function occupied_cells()
   local cells, seen, err = {}, {}, nil
   local count = 0
@@ -154,16 +103,8 @@ local function occupied_cells()
   return cells, err
 end
 
--- ---- validation (shared by every subcommand) ------------------------------
--- The mode arg is authoritative and must be dig|zone; the CSV's first non-blank
--- line must be a matching #dig / #zone modeline. A missing/malformed/mismatched
--- modeline is blocked here so quickfort's silent "bad modeline defaults to #dig"
--- behavior can never mis-designate. An over-budget footprint (see occupied_cells)
--- blocks here too, before any per-cell scan or quickfort run.
 local function validate()
   local blocked = {}
-  -- Byte cap first: cheapest gate, and it bounds the payload (temp file + echoed
-  -- handle) that the footprint cap alone leaves unbounded for blank/comment bytes.
   if #csv > MAX_CSV_BYTES then
     blocked[#blocked + 1] = string.format(
       'csv is %d bytes, over the %d-byte (64 KiB) limit', #csv, MAX_CSV_BYTES)
@@ -199,25 +140,6 @@ local function md5(str)
   return dfhack.internal.md5(str)
 end
 
--- ---- per-cell live-state scan ----------------------------------------------
--- ONE pass over the footprint feeding both the preview facts and the signature:
---   fog        fog-of-war count + bounded sample (a FACT, never a block — the
---              agent may intend to designate into the dark)
---   pre_existing  cells ALREADY carrying this mode's designation (dig flag set /
---              civzone present) BEFORE this operation — quickfort's undo removes
---              designations on affected tiles regardless of who created them
---              (verified live: a manually-designated tile under the footprint is
---              cleared by undo), so this count drives faithful:false on the undo
---              handle
---   clipped / conflicts  bounded structured conflict list [{x,y,reason}] with
---              reasons 'out of bounds' | 'already designated' | 'zone present' |
---              'building present' (dig only; dfhack.buildings.findAtTile is
---              OOB-safe — verified live)
---   digest     md5 over the SORTED per-cell "x,y,state,hidden" lines, where state
---              is the dig designation value (dig mode) or the sorted civzone id
---              list (zone mode). Aggregate counts alone can stay equal while the
---              underlying cells drift (two offsetting per-tile changes), so the
---              signature carries this per-cell digest.
 local function scan_cells()
   local cells = occupied_cells()
   local map = df.global.world.map
@@ -284,9 +206,6 @@ local function scan_cells()
   return res
 end
 
--- Readback: how many occupied cells currently carry the designation for this mode.
--- dig -> designation.dig set; zone -> a civzone covers the tile. Also the
--- BEFORE-apply pre-existing count (same question asked at a different moment).
 local function readback()
   local cells = occupied_cells()
   local set = 0
@@ -303,13 +222,6 @@ local function readback()
   return { mode = mode, footprint_cells = #cells, designated_tiles = set }
 end
 
--- The undo handle for apply_apply: quickfort's native `undo` faithfully reverts
--- dig/zone designations THIS apply created (verified live: dig flag
--- 0->apply->1->undo->0; zone 0->4->0) — but it clears the designation on EVERY
--- footprint tile, including ones the player had designated before this apply
--- (verified live). So faithful is true ONLY when no footprint tile carried a
--- pre-existing designation; otherwise not_reproduced names the loss as a fact
--- (mirrors the work-order faithful pattern).
 local function undo_handle(pre_existing)
   local h = {
     reversal = 'blueprint_undo',
@@ -326,7 +238,6 @@ local function undo_handle(pre_existing)
   return h
 end
 
--- ---- quickfort driver ------------------------------------------------------
 local function bp_dir()
   return dfhack.getDFPath() .. '/dfhack-config/blueprints/'
 end
@@ -346,11 +257,6 @@ local function num_after(out, pat)
   return n and tonumber(n) or 0
 end
 
--- Run quickfort by temp-file basename at explicit coords; parse the printed stats.
--- Returns the parsed stat table (or nil + message). Always removes the temp file.
--- Diagnostic lines (everything quickfort prints BEFORE its "successfully
--- completed" marker, e.g. `invalid key sequence: "ZZZ" in cell B2`) are captured
--- bounded as `messages` so previews can locate the offending cell.
 local function run_qf(command, dry)
   local name, path, werr = write_temp()
   if not name then return nil, werr end
@@ -385,9 +291,6 @@ local function run_qf(command, dry)
   }
 end
 
--- MALFORMED / partial-apply gate shared by plan_apply and plan_undo: reasons
--- when the dry-run reports invalid keys or undesignatable tiles (spike #11 —
--- quickfort would PARTIALLY apply/undo otherwise).
 local function gate_reasons(stats)
   local gate = {}
   if stats.invalid_keys > 0 then
@@ -399,7 +302,6 @@ local function gate_reasons(stats)
   return gate
 end
 
--- Attach the bounded quickfort diagnostic lines to a preview (omitted when clean).
 local function attach_parse_errors(preview, stats)
   if #stats.messages > 0 then
     preview.parse_errors = stats.messages
@@ -407,12 +309,10 @@ local function attach_parse_errors(preview, stats)
   end
 end
 
--- ============================ apply ============================
 if sub == 'plan_apply' or sub == 'apply_apply' then
   local blocked = validate()
   if #blocked > 0 then emit({ blocked = blocked }) return end
 
-  -- --------- plan_apply: dry-run, parse stats, gate, preview + signature -----
   if sub == 'plan_apply' then
     local scan = scan_cells()
     local stats, err = run_qf('run', true)
@@ -434,10 +334,6 @@ if sub == 'plan_apply' or sub == 'apply_apply' then
       conflicts_truncated = scan.conflicts_truncated or nil,
     }
     attach_parse_errors(preview, stats)
-    -- Signature = target state: csv digest + anchor + mode + the dry-run stats +
-    -- the PER-CELL state digest (aggregate counts alone can stay equal while
-    -- individual tiles drift — e.g. one tile designated while another is
-    -- revealed — so the digest is what actually voids a stale token).
     local signature = string.format('apply/%s/%d,%d,%d/%s/t=%d/cn=%d/ik=%d/cells=%s',
       mode, x, y, z, md5(csv), tiles, stats.could_not, stats.invalid_keys, scan.digest)
     local gate = gate_reasons(stats)
@@ -449,9 +345,6 @@ if sub == 'plan_apply' or sub == 'apply_apply' then
     return
   end
 
-  -- --------- apply_apply: real run, changes + undo handle + readback ---------
-  -- Pre-existing designations are counted BEFORE mutating: they decide whether
-  -- the undo handle is faithful (undo would clear them too — see undo_handle).
   local pre_existing = readback().designated_tiles
   local stats, err = run_qf('run', false)
   if not stats then emit({ error = err }) return end
@@ -470,18 +363,12 @@ if sub == 'plan_apply' or sub == 'apply_apply' then
   return
 end
 
--- ============================ undo ============================
 if sub == 'plan_undo' or sub == 'apply_undo' then
   local blocked = validate()
   if #blocked > 0 then emit({ blocked = blocked }) return end
 
-  -- --------- plan_undo: read state + VALIDATED dry-run (no mutation) ---------
-  -- `quickfort undo --dry-run` completes without touching designations and
-  -- reports the same "Invalid key sequences" stat (verified live), so a
-  -- malformed CSV with a valid modeline is gated here exactly like plan_apply —
-  -- otherwise apply_undo could partially revert.
   if sub == 'plan_undo' then
-    local rb = readback() -- designated_tiles = what undo would clear right now
+    local rb = readback()
     local scan = scan_cells()
     local stats, err = run_qf('undo', true)
     if not stats then emit({ blocked = { err } }) return end
@@ -492,9 +379,6 @@ if sub == 'plan_undo' or sub == 'apply_undo' then
       currently_designated = rb.designated_tiles,
     }
     attach_parse_errors(preview, stats)
-    -- Signature = per-cell designation/zone identity + state (the digest), not
-    -- just the aggregate count: designating one tile while clearing another
-    -- leaves set=N unchanged but MUST void the token.
     local signature = string.format('undo/%s/%d,%d,%d/%s/set=%d/cells=%s',
       mode, x, y, z, md5(csv), rb.designated_tiles, scan.digest)
     local gate = gate_reasons(stats)
@@ -510,7 +394,6 @@ if sub == 'plan_undo' or sub == 'apply_undo' then
     return
   end
 
-  -- --------- apply_undo: real undo, changes + re-apply handle + readback -----
   local stats, err = run_qf('undo', false)
   if not stats then emit({ error = err }) return end
   local reverted = (mode == 'dig') and stats.dig_undesignated or stats.zones_removed
@@ -523,7 +406,7 @@ if sub == 'plan_undo' or sub == 'apply_undo' then
       anchor = { x, y, z },
       faithful = true,
     },
-    readback = readback(), -- designated_tiles should now be 0
+    readback = readback(),
   })
   return
 end

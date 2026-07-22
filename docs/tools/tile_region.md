@@ -76,5 +76,12 @@ Full glyph set: `?` fog, `#` undug stone/wall, `,` undug soil, `F` fortification
 - Parameters accept numbers or numeric strings (coerced) — the CLI test path passes strings.
 - Returns `{"error":"no fort loaded"}` if no fort is active.
 
+## Implementation notes
+- `z`/`x0`/`y0`/`x1`/`y1` accept a number or a numeric string (coerced), then get serialized back to strings for the positional Lua contract: `Z X0 Y0 X1 Y1`.
+- The default window's anchor (busiest citizen z-level, that level's citizen centroid) is the same fort-core anchor `defenses` uses.
+- Composes on top of `mcp_readTerrain.read_window`'s base grid rather than re-deriving terrain: the overlay glyphs (`+ % W S M n ,`) are chosen to not collide with the terrain glyphs it already owns (`F T ~ < > x`); water reuses `~` for the same "watery" meaning. Overlays are stamped in order — liquids/soil/construction first, then building footprints — so a building footprint wins over an underlying liquid or soil glyph where they overlap, and neither overlay ever paints over a `?` tile.
+- Verified live on 53.15-r2 (fort on :5005): `buildings.all` + `b:getType()` (`df.building_type`) for classification; `dfhack.buildings.containsTile(b, x, y)` correctly honors irregular stockpile footprints (not just the bounding box); construction floors are identified by tiletype material `CONSTRUCTION`; liquids by `designation.flow_size` + `liquid_type`.
+- The per-z-level tile-block cache (16x16-aligned, keyed by block origin) avoids a per-tile `getTileBlock` call, which is measurably slower across a 100x100 window.
+
 ## Related
 [map_overview](map_overview.md) (whole-map z-level summary), [geology](geology.md) (what the stone is), [rooms_and_zones](rooms_and_zones.md) (the facility inventory this map deliberately omits), [defenses](defenses.md) (per-structure defensive detail), [blueprint_apply](blueprint_apply.md) (acting on a drafted layout).

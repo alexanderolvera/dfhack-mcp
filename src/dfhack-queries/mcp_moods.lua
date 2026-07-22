@@ -1,34 +1,3 @@
--- mcp_moods: any active STRANGE mood and its material countdown.
---
--- A strange mood (fey/secretive/possessed/macabre/fell) seizes one dwarf, who
--- claims a workshop and demands specific materials; if they cannot gather them
--- they eventually go insane. This reports each such dwarf, the mood type and
--- driving skill, the workshop claimed (or that none is yet), and every demanded
--- material cross-referenced against fort stock. The whole early warning is
--- "demands bones / fort has zero": `have` is the stock count that reveals it.
---
--- FACTS ONLY: it reports what is demanded and what the fort holds, never "go
--- hunt for bones". The `have`=0 restatement in alerts mirrors the game's own
--- mood announcements; it is not advice.
---
--- Data model (probed live on 53.15; the POPULATED path is unverified — this
--- fixture has no active mood, so only the empty path was exercised live):
---   * A moody dwarf has u.mood in {Fey,Secretive,Possessed,Macabre,Fell}. The
---     insanity states (Melancholy/Raving/Berserk/Traumatized) are NOT strange
---     moods and are excluded.
---   * u.job.mood_skill (df.job_skill) is the artifact skill; u.job.mood_timeout
---     is the game's raw mood countdown (reported verbatim, -1 when inactive).
---   * Before a workshop is claimed u.job.current_job is nil. Once claimed it is
---     the mood job, held by a workshop building (dfhack.job.getHolder). Its
---     job_items are the demands (quantity each); job.items are what's gathered so
---     far (each element's job_item_idx says which demand it fills).
---   * A demand is matched against stock with DFHack's own suitability predicates
---     (dfhack.job.isSuitableItem / isSuitableMaterial), so material-category
---     demands (bones/cloth/shell/...) resolve the same way DF itself resolves them.
---
--- Bounded: moods are rare (usually one), but active and demands are both capped.
--- Invoked by name via DFHack RunCommand; prints ONE JSON object.
-
 local json = require('json')
 local function emit(t) print(json.encode(t)) end
 
@@ -37,8 +6,8 @@ if df.global.gamemode ~= df.game_mode.DWARF then
   return
 end
 
-local ACTIVE_CAP = 16      -- moods are near-unique; cap defends a pathological save
-local DEMANDS_CAP = 20     -- a single mood demands a handful of materials
+local ACTIVE_CAP = 16
+local DEMANDS_CAP = 20
 
 local STRANGE = {
   [df.mood_type.Fey]       = 'fey',
@@ -48,8 +17,6 @@ local STRANGE = {
   [df.mood_type.Fell]      = 'fell',
 }
 
--- Generic material-category demands live in the job_item flag bitfields (there is
--- no material_category field on job_item). {bitfield, flag, label}, probed live.
 local MAT_FLAGS = {
   { 'flags2', 'bone', 'bone' },       { 'flags2', 'shell', 'shell' },
   { 'flags2', 'leather', 'leather' }, { 'flags2', 'silk', 'silk' },
@@ -62,13 +29,11 @@ local MAT_FLAGS = {
   { 'flags3', 'sand', 'sand' },
 }
 
--- Category labels an item_type already implies, so we don't say "rough gems gem".
 local REDUNDANT = {
   [df.item_type.ROUGH] = { gem = true }, [df.item_type.SMALLGEM] = { gem = true },
   [df.item_type.BOULDER] = { stone = true }, [df.item_type.WOOD] = { wood = true },
 }
 
--- A few item-type tokens read better spelled out; otherwise lower-case the token.
 local ITEM_LABEL = {
   ROUGH = 'rough gems', SMALLGEM = 'cut gems', BOULDER = 'stone', BAR = 'bars',
   WOOD = 'wood', BLOCKS = 'blocks', CLOTH = 'cloth', THREAD = 'thread',
@@ -81,9 +46,6 @@ local function item_label(item_type)
   return ITEM_LABEL[tok] or (tok:lower():gsub('_', ' '))
 end
 
--- Human description of one demand (job_item): specific material + generic
--- category flags + item type, with word-level (singularized) de-duplication so
--- redundant pairs collapse. Facts only.
 local function describe(ji)
   local parts = {}
   local function add(s) if s and s ~= '' then parts[#parts + 1] = s end end
@@ -109,11 +71,6 @@ local function describe(ji)
   return #words > 0 and table.concat(words, ' ') or 'unspecified material'
 end
 
--- Fort stock matching a demand, mirroring mcp_stocks' skip set so `have` is
--- comparable to stocks() counts. The item type/subtype are matched explicitly
--- (reliable), and the MATERIAL — including generic category demands like bone or
--- silk — is tested with DFHack's own isSuitableMaterial, so a category demand
--- counts exactly the materials DF would accept.
 local function stock_have(ji)
   local ok, total = pcall(function()
     local want_type, want_sub = ji.item_type, ji.item_subtype
@@ -131,10 +88,9 @@ local function stock_have(ji)
     end
     return n
   end)
-  return ok and total or -1   -- -1: could not evaluate suitability for this demand
+  return ok and total or -1
 end
 
--- Count items already gathered into the mood job for each demand index.
 local function gathered_by_index(job)
   local g = {}
   local ok = pcall(function()
@@ -199,7 +155,6 @@ for _, u in ipairs(dfhack.units.getCitizens(true)) do
         end
       end
       row.demands_truncated = total_demands > #row.demands
-      -- claimed-and-gathering vs. construction-begun: all materials in hand.
       row.workshop_status = (total_demands > 0 and all_filled) and 'working' or 'gathering'
     end
 
@@ -216,13 +171,8 @@ if active_truncated then
   active = capped
 end
 
--- Alerts: restate the facts the game itself would nag about. No advice.
 local alerts = {}
 for _, row in ipairs(active) do
-  if row.workshop_status == 'unclaimed' then
-    alerts[#alerts + 1] = row.name .. ' has taken a ' .. row.mood ..
-      ' mood and has not yet claimed a workshop'
-  end
   for _, d in ipairs(row.demands) do
     if d.have == 0 and d.gathered < d.needed then
       alerts[#alerts + 1] = row.name .. ' demands ' .. d.material ..

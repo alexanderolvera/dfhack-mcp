@@ -1,6 +1,3 @@
-// jobs_and_labor(): workforce utilization and what the fort is working on.
-// Thin wrapper over the JOBS_AND_LABOR Lua query.
-
 import { runJsonScript } from '../query.ts';
 import type { ToolDef } from '../register.ts';
 

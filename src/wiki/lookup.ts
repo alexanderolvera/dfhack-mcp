@@ -1,7 +1,3 @@
-// wiki_lookup orchestration: resolve a title (redirects + DF2014 pinning +
-// section fragment) -> cache-first read -> fetch + clean + persist. Composes the
-// api/clean/cache concerns; the behavior is cache-first with a ~30-day TTL.
-
 import { resolveTitle, fetchParsed, articleUrl } from './api.ts';
 import { cleanHtml } from './clean.ts';
 import { cacheKey, readCache, writeCache, type CacheEntry } from './cache.ts';
@@ -14,6 +10,14 @@ export interface WikiLookup {
   resolved_from?: string;
 }
 
+/**
+ * Resolves a wiki title (redirects, DF2014 pinning, section fragment), then
+ * returns it from cache or fetches, cleans, and persists it.
+ * @param title Page title to look up.
+ * @param section Optional section name to scope the result to.
+ * @param refresh Bypass the cache and force a refetch.
+ * @returns The cleaned article text, or `{error}` if the title can't be resolved.
+ */
 export async function wikiLookup(
   title: string,
   section?: string,
@@ -24,14 +28,12 @@ export async function wikiLookup(
   const sec = section?.trim() || undefined;
 
   try {
-    // 1. Resolve redirects / pin to DF2014 to get the canonical cache key.
     const resolved = await resolveTitle(t);
     if (!resolved) return { error: `wiki page not found: "${t}"` };
     const effectiveSection = sec ?? resolved.fragment;
     const resolvedFrom = resolved.title !== t ? t : undefined;
     const file = cacheKey(resolved.title, effectiveSection);
 
-    // 2. Cache-first (unless refresh).
     if (!refresh) {
       const hit = await readCache(file);
       if (hit) {
@@ -45,12 +47,10 @@ export async function wikiLookup(
       }
     }
 
-    // 3. Fetch + clean.
     const { html, realTitle } = await fetchParsed(resolved.title, effectiveSection);
     const text = cleanHtml(html);
     const url = articleUrl(realTitle, effectiveSection);
 
-    // 4. Persist and return.
     const entry: CacheEntry = {
       title: realTitle,
       url,

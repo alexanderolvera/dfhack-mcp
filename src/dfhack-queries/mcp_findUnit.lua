@@ -1,16 +1,3 @@
--- mcp_findUnit(query): a dossier on citizens matching a name or profession.
---
--- The one parameterized query. The search term arrives as native argv (args[1]),
--- so there is NO escaping — an apostrophe or backslash in the term is just data.
--- Matches case-insensitively against the readable name AND the profession, so
--- "medical" finds the chief medical dwarf and a partial name finds the dwarf.
--- Returns a compact profile per match: profession, age, stress, current job,
--- squad, and a health summary.
---
--- Verified live on 53.15-r2: getReadableName, getProfessionName, getAge,
--- getStressCategory all present; squad lookup via squads.all by id.
--- Invoked by name via DFHack RunCommand; prints ONE JSON object.
-
 local args = {...}
 local query = args[1] or ''
 
@@ -26,7 +13,6 @@ local q = string.lower(query)
 local STRESS = {[0]='miserable',[1]='unhappy',[2]='unhappy',[3]='content',[4]='content',[5]='happy',[6]='ecstatic'}
 local MAX = 8
 
--- Pre-index fort squads by id for name lookup.
 local squad_name = {}
 local fort = df.global.plotinfo.main.fortress_entity
 for _, sq in ipairs(df.global.world.squads.all) do
@@ -48,7 +34,7 @@ for _, u in ipairs(dfhack.units.getCitizens(true)) do
       local sc = dfhack.units.getStressCategory(u)
       local sid = u.military and u.military.squad_id or -1
       matches[#matches+1] = {
-        unit_id    = u.id,   -- the live id to chain into citizen()/identify()
+        unit_id    = u.id,
         name       = name,
         profession = prof,
         age        = math.floor(dfhack.units.getAge(u, true)),

@@ -2,9 +2,9 @@
 tags: [dfhack-mcp/tool, index]
 ---
 
-# Tool Index — dfhack-mcp v1.0.0
+# Tool Index — dfhack-mcp
 
-One note per MCP tool, generated from the code at tag `v1.0.0` (33 tools: 23 sensors, 4 reference, 5 gated actuators, 1 dev). Each note carries frontmatter (`tool` / `tier` / `gated` / `source` / `lua`), parameters from the zod schema, the real return shape from the Lua query, and a trimmed example from the frozen-fixture goldens where one exists.
+One note per MCP tool (34 tools: 23 sensors, 4 reference, 6 gated actuators, 1 dev), tracking `src/tools/registry.ts`. Each note carries frontmatter (`tool` / `tier` / `gated` / `source` / `lua`), parameters from the zod schema, the real return shape from the Lua query, and a trimmed example from the frozen-fixture goldens where one exists.
 
 Doctrine reminder: every tool is **facts-only** — it senses and reports; judgment stays with the AI client. Actuators are gated behind `DFHACK_MCP_ACTUATORS` and follow the §A0 preview/confirm contract; `run_lua` is dev-gated behind `DFHACK_MCP_DEV`.
 
@@ -48,11 +48,12 @@ Doctrine reminder: every tool is **facts-only** — it senses and reports; judgm
 - [wiki_search](wiki_search.md) — DF2014 wiki search
 - [wiki_lookup](wiki_lookup.md) — DF2014 wiki page as clean cached text
 
-## Actuators (5, gated)
+## Actuators (6, gated)
 
 - [work_order_create](work_order_create.md) / [work_order_cancel](work_order_cancel.md) — manager work orders
 - [blueprint_apply](blueprint_apply.md) / [blueprint_undo](blueprint_undo.md) — quickfort-style dig blueprints
 - [assign_work_detail](assign_work_detail.md) — put a dwarf on/off a work detail
+- [game_save](game_save.md) — checkpoint the fort with a quicksave
 
 ## Dev (1)
 
@@ -66,3 +67,4 @@ Typical co-pilot flows these notes cross-link:
 - Production: [stocks](stocks.md) → [work_order_list](work_order_list.md) → [work_order_create](work_order_create.md)
 - Labor: [jobs_and_labor](jobs_and_labor.md) → [work_details](work_details.md) → [assign_work_detail](assign_work_detail.md)
 - Digging: [map_overview](map_overview.md) → [tile_region](tile_region.md) / [geology](geology.md) → [blueprint_apply](blueprint_apply.md)
+- Before a risky change: [game_save](game_save.md) → the actuator in question

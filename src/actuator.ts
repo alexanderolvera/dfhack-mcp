@@ -1,32 +1,7 @@
-// §A0 actuator contract — the shared machinery every mutating tool is built on.
-// Spike #11 (issue #11) proved the plan → confirm → apply → readback → undo loop
-// is drivable over RPC for manager orders, quickfort, and work details; this
-// module encodes that loop ONCE so the three actuator tools only supply their
-// version-fragile plan()/apply() bodies (which live in mcp_<name>.lua per repo
-// convention).
-//
-// The contract, from issue #8 §A0:
-//   - Execute, never decide: fully-specified args in; no strategy in defaults.
-//   - Dry-run first: a call WITHOUT confirm_token returns a preview + a single-use
-//     confirm_token. Applying requires a second call WITH that token.
-//   - Token invalidated by changes to THE OPERATION'S OWN TARGETS (not any world
-//     change): we re-run plan() at apply time and compare its signature to the
-//     one the token was minted against. Tokens are also single-use.
-//   - Documented reversal: apply() returns an `undo` handle; the tool description
-//     names the reversal path.
-//   - Idempotence: plan() can flag `noop` (already in the desired state) so apply
-//     short-circuits instead of doubling.
-//   - Post-apply readback: apply() returns a `readback` from the matching sensor.
-//
-// `defineActuator` yields a QueryToolDef flagged `actuator: true`, so index.ts
-// keeps it out of the default (read-only) server unless DFHACK_MCP_ACTUATORS is set.
-
 import { z } from 'zod';
 import { randomUUID } from 'node:crypto';
 import type { QueryToolDef } from './register.ts';
 
-/** Deterministic, key-sorted stringify so equal argument objects (regardless of
- *  key order) produce an identical digest. Args here are plain JSON scalars/arrays. */
 function stableStringify(v: unknown): string {
   if (v === null || typeof v !== 'object') return JSON.stringify(v) ?? 'null';
   if (Array.isArray(v)) return `[${v.map(stableStringify).join(',')}]`;
@@ -35,9 +10,6 @@ function stableStringify(v: unknown): string {
   return `{${keys.map((k) => `${JSON.stringify(k)}:${stableStringify(obj[k])}`).join(',')}}`;
 }
 
-/** Canonical digest of the operation's arguments, EXCLUDING confirm_token. Binds a
- *  token to the exact operation previewed, so it can't be redeemed to apply a
- *  different op that merely happens to share the target-state signature. */
 function opDigestOf(args: Record<string, unknown>): string {
   const rest = { ...args };
   delete rest.confirm_token;
@@ -107,17 +79,6 @@ export interface ActuatorDef<A extends { confirm_token?: string }> {
   apply: (args: A, plan: PlanResult) => Promise<ApplyResult | QueryError>;
 }
 
-// ---------------------------------------------------------------------------
-// Single-use confirm-token store. In-memory and process-local: the MCP server is
-// one long-lived process handling tool calls sequentially, so a Map suffices. A
-// token binds to (tool, signature, opDigest); redeem() always removes it
-// (single-use) and only returns the record when the tool matches.
-//
-// The token key is a FULL uuid (122 random bits) — collisions are negligible, so
-// minting never silently clobbers an outstanding token. Abandoned previews (minted
-// but never redeemed) would otherwise accumulate for the process lifetime, so the
-// store is bounded: at the cap the oldest entry is evicted (Map preserves insertion
-// order). An evicted token simply reads as expired on redeem — the caller re-previews.
 interface StoredToken {
   tool: string;
   /** Target-STATE signature — guards against the op's own targets drifting. */
@@ -139,8 +100,6 @@ function mint(tool: string, prefix: string, signature: string, opDigest: string)
   return token;
 }
 
-/** Single-use: consumes the token whether or not it validates. Returns the stored
- *  record only if the token exists AND was minted for this tool; null otherwise. */
 function redeem(token: string, tool: string): StoredToken | null {
   const rec = TOKENS.get(token);
   if (!rec) return null;
@@ -153,10 +112,12 @@ export function _resetTokens(): void {
   TOKENS.clear();
 }
 
-// ---------------------------------------------------------------------------
-
-/** Build a gated actuator tool that implements the full §A0 two-call protocol,
- *  delegating only the DF-touching plan()/apply() bodies to the caller. */
+/**
+ * Builds a gated actuator tool implementing the §A0 preview/confirm/apply
+ * protocol, delegating only the DF-touching `plan()`/`apply()` bodies to the caller.
+ * @param def The actuator's descriptor.
+ * @returns A `QueryToolDef` flagged `actuator: true`.
+ */
 export function defineActuator<A extends { confirm_token?: string }>(
   def: ActuatorDef<A>
 ): QueryToolDef {
@@ -181,10 +142,9 @@ export function defineActuator<A extends { confirm_token?: string }>(
     run: async (args: A) => {
       const token = args.confirm_token;
 
-      // ---- DRY-RUN (no token): preview + mint, or block with no token ---------
       if (!token) {
         const plan = await def.plan(args);
-        if (isQueryError(plan)) return plan; // no-fort guard / script error passthrough
+        if (isQueryError(plan)) return plan;
         if (plan.blocked && plan.blocked.length) {
           return {
             mode: 'preview',
@@ -208,23 +168,19 @@ export function defineActuator<A extends { confirm_token?: string }>(
         };
       }
 
-      // ---- APPLY (token present) ---------------------------------------------
       const rec = redeem(token, def.name);
       if (!rec) {
         throw new Error(
           'invalid or expired confirm_token; tokens are single-use — run a fresh preview'
         );
       }
-      // The apply call must specify the SAME operation that was previewed. Guard
-      // the args first (cheap, no DF round-trip) so a mismatched op is rejected
-      // before we re-plan.
       if (opDigestOf(args as Record<string, unknown>) !== rec.opDigest) {
         throw new Error(
           "the operation's arguments differ from the preview; the confirm_token is void — preview the exact operation you intend to apply"
         );
       }
-      const plan = await def.plan(args); // re-derive the CURRENT signature
-      if (isQueryError(plan)) return plan; // no-fort guard / script error passthrough
+      const plan = await def.plan(args);
+      if (isQueryError(plan)) return plan;
       if (plan.blocked && plan.blocked.length) {
         throw new Error(`cannot apply: ${plan.blocked.join('; ')}`);
       }
@@ -237,7 +193,7 @@ export function defineActuator<A extends { confirm_token?: string }>(
         return { mode: 'apply', applied: false, noop: true, preview: plan.preview };
       }
       const res = await def.apply(args, plan);
-      if (isQueryError(res)) return res; // apply-time script error passthrough
+      if (isQueryError(res)) return res;
       return { mode: 'apply', applied: true, ...res };
     },
   };

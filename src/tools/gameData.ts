@@ -1,9 +1,3 @@
-// game_data(query, kind?): look up the loaded world's raws (ground truth for
-// THIS world) and return curated, labeled facts. MVP implements the CREATURE
-// kind; other kinds report "not yet implemented". The Lua is centralized in
-// src/dfhack-queries/mcp_gameData.lua with a per-kind dispatch so adding kinds
-// later never adds a tool. See that file for the confirmed field paths.
-
 import { runJsonScript } from '../query.ts';
 import { z } from 'zod';
 import type { ToolDef } from '../register.ts';
@@ -16,46 +10,43 @@ export interface CreatureAttack {
 }
 
 export interface CreatureInteraction {
-  name: string; // human breath-weapon label, e.g. "Hurl fireball"
-  material?: string; // emitted material token, e.g. CREATURE_MAT:DEMON_4:POISON
+  name: string;
+  material?: string;
 }
 
-/** A single strong hit: the full curated creature dossier. */
+/** A single strong hit: the full curated creature dossier for one raws creature. */
 export interface CreatureDossier {
   kind: 'creature';
-  token: string; // creature_id, e.g. "DEMON_4"
-  name: string; // singular name, e.g. "flame phantom"
+  token: string;
+  name: string;
   plural?: string;
   caste_count: number;
-  size: number; // body volume, cm^3
-  size_label: string; // tiny|small|medium|large|huge|gigantic
-  flags: string[]; // curated advisor-relevant caste flags
+  size: number;
+  size_label: string;
+  flags: string[];
   attacks: CreatureAttack[];
   interactions: CreatureInteraction[];
   description?: string;
-  blurb?: string;
-  unit_id?: number; // set when resolved via a live unit_id query
+  unit_id?: number;
   unit_name?: string;
 }
 
-/** A temperature fact: the raw DF "urist" value plus its Celsius conversion. */
 export interface TempFact {
   urist: number;
   celsius: number;
 }
 
-/** A single strong hit: a material dossier (via dfhack.matinfo). */
 export interface MaterialDossier {
   kind: 'material';
-  token: string; // e.g. "INORGANIC:IRON"
-  name: string; // solid-state display name, e.g. "iron"
+  token: string;
+  name: string;
   state_names: { solid: string; liquid?: string; gas?: string };
   melting_point?: TempFact;
   boiling_point?: TempFact;
   ignite_point?: TempFact;
   flammable: boolean;
-  density: { solid?: number; liquid?: number }; // kg/m^3
-  flags: string[]; // curated notable material flags
+  density: { solid?: number; liquid?: number };
+  flags: string[];
 }
 
 export interface PlantGrowth {
@@ -68,31 +59,29 @@ export interface PlantMaterial {
   name: string;
 }
 
-/** A single strong hit: a plant dossier. */
 export interface PlantDossier {
   kind: 'plant';
   token: string;
   name: string;
   plural?: string;
-  type: string; // tree|grass|shrub
-  farm_plantable: boolean; // DF farm-plot eligibility: SEED flag and not tree/grass
+  type: string;
+  farm_plantable: boolean;
   value: number;
-  growth_time: number; // ticks to mature
-  seasons: string[]; // SPRING|SUMMER|AUTUMN|WINTER
+  growth_time: number;
+  seasons: string[];
   surface: boolean;
-  subterranean: boolean;
   depth_min: number;
   depth_max: number;
   biomes: string[];
-  yields: string[]; // drink|seed|thread|mill|extract_*
+  yields: string[];
   growths: PlantGrowth[];
   materials: PlantMaterial[];
 }
 
 export interface ReactionBuilding {
-  category: string; // building_type, e.g. "Workshop"
-  workshop?: string; // workshop_type / furnace_type, e.g. "Carpenters"
-  custom?: string; // custom building_def token, when built at one
+  category: string;
+  workshop?: string;
+  custom?: string;
 }
 
 export interface ReactionReagent {
@@ -104,18 +93,17 @@ export interface ReactionReagent {
 
 export interface ReactionProduct {
   item?: string;
-  improvement?: string; // non-item product (an improvement: glaze/encrust/stud/sew-image)
-  quantity?: number; // absent on improvement products
+  improvement?: string;
+  quantity?: number;
   probability?: number;
 }
 
-/** A single strong hit: a reaction dossier. */
 export interface ReactionDossier {
   kind: 'reaction';
   token: string;
   name?: string;
   skill?: string;
-  buildings: ReactionBuilding[]; // a reaction can run at several buildings
+  buildings: ReactionBuilding[];
   reagents: ReactionReagent[];
   products: ReactionProduct[];
 }
@@ -127,15 +115,14 @@ export interface ItemAttack {
   velocity_mult: number;
 }
 
-/** A single strong hit: an itemdef dossier. */
 export interface ItemDossier {
   kind: 'item';
   token: string;
   name: string;
   plural?: string;
   adjective?: string;
-  class: string; // weapon|armor|tool|ammo|trapcomp|instrument|...
-  value?: number; // absent on some classes (e.g. food)
+  class: string;
+  value?: number;
   stats: Record<string, string | number>;
   attacks?: ItemAttack[];
 }
@@ -145,19 +132,18 @@ export interface BuildingReaction {
   name?: string;
 }
 
-/** A single strong hit: a custom-building dossier. */
 export interface BuildingDossier {
   kind: 'building';
   token: string;
   name: string;
-  category: string; // building_type
-  purpose?: string; // labor_description
+  category: string;
+  purpose?: string;
   dim_x: number;
   dim_y: number;
   build_stages: number;
-  reactions: BuildingReaction[]; // capped at 8
-  reactions_truncated?: boolean; // set when more than 8 reactions run here
-  reactions_total?: number; // full count, present only when truncated
+  reactions: BuildingReaction[];
+  reactions_truncated?: boolean;
+  reactions_total?: number;
 }
 
 export type Dossier =
@@ -175,7 +161,6 @@ export interface GameDataStub {
   blurb: string;
 }
 
-/** Several hits (or none): a disambiguation list, mirroring find_unit. */
 export interface GameDataMatches {
   query: string;
   match_count: number;
@@ -185,9 +170,6 @@ export interface GameDataMatches {
 
 export type GameData = Dossier | GameDataMatches;
 
-// Per-kind list fields that a dossier carries. An empty Lua table encodes as {}
-// rather than [], so we coerce these back to arrays for the kind at hand only —
-// never invent fields that a kind doesn't have.
 const DOSSIER_LIST_FIELDS: Record<GameDataKind, string[]> = {
   creature: ['flags', 'attacks', 'interactions'],
   material: ['flags'],
@@ -197,15 +179,12 @@ const DOSSIER_LIST_FIELDS: Record<GameDataKind, string[]> = {
   building: ['reactions'],
 };
 
-// Per-kind OBJECT (map) fields. An empty Lua table encodes as [] not {}, so an
-// empty map arrives as an array and violates the declared object type — coerce
-// it back to {} for the kind at hand only.
 const DOSSIER_OBJECT_FIELDS: Record<GameDataKind, string[]> = {
   creature: [],
-  material: ['density'], // {solid?,liquid?} — empty when neither is known
+  material: ['density'],
   plant: [],
   reaction: [],
-  item: ['stats'], // Record<string, string|number> — empty for e.g. food
+  item: ['stats'],
   building: [],
 };
 
@@ -216,19 +195,16 @@ export async function gameData(
   const data = await runJsonScript<GameData>('gameData', [query, kind ?? ''], []);
   if ('error' in data) return data;
 
-  // Normalize list fields per shape (an empty Lua table encodes as {} not []).
   const d = data as any;
   if ('match_count' in d) {
     if (!Array.isArray(d.matches)) d.matches = [];
   } else {
     const fields = DOSSIER_LIST_FIELDS[d.kind as GameDataKind] ?? [];
     for (const f of fields) {
-      // item.attacks is optional (nil for non-weapons) — only coerce when present.
       if (f in d && !Array.isArray(d[f])) d[f] = [];
     }
     const objFields = DOSSIER_OBJECT_FIELDS[d.kind as GameDataKind] ?? [];
     for (const f of objFields) {
-      // An empty object came back as [] — restore it to {} to match the type.
       if (f in d && Array.isArray(d[f])) d[f] = {};
     }
   }

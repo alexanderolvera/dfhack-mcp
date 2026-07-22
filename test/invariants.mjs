@@ -1,20 +1,5 @@
-// Relational invariants — properties true of ANY valid loaded fort, not just one
-// frozen fixture. This is the Red/Green half of the harness: goldens freeze the
-// EXACT bytes a tool emits ("did anything change?"), invariants encode INTENDED
-// CORRECTNESS ("is the output self-consistent and true?"). So you can add a new
-// invariant that FAILS against today's code (red), then fix the tool until it
-// PASSES (green) — a spec you write before the behaviour exists, not a snapshot
-// of behaviour that already does.
-//
-// Each invariant is:
-//   { name, tools: string[], desc, check(payloads) => string[] }
-//     tools  — the tool payloads it reads; the runner captures these live and
-//              skips the invariant as n/a if any is absent or returned the
-//              no-fort guard (so `--invariants` degrades cleanly with no fort).
-//     check  — returns an array of violation messages; an empty array is a PASS.
-//
-// Invariants are RELATIONAL, so they hold on any fort and need no committed
-// fixture — they are the tier that runs live today, ahead of shareable goldens.
+// Relational invariant specs — see docs/VERIFY.md's "Invariants" section for the
+// Red/Green methodology and the { name, tools, desc, check } shape.
 
 const isInt = (n) => typeof n === 'number' && Number.isInteger(n);
 const inRange = (n, lo, hi) => typeof n === 'number' && n >= lo && n <= hi;
@@ -305,7 +290,6 @@ export const INVARIANTS = [
           out.push(`fort_core.y=${c.y} outside [0, ${e.y})`);
         if (!zOk(c.z)) out.push(`fort_core.z=${c.z} outside [0, ${zc})`);
       }
-      // surface_z is null or a real z-level.
       if (d.surface_z !== null && !zOk(d.surface_z))
         out.push(`surface_z=${d.surface_z} outside [0, ${zc})`);
       // every activity z-level is a real z-level, and the union covers both parts.
@@ -357,7 +341,6 @@ export const INVARIANTS = [
     check(p) {
       const d = p.environment;
       const out = [];
-      // Season is 0..3; season_name is one of the four.
       if (!inRange(d.season, 0, 3)) out.push(`season=${d.season} outside 0..3`);
       const SEASONS = new Set(['spring', 'summer', 'autumn', 'winter']);
       if (!SEASONS.has(d.season_name))

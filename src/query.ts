@@ -1,11 +1,14 @@
-// Shared plumbing for tools: invoke a registered DFHack query script (a real
-// mcp_<name>.lua file) by name with native argv, parse the one JSON object it
-// prints, and normalize the given list fields (an empty Lua table encodes as
-// {} rather than []). Query-level errors like {"error":"no fort loaded"} pass
-// through untouched.
-
 import { runScript } from './dfclient.ts';
 
+/**
+ * Runs a query script and parses its single JSON output, coercing the given
+ * fields from Lua's empty-table `{}` to `[]`.
+ * @param name Bare query name, passed through to `runScript`.
+ * @param args Argv for the query script.
+ * @param listFields Fields to normalize to `[]` when empty.
+ * @returns The parsed payload, or the script's own `{error}` object passed through untouched.
+ * @throws {Error} If the script's output isn't valid JSON.
+ */
 export async function runJsonScript<T>(
   name: string,
   args: string[] = [],

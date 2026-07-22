@@ -71,5 +71,10 @@ None.
 - `open_cases` = crimes discovered but not yet sentenced.
 - `deadline_days` alert threshold: unmet mandate with <= 7 days remaining. Verified on 53.15-r2: mandate_type {0=Export, 1=Make, 2=Guild}.
 
+## Implementation notes
+Justice data is read from `df.global.world.crimes.all` (open cases) and `df.global.plotinfo.punishments` (convictions awaiting punishment, each entry carrying `prison_counter`/`hammer_strikes`/`beating`). Noble room ownership is read from the noble's `unit.owned_buildings`, keeping only entries whose building type is `Civzone`, then mapping `civzone_type` to office/bedroom/dining/tomb.
+
+`mandates`/`export_bans`/`demands` are capped at 50 even though a fort's noble overhead is normally small — an old or heavily-modded fort can't be trusted to stay small, so the caps (with their `*_truncated` flags) are a payload-size backstop, not an expected ceiling.
+
 ## Related
 [rooms_and_zones](rooms_and_zones.md) · [stocks](stocks.md) · [work_order_create](work_order_create.md) · [citizen](citizen.md) · [unmet_needs](unmet_needs.md)

@@ -13,7 +13,6 @@
     "raining": true,
     "snowing": false,
     "temperature": 10042,
-    "temperature_band": "above_freezing",
     "water_frozen": false,
     "weather": "rain"
   }

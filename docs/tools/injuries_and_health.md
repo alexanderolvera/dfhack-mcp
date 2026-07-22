@@ -24,7 +24,7 @@ None.
 - `bedridden` (number) — citizens flagged `should_not_move`.
 - `unconscious` (number) — citizens with a positive unconscious counter.
 - `care_needs[]` — `{ care, count }` rows, most-common first. Labels: `diagnosis`, `immobilization`, `dressing`, `cleaning`, `surgery`, `suture`, `bone setting`, `traction`, `crutch`.
-- `alerts[]` — factual restatements: any patients at all; a mass-unconsciousness event; the top care need.
+- `alerts[]` — a mass-unconsciousness event (`patients` and the top `care_needs[]` row are already their own fields, so they aren't separately alerted).
 
 ```json
 {
@@ -40,10 +40,13 @@ None.
 
 ## Caveats & limits
 - Returns `{"error":"no fort loaded"}` when no fort is active.
-- `patients > 0` always alerts (a doctor-requiring event does not scale with population); the unconscious alert requires BOTH >=10% of population AND >=3 out cold, so sparring KOs and naps on a small fort don't fire it.
+- The unconscious alert requires BOTH >=10% of population AND >=3 out cold, so sparring KOs and naps on a small fort don't fire it.
 - `wounded` counts any recorded wound, including healed-over scars-in-progress — expect it to exceed `patients` (golden: 16 wounded, 0 patients).
-- Verified live on DFHack 53.15-r2: the `rq_*` health flag set in the query is the real one (`rq_recover` does NOT exist on this build; a code comment warns against reintroducing it).
+- Verified live on DFHack 53.15-r2: the `rq_*` health flag set in the query is the real one (`rq_recover` does NOT exist on this build — do not reintroduce it).
 - No caps/pagination: `care_needs` has at most 9 rows by construction.
+
+## Implementation notes
+`patients` (the `needs_healthcare` count) has no alert threshold — it fires at any count above zero. Unlike idle labor or unconscious counts, a doctor-requiring care-queue entry is a discrete event that doesn't scale with population: a well-run fort of any size sits at 0, so `patients > 0` is already a real medical fact, not a big-fort artifact. `unconscious`, by contrast, is mostly transient (sparring KOs, exhaustion, resting off a wound), so its alert requires both a population share and a minimum head count — either alone could misfire (a share alone would trip on a single KO in a 7-dwarf embark; a head count alone would never scale down for small forts).
 
 ## Related
 [rooms_and_zones](rooms_and_zones.md) · [citizen](citizen.md) · [unmet_needs](unmet_needs.md) · [military](military.md)

@@ -39,10 +39,15 @@ No golden fixture exists for this tool (actuators are not golden-tested).
 
 ## Caveats & limits
 - Gated: registered only when the `DFHACK_MCP_ACTUATORS` env var is set; the default server is read-only.
-- Tokens are single-use and void if the detail's membership, mode, or labor set changes between preview and apply (target-state signature check), or if the apply call's args differ from the previewed op.
+- Tokens are single-use and void if the detail's membership, mode, or labor set changes between preview and apply (target-state signature check), or if the apply call's args differ from the previewed op. The signature includes a digest of the detail's *full* sorted membership (not just this unit's membership and the member count), specifically so a swap — one member replacing another, leaving the count and this unit's own membership unchanged — still invalidates the token; count alone can't detect that kind of change.
+- `resulting_details` (the preview field listing every detail the unit would belong to after the change) matches details by index rather than name, so two details that happen to share a name can't be confused with each other.
 - Labor mirroring: undo recomputes the labor union under the pre-edit membership; if a labor's cache was already stale (paused game / automatic professions disabled), undo CORRECTS the cache rather than restoring the exact prior byte — the apply result reports stale labors honestly.
 - Reversal: the same call with `enabled` inverted.
 - Returns `{"error":"no fort loaded"}` if no fort is active (same contract as read-only tools).
+- See [work_details](work_details.md)'s Implementation notes for the confirmed field paths and the labor-propagation rationale this mirroring behavior relies on.
+
+## Implementation notes
+- The TS actuator is thin: `plan()`/`apply()` just forward to `mcp_workDetail.lua`'s `plan_assign`/`apply_assign` subcommands; the shared dry-run/confirm/apply/undo protocol lives in `src/actuator.ts` (`defineActuator`). Version-fragile DF struct access stays in the Lua query, not the TS wrapper.
 
 ## Related
 - [work_details](work_details.md) — the read-only listing and the readback sensor for this actuator.

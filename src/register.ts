@@ -1,9 +1,3 @@
-// Tool-registration helpers: wrap a tool handler so its result is JSON-stringified
-// MCP content and errors become a uniform {error} payload. NotConnectedError (can't
-// reach DFHack at all) passes its message through verbatim; anything else is framed
-// as "<tool> failed: <message>". Each tool ships its own ToolDef descriptor (see
-// tools/*.ts); registerTool dispatches read vs. query on the presence of a `shape`.
-
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { z } from 'zod';
 import { NotConnectedError } from './dfclient.ts';
@@ -33,13 +27,14 @@ export interface QueryToolDef {
 
 export type ToolDef = ReadToolDef | QueryToolDef;
 
-/** Whether a tool is withheld from registration under the given environment.
- *  The single source of truth for the two mutation gates, used by index.ts (what
- *  the server registers) AND scripts/verify.mjs (the expected tools/list set), so
- *  the two can never drift:
- *    - devOnly  (run_lua):        registered only under DFHACK_MCP_DEV.
- *    - actuator (mutating tools): registered only under DFHACK_MCP_ACTUATORS.
- *  With neither env var set, the surface is exactly the read-only curated tools. */
+/**
+ * Whether a tool is withheld from registration under the given environment —
+ * the single source of truth for the `devOnly`/`actuator` gates, shared by
+ * index.ts and scripts/verify.mjs so the two can never drift.
+ * @param def A tool descriptor's `devOnly`/`actuator` flags.
+ * @param env Environment to gate against; defaults to `process.env`.
+ * @returns True if the tool should not be registered.
+ */
 export function isGatedOff(
   def: Pick<ToolDef, 'devOnly' | 'actuator'>,
   env: Record<string, string | undefined> = process.env
@@ -53,7 +48,6 @@ function errorPayload(name: string, err: unknown): string {
   return JSON.stringify({ error: message });
 }
 
-/** Register a no-argument, read-only tool that returns a JSON-able object. */
 function registerReadTool(server: McpServer, def: ReadToolDef): void {
   const { name, title, description, run } = def;
   server.registerTool(name, { title, description }, async () => {
@@ -66,7 +60,6 @@ function registerReadTool(server: McpServer, def: ReadToolDef): void {
   });
 }
 
-/** Register a read-only tool that takes arguments matching `shape`. */
 function registerQueryTool(server: McpServer, def: QueryToolDef): void {
   const { name, title, description, shape, run } = def;
   server.registerTool(name, { title, description, inputSchema: shape }, async (args) => {
@@ -79,8 +72,12 @@ function registerQueryTool(server: McpServer, def: QueryToolDef): void {
   });
 }
 
-/** Register a tool from its descriptor, dispatching read vs. query on `shape`.
- *  `devOnly` is NOT handled here — the caller filters those before registering. */
+/**
+ * Registers a tool from its descriptor, dispatching read vs. query on `shape`.
+ * Does not apply the `devOnly`/`actuator` gates — callers filter those first.
+ * @param server The MCP server to register against.
+ * @param def The tool's descriptor.
+ */
 export function registerTool(server: McpServer, def: ToolDef): void {
   if ('shape' in def) registerQueryTool(server, def);
   else registerReadTool(server, def);

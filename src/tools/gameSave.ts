@@ -1,11 +1,3 @@
-// A4 — game save. One gated actuator backed by mcp_gameSave.lua:
-//   game_save   checkpoint the fort via DFHack's maintained quicksave.
-//
-// Unlike the other actuators it takes NO operation args — you either save the
-// current state or you don't. The §A0 dry-run/confirm loop is the shared
-// defineActuator wrapper (src/actuator.ts); this module supplies only the
-// plan()/apply() forwards to the Lua subcommands.
-
 import { runJsonScript } from '../query.ts';
 import { defineActuator, type PlanResult, type ApplyResult } from '../actuator.ts';
 

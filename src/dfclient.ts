@@ -1,38 +1,15 @@
-// Owns the single RPC connection to DFHack so tool handlers stay declarative.
-// Lazy-connects on first use and transparently reconnects once if the socket
-// has dropped (e.g. DF was restarted between calls).
-//
-// The query layer is REAL .lua files in ./dfhack-queries/, invoked BY NAME with
-// native argv. On every fresh connection we register that directory as a DFHack
-// script path (once per connection), so `runScript('fortStatus', [...])` resolves
-// to mcp_fortStatus.lua and DFHack runs it directly — no Lua source over the wire,
-// no string escaping.
-
 import { fileURLToPath } from 'node:url';
 import { DwarfClient, RpcError } from 'dfhack-remote-node';
 
 const HOST = process.env.DFHACK_HOST ?? '127.0.0.1';
 const PORT = Number(process.env.DFHACK_PORT ?? 5000);
 
-// The directory holding mcp_*.lua, resolved relative to THIS module. In dev
-// (type-stripped src/) this is src/dfhack-queries/; in the tsup bundle it is
-// dist/dfhack-queries/ (tsup copies the .lua files there). DFHack needs forward
-// slashes — backslashes fail addScriptPath on Windows.
-//
-// DFHACK_MCP_QUERY_DIR overrides this: the path is registered on the DFHack side,
-// so when DFHack runs in a container (a different filesystem than this server) it
-// must point at where the scripts are baked INSIDE the container, not this host
-// path. Set it to the container-internal query dir when targeting a containerized
-// DFHack (see docker/).
 const QUERY_DIR =
   process.env.DFHACK_MCP_QUERY_DIR ??
   fileURLToPath(new URL('./dfhack-queries/', import.meta.url)).replace(/\\/g, '/');
 
 let client: DwarfClient | null = null;
 
-/** Register the query dir as a DFHack script path for this connection. Feature-
- *  detects addScriptPath so an incompatible build fails with a clear message
- *  rather than a mysterious "command not found" later. */
 async function registerScriptPath(c: DwarfClient): Promise<void> {
   const probe = (
     await c.runLuaSnippet(
@@ -52,29 +29,24 @@ async function ensureConnected(): Promise<DwarfClient> {
   if (client?.connected) return client;
   const c = new DwarfClient({ host: HOST, port: PORT });
   await c.connect();
-  // Register the script path ONCE per connection, before first use.
   await registerScriptPath(c);
   client = c;
   return client;
 }
 
-/** True if we cannot even reach DFHack (vs. a fort-state or query error). */
 export class NotConnectedError extends Error {}
 
 /**
- * Run a Lua snippet and return its printed output, reconnecting once if the
- * socket dropped. Throws NotConnectedError if DFHack can't be reached at all.
- * Kept for the run_lua dev tool and direct callers; the curated tools use
- * runScript instead.
+ * Runs a Lua snippet, reconnecting once if the socket dropped.
+ * @param snippet Lua source to execute.
+ * @returns The snippet's printed output.
+ * @throws {NotConnectedError} If DFHack can't be reached after the retry.
  */
 export async function runLua(snippet: string): Promise<string> {
   try {
     return await (await ensureConnected()).runLuaSnippet(snippet);
   } catch (err) {
-    // A FAIL frame means DFHack was reachable and the snippet ran and failed —
-    // rethrow as-is rather than reconnecting and re-running it.
     if (err instanceof RpcError) throw err;
-    // Reset and retry once — covers a stale socket after a DF restart.
     client = null;
     try {
       return await (await ensureConnected()).runLuaSnippet(snippet);
@@ -88,23 +60,19 @@ export async function runLua(snippet: string): Promise<string> {
 }
 
 /**
- * Invoke a registered query script BY NAME with native argv and return its
- * printed output. `name` is the bare query name (e.g. 'fortStatus'); the on-disk
- * script is mcp_<name>.lua. Args arrive UNESCAPED as `local args = {...}`.
- * Reconnects once if the socket dropped (re-registering the script path via
- * ensureConnected), mirroring runLua's behavior.
+ * Invokes a registered query script by name with native argv, reconnecting
+ * once if the socket dropped.
+ * @param name Bare query name (e.g. 'fortStatus'); the on-disk script is `mcp_<name>.lua`.
+ * @param args Unescaped argv passed to the script as `local args = {...}`.
+ * @returns The script's printed output.
+ * @throws {NotConnectedError} If DFHack can't be reached after the retry.
  */
 export async function runScript(name: string, args: string[] = []): Promise<string> {
   const command = 'mcp_' + name;
   try {
     return await (await ensureConnected()).runCommand(command, args);
   } catch (err) {
-    // A FAIL frame means DFHack was reachable and the script ran and failed —
-    // rethrow as-is. Retrying here would re-run the script, which for actuators
-    // (work_order_create, blueprint_apply, assign_work_detail) risks repeated
-    // side effects from a script that already partially executed.
     if (err instanceof RpcError) throw err;
-    // Reset and retry once — a fresh ensureConnected re-registers the path.
     client = null;
     try {
       return await (await ensureConnected()).runCommand(command, args);

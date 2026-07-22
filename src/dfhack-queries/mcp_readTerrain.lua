@@ -1,38 +1,8 @@
 --@ module = true
--- mcp_readTerrain: the fog-of-war-safe terrain substrate for spatial tools.
---
--- SPIKE #10 deliverable. Reads tile shape for a single z-level window and emits a
--- compact per-row symbol grid. UNDISCOVERED tiles (designation.hidden) are ALWAYS
--- rendered as '?' and their real tiletype is NEVER serialized — the fog-of-war
--- invariant is enforced at the source, in Lua, so no caller can leak the map the
--- player hasn't found. (RFR's GetBlockList, by contrast, ships real tiletypes for
--- hidden tiles and a ~50x larger raw payload; see the spike report.)
---
--- FACTS ONLY: tile shapes + discovery state. No pathing advice, no "safe route"
--- interpretation — the agent reasons over the grid.
---
--- Two ways in:
---   * Directly (this file): `mcp_readTerrain X0 Y0 Z [W] [H]` -> prints ONE JSON
---     object {origin,w,h,visible_tiles,hidden_tiles,exposure,fortifications,
---     legend,distinct,grid}. exposure = {open_to_sky,covered,undiscovered} from the
---     designation.outside/hidden flags; fortifications = [{x,y}] firing tiles.
---   * As a module for the five dependent spatial tools:
---       local rt = reqscript('mcp_readTerrain')
---       local win = rt.read_window(x0, y0, z, w, h)   -- returns the same table
---       local ch  = rt.sym(tiletype_id, hidden)
---     so the symbol table, the '?' convention, and the block-cached read live in
---     ONE place. Version-fragile field access (designation.hidden, tiletype attrs)
---     stays here, out of the individual tools.
---
--- Verified live on 53.15-r2 vs fort Bustlanterns: coords match defenses()/df tile
--- space (+x east, +y south); a 100x100 window is ~10 KB (~2.6k tokens); a
--- block-cached read of 10k tiles is ~65 ms (vs ~1.7 s reading per tile).
+-- mcp_readTerrain: see CONTRIBUTING.md "Shared internals: fog-of-war safety".
 
 local json = require('json')
 
--- Symbol convention. '?' is reserved for undiscovered tiles and MUST NOT be
--- reused for any real terrain. Shapes collapse to one glyph each; the goal is a
--- legible ASCII map an agent can reason over, not a lossless dump.
 TERRAIN_LEGEND = {
   ['?'] = 'undiscovered (fog of war)',
   ['#'] = 'wall / solid rock',
@@ -50,7 +20,6 @@ TERRAIN_LEGEND = {
 
 local SHAPE = df.tiletype_shape
 
--- tiletype id (+ hidden flag) -> one grid glyph. hidden always wins.
 function sym(tt, hidden)
   if hidden then return '?' end
   if tt == nil then return ' ' end
@@ -69,9 +38,6 @@ function sym(tt, hidden)
   else return '.' end
 end
 
--- Read a w*h window at (x0,y0) on z-level z. Fetches each 16x16 map block ONCE
--- and indexes into it (26x faster than dfhack.maps.getTileType per tile). Returns
--- the emit-ready table. Out-of-map tiles read as open space.
 function read_window(x0, y0, z, w, h)
   local m = df.global.world.map
   local cache = {}
@@ -84,10 +50,6 @@ function read_window(x0, y0, z, w, h)
     return v
   end
 
-  -- exposure = the designation.outside flag (open to sky vs under a roof), the
-  -- tile-level "inside/outside" DF itself tracks; fortifications = firing tiles,
-  -- collected as positions because they are sparse and defensively salient. All
-  -- computed in the SAME block-cached pass — no extra reads for consumers.
   local rows, hidden_n, visible_n, distinct = {}, 0, 0, {}
   local open_to_sky, covered = 0, 0
   local fortifications = {}
@@ -126,12 +88,10 @@ function read_window(x0, y0, z, w, h)
   }
 end
 
--- When loaded via reqscript, stop here: the caller just wanted the functions.
 if dfhack_flags and dfhack_flags.module then
   return
 end
 
--- Direct invocation: `mcp_readTerrain X0 Y0 Z [W] [H]`.
 if df.global.gamemode ~= df.game_mode.DWARF then
   print(json.encode({ error = 'no fort loaded' }))
   return

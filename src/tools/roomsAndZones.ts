@@ -1,6 +1,3 @@
-// rooms_and_zones(): the fort's facility inventory, each count paired with its
-// demand-side number. Thin wrapper over the ROOMS_AND_ZONES Lua query.
-
 import { runJsonScript } from '../query.ts';
 import type { ToolDef } from '../register.ts';
 
@@ -63,9 +60,6 @@ export interface RoomsAndZones {
 export async function roomsAndZones(): Promise<RoomsAndZones | { error: string }> {
   const data = await runJsonScript<RoomsAndZones>('roomsAndZones', [], ['wells', 'alerts']);
   if ('error' in data) return data;
-  // runJsonScript only normalizes top-level list fields; the temple lists are
-  // nested, so coerce them here (this encoder emits [] for an empty table, but
-  // the boundary is version-fragile — keep the tool's contract of string[] firm).
   if (data.temples) {
     if (!Array.isArray(data.temples.dedicated)) data.temples.dedicated = [];
     if (!Array.isArray(data.temples.needed_by_worshippers)) data.temples.needed_by_worshippers = [];

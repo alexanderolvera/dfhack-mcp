@@ -1,8 +1,3 @@
-// HTML -> readable text (dependency-free). Cleans rendered MediaWiki HTML into
-// plain text by streaming tags rather than nesting regexes, so cruft subtrees
-// (edit links, navboxes, refs, TOC) are dropped cleanly even when nested. Keeps
-// headings, lists and tables as simple text; decodes entities; collapses space.
-
 const ENTITIES: Record<string, string> = {
   amp: '&',
   lt: '<',
@@ -41,9 +36,15 @@ const SKIP_CLASS =
 const SKIP_ID = /^(page-quality-rating|toc|catlinks|References)$/;
 const VOID = new Set(['br', 'hr', 'img', 'input', 'meta', 'link', 'col', 'wbr', 'source']);
 
+/**
+ * Converts rendered MediaWiki HTML into plain text, dropping wiki chrome
+ * (edit links, navboxes, references, TOC — even when nested) and normalizing
+ * entities and whitespace.
+ * @param html Rendered MediaWiki HTML.
+ * @returns Cleaned plain text.
+ */
 export function cleanHtml(html: string): string {
   if (!html) return '';
-  // Drop comments / scripts / styles wholesale first.
   const s = html
     .replace(/<!--[\s\S]*?-->/g, '')
     .replace(/<script[\s\S]*?<\/script>/gi, '')

@@ -49,5 +49,8 @@ None.
 - Verified live on DFHack 53.15-r2 (`soul.personality.needs` iterates; `df.need_type[id]` yields readable tokens).
 - Returns `{"error":"no fort loaded"}` if no fort is active.
 
+## Implementation notes
+Each citizen's soul carries `personality.needs` (an array of `df.need_type` entries). `focus_level` is the signal: `>= 0` means the need is met/neutral, negative means the dwarf is distracted by it, and the magnitude is how starved the need is.
+
 ## Related
 [fort_status](fort_status.md) (the happiness buckets this explains), [moods](moods.md) (strange moods, a different system), [citizen](citizen.md) (per-dwarf detail), [wiki_lookup](wiki_lookup.md) (what a given need means).

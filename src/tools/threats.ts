@@ -1,6 +1,3 @@
-// threats(): dangerous units on the map, grouped and classified.
-// Thin wrapper over the THREATS Lua query.
-
 import { runJsonScript } from '../query.ts';
 import type { ToolDef } from '../register.ts';
 
@@ -12,10 +9,9 @@ export interface ThreatGroup {
   undead: boolean;
   crazed: boolean;
   great_danger: boolean;
-  // Tactical intel resolved from the group's representative unit's creature.
-  token: string | null; // creature_id (a direct game_data handle), e.g. "DEMON_4"
-  traits: string[]; // curated decisive traits: trapavoid, flier, fire, webber, building_destroyer, ranged
-  ranged_attacks: string[]; // ranged/breath adv_names, e.g. ["Hurl fireball","Spray jet of fire"]
+  token: string | null;
+  traits: string[];
+  ranged_attacks: string[];
 }
 
 export interface Threats {
@@ -28,9 +24,6 @@ export interface Threats {
 export async function threats(): Promise<Threats | { error: string }> {
   const res = await runJsonScript<Threats>('threats', [], ['groups', 'alerts']);
   if ('error' in res) return res;
-  // Per-group traits/ranged_attacks are nested, so the top-level list-field
-  // normalization can't reach them: an empty Lua table encodes as {} not [].
-  // Coerce each group's list fields to real arrays so consumers can iterate.
   for (const g of res.groups) {
     if (!Array.isArray(g.traits)) g.traits = [];
     if (!Array.isArray(g.ranged_attacks)) g.ranged_attacks = [];

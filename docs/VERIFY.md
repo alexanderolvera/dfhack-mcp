@@ -15,6 +15,35 @@ npm run verify:update      # rewrite goldens from the loaded fixture
 
 Exit code is non-zero on any failure, so CI and pre-push hooks can gate on it.
 
+## Ad hoc live-verification scripts
+
+A few tools also have a standalone live-verification script, for deeper manual
+checks the tiered harness's fixture-agnostic checks don't cover (specific
+regression guards, cache-hit proof, live text output to read by eye). Each
+needs Dwarf Fortress + DFHack running (`verify:wiki` is pure HTTP and needs
+neither):
+
+```sh
+npm run verify:game-data   # game_data across all 6 kinds + two regression guards
+npm run verify:wiki        # wiki_search/wiki_lookup: redirect, cache hit, not-found
+```
+
+## Artifact smoke test
+
+`npm run smoke:artifact` (`scripts/smoke-artifact.mjs`) is the one gate T0
+can't be: T0 launches `src/index.ts` under Node 24, but the published artifact
+is `dist/index.js`, run by whatever Node the caller has. It builds a fresh
+`dist`, `npm pack`s it (`--ignore-scripts`, so the deterministic tarball name
+`dfhack-mcp-<version>.tgz` is the only thing depended on), installs the
+tarball into a throwaway directory so its deps resolve from the registry —
+not this repo's `node_modules` — then boots the installed bundle over MCP
+with the gates pinned explicitly (`DFHACK_MCP_ACTUATORS=1`, `DFHACK_MCP_DEV`
+unset) so the expected 33-tool count can't drift with whatever
+`DFHACK_MCP_*` the caller's shell happens to export. It asserts the handshake
+version, tool count, and a handful of required tool names. Runnable locally
+(needs network for the registry install); exit 0 means the artifact is
+publishable, non-zero means do not publish.
+
 ## Why fixtures, not mocks
 
 Lua runs *inside* Dwarf Fortress, and mocks are banned by the working agreement.

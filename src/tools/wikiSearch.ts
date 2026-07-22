@@ -1,6 +1,3 @@
-// wiki_search(query): ranked candidate DF wiki titles + cleaned snippets.
-// Discovery/disambiguation step — pure HTTP to the MediaWiki API, no game needed.
-
 import { wikiSearch, type WikiSearch } from '../wiki/index.ts';
 import { z } from 'zod';
 import type { ToolDef } from '../register.ts';

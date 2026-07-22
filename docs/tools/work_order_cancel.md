@@ -50,6 +50,7 @@ Erases one order from `df.global.world.manager_orders` by id — the same struct
 - The `undo.recreate` amount is the REMAINING work (`amount_left`), not the original total.
 - `undo.faithful` is true only when the order carries nothing [work_order_create](work_order_create.md) would drop; otherwise `not_reproduced` names the lost features (workshop binding, order conditions, item_subtype) as facts — the undo is approximate.
 - Returns `{"error":"no fort loaded"}` if no fort is active.
+- See [work_order_list](work_order_list.md)'s Implementation notes for the confirmed `manager_orders` field paths and a live-verified create/cancel id example.
 
 ## Related
 [work_order_list](work_order_list.md) (find the id; verify the removal), [work_order_create](work_order_create.md) (the documented reversal path).

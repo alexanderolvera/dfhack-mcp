@@ -1,6 +1,3 @@
-// stocks(): food/drink as days-of-supply plus a few critical materials.
-// Thin wrapper over the STOCKS Lua query.
-
 import { runJsonScript } from '../query.ts';
 import type { ToolDef } from '../register.ts';
 

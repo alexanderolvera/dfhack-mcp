@@ -1,9 +1,3 @@
-// End-to-end harness: spawn the MCP server over stdio, list tools, call one.
-// Usage: node scripts/call-tool.mjs [toolName] [key=value ...]
-//   default toolName: fort_status
-//   args:  node scripts/call-tool.mjs find_unit query=medical
-// Requires Dwarf Fortress running with DFHack and a fort loaded.
-
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
@@ -18,8 +12,7 @@ const toolArgs = Object.fromEntries(
 const transport = new StdioClientTransport({
   command: process.execPath, // node
   args: ['src/index.ts'],
-  // Forward our env so flags like DFHACK_MCP_DEV / DFHACK_HOST reach the server
-  // (StdioClientTransport otherwise spawns the child with a minimal env).
+  // StdioClientTransport spawns the child with a minimal env by default.
   env: { ...process.env },
 });
 const client = new Client({ name: 'dfhack-mcp-harness', version: '1.0.0' });

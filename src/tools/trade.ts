@@ -1,12 +1,9 @@
-// trade(): the caravan lifecycle and the trade depot as facts.
-// Thin wrapper over the TRADE Lua query.
-
 import { runJsonScript } from '../query.ts';
 import type { ToolDef } from '../register.ts';
 
 export interface DepotState {
   exists: boolean;
-  accessible: boolean; // DF's own wagon-pathable flag, not merely "built"
+  accessible: boolean;
   complete: boolean;
   trader_requested: boolean;
 }

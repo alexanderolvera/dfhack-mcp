@@ -1,33 +1,3 @@
--- mcp_mandatesAndJustice: the fort's nobility overhead — what the nobles are
--- forcing on the fort right now, and the state of its justice system.
---
--- Three things a player reads off the nobles/justice screens, as facts:
---   * MANDATES: active production quotas (make N of an item by a deadline) and
---     export bans a noble has imposed. mode is df.mandate_type — verified live on
---     53.15-r2: {0=Export (ban), 1=Make (production quota), 2=Guild demand}.
---   * DEMANDS: appointed nobles carry room requirements (office/bedroom/dining/
---     tomb). A demand is UNMET when the noble holds no room zone of that type.
---     We test room-TYPE ownership (does the mayor own an office zone?), not the
---     room-VALUE threshold (required_office=500 is emitted as a fact, but "met"
---     means a zone of that type is assigned to them, which is what's robust to
---     read). owned_buildings are civzones; df.civzone_type gives Office/Bedroom/
---     DiningHall/Tomb.
---   * JUSTICE: open criminal cases (df.global.world.crimes.all), convictions
---     awaiting punishment (df.global.plotinfo.punishments — each carries
---     prison_counter/hammer_strikes/beating), and restraint capacity (built
---     chains + cages vs. how many are free) so the reader can see whether a
---     sentence can actually be served.
---
--- FACTS ONLY: quotas, deadlines, counts, capacity. The pairing (2 prison
--- sentences pending, 0 free restraints) is the fact; "build a jail" is the
--- agent's conclusion. Threshold restatements live in `alerts`, mirroring the
--- game's own nagging.
---
--- Bounded: mandates/export_bans/demands are capped (a fort's noble overhead is
--- small, but age can't be trusted to keep it so); justice is emitted as scalar
--- counts, never an itemized case list, so payload stays flat on an old fort.
--- Invoked by name via DFHack RunCommand; prints ONE JSON object.
-
 local json = require('json')
 local function emit(t) print(json.encode(t)) end
 
@@ -36,17 +6,16 @@ if df.global.gamemode ~= df.game_mode.DWARF then
   return
 end
 
-local MANDATE_CAP = 50    -- active mandates listed individually; excess flagged
-local BAN_CAP = 50        -- export bans listed individually; excess flagged
-local DEMAND_CAP = 50     -- unmet room demands listed individually; excess flagged
+local MANDATE_CAP = 50
+local BAN_CAP = 50
+local DEMAND_CAP = 50
 local TICKS_PER_DAY = 1200
-local DEADLINE_SOON = 7   -- alert: a make-quota this many days out, still unmet
+local DEADLINE_SOON = 7
 
 local plotinfo = df.global.plotinfo
 local ent = df.historical_entity.find(plotinfo.group_id)
 local citizens = dfhack.units.getCitizens(true)
 
--- ---- names --------------------------------------------------------------
 local function unit_name(u)
   if not u then return 'unknown' end
   local ok, s = pcall(function() return dfhack.units.getReadableName(u) end)
@@ -63,11 +32,7 @@ local function hf_name(hf)
   return 'hf ' .. tostring(hf.id)
 end
 
--- ---- appointed nobles ---------------------------------------------------
--- Map each held position to its holder unit + the expectations it carries.
--- Only positions that actually demand something of the fort (can mandate,
--- can demand, or require a room) are the "nobility overhead" this tool tracks.
-local nobles = {}                 -- position_id -> { name, position, unit, hf, pos }
+local nobles = {}
 if ent then
   for _, pos in ipairs(ent.positions.own) do
     local demands_something = pos.mandate_max > 0 or pos.demand_max > 0
@@ -104,7 +69,6 @@ table.sort(noble_rows, function(a, b)
   return a.noble < b.noble
 end)
 
--- ---- mandates + export bans --------------------------------------------
 local function mandate_item_name(m)
   local parts = {}
   local okmat, mi = pcall(function() return dfhack.matinfo.decode(m.mat_type, m.mat_index) end)
@@ -141,7 +105,7 @@ for _, m in ipairs(df.global.world.mandates.all) do
     export_bans[#export_bans + 1] = item
   elseif kind == 'Guild' then
     guild_demands[#guild_demands + 1] = { noble = noble, item = item }
-  else -- Make (production quota)
+  else
     mandates[#mandates + 1] = {
       noble = noble,
       kind = 'make',
@@ -177,13 +141,11 @@ local mandates_truncated, export_bans_truncated
 mandates, mandates_truncated = cap(mandates, MANDATE_CAP)
 export_bans, export_bans_truncated = cap(export_bans, BAN_CAP)
 
--- ---- unmet noble room demands ------------------------------------------
--- A required room type is UNMET when the noble owns no civzone of that type.
 local ROOM_ZONE = { office = 'Office', bedroom = 'Bedroom', dining = 'DiningHall', tomb = 'Tomb' }
 local demands = {}
 for _, n in pairs(nobles) do
   if n.unit then
-    local owned = {}   -- civzone type -> true
+    local owned = {}
     for _, b in ipairs(n.unit.owned_buildings) do
       if df.building_type[b:getType()] == 'Civzone' then
         owned[df.civzone_type[b.type]] = true
@@ -215,7 +177,6 @@ end)
 local demands_truncated
 demands, demands_truncated = cap(demands, DEMAND_CAP)
 
--- ---- justice ------------------------------------------------------------
 local ja = plotinfo.justice_active
 local justice_active = (ja == true) or (ja == 1)
 
@@ -237,8 +198,6 @@ for _, p in ipairs(punishments) do
   end
 end
 
--- restraint capacity: built chains + cages, and how many are free (a chain is
--- in use when it has an assigned or chained unit).
 local bo = df.global.world.buildings.other
 local function restraint_free(r)
   if r.assigned ~= nil or r.chained ~= nil then return false end
@@ -265,7 +224,6 @@ local justice = {
   restraints_free = restraints_free,
 }
 
--- ---- alerts: facts that crossed a line (mirrors the game's own nagging) --
 local alerts = {}
 for _, m in ipairs(mandates) do
   if m.remaining and m.remaining > 0 and m.deadline_days and m.deadline_days <= DEADLINE_SOON then

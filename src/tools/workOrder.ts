@@ -1,14 +1,3 @@
-// A1 — manager (work) orders. Three tools backed by mcp_workOrder.lua:
-//   work_order_list    read-only sensor (always available) — active manager orders,
-//                      doubling as the Q1 manager-screen view and the readback for
-//                      create/cancel.
-//   work_order_create  gated actuator — queue a new manager order.
-//   work_order_cancel  gated actuator — remove one order by id.
-//
-// The two actuators are thin: the §A0 dry-run/confirm/apply/undo loop is the shared
-// defineActuator wrapper (src/actuator.ts); each supplies only plan()/apply(), which
-// forward to the Lua subcommands. Version-fragile struct access stays in the .lua.
-
 import { z } from 'zod';
 import { runJsonScript } from '../query.ts';
 import { defineActuator, type PlanResult, type ApplyResult } from '../actuator.ts';
@@ -17,8 +6,6 @@ import type { ToolDef } from '../register.ts';
 export interface OrderFacts {
   id: number;
   job_type: string;
-  // item_type / material are the constrained output spec; the key is OMITTED when
-  // unconstrained (the DFHack encoder can't emit null), hence optional.
   item_type?: string;
   material?: string;
   amount_total: number;
@@ -26,21 +13,18 @@ export interface OrderFacts {
   frequency: string;
   workshop_id?: number;
   conditions: number;
-  // Per-order validation state: active in the queue, and validated (false on an
-  // active order means it can't currently be fulfilled, e.g. missing materials).
   active: boolean;
   validated: boolean;
 }
 
 export interface WorkOrderList {
-  count: number; // total active orders in the fort (unfiltered by the cursor)
+  count: number;
   orders: OrderFacts[];
   truncated: boolean;
-  next_cursor?: number; // pass as after_id to fetch the next page (present iff truncated)
+  next_cursor?: number;
   manager_present: boolean;
 }
 
-// ---- work_order_list (read-only sensor) ------------------------------------
 export async function workOrderList(args: {
   after_id?: number;
 }): Promise<WorkOrderList | { error: string }> {
@@ -71,10 +55,8 @@ export const workOrderListDef: ToolDef = {
   run: (args) => workOrderList(args),
 };
 
-// ---- shared arg coercion ---------------------------------------------------
 const s = (v: unknown): string => (v === undefined || v === null || v === '' ? '' : String(v));
 
-// ---- work_order_create (actuator) ------------------------------------------
 interface CreateArgs {
   job_type: string;
   amount: number;
@@ -136,7 +118,6 @@ export const workOrderCreateDef = defineActuator<CreateArgs>({
   },
 });
 
-// ---- work_order_cancel (actuator) ------------------------------------------
 interface CancelArgs {
   order_id: number;
   confirm_token?: string;

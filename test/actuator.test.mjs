@@ -76,7 +76,7 @@ test('tokens are single-use: replaying the same token is rejected', async () => 
     run({ target: 'a', confirm_token: preview.confirm_token }),
     /single-use|invalid or expired/
   );
-  assert.equal(applyCalls.n, 1); // not doubled
+  assert.equal(applyCalls.n, 1);
 });
 
 test("a changed target signature voids the token (op's own targets moved)", async () => {
@@ -86,7 +86,7 @@ test("a changed target signature voids the token (op's own targets moved)", asyn
   let state = 'v1';
   const { run, applyCalls } = makeTool({ signature: () => `sig:${state}` });
   const preview = await run({ target: 'a' });
-  state = 'v2'; // target changed after preview
+  state = 'v2';
   await assert.rejects(
     run({ target: 'a', confirm_token: preview.confirm_token }),
     /targets changed|void/

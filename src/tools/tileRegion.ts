@@ -1,42 +1,27 @@
-// tile_region(z, x0, y0, x1, y1): a bounded window of ONE z-level rendered as a
-// character grid + self-describing legend. The "earthworks" map — terrain shape,
-// ramps/stairs, constructions, liquids, trees, and building footprints collapsed
-// to four CLASSES (workshop / stockpile / machine / furniture). Thin wrapper over
-// the mcp_tileRegion Lua query, which composes on the fog-of-war-safe
-// mcp_readTerrain substrate (hidden tiles stay '?', never overwritten).
-//
-// This is the FIRST parameterized MCP tool. All five params are optional: with
-// none, the Lua emits a fixed DEFAULT window centered on the fort core, so the
-// no-arg golden (what verify.mjs captures) is reproducible.
-
 import { runJsonScript } from '../query.ts';
 import { z } from 'zod';
 import type { ToolDef } from '../register.ts';
 
-/** A single flow tile: the grid collapses depth to one glyph, this carries it. */
 export interface Liquid {
   x: number;
   y: number;
   type: 'water' | 'magma';
-  depth: number; // flow_size 1..7
+  depth: number;
 }
 
 export interface TileRegion {
   z: number;
-  origin: [number, number]; // window top-left [x, y] in DF map space (+x east, +y south)
-  size: [number, number]; // [width, height], each hard-capped at 100
-  legend: Record<string, string>; // exactly the glyphs present in `grid`
-  grid: string[]; // `size[1]` rows, each `size[0]` chars wide
-  liquids: Liquid[]; // sparse per-tile flow depth (the grid glyph is depth-blind)
-  liquids_truncated: boolean; // the liquid list hit its cap
-  hidden_tiles: number; // count of '?' fog-of-war tiles in the grid
-  truncated: boolean; // an oversized request was clamped to the 100x100 cap
-  requested?: [number, number]; // present only when truncated: the original [w, h]
+  origin: [number, number];
+  size: [number, number];
+  legend: Record<string, string>;
+  grid: string[];
+  liquids: Liquid[];
+  liquids_truncated: boolean;
+  hidden_tiles: number;
+  truncated: boolean;
+  requested?: [number, number];
 }
 
-// Optional integer arg accepting either a number or a numeric string (call-tool
-// passes key=value strings; a real MCP client passes numbers). Coerced, then
-// serialized back to argv for the positional Lua contract (Z X0 Y0 X1 Y1).
 const coord = () => z.coerce.number().int().optional();
 const toArg = (n?: number): string => (n === undefined || n === null ? '' : String(n));
 

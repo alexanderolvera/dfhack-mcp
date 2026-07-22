@@ -63,6 +63,15 @@ Top-level fields:
 - `walk_group` 0 means no walkable footing at the threat's tile.
 - Returns `{"error":"no fort loaded"}` if no fort is active.
 
+## Implementation notes
+- `footing.open_to_sky` mirrors the tile's `designation.outside` flag.
+- Empty Lua tables encode as `{}` rather than `[]`; the TS wrapper coerces the nested list fields (`structures.bridges`, `interior.groups`, `perimeter_terrain.fortifications`/`grid`) back to arrays.
+- Field paths, verified live on DFHack 53.15-r2: `df.global.world.buildings.all` + `b:getType()` (`df.building_type` Bridge/Trap/Door/Floodgate/Hatch); a bridge's `x1`/`y1`/`x2`/`y2`/`z`/`centerx`/`centery`/`direction`; a trap's `b.trap_type` (`df.trap_type` CageTrap/Lever/...); a door's `door_flags.forbidden`; a unit's `u.pos`; `dfhack.maps.getWalkableGroup(xyz2pos(...))` for walk-group membership.
+- The "walled perimeter" is DF's own walkability-group graph: the engine precomputes a walk group per walkable tile (3D, stairs/ramps included), and two tiles are mutually walk-reachable iff they share one nonzero group. `interior` is anchored on the walk groups citizens actually stand in, rather than the fort's geometric centroid, because the centroid can land inside solid rock (which has no walk group) on an irregular layout.
+- `interior.groups` is built as an explicit array (`{group, citizens}` pairs) rather than an integer-keyed map, because DFHack's JSON encoder would otherwise null-pad an integer-keyed Lua table into a sparse array. Walk-group ids are computed fresh per call and are not stable identifiers across calls.
+- `bearing()`'s `dir` uses `+x = east, +y = south` as the axis convention when comparing two positions.
+- `perimeter_terrain`'s window is centered on the primary level's citizen centroid, then clamped so the window stays within the map bounds.
+
 ## Related
 - [threats](threats.md) — the hostile roster this composes with; [identify](identify.md) for a creature's trait facts.
 - [military](military.md) — the fort's own fighting force.

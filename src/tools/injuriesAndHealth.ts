@@ -1,6 +1,3 @@
-// injuries_and_health(): the fort's medical picture — patients and care needs.
-// Thin wrapper over the INJURIES_AND_HEALTH Lua query.
-
 import { runJsonScript } from '../query.ts';
 import type { ToolDef } from '../register.ts';
 

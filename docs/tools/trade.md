@@ -61,5 +61,11 @@ None.
 - Authoring caveat from the Lua header: the fixture used to write this had NO caravan visiting — the active-caravan fields (Approaching/AtDepot/Leaving, `leaving_in_days`, merchant goods) are coded from the `caravan_state` struct but were not observed live; the quiet path (state none, depot + broker) is fully verified.
 - Returns `{"error":"no fort loaded"}` if no fort is active.
 
+## Implementation notes
+Data model, verified live on DFHack 53.15:
+- Depot: `world.buildings.other.TRADE_DEPOT` (`building_tradedepotst`). `accessible` is DF's own wagon-pathable flag — the exact thing the game checks before routing a wagon, not merely "is it built." Completeness is `construction_stage >= d:getMaxBuildStage()`. `contained_items` are the items physically staged in the depot footprint.
+- Caravans: `df.global.plotinfo.caravans` is a vector of `caravan_state`; empty means no caravan. `trade_state` is `df.caravan_state.T_trade_state` (0 None, 1 Approaching, 2 AtDepot, 3 Leaving, 4 Stuck); `time_remaining` is a tick countdown (÷1200 = days), meaningful only in AtDepot/Leaving; `entity` resolves to the visiting civ.
+- Broker: the fort entity's `BROKER` position (responsibility TRADE). Its `assignment.histfig` resolves to a live unit for name + `current_job`; "at depot" means the unit's position falls within the depot footprint.
+
 ## Related
 [stocks](stocks.md) (what the fort could offer), [fort_status](fort_status.md) (overall dashboard), [chronicle](chronicle.md) (caravan arrivals as events), [rooms_and_zones](rooms_and_zones.md) (where the depot sits).

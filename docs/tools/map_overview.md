@@ -55,5 +55,8 @@ None.
 - The TS wrapper backfills `surface_z`/`fort_core` to `null` when the Lua encoder omits them, and coerces empty nested activity lists to `[]` — the contract is nullable fields, never sometimes-missing ones.
 - Version note (53.15): `world.constructions` is GONE on this build; constructions come from `df.construction.get_vector()`.
 
+## Implementation notes
+Stair tiletypes only ever exist where the player carved or built them — DF has no natural stairs — so every reported `stair_columns` entry is discovered space by construction, on top of the explicit hidden-tile check. The dig-designation scan is gated on `block.flags.designated` before touching individual tiles, keeping it to the handful of blocks that actually carry a designation (validated at 54 of 11907 blocks on a live 78-pop fort) rather than a full-map sweep.
+
 ## Related
 [tile_region](tile_region.md) · [geology](geology.md) · [defenses](defenses.md) · [environment](environment.md)

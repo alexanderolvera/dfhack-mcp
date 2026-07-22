@@ -65,6 +65,15 @@ None.
 - Hospital detail fields (`beds`, `supplies`, ...) are absent when `zoned: false`; `supplies` is also absent when the hospital location has no matching civzone.
 - A deity "needs" a temple at >= 1 worshipper and no dedicated temple, unless an all-inclusive temple exists.
 - Verified live on 53.15-r2 (fort Bustlanterns).
+- `runJsonScript`'s list normalization only reaches top-level fields; the TS wrapper separately coerces the nested `temples.dedicated` / `temples.needed_by_worshippers` lists to `[]` when the Lua encoder emits an empty table as `{}` — the same version-fragile empty-table-vs-array boundary as elsewhere, kept firm here too.
+- Bedrooms and dormitories are kept as distinct facts rather than folded together: dormitories are communal and usually unassigned, so merging them into the bedroom count would inflate "unassigned private rooms" and leave `adults_without` unreduced by the communal sleeping a dormitory actually provides.
+
+## Implementation notes
+- Civzones live at `world.buildings.other.ACTIVITY_ZONE`; `df.civzone_type[z.type]` gives the readable kind (Bedroom, Dormitory, DiningHall, Tomb, ...). `z.assigned_unit_id ~= -1` means the room is owned; `z.location_id` links a zone to a location.
+- Locations (temples/taverns/libraries/hospitals/guildhalls) are the abstract buildings on `world_data.active_site[0].buildings`, keyed by `df.abstract_building_type`. A `TEMPLE` entry carries `deity_data.Deity` (a deity historical-figure id), or `deity_type == -1` for an all-inclusive temple.
+- Deity worship is tallied from each citizen's `historical_figure`, which carries `DEITY` `histfig_links` pointing at the worshipped deity's hf id; the tally is keyed by that hf id, matched against each temple's `deity_data.Deity`.
+- Wells and coffins are plain buildings, not civzones: a well is complete when `getBuildStage() == getMaxBuildStage()`; a coffin is occupied when it contains a corpse/body item.
+- Hospital supply counts resolve each item's location with `dfhack.items.getPosition`, which follows the item through its container — thread and cloth normally sit in a coffer/bag on a hospital tile, so the raw `it.pos` field (stale for contained items) would under-count a stocked hospital.
 
 ## Related
 [unmet_needs](unmet_needs.md) · [injuries_and_health](injuries_and_health.md) · [mandates_and_justice](mandates_and_justice.md) · [citizen](citizen.md) · [fort_status](fort_status.md)

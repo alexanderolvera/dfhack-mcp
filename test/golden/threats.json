@@ -1,8 +1,7 @@
 {
   "active_hostiles": 5,
   "alerts": [
-    "5 great-danger creatures loose (megabeast/titan/demon/FB); traits: trapavoid, fire, building_destroyer, ranged",
-    "2 dangerous creatures caged/chained"
+    "5 great-danger creatures loose (megabeast/titan/demon/FB); traits: trapavoid, fire, building_destroyer, ranged"
   ],
   "contained": 2,
   "groups": [

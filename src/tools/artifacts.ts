@@ -1,76 +1,62 @@
-// artifacts_and_engravings(limit?, cursor?): the fort's named artifacts
-// (paginated) plus an aggregated summary of the map's engravings. Facts only —
-// this senses the fort's art, it never advises. Thin wrapper over the ARTIFACTS
-// Lua query (src/dfhack-queries/mcp_artifacts.lua), which owns every confirmed,
-// version-fragile field path.
-
 import { runJsonScript } from '../query.ts';
 import { z } from 'zod';
 import type { ToolDef } from '../register.ts';
 
-/** A material reference: its raws token plus a readable name. */
 export interface MaterialRef {
-  token: string; // e.g. "INORGANIC:MICROCLINE"
-  name?: string; // e.g. "microcline"
+  token: string;
+  name?: string;
 }
 
-/** The maker of an artifact. unit_id is set ONLY for a living current citizen. */
 export interface ArtifactMaker {
   histfig_id: number;
   name?: string;
-  unit_id?: number; // present only when the maker is a living current citizen
-  is_current_citizen: boolean;
+  unit_id?: number;
 }
 
-/** One decoration (item improvement) on an artifact. */
 export interface Decoration {
-  type: string; // df.improvement_type, e.g. BANDS | COVERED | ART_IMAGE | RINGS_HANGING
+  type: string;
   material?: MaterialRef;
   quality?: string;
-  image_resolved?: boolean; // ART_IMAGE only: false when the depicted scene isn't loaded
+  image_resolved?: boolean;
 }
 
-/** One artifact record. */
 export interface Artifact {
   id: number;
   name: { dwarven?: string; english?: string };
-  item_type?: string; // df.item_type, e.g. SLAB | SHIELD | SCEPTER
-  item_label?: string; // readable base label, e.g. "microcline slab"
+  item_type?: string;
+  item_label?: string;
   material?: MaterialRef;
   value?: number;
-  quality?: string; // df.item_quality label, e.g. "Masterful"
+  quality?: string;
   maker?: ArtifactMaker;
   decorations: Decoration[];
   decorations_truncated?: boolean;
   decorations_total?: number;
-  inscription?: string; // engraved text (slabs); the storytelling gold
-  error?: string; // set only when a single record was unreadable
+  inscription?: string;
+  error?: string;
 }
 
-/** One aggregated engraving subject bucket (never itemized per tile). */
 export interface EngravingSubject {
-  subject: string; // resolved scene text, or "image #<art_id>:<subid>" when unresolvable
+  subject: string;
   subject_resolved: boolean;
-  ref: string; // stable art-image reference "<art_id>:<subid>"
+  ref: string;
   count: number;
 }
 
-/** One prolific engraver. */
 export interface Engraver {
   name?: string;
   histfig_id: number;
-  unit_id?: number; // present only when the engraver is a living current citizen
+  unit_id?: number;
   count: number;
 }
 
-/** The aggregated engravings summary. */
 export interface EngravingsSummary {
   total_present: number;
   scanned: number;
   scan_truncated: boolean;
   distinct_subjects: number;
-  subjects_resolvable: boolean; // false when art images aren't loaded (scene text unavailable)
-  quality: Record<string, number>; // quality label -> count
+  subjects_resolvable: boolean;
+  quality: Record<string, number>;
   by_subject: EngravingSubject[];
   by_subject_truncated: boolean;
   top_engravers: Engraver[];
@@ -78,10 +64,10 @@ export interface EngravingsSummary {
 
 export interface ArtifactsAndEngravings {
   artifacts: Artifact[];
-  artifact_count: number; // total artifacts (across all pages)
+  artifact_count: number;
   returned: number;
   cursor: number;
-  next_cursor?: string; // pass back as `cursor` for the next page; absent at the end
+  next_cursor?: string;
   engravings: EngravingsSummary;
   caps: {
     default_limit: number;
@@ -104,10 +90,6 @@ export async function artifactsAndEngravings(
   );
   if ('error' in data) return data;
 
-  // DFHack's json encodes ANY empty Lua table as [] (not {}), so the empty-list
-  // fields already arrive as [] and their guards below are defensive no-ops; the
-  // only coercion that actually fires is the map field (quality) arriving as []
-  // when empty, which we restore to {} to match its declared object shape.
   const d = data as ArtifactsAndEngravings;
   for (const a of d.artifacts) {
     if (!Array.isArray(a.decorations)) a.decorations = [];

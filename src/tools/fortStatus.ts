@@ -1,6 +1,3 @@
-// fort_status: one-call situational overview of the loaded fort.
-// Thin wrapper over the FORT_STATUS Lua query.
-
 import { runJsonScript } from '../query.ts';
 import type { ToolDef } from '../register.ts';
 

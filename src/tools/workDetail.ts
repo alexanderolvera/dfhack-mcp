@@ -1,13 +1,3 @@
-// A3 — labor via work details. Two tools backed by mcp_workDetail.lua:
-//   work_details        read-only sensor (always available) — every work detail with
-//                       the labors it enables and its (bounded) membership, doubling
-//                       as the Q1 labor view and the readback for assign.
-//   assign_work_detail  gated actuator — add/remove one citizen to/from one detail.
-//
-// The actuator is thin: the §A0 dry-run/confirm/apply/undo loop is the shared
-// defineActuator wrapper (src/actuator.ts); it supplies only plan()/apply(), which
-// forward to the Lua subcommands. Version-fragile struct access stays in the .lua.
-
 import { z } from 'zod';
 import { runJsonScript } from '../query.ts';
 import { defineActuator, type PlanResult, type ApplyResult } from '../actuator.ts';
@@ -15,27 +5,25 @@ import type { ToolDef } from '../register.ts';
 
 export interface DetailFacts {
   name: string;
-  mode: string; // Default | EverybodyDoesThis | NobodyDoesThis | OnlySelectedDoesThis
-  no_modify: boolean; // a default detail the in-game UI won't let you rename/delete
+  mode: string;
+  no_modify: boolean;
   icon: number;
-  allowed_labors: string[]; // df.unit_labor names this detail enables
-  members: number[]; // assigned citizen unit ids, id-sorted, capped at MEMBER_CAP
-  member_names: string[]; // parallel to members: readable names (bounded by the cap)
-  member_count: number; // FULL count, even when members is truncated/paged
-  members_truncated: boolean; // members list capped below the remaining tail
-  members_cursor?: number; // ONLY when truncated: last listed id — pass as members_after to continue
+  allowed_labors: string[];
+  members: number[];
+  member_names: string[];
+  member_count: number;
+  members_truncated: boolean;
+  members_cursor?: number;
 }
 
 export interface WorkDetailList {
-  count: number; // number of details LISTED (the fort total when unfiltered)
+  count: number;
   details: DetailFacts[];
-  members_after?: number; // echo of the cursor arg; absent when none was passed
+  members_after?: number;
 }
 
-// ---- shared arg coercion ---------------------------------------------------
 const s = (v: unknown): string => (v === undefined || v === null || v === '' ? '' : String(v));
 
-// ---- work_details (read-only sensor) ---------------------------------------
 export async function workDetails(
   args: { detail?: string; members_after?: number } = {}
 ): Promise<WorkDetailList | { error: string }> {
@@ -75,7 +63,6 @@ export const workDetailsDef: ToolDef = {
   run: (args) => workDetails(args),
 };
 
-// ---- assign_work_detail (actuator) -----------------------------------------
 interface AssignArgs {
   unit_id: number;
   detail: string;

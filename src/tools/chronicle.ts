@@ -1,15 +1,7 @@
-// chronicle(since?, categories?, limit?): DF's announcement/report stream as
-// triaged, cursor-addressable events. Passes native argv to mcp_chronicle.lua:
-// [since, categories(comma-joined), limit]. The Lua reads the rolling, front-
-// pruned df.global.world.status.reports window and returns id-addressable events
-// with a save/load-stable cursor. See mcp_chronicle.lua for the confirmed field
-// paths and the combat-collapse / pruning contract.
-
 import { runJsonScript } from '../query.ts';
 import { z } from 'zod';
 import type { ToolDef } from '../register.ts';
 
-/** The triage buckets a report can fall into; anything unmapped is "other". */
 export type ChronicleCategory =
   | 'death'
   | 'birth'
@@ -30,36 +22,36 @@ export interface ChronicleSpeaker {
 }
 
 export interface ChronicleEvent {
-  id: number; // report.id — monotonic, save/load-stable cursor unit
+  id: number;
   category: ChronicleCategory;
-  type: string; // announcement_type token, e.g. "COMBAT_DODGE"
-  text?: string; // report text, with any continuation lines folded in
+  type: string;
+  text?: string;
   color?: number;
-  date: string; // in-game date, e.g. "19th Obsidian, Year 7"
+  date: string;
   year?: number;
-  time?: number; // tick-of-year
-  repeat_count?: number; // native "(xN)"; present only when > 0
-  continuation_lines?: number; // count of wrapped lines folded into `text`
-  collapsed?: boolean; // a battle-run collapse marker (not a single report)
-  collapsed_count?: number; // number of combat reports folded into this marker
-  pos?: { x: number; y: number; z: number }; // tile anchor, when set
-  speaker?: ChronicleSpeaker; // only when report.speaker_id != -1
+  time?: number;
+  repeat_count?: number;
+  continuation_lines?: number;
+  collapsed?: boolean;
+  collapsed_count?: number;
+  pos?: { x: number; y: number; z: number };
+  speaker?: ChronicleSpeaker;
 }
 
 export interface Chronicle {
-  cursor: number; // highest retained id; pass back as `since` to resume
+  cursor: number;
   oldest_retained_id?: number;
   newest_retained_id?: number;
   next_report_id?: number;
   window_size: number;
   since?: number;
-  pruned: boolean; // `since` older than the retained window; earlier events gone
+  pruned: boolean;
   pruned_note?: string;
   limit: number;
   count: number;
-  more?: boolean; // older matching events exist beyond `limit`
+  more?: boolean;
   omitted_by_limit?: number;
-  battle_collapsed: number; // combat reports folded into collapse markers
+  battle_collapsed: number;
   filtered_categories?: string;
   order: 'ascending';
   events: ChronicleEvent[];

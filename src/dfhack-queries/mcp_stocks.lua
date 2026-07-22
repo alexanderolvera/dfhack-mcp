@@ -1,16 +1,3 @@
--- mcp_stocks: food/drink as days-of-supply plus a few critical materials.
---
--- Item counting follows DFHack's own dfstatus (iterate world.items.other.IN_PLAY,
--- skip rotten/dump/forbid/construction/trader, sum stack sizes by type) but
--- counts ALL edible food, not just prepared meals, and derives days-of-supply.
---
--- Consumption rate (DF wiki, DF2014 Food): a dwarf eats ~2 food and drinks ~5
--- units per season; a season is 3 months x 28 days = 84 ticks-days. So
---   food_days  = food_total  * 84 / (pop * 2)
---   drink_days = drink_total * 84 / (pop * 5)
--- These are documented estimates; the raw counts in `counts` are exact.
--- Invoked by name via DFHack RunCommand; prints ONE JSON object.
-
 local json = require('json')
 local function emit(t) print(json.encode(t)) end
 
@@ -19,15 +6,6 @@ if df.global.gamemode ~= df.game_mode.DWARF then
   return
 end
 
--- Tunables (days-of-supply and material floors below which we flag "low").
--- Reviewed under #5 and KEPT deliberately: unlike the raw-count happiness alerts,
--- food/drink here are already POPULATION-NORMALIZED — days-of-supply divides the
--- stock by pop*per-capita-rate, so LOW_DAYS=14 (under ~2 weeks of buffer) is a
--- proportional line that means the same on a 7-dwarf and a 200-dwarf fort. The
--- material figures are intentional ABSOLUTE working-buffers, not pop-shares: a
--- fort needs a baseline reserve to keep its forges/looms fed regardless of size,
--- and these are reported as a factual notable_low/high classification (not an
--- alert), so a large fort seeing them is a true low reserve, not statistical noise.
 local SEASON_DAYS = 84
 local FOOD_PER_SEASON, DRINK_PER_SEASON = 2, 5
 local LOW_DAYS = 14

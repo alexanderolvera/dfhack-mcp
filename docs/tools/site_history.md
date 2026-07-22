@@ -71,5 +71,15 @@ None.
 - Same-year events are tie-broken by saga insertion order for deterministic output (Lua table.sort is not stable).
 - Verified live on DFHack 53.15; field paths are version-fragile and read through pcall throughout.
 
+## Implementation notes
+- Reads `df.global.world.history.events` — the durable saga log — rather than the pruned live report stream, which is what lets `battles` and `notable_deaths` survive across seasons instead of aging out.
+- The loaded site is `df.global.plotinfo.site_id`, matched against the entry with the same `.id` in `df.global.world.world_data.sites`. Per-site fields used: `.name` (a `language_name`), `.type` (`df.world_site_type`; a player fort is `PlayerFortress`), `.created_year`, `.created_tick`, `.pos.{x,y}`. A player fort's own `.civ_id` is always `-1`, so the owning civ instead comes from `df.global.plotinfo.civ_id`, matched by `.id` in `df.global.world.entities.all`.
+- Names: `dfhack.translation.translateName(name)` gives the Dwarven form; `translateName(name, true)` gives English. Both are wrapped in `dfhack.df2utf` so CP437-encoded accents in proper nouns (e.g. o-umlaut, a-umlaut) decode to valid UTF-8 before hitting the JSON encoder.
+- Etymology walks `name.words[0..n]`, indexing `df.global.world.raws.language.words` for the English root word and `name.parts_of_speech[i]` (a `df.part_of_speech`) for its grammatical role.
+- Battles match history events whose `.site` equals the loaded site id and whose type is `WAR_ATTACKED_SITE`, `WAR_DESTROYED_SITE`, or `WAR_SITE_NEW_LEADER`; `.attacker_civ`/`.defender_civ`/`.attacker_general_hf`/`.defender_general_hf` resolve to display names. Notable deaths match `HIST_FIGURE_DIED` events with the same site scoping; `.victim_hf` resolves through `df.historical_figure.find`, `.death_cause` indexes `df.death_type`, and `.slayer_hf` resolves the killer's name when present.
+- The founding year is corroborated (and the builder captured) from the site's `CREATED_SITE` saga event when one exists, falling back to the site record's own `.created_year`/`.created_tick`.
+- In-game dates are computed from fixed DF calendar constants (33600 ticks/month, 1200 ticks/day) rather than a DFHack-provided formatter.
+- Because Lua's `table.sort` is not a stable sort, same-year battles/deaths carry an internal ascending insertion-order field through the sort as an explicit tie-break, then drop it before the response is emitted — without it, same-year ordering would not reliably match saga order.
+
 ## Related
 [chronicle](chronicle.md) · [artifacts_and_engravings](artifacts_and_engravings.md) · [fort_status](fort_status.md) · [citizen](citizen.md)

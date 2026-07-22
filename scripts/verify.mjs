@@ -24,8 +24,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..');
 const GOLDEN_DIR = join(ROOT, 'test', 'golden');
 
-// --- tiny CLI (moved up: tier must be known before we decide whether to force
-// the actuator gate below) ---------------------------------------------------
+// --- tiny CLI (tier must be known before the actuator gate below) -----------
 const argv = process.argv.slice(2);
 const tier = Number((argv.find((a) => a.startsWith('--tier=')) ?? '--tier=0').split('=')[1]);
 const update = argv.includes('--update');
@@ -46,13 +45,8 @@ if (tier !== 0 || invariantsOnly) {
   process.env.DFHACK_MCP_ACTUATORS = '1';
 }
 
-// The expected tool surface is DERIVED from the same registry the server builds
-// its list from — no static JSON to keep in sync. Apply the SAME env gates the
-// server does (index.ts): devOnly needs DFHACK_MCP_DEV, actuator needs
-// DFHACK_MCP_ACTUATORS. Used by T1/T2/invariants; T0 derives its own expected
-// sets per gate state (see tier0()). The server subprocess (spawned with our
-// env) builds its tools/list independently from ALL_TOOLS, so a registration
-// that throws still surfaces here as a mismatch — the check holds.
+// Derived from the same registry + gate predicate the server uses (docs/VERIFY.md).
+// Used by T1/T2/invariants; T0 derives its own per-gate-state sets (see tier0()).
 const { ALL_TOOLS } = await import('../src/tools/registry.ts');
 const { isGatedOff } = await import('../src/register.ts');
 const EXPECTED = {
@@ -140,9 +134,6 @@ const fail = (msg) => {
 };
 const ok = (msg) => console.log(`  ✓ ${msg}`);
 
-/** Recursively sort object keys so serialized output is stable regardless of
- *  insertion / pairs() order. Arrays keep their order (often semantic); a tool
- *  that emits an unordered list should sort it before returning. */
 function canonicalize(value) {
   if (Array.isArray(value)) return value.map(canonicalize);
   if (value && typeof value === 'object') {
@@ -166,8 +157,6 @@ function connect(env = process.env) {
   return client.connect(transport).then(() => client);
 }
 
-/** Call a tool and return its parsed JSON payload, or a synthetic error object
- *  if the text wasn't JSON. */
 async function callJson(client, name, argsOverride) {
   const res = await client.callTool({ name, arguments: argsOverride ?? TOOL_ARGS[name] ?? {} });
   const text = res.content?.find((p) => p.type === 'text')?.text ?? '';
@@ -178,20 +167,15 @@ async function callJson(client, name, argsOverride) {
   }
 }
 
-// Match the guard message EXACTLY (anchored + trimmed), not as a substring, so a
-// different error that merely contains the phrase (e.g. "no fort loaded while
-// query failed") is NOT mistaken for the clean guard.
+// Anchored + trimmed match, not a substring — a different error that merely
+// contains the phrase isn't mistaken for the clean guard.
 const isNoFort = (d) =>
   d && typeof d.error === 'string' && /^no (fort|game) loaded$/i.test(d.error.trim());
 
 // --- T0: contract -----------------------------------------------------------
-// Runs TWICE, each against its OWN subprocess: once with neither gate set (the
-// default read-only surface actual npm users get) and once with BOTH gates set
-// (the full surface, including the devOnly run_lua and the actuators) — so both
-// the shipped default and the full tool set get their tools/list + schema
-// checks, and run_lua (previously covered nowhere) is exercised by the second
-// pass. `env` is built from scratch rather than mutating process.env so the two
-// passes can't leak into each other or into T1/T2/invariants.
+// Runs twice, once per gate state (see docs/VERIFY.md). `env` is built from
+// scratch per pass rather than mutating process.env, so the two passes can't
+// leak into each other or into T1/T2/invariants.
 async function tier0() {
   console.log('\nT0 — handshake + tools/list + schemas');
   const base = { ...process.env };
@@ -302,19 +286,14 @@ async function tier1(client) {
   }
 }
 
-// --- T1 --no-fort: guard reachability (mirror of --require-fort) -------------
-// Against a NO-FORT fixture, assert every GAME-dependent tool returns its no-fort
-// guard cleanly, so the guard is EXERCISED, not just coded (#6). This is the T1
-// reachability path #28 needs on the no-fort side.
+// --- T1 --no-fort: guard reachability (mirror of --require-fort, docs/VERIFY.md) ---
 async function tier1NoFort(client) {
   console.log(
     '\nT1 (--no-fort) — every game tool returns its no-fort guard cleanly (guard exercised, #6)'
   );
   for (const name of [...EXPECTED.tools].sort()) {
     const { data, isError } = await callJson(client, name);
-    // Wiki tools are pure HTTP against the external wiki — no game dependency, so
-    // they do NOT return the guard. Assert they still return well-formed,
-    // non-error output; asserting the guard here would be wrong.
+    // Wiki tools have no game dependency, so they do NOT return the guard here.
     if (NETWORK_TOOLS.has(name)) {
       if (data.__unparsable__ !== undefined) {
         fail(`${name}: returned non-JSON: ${String(data.__unparsable__).slice(0, 80)}`);
@@ -325,10 +304,8 @@ async function tier1NoFort(client) {
       }
       continue;
     }
-    // Game-dependent tool. The guard MUST come back as NORMAL output: well-formed
-    // JSON, not isError, not a crash/traceback (non-JSON), not a different error,
-    // and NOT real data. A genuine "DFHack unreachable" surfaces here as its
-    // (non-guard) connection error and correctly FAILS — it isn't masked as a pass.
+    // Guard must be normal output — not isError, not a crash, not different
+    // data (docs/VERIFY.md).
     if (data.__unparsable__ !== undefined) {
       fail(
         `${name}: crash/non-JSON, not a clean guard: ${String(data.__unparsable__).slice(0, 80)}`
@@ -404,9 +381,6 @@ async function capturePayloads(client, names) {
 const isEvaluable = (d) =>
   d && d.__unparsable__ === undefined && !isNoFort(d) && typeof d.error !== 'string';
 
-// Run every relational invariant over the captured payloads. An invariant whose
-// required tools didn't all return fort data is reported n/a (not a failure), so
-// this same runner degrades cleanly with no fort loaded.
 function runInvariants(payloads) {
   console.log('\nInvariants (relational specs — must hold for any valid fort)');
   let evaluated = 0;

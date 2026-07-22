@@ -25,12 +25,12 @@ None.
 - `hostiles_on_map` (number) — active, living, dangerous non-citizens not caged/chained.
 - `great_danger_on_map` (number) — the subset DFHack flags as great danger.
 - `squads[]` — `{ name, filled, positions }` per squad (translated name, falling back to alias, then "Squad N").
-- `alerts[]` — "no military squads — the fort is undefended"; hostile-vs-soldier readiness lines, with a NO-defenders callout when a great-danger creature faces zero soldiers.
+- `alerts[]` — "no military squads — the fort is undefended"; a NO-defenders callout when a great-danger creature faces zero soldiers (`hostiles_on_map`/`soldiers`/`squad_count` are already their own fields, so a plain hostiles-vs-soldiers count isn't separately alerted).
 
 ```json
 {
   "adults": 77,
-  "alerts": ["5 hostiles on map vs 13 soldiers in 3 squads"],
+  "alerts": [],
   "assigned_positions": 13,
   "great_danger_on_map": 5,
   "hostiles_on_map": 5,

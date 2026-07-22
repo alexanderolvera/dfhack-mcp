@@ -1,8 +1,6 @@
 {
   "adults": 77,
-  "alerts": [
-    "5 hostiles on map vs 13 soldiers in 3 squads"
-  ],
+  "alerts": [],
   "assigned_positions": 13,
   "great_danger_on_map": 5,
   "hostiles_on_map": 5,

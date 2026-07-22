@@ -1,16 +1,3 @@
--- mcp_injuriesAndHealth: the fort's medical picture — who needs care and what.
---
--- unit.health is always present (not nil for the healthy). The actionable
--- signals live in unit.health.flags: needs_healthcare (in the care queue),
--- should_not_move (bedridden), and the rq_* care requests that say exactly what
--- the hospital must do. Reporting the rq_ breakdown tells the player whether
--- they're missing a diagnostician, surgeon, or supplies. body.wounds counts the
--- wounded; counters.unconscious catches the knocked-out.
---
--- Verified live on 53.15-r2: the health.flags field set below is the real one
--- (rq_recover does NOT exist; don't reintroduce it).
--- Invoked by name via DFHack RunCommand; prints ONE JSON object.
-
 local json = require('json')
 local function emit(t) print(json.encode(t)) end
 
@@ -19,7 +6,6 @@ if df.global.gamemode ~= df.game_mode.DWARF then
   return
 end
 
--- rq_* care requests, mapped to plain labels for the breakdown.
 local CARE = {
   rq_diagnosis  = 'diagnosis',
   rq_immobilize = 'immobilization',
@@ -34,7 +20,7 @@ local CARE = {
 
 local citizens = dfhack.units.getCitizens(true)
 local wounded, patients, bedridden, unconscious = 0, 0, 0, 0
-local care = {}   -- label -> count
+local care = {}
 
 for _, u in ipairs(citizens) do
   if u.body and u.body.wounds and #u.body.wounds > 0 then wounded = wounded + 1 end
@@ -51,7 +37,6 @@ for _, u in ipairs(citizens) do
   end
 end
 
--- Flatten care needs, most-common first.
 local care_needs = {}
 for label, n in pairs(care) do care_needs[#care_needs+1] = { care = label, count = n } end
 table.sort(care_needs, function(a, b)
@@ -59,29 +44,14 @@ table.sort(care_needs, function(a, b)
   return a.care < b.care
 end)
 
--- 'patients' (needs_healthcare = in the care queue) is a discrete, doctor-
--- requiring event that does NOT scale with population: a well-run fort of any
--- size sits at 0. So >0 is a real medical fact crossing a line, not a big-fort
--- artifact — keep it firing at any count. 'unconscious' is the opposite: mostly
--- transient (sparring KOs, fainting from exhaustion, resting after a wound) and
--- one or two out cold is routine. Gate it on BOTH a share AND a minimum head
--- count so the alert means a mass event (gas, cave-in, combat rout), not a couple
--- of nappers — and so a share alone can't fire on a tiny fort (1 KO on a 7-dwarf
--- embark is 14% but not a mass event).
-local UNCONSCIOUS_FRACTION_ALERT = 0.10   -- tunable: unconscious share over this ...
-local UNCONSCIOUS_MIN_ALERT = 3           -- ... AND at least this many out cold -> alert
+local UNCONSCIOUS_FRACTION_ALERT = 0.10
+local UNCONSCIOUS_MIN_ALERT = 3
 
 local alerts = {}
-if patients > 0 then
-  alerts[#alerts+1] = patients .. ' dwarves need medical care'
-end
 if unconscious >= UNCONSCIOUS_MIN_ALERT and #citizens > 0
     and (unconscious / #citizens) >= UNCONSCIOUS_FRACTION_ALERT then
   local pct = math.floor(unconscious * 100 / #citizens)
   alerts[#alerts+1] = unconscious .. ' dwarves unconscious (' .. pct .. '% of pop)'
-end
-if care_needs[1] then
-  alerts[#alerts+1] = 'top care need: ' .. care_needs[1].care .. ' (' .. care_needs[1].count .. ')'
 end
 
 emit({

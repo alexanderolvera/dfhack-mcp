@@ -1,30 +1,25 @@
-// defenses(): where the threats are vs. what you have to fight them with.
-// Thin wrapper over the DEFENSES Lua query.
-
 import { runJsonScript } from '../query.ts';
 import type { ToolDef } from '../register.ts';
 
 export interface Geo {
-  dist: number; // 8-directional tile distance (Chebyshev)
-  dz: number; // z-levels (+ = the other point is above the threat)
-  dir: string; // compass bearing, e.g. "NW", or "here"
+  dist: number;
+  dz: number;
+  dir: string;
 }
 
-/** Terrain at a threat's own tile. `discovered:false` (fog of war) carries no
- *  shape — the substrate never leaks an undiscovered tile's type. */
 export interface Footing {
   discovered: boolean;
-  symbol?: string; // mcp_readTerrain glyph, e.g. "." floor, "#" wall
-  terrain?: string; // that glyph's legend meaning
-  open_to_sky?: boolean; // the designation.outside flag (open vs covered)
+  symbol?: string;
+  terrain?: string;
+  open_to_sky?: boolean;
 }
 
 export interface DefenseThreat {
   name: string;
   token: string | null;
   pos: { x: number; y: number; z: number };
-  walk_group: number; // DF walkability group of the threat's tile (0 = none)
-  location: 'inside' | 'outside'; // inside == shares a citizen walk group
+  walk_group: number;
+  location: 'inside' | 'outside';
   footing: Footing;
   from_core?: Geo;
   nearest_bridge?: { x: number; y: number; z: number } & Geo;
@@ -38,14 +33,12 @@ export interface Bridge {
   direction: string;
 }
 
-/** The fort's connected walkable interior(s) — the "walled perimeter". */
 export interface Interior {
   groups: { group: number; citizens: number }[];
   primary_group: number | null;
   citizens: number;
 }
 
-/** A single-z terrain window on the busiest citizen level (via mcp_readTerrain). */
 export interface PerimeterTerrain {
   z: number;
   citizens_on_level: number;
@@ -78,7 +71,6 @@ export interface Defenses {
 export async function defenses(): Promise<Defenses | { error: string }> {
   const res = await runJsonScript<Defenses>('defenses', [], ['threats']);
   if ('error' in res) return res;
-  // Empty Lua tables encode as {} not [] — coerce the nested list fields.
   if (res.structures && !Array.isArray(res.structures.bridges)) res.structures.bridges = [];
   if (res.interior && !Array.isArray(res.interior.groups)) res.interior.groups = [];
   const pt = res.perimeter_terrain;

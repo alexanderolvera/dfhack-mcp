@@ -1,8 +1,8 @@
 // Unit tests for isGatedOff (src/register.ts) — the single predicate that both the
 // server (index.ts, what gets registered) and verify.mjs (the expected tools/list)
-// use to withhold gated tools. No actuator lives in ALL_TOOLS yet, so this is what
-// exercises the gate branch: an inverted or ineffective gate is caught here rather
-// than slipping through T0 (which currently sees the same tool count either way).
+// use to withhold gated tools. This exercises the gate branch directly (fast,
+// no subprocess) so an inverted or ineffective gate is caught here rather than
+// only surfacing in T0's live tools/list comparison.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { isGatedOff } from '../src/register.ts';

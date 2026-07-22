@@ -1,7 +1,3 @@
--- mcp_fortStatus: one-call situational overview of the loaded fort — name, date,
--- season, population, wealth, a happiness breakdown, and a pre-triaged alerts list.
--- Invoked by name via DFHack RunCommand; prints ONE JSON object.
-
 local json = require('json')
 local function emit(t) print(json.encode(t)) end
 
@@ -10,8 +6,6 @@ if df.global.gamemode ~= df.game_mode.DWARF then
   return
 end
 
--- Fog-of-war gate: mirrors mcp_threats — a hostile the fort hasn't discovered
--- must never contribute to the count/alert here either.
 local visibility = reqscript('mcp_unitVisibility')
 
 local months = {'Granite','Slate','Felsite','Hematite','Malachite','Galena',
@@ -56,17 +50,10 @@ end
 local wealth = 0
 pcall(function() wealth = df.global.plotinfo.tasks.wealth.total end)
 
--- Unhappy dwarves scale with population: a handful stressed at any moment is
--- normal churn, not news. 'miserable' (stress category <= 0) is different — one
--- can tantrum or go insane, so it's notable at any count. Gate 'unhappy' on BOTH
--- a share of population AND a minimum head count, so it means a fort-wide morale
--- driver — and so a share alone can't cry wolf on a tiny fort (1 unhappy on a
--- 7-dwarf embark is 14% but not news).
-local UNHAPPY_FRACTION_ALERT = 0.10   -- tunable: unhappy share over this ...
-local UNHAPPY_MIN_ALERT = 3           -- ... AND at least this many unhappy -> alert
+local UNHAPPY_FRACTION_ALERT = 0.10
+local UNHAPPY_MIN_ALERT = 3
 
 local alerts = {}
-if hap.miserable > 0 then alerts[#alerts+1] = hap.miserable .. ' dwarves miserable' end
 if hap.unhappy >= UNHAPPY_MIN_ALERT and #citizens > 0
     and (hap.unhappy / #citizens) >= UNHAPPY_FRACTION_ALERT then
   local pct = math.floor(hap.unhappy * 100 / #citizens)

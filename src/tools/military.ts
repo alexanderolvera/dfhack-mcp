@@ -1,6 +1,3 @@
-// military(): squads, soldier headcount, and readiness vs. live threats.
-// Thin wrapper over the MILITARY Lua query.
-
 import { runJsonScript } from '../query.ts';
 import type { ToolDef } from '../register.ts';
 

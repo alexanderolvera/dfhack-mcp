@@ -1,17 +1,3 @@
-// Spin up an isolated git worktree for a parallel agent / feature branch.
-//   npm run worktree <branch>            e.g. npm run worktree feat/moods
-//
-// Why a worktree: multiple agents can work overlapping issues at once, each in
-// its own checkout with its own node_modules, without stepping on each other or
-// the primary tree. The contract tier (T0) runs fully in parallel across trees
-// with no DF. The single live DF is the one shared resource — run T1/T2 one tree
-// at a time until spike #27 gives multi-port/headless instances.
-//
-// The worktree is created as a sibling of the primary tree
-// (…/dfhack-mcp-server--<branch>) purely for tidy grouping — the client is a
-// published npm package now, so each tree's `npm ci` pulls it independently and
-// placement is otherwise free.
-
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -45,7 +31,6 @@ if (existsSync(wtPath)) {
   process.exit(1);
 }
 
-// Does the branch already exist? If so, check it out; otherwise create it.
 const exists =
   spawnSync('git', ['rev-parse', '--verify', branch], { cwd: ROOT, shell: true }).status === 0;
 const addArgs = exists
@@ -53,9 +38,8 @@ const addArgs = exists
   : ['worktree', 'add', wtPath, '-b', branch];
 run('git', addArgs, ROOT);
 
-// Each worktree gets its own node_modules (git worktrees don't share them).
+// git worktrees don't share node_modules — each tree installs its own.
 run('npm', ['ci'], wtPath);
-// Prove the isolated tree is green on the contract tier before handing it off.
 run('npm', ['run', 'verify:t0'], wtPath);
 
 console.log(

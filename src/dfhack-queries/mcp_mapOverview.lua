@@ -1,34 +1,3 @@
--- mcp_mapOverview: cheap spatial orientation before any tile_region read. Answers
--- "how big is this map, where is the fort, and which z-levels is the player
--- actually working on?" so an agent can aim its expensive per-tile terrain reads
--- instead of sweeping 147 z-levels blind.
---
--- FACTS ONLY: dimensions, one anchor coordinate, the set of z-levels with player
--- activity, and stair columns as vertical runs. No "dig here" / "wall that off"
--- advice — the agent decides where to look; this just says where the map and the
--- work are.
---
--- FIXED-SIZE PAYLOAD regardless of fort size: activity is reported as a SET OF
--- Z-LEVELS (bounded by z_count), never per-tile; stair columns are collapsed to
--- (x,y,z_top,z_bottom) vertical RUNS and capped. A mega-fort payload stays flat.
---
--- FOG OF WAR: the surface probe and the stair scan skip undiscovered
--- (designation.hidden) tiles, so nothing the player hasn't found leaks. Stair
--- tiletypes only ever exist where the player carved or built (DF has no natural
--- stairs), so every reported column is discovered space by construction. Pending
--- DIG designations are counted regardless of the hidden flag: they are the
--- player's own markers, not sensed terrain, so reporting "digging at z=111"
--- reveals nothing the player didn't place there.
---
--- Fort-core anchor: the SAME 3D citizen centroid defenses() uses (getCitizens ->
--- mean x,y,z), so map_overview().fort_core == defenses().fort_core for one fort.
---
--- Verified live on 53.15 (fort, 78 pop): world.map.x_count/y_count/z_count;
--- df.construction.get_vector() (each .pos; global list; world.constructions is
--- GONE on this build); block.flags.designated gates the dig scan (54 of 11907
--- blocks); tiletype shape STAIR_UP/DOWN/UPDOWN + material CONSTRUCTION via
--- df.tiletype.attrs. Invoked by name via DFHack RunCommand; prints ONE JSON object.
-
 local json = require('json')
 local function emit(t) print(json.encode(t)) end
 
@@ -37,13 +6,12 @@ if df.global.gamemode ~= df.game_mode.DWARF then
   return
 end
 
-local COLUMNS_CAP = 40          -- stair columns listed individually; excess summarized
+local COLUMNS_CAP = 40
 local m = df.global.world.map
 local SHAPE = df.tiletype_shape
 local MAT = df.tiletype_material
 local attrs = df.tiletype.attrs
 
--- ---- fort core: 3D citizen centroid (byte-for-byte the anchor defenses() uses) ----
 local cx, cy, cz, n = 0, 0, 0, 0
 for _, u in ipairs(dfhack.units.getCitizens(true)) do
   local p = u.pos
@@ -53,9 +21,6 @@ local core = (n > 0)
   and { x = math.floor(cx / n), y = math.floor(cy / n), z = math.floor(cz / n), citizens = n }
   or nil
 
--- ---- surface z at the fort center: highest non-hidden, open-to-sky ground tile
--- at the anchor (x,y). Skips open air above the map (EMPTY) and roofed-over tiles
--- (outside=false); null when the core column is never open to sky. ----
 local function is_ground(s)
   return s == 'FLOOR' or s == 'RAMP' or s == 'RAMP_TOP' or s == 'BOULDER' or s == 'PEBBLES'
       or s == 'STAIR_UP' or s == 'STAIR_DOWN' or s == 'STAIR_UPDOWN'
@@ -75,12 +40,7 @@ if core then
   end
 end
 
--- ---- precompute per-tiletype flags ONCE (avoids 3M live attrs lookups) ----
 local STAIR = {}
--- STAIR[tt] holds the tile's stair role: 'U' offers up-access, 'D' offers
--- down-access, 'X' (up/down) offers both. This is what decides whether two
--- vertically-adjacent stair tiles actually CONNECT (see the run-grouping below),
--- so we keep the role, not just a boolean.
 for tt = df.tiletype._first_item, df.tiletype._last_item do
   local a = attrs[tt]
   if a then
@@ -91,10 +51,8 @@ for tt = df.tiletype._first_item, df.tiletype._last_item do
   end
 end
 
--- ---- one pass over map blocks: stair tiles (everywhere) + dig z (designated
--- blocks only). Constructions come from the global vector below, not this scan. ----
-local col = {}          -- "x,y" -> { x=, y=, tiles = { {z=,s=}, ... } }
-local dig_zset = {}     -- z -> true, pending player dig designations
+local col = {}
+local dig_zset = {}
 for _, b in ipairs(m.map_blocks) do
   local z = b.map_pos.z
   local bx, by = b.map_pos.x, b.map_pos.y
@@ -116,8 +74,6 @@ for _, b in ipairs(m.map_blocks) do
       end
     end
   end
-  -- dig designations: only blocks flagged as carrying designations, so this stays
-  -- ~54 blocks not 11907. Counted regardless of hidden (player's own markers).
   if b.flags.designated then
     for lx = 0, 15 do
       local desx = des[lx]
@@ -128,13 +84,11 @@ for _, b in ipairs(m.map_blocks) do
   end
 end
 
--- ---- constructions: distinct z-levels straight from the global vector ----
 local con_zset = {}
 for _, c in ipairs(df.construction.get_vector()) do
   con_zset[c.pos.z] = true
 end
 
--- ---- activity z-levels: sorted lists + their union ----
 local function sorted_keys(set)
   local a = {}
   for z in pairs(set) do a[#a + 1] = z end
@@ -148,15 +102,7 @@ for z in pairs(con_zset) do union[z] = true end
 for z in pairs(dig_zset) do union[z] = true end
 local activity_z = sorted_keys(union)
 
--- ---- stair columns: group each (x,y)'s stair tiles into TRAVERSABLE vertical
--- runs. Two vertically-adjacent stair tiles connect only when the lower one
--- offers up-access (U or X) AND the one above offers down-access (D or X) --
--- DF's real stair rule. So a STAIR_UP under a STAIR_UP does NOT connect (nothing
--- to descend into), and this fort's helical shafts (D/U alternating per column,
--- descent hopping between adjacent columns) split into their genuinely-climbable
--- single-column segments instead of one bogus straight shaft. A z gap also closes
--- a run. z_top is the highest z of a run, z_bottom the lowest. ----
-local function connects(lo, hi)      -- lo, hi are {z=,s=} with hi.z == lo.z+1 expected
+local function connects(lo, hi)
   return hi.z == lo.z + 1
      and (lo.s == 'U' or lo.s == 'X')
      and (hi.s == 'D' or hi.s == 'X')
@@ -173,11 +119,6 @@ for _, cell in pairs(col) do
     end
   end
 end
--- Rank by run HEIGHT (z_top - z_bottom + 1) DESCENDING before capping, so when a
--- fort exceeds the cap the tallest, most orientation-salient shafts (a deep main
--- stairwell, surface stairs) survive and only trivial 2-level helix fragments get
--- dropped. Tiebreak x ASC, y ASC, z_top ASC keeps it fully deterministic for the
--- golden. The emitted list stays in this height-ranked order (tallest first).
 local function height(c) return c.z_top - c.z_bottom + 1 end
 table.sort(columns, function(a, b)
   local ha, hb = height(a), height(b)
@@ -195,7 +136,6 @@ if #columns > COLUMNS_CAP then
   stair_columns_truncated = true
 end
 
--- ---- alerts: honest facts only ----
 local alerts = {}
 if core and surface_z == nil then
   alerts[#alerts + 1] = 'fort core column is not open to sky (surface_z unknown)'

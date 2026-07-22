@@ -69,6 +69,16 @@ Top-level fields:
 - Event `id` is monotonic and save/load-stable — safe to persist as a long-lived cursor.
 - Returns `{"error":"no fort loaded"}` if no fort is active.
 
+## Implementation notes
+- The TS wrapper passes a native argv to `mcp_chronicle.lua`: `[since, categories (comma-joined), limit]`. The Lua reads the rolling, front-pruned `df.global.world.status.reports` window.
+- Any `announcement_type` that doesn't map to a specific category falls back to `other`.
+- `repeat_count` mirrors DF's own native "(xN)" report-collapsing notation.
+- Field paths, verified live on DFHack 53.15 (spike #9): `df.global.world.status.reports` is a vector of `report`, id-ascending; `df.global.world.status.next_report_id` is a persisted monotonic counter; each `report` exposes `{id, type, text, color, year, time, repeat_count, speaker_id, pos}` and `flags.{continuation, announcement}`; `df.announcement_type[report.type]` resolves the stable category token. Every field read is defensive (pcall-guarded).
+- `report.group_id`/`pool_id` are not usable for grouping combat spam: `group_id` is absent on DF 53.x and `pool_id` is 1:1 with the report index. Collapsing instead relies on `repeat_count`, continuation-line folding, and the battle-run cap.
+- `pruned` compares `since + 1` against the oldest retained id, not `since` itself: the caller's next wanted id is `since + 1`, so `since == oldest_retained_id - 1` means nothing was actually lost even though `since` itself predates the window.
+- The category map is a static, hand-authored table over the full `announcement_type` enum, not a live sample — most categories may have zero live occurrences on a given fort but still need a category. Exact-token overrides in `EXACT` are checked before the family `PREFIX` rules (e.g. `COMBAT_` → battle).
+- `categories` filtering matches against a set built from the requested tokens; a token that doesn't correspond to any known category is kept in the set but never matches anything, so a typo yields an empty `events[]` rather than an error.
+
 ## Related
 - [site_history](site_history.md) — the deep past (historical events), where chronicle is the live stream.
 - [citizen](citizen.md) — dossier on a unit named by a speaker reference.
