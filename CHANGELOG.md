@@ -91,6 +91,33 @@ backwards-compatible fixes only.
   `livestock_and_pastures.cages[]` (same, for occupied cages) now cap at 200 and 50
   respectively, each with the established `total`/`truncated` pair. `NEST_BOX`
   buildings still under construction no longer count toward nestbox coverage.
+- **`nobles_and_administrators` position `holders[]` could arrive as `{}`** — a
+  vacant position's empty nested Lua table wasn't coerced to `[]` like every other
+  nested list field in this release, so `.length`/`.forEach()` would have thrown
+  for a vacant position.
+- **`farming.seasons[].seeds_available` duplicated `seed_totals[]`** — the exact
+  same fort-wide count was repeated under every plot/season growing that crop
+  (the shipped invariant literally required the two copies stay identical — a
+  clear sign it was pure duplication, not new information, contrary to this
+  project's own rule against re-packaging a fact already in the same payload).
+  Removed; join a season's `crop` token against `seed_totals[]` instead.
+- **`jobs_and_labor.cancellations` counted report rows, not occurrences** — DF
+  collapses consecutive identical job cancellations into one report and tallies
+  the extras in that report's `repeat_count` (the same field `chronicle` already
+  exposes), so a reason repeating for months could still read as a handful of
+  rows. Now weighted by `1 + repeat_count` per report; verified live against the
+  fixture, a 7-row "Equipment mismatch" cluster was actually 61 occurrences once
+  weighted.
+- **`livestock_and_pastures` nestbox coverage used a same-z bounding-box check**
+  — an irregularly-shaped or hole-containing pen could report nestbox coverage
+  for a tile that was never actually part of the zone. Switched to
+  `dfhack.buildings.containsTile`, the same containment check `tile_region`
+  already uses for building extents.
+- **`rooms_and_zones`'s active-ghost alert reported the capped count, not the
+  real one** — with more than 50 active ghosts, the alert would read exactly
+  "50 active ghosts" regardless of the true total, silently hiding the overflow
+  `active_truncated` was meant to flag. The alert now uses the pre-cap total,
+  with a `+` suffix when truncated.
 
 ## [1.1.0] - 2026-07-21
 

@@ -28,7 +28,7 @@ None.
 - `coffins_free`, `coffins_used` (numbers) — occupancy by contained corpse/body items.
 - `dead_unburied` (number) — loose corpses of the fort's own race, not interred, not marked for dumping.
 - `ghosts` — `{ active[], active_truncated, unquiet_dead_count }`. `active[]` is `{ unit_id, name, histfig_id }` for every apparition currently on the map (capped 50). `unquiet_dead_count` is this civ's dead who are world-flagged as unquiet ghosts (`historical_figure.flags.ghost`) but have no apparition currently active locally — a ghost can be "unquiet" in the world simulation without a manifestation being spawned on this specific map right now.
-- `alerts[]` — adults without a bedroom; dead exceeding free coffins; worshipped deities lacking a temple; any active ghost.
+- `alerts[]` — adults without a bedroom; dead exceeding free coffins; worshipped deities lacking a temple; any active ghost (the alert's count is the true total, computed BEFORE the 50-cap — never just `active[].length` — with a `+` suffix when `active_truncated` is true, so a 50-ghost cap never silently under-reports as "exactly 50").
 
 ```json
 {

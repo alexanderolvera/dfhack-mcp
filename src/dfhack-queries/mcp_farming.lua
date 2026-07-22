@@ -61,7 +61,6 @@ for _, f in ipairs(df.global.world.buildings.other.FARM_PLOT) do
       season = season,
       crop = tok,
       eligible = eligible,
-      seeds_available = tok and (seed_counts[tok] or 0) or nil,
     }
   end
 

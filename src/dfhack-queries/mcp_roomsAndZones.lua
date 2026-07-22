@@ -209,6 +209,7 @@ for _, u in ipairs(df.global.world.units.active) do
   end
 end
 table.sort(active_ghosts, function(a, b) return a.unit_id < b.unit_id end)
+local active_ghosts_total = #active_ghosts
 local active_ghosts_truncated = false
 if #active_ghosts > GHOSTS_CAP then
   local capped = {}
@@ -238,8 +239,9 @@ if #needed > 0 then
   alerts[#alerts + 1] = #needed .. ' worshipped deit' .. (#needed == 1 and 'y' or 'ies') ..
     ' without a dedicated temple'
 end
-if #active_ghosts > 0 then
-  alerts[#alerts + 1] = #active_ghosts .. ' active ghost' .. (#active_ghosts == 1 and '' or 's')
+if active_ghosts_total > 0 then
+  local suffix = active_ghosts_truncated and '+' or ''
+  alerts[#alerts + 1] = active_ghosts_total .. suffix .. ' active ghost' .. (active_ghosts_total == 1 and '' or 's')
 end
 
 emit({

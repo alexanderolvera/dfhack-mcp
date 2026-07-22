@@ -501,7 +501,7 @@ export const INVARIANTS = [
   {
     name: 'farming_plots_and_seeds_wellformed',
     tools: ['farming'],
-    desc: 'plot size/seasons are well-formed, no_crop_assigned/no_eligible_crop agree with the season crops, each season seeds_available matches the fort-wide seed_totals, and plots_total/plots_truncated honor the 200 cap',
+    desc: 'plot size/seasons are well-formed, no_crop_assigned/no_eligible_crop agree with the season crops, seed_totals holds positive counts, and plots_total/plots_truncated honor the 200 cap',
     check(p) {
       const d = p.farming;
       const out = [];
@@ -519,11 +519,6 @@ export const INVARIANTS = [
         if (plot.no_eligible_crop !== !anyEligible)
           out.push(`plots[${plot.id}].no_eligible_crop=${plot.no_eligible_crop} disagrees with its season eligibility`);
         plot.seasons.forEach((s) => {
-          const expected = seedTotal.get(s.crop) ?? 0;
-          if (s.crop !== undefined && s.seeds_available !== expected)
-            out.push(
-              `plots[${plot.id}].${s.season}.seeds_available=${s.seeds_available} !== seed_totals[${s.crop}]=${expected}`
-            );
           if (s.crop === undefined && s.eligible !== undefined)
             out.push(`plots[${plot.id}].${s.season}.eligible=${s.eligible} present on a fallow season`);
           if (s.crop !== undefined && typeof s.eligible !== 'boolean')

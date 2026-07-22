@@ -22,8 +22,13 @@ export interface NoblesAndAdministrators {
   monarch: { arrived: boolean; hasty: boolean };
 }
 
-export function noblesAndAdministrators(): Promise<NoblesAndAdministrators | { error: string }> {
-  return runJsonScript<NoblesAndAdministrators>('noblesAndAdministrators', [], ['positions']);
+export async function noblesAndAdministrators(): Promise<NoblesAndAdministrators | { error: string }> {
+  const data = await runJsonScript<NoblesAndAdministrators>('noblesAndAdministrators', [], ['positions']);
+  if ('error' in data) return data;
+  for (const row of data.positions ?? []) {
+    if (!Array.isArray(row.holders)) row.holders = [];
+  }
+  return data;
 }
 
 export const noblesAndAdministratorsDef: ToolDef = {

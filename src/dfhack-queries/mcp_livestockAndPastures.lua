@@ -46,12 +46,16 @@ end
 local nestboxes = {}
 for _, nb in ipairs(df.global.world.buildings.other.NEST_BOX) do
   if nb:getBuildStage() == nb:getMaxBuildStage() then
-    nestboxes[#nestboxes + 1] = { x = nb.x1, y = nb.y1, z = nb.z }
+    nestboxes[#nestboxes + 1] = nb
   end
+end
+local function contains_tile(z, x, y)
+  local ok, v = pcall(dfhack.buildings.containsTile, z, x, y)
+  return ok and v
 end
 local function pen_has_nestbox(z)
   for _, nb in ipairs(nestboxes) do
-    if nb.z == z.z and nb.x >= z.x1 and nb.x <= z.x2 and nb.y >= z.y1 and nb.y <= z.y2 then
+    if nb.z == z.z and contains_tile(z, nb.x1, nb.y1) then
       return true
     end
   end

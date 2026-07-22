@@ -24,16 +24,18 @@ None.
 - `idle` (number) — adults with none.
 - `idle_pct` (number) — floor(idle * 100 / workforce).
 - `top_jobs[]` — up to 10 `{ job, count }` rows, count-descending; `job` is the raw `df.job_type` token (e.g. "StoreItemInStockpile").
-- `cancellations` — `{ total, by_reason[], by_reason_truncated }`. `total` is every `CANCEL_JOB` announcement in the currently-retained report buffer (DF's own report log, which evicts old entries — in practice roughly the last few months of play, no separate time window applied). `by_reason[]` is `{ reason, count }`, the reason text taken verbatim from after the last colon in the announcement (e.g. `"Equipment mismatch"`, `"Needs foxtail millet"`), sorted count-descending, capped at 20 distinct reasons.
+- `cancellations` — `{ total, by_reason[], by_reason_truncated }`. `total` is every `CANCEL_JOB` OCCURRENCE in the currently-retained report buffer (DF's own report log, which evicts old entries — in practice roughly the last few months of play, no separate time window applied) — weighted by DF's own `repeat_count` (see Caveats), not a raw row count. `by_reason[]` is `{ reason, count }`, the reason text taken verbatim from after the last colon in the announcement (e.g. `"Equipment mismatch"`, `"Needs foxtail millet"`), also occurrence-weighted, sorted count-descending, capped at 20 distinct reasons.
 - `alerts[]` — fires when idle share >= 30% of adults, or when the top cancellation reason has fired >= 10 times.
 
 ```json
 {
-  "alerts": ["27 of 77 working-age dwarves idle (35%)"],
+  "alerts": ["27 of 77 working-age dwarves idle (35%)", "61x job cancellation: Equipment mismatch"],
   "cancellations": {
-    "total": 13,
+    "total": 71,
     "by_reason": [
-      { "reason": "Equipment mismatch", "count": 7 },
+      { "reason": "Equipment mismatch", "count": 61 },
+      { "reason": "Needs 2 steel bars", "count": 3 },
+      { "reason": "Needs rope reed seeds", "count": 3 },
       { "reason": "Needs foxtail millet", "count": 1 }
     ],
     "by_reason_truncated": false
@@ -63,6 +65,7 @@ None.
 - Derived from the citizens themselves, not `world.jobs.list` (which is a linked list on this build).
 - `cancellations.by_reason` aggregates the reason string VERBATIM, not a generalized category — two item-specific reasons ("Needs foxtail millet" vs. "Needs rope reed seeds") stay distinct rows even though both mean "missing an item"; a systemic reason (e.g. a pathing or equipment problem) naturally clusters into one high-count row instead.
 - `cancellations.total` reflects whatever DF's report buffer currently retains, not a fixed lookback window — an old, high-report-volume fort's buffer covers less wall-clock time than a young fort's.
+- `cancellations` counts OCCURRENCES, weighted by each report's `repeat_count` (DF collapses consecutive identical cancellations into one report row and tallies the extras there instead of writing N rows) — counting report rows alone would badly undercount a repeating reason (verified live: a 7-row "Equipment mismatch" cluster was actually 61 occurrences once its `repeat_count`s were summed).
 
 ## Related
 [work_details](work_details.md) · [work_order_list](work_order_list.md) · [citizen](citizen.md) · [fort_status](fort_status.md)

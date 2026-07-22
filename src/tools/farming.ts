@@ -5,7 +5,6 @@ export interface SeasonCrop {
   season: 'SPRING' | 'SUMMER' | 'AUTUMN' | 'WINTER';
   crop?: string;
   eligible?: boolean;
-  seeds_available?: number;
 }
 
 export interface FarmPlot {
@@ -43,15 +42,16 @@ export const farmingDef: ToolDef = {
     'underground, its crop assignment for each of the 4 seasons (SPRING/SUMMER/' +
     'AUTUMN/WINTER; crop is the plant token or absent if that season is fallow), ' +
     'whether that crop is eligible to grow in that season (the plant raw\'s own ' +
-    'season flag — absent when the season is fallow), and how many seeds of that ' +
-    "season's crop are currently in stock. no_crop_assigned flags a plot with no " +
-    'crop assigned in ANY season; no_eligible_crop flags a plot with no season ' +
-    'holding BOTH an assigned crop AND eligibility (a strict superset of ' +
+    'season flag — absent when the season is fallow). no_crop_assigned flags a ' +
+    'plot with no crop assigned in ANY season; no_eligible_crop flags a plot with ' +
+    'no season holding BOTH an assigned crop AND eligibility (a strict superset of ' +
     'no_crop_assigned — a plot can have crops assigned yet still qualify if none of ' +
     'them are actually eligible for their season). seed_totals[] sums seed counts ' +
     'by plant across the whole fort (forbidden/dumped/rotten/trader-bound seeds ' +
-    'excluded), independent of which plots use them. plots[] is capped at 200 ' +
-    '(plots_total/plots_truncated track the real count and any overflow). Returns ' +
-    '{"error":"no fort loaded"} if no fort is active.',
+    'excluded) — the single source for seed stock; join a plot season\'s crop ' +
+    'token against it rather than looking for a per-plot seed count, which would ' +
+    'just repeat the same fort-wide number under every plot growing that crop. ' +
+    'plots[] is capped at 200 (plots_total/plots_truncated track the real count ' +
+    'and any overflow). Returns {"error":"no fort loaded"} if no fort is active.',
   run: farming,
 };

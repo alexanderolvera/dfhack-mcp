@@ -12,7 +12,7 @@ tags: [dfhack-mcp/tool]
 > The fort's farm plots and seed stock as facts: the early-survival pipeline between "what's plantable" and "what's in stock."
 
 ## Purpose
-`stocks` sees food *outputs* (meals, drink) and `game_data` knows what's plantable *in the abstract* (a plant raw's `farm_plantable` flag), but nothing saw the pipeline in between: which plots exist, what's actually assigned to grow in them each season, and whether there's seed on hand to plant it. An AI co-pilot calls this to catch an idle plot (no crop assigned in any season) or a crop assigned with zero seed in stock before it becomes a food crisis, and to compose with `game_data`'s plant dossiers for a full picture of what a crop needs.
+`stocks` sees food *outputs* (meals, drink) and `game_data` knows what's plantable *in the abstract* (a plant raw's `farm_plantable` flag), but nothing saw the pipeline in between: which plots exist, what's actually assigned to grow in them each season, and whether there's seed on hand to plant it. An AI co-pilot calls this to catch an idle plot (no crop assigned in any season) or, by joining a plot's `crop` against `seed_totals[]`, a crop assigned with zero seed in stock — before either becomes a food crisis — and to compose with `game_data`'s plant dossiers for a full picture of what a crop needs.
 
 ## Parameters
 None.
@@ -21,11 +21,11 @@ None.
 - `plots[]` — one row per farm plot (capped at 200 — see `plots_total`/`plots_truncated`): `{ id, size, surface, seasons[], no_crop_assigned, no_eligible_crop }`.
   - `size` — tile count (`width * height`).
   - `surface` — true if the plot's tile is open to the sky, false if underground.
-  - `seasons[]` — always 4 entries, one per `SPRING`/`SUMMER`/`AUTUMN`/`WINTER`: `{ season, crop?, eligible?, seeds_available? }`. `crop` (a plant token, e.g. `"MUSHROOM_HELMET_PLUMP"`), `eligible`, and `seeds_available` are all absent when that season is fallow (no crop assigned). When a crop IS assigned, `eligible` is whether the plant raw's own season flag allows it to grow in that season.
+  - `seasons[]` — always 4 entries, one per `SPRING`/`SUMMER`/`AUTUMN`/`WINTER`: `{ season, crop?, eligible? }`. `crop` (a plant token, e.g. `"MUSHROOM_HELMET_PLUMP"`) and `eligible` are both absent when that season is fallow (no crop assigned). When a crop IS assigned, `eligible` is whether the plant raw's own season flag allows it to grow in that season. Seed stock for `crop` is NOT repeated here — look it up in `seed_totals[]`, the single source for that fact.
   - `no_crop_assigned` — true iff every season is fallow — a plot doing nothing.
   - `no_eligible_crop` — true iff no season holds BOTH an assigned crop AND `eligible: true` — a strict superset of `no_crop_assigned` (a plot can have every season "filled" and still trip this if none of the assignments are actually eligible for their season).
 - `plots_total` (number), `plots_truncated` (boolean) — the real plot count and whether the 200-row cap dropped any.
-- `seed_totals[]` — `{ plant, count }`, fort-wide seed counts by plant, sorted by plant token. Only plants with at least one seed in stock are listed. Excludes forbidden/dumped/rotten/under-construction/trader-bound seed items.
+- `seed_totals[]` — `{ plant, count }`, fort-wide seed counts by plant, sorted by plant token. Only plants with at least one seed in stock are listed. Excludes forbidden/dumped/rotten/under-construction/trader-bound seed items. This is the ONLY place seed counts appear — join a season's `crop` token against it rather than expecting a per-plot count.
 
 ```json
 {
@@ -37,10 +37,10 @@ None.
       "no_crop_assigned": false,
       "no_eligible_crop": false,
       "seasons": [
-        { "season": "SPRING", "crop": "POD_SWEET", "eligible": true, "seeds_available": 50 },
-        { "season": "SUMMER", "crop": "GRASS_TAIL_PIG", "eligible": true, "seeds_available": 33 },
-        { "season": "AUTUMN", "crop": "MUSHROOM_CUP_DIMPLE", "eligible": true, "seeds_available": 19 },
-        { "season": "WINTER", "crop": "MUSHROOM_HELMET_PLUMP", "eligible": true, "seeds_available": 62 }
+        { "season": "SPRING", "crop": "POD_SWEET", "eligible": true },
+        { "season": "SUMMER", "crop": "GRASS_TAIL_PIG", "eligible": true },
+        { "season": "AUTUMN", "crop": "MUSHROOM_CUP_DIMPLE", "eligible": true },
+        { "season": "WINTER", "crop": "MUSHROOM_HELMET_PLUMP", "eligible": true }
       ]
     }
   ],
@@ -56,7 +56,7 @@ None.
 ## Caveats & limits
 - Returns `{"error":"no fort loaded"}` when no fort is active.
 - `eligible` checks ONLY the plant raw's own season flag (`SPRING`/`SUMMER`/`AUTUMN`/`WINTER` — does DF consider this plant plantable in this season at all). It does NOT check surface/underground depth compatibility: live verification found a plant flagged surface-only via `underground_depth_min == underground_depth_max == 0` (`REED_ROPE`) successfully planted in an underground plot in the fixture — `underground_depth_min`/`max` describe where a plant grows WILD, not farm-plot eligibility, so asserting a depth/surface rule here would have been actively wrong rather than merely incomplete. Compose with `game_data`'s plant dossier `surface`/`depth_min`/`depth_max`/`biomes` fields if you need those facts directly, without this tool implying they gate plantability.
-- `seeds_available` on a season entry is the SAME fort-wide count as that plant's `seed_totals[]` entry, not seed reserved for that specific plot — DF doesn't reserve seed per plot.
+- Seed counts live ONLY in `seed_totals[]` — a season's `crop` is not paired with a per-plot count (an earlier revision repeated the fort-wide `seed_totals[]` figure under every matching plot/season, which was pure duplication of a fact already in the same payload, not new information).
 - `surface` is read from the plot's own anchor tile's map designation, not inferred from a fort-wide surface z-level — accurate per-plot even in a fort with plots at mixed depths.
 - `plots[]` is capped at 200 rows; `plots_total`/`plots_truncated` track the real count regardless.
 
