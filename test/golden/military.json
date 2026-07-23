@@ -8,19 +8,610 @@
   "squad_count": 3,
   "squads": [
     {
+      "ammo": {
+        "ammo_items_assigned": 0,
+        "specs": []
+      },
       "filled": 4,
       "name": "The Waxy Tomes",
-      "positions": 10
+      "positions": 10,
+      "roster": [
+        {
+          "name": "Tun Lolumavuz \"Woodenmines\", militia commander",
+          "uniform": [
+            {
+              "assigned_count": 1,
+              "item_type": "ARMOR",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 2,
+              "item_type": "GLOVES",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "HELM",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "PANTS",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "SHIELD",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 2,
+              "item_type": "SHOES",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "WEAPON",
+              "missing_count": 0
+            }
+          ],
+          "uniform_complete": true,
+          "unit_id": 111
+        },
+        {
+          "name": "Lolor Oshurber \"Circledearth\", Axedwarf",
+          "uniform": [
+            {
+              "assigned_count": 1,
+              "item_type": "ARMOR",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 2,
+              "item_type": "GLOVES",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "HELM",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "PANTS",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "SHIELD",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 2,
+              "item_type": "SHOES",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "WEAPON",
+              "missing_count": 0
+            }
+          ],
+          "uniform_complete": true,
+          "unit_id": 336
+        },
+        {
+          "name": "Cerol �gamm�rul \"Gorgedpage\", Axedwarf",
+          "uniform": [
+            {
+              "assigned_count": 1,
+              "item_type": "ARMOR",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 2,
+              "item_type": "GLOVES",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "HELM",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "PANTS",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "SHIELD",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 2,
+              "item_type": "SHOES",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "WEAPON",
+              "missing_count": 0
+            }
+          ],
+          "uniform_complete": true,
+          "unit_id": 347
+        },
+        {
+          "name": "Kib Sazirtathur \"Bridgedscribes\", Axedwarf",
+          "uniform": [
+            {
+              "assigned_count": 1,
+              "item_type": "ARMOR",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 2,
+              "item_type": "GLOVES",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "HELM",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "PANTS",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "SHIELD",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 2,
+              "item_type": "SHOES",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "WEAPON",
+              "missing_count": 0
+            }
+          ],
+          "uniform_complete": true,
+          "unit_id": 353
+        }
+      ],
+      "training": {
+        "active_orders": [],
+        "cur_routine_idx": 2,
+        "month": 11,
+        "sleep_mode": "AnywhereAtWill",
+        "uniform_mode": "Regular"
+      }
     },
     {
+      "ammo": {
+        "ammo_items_assigned": 113,
+        "specs": [
+          {
+            "assigned_count": 129,
+            "item_type": "AMMO",
+            "target_amount": 250
+          }
+        ]
+      },
       "filled": 5,
       "name": "The Torrid Portals",
-      "positions": 10
+      "positions": 10,
+      "roster": [
+        {
+          "name": "�nul Kolmegid \"Wheeledslides\", captain of the guard",
+          "uniform": [
+            {
+              "assigned_count": 1,
+              "item_type": "ARMOR",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 2,
+              "item_type": "GLOVES",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "HELM",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "PANTS",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "SHIELD",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 2,
+              "item_type": "SHOES",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "WEAPON",
+              "missing_count": 0
+            }
+          ],
+          "uniform_complete": true,
+          "unit_id": 335
+        },
+        {
+          "name": "Likot Oshoshnish \"Hermittrades\", Marksdwarf",
+          "uniform": [
+            {
+              "assigned_count": 1,
+              "item_type": "ARMOR",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 2,
+              "item_type": "GLOVES",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "HELM",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "PANTS",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "SHIELD",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 2,
+              "item_type": "SHOES",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "WEAPON",
+              "missing_count": 0
+            }
+          ],
+          "uniform_complete": true,
+          "unit_id": 485
+        },
+        {
+          "name": "Deg�l Oshur�nul \"Circledmirrored\", Marksdwarf",
+          "uniform": [
+            {
+              "assigned_count": 1,
+              "item_type": "ARMOR",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 2,
+              "item_type": "GLOVES",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "HELM",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "PANTS",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "SHIELD",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 2,
+              "item_type": "SHOES",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "WEAPON",
+              "missing_count": 0
+            }
+          ],
+          "uniform_complete": true,
+          "unit_id": 349
+        },
+        {
+          "name": "Dumat Vab�kvudthar \"Orbransacked\", Marksdwarf",
+          "uniform": [
+            {
+              "assigned_count": 1,
+              "item_type": "ARMOR",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 2,
+              "item_type": "GLOVES",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "HELM",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "PANTS",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "SHIELD",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 2,
+              "item_type": "SHOES",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "WEAPON",
+              "missing_count": 0
+            }
+          ],
+          "uniform_complete": true,
+          "unit_id": 526
+        },
+        {
+          "name": "Dod�k Zikelasob \"Fierceboard\", Marksdwarf",
+          "uniform": [
+            {
+              "assigned_count": 1,
+              "item_type": "ARMOR",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 2,
+              "item_type": "GLOVES",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "HELM",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "PANTS",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "SHIELD",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 2,
+              "item_type": "SHOES",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "WEAPON",
+              "missing_count": 0
+            }
+          ],
+          "uniform_complete": true,
+          "unit_id": 377
+        }
+      ],
+      "training": {
+        "active_orders": [],
+        "cur_routine_idx": 2,
+        "month": 11,
+        "sleep_mode": "AnywhereAtWill",
+        "uniform_mode": "Regular"
+      }
     },
     {
+      "ammo": {
+        "ammo_items_assigned": 0,
+        "specs": []
+      },
       "filled": 4,
       "name": "The Mischief of Basements",
-      "positions": 10
+      "positions": 10,
+      "roster": [
+        {
+          "name": "Kad�l Sterusathel \"Driverings\", militia captain",
+          "uniform": [
+            {
+              "assigned_count": 1,
+              "item_type": "ARMOR",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 2,
+              "item_type": "GLOVES",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "HELM",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "PANTS",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "SHIELD",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 2,
+              "item_type": "SHOES",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "WEAPON",
+              "missing_count": 0
+            }
+          ],
+          "uniform_complete": true,
+          "unit_id": 498
+        },
+        {
+          "name": "�shrir Amemdod�k \"Curledclasps\", Axedwarf",
+          "uniform": [
+            {
+              "assigned_count": 1,
+              "item_type": "ARMOR",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 2,
+              "item_type": "GLOVES",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "HELM",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "PANTS",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "SHIELD",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 2,
+              "item_type": "SHOES",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "WEAPON",
+              "missing_count": 0
+            }
+          ],
+          "uniform_complete": true,
+          "unit_id": 304
+        },
+        {
+          "name": "�ton Sob�robok \"Releasedpillars\", Wrestler",
+          "uniform": [
+            {
+              "assigned_count": 1,
+              "item_type": "ARMOR",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 2,
+              "item_type": "GLOVES",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "HELM",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "PANTS",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "SHIELD",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 2,
+              "item_type": "SHOES",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "WEAPON",
+              "missing_count": 0
+            }
+          ],
+          "uniform_complete": true,
+          "unit_id": 348
+        },
+        {
+          "name": "K�buk �nullisid \"Mirroredclashed\", Wrestler",
+          "uniform": [
+            {
+              "assigned_count": 1,
+              "item_type": "ARMOR",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 2,
+              "item_type": "GLOVES",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "HELM",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "PANTS",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "SHIELD",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 2,
+              "item_type": "SHOES",
+              "missing_count": 0
+            },
+            {
+              "assigned_count": 1,
+              "item_type": "WEAPON",
+              "missing_count": 0
+            }
+          ],
+          "uniform_complete": true,
+          "unit_id": 426
+        }
+      ],
+      "training": {
+        "active_orders": [],
+        "cur_routine_idx": 2,
+        "month": 11,
+        "sleep_mode": "AnywhereAtWill",
+        "uniform_mode": "Regular"
+      }
     }
   ]
 }

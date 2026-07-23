@@ -1018,4 +1018,39 @@ export const INVARIANTS = [
       return out;
     },
   },
+  {
+    name: 'military_roster_wellformed',
+    tools: ['military'],
+    desc: "each squad's roster uniform rows have non-negative assigned/missing counts (missing <= assigned) agreeing with uniform_complete, filled never exceeds positions, and training.month is a valid 0-11 index",
+    check(p) {
+      const d = p.military;
+      const out = [];
+      if (!Array.isArray(d.squads)) return ['squads is not an array'];
+      d.squads.forEach((sq, si) => {
+        if (!(isInt(sq.filled) && isInt(sq.positions) && inRange(sq.filled, 0, sq.positions)))
+          out.push(`squads[${si}] filled=${sq.filled} outside [0, positions=${sq.positions}]`);
+        (sq.roster ?? []).forEach((row, ri) => {
+          if (!isInt(row.unit_id)) out.push(`squads[${si}].roster[${ri}].unit_id=${row.unit_id} is not an integer`);
+          let missingTotal = 0;
+          (row.uniform ?? []).forEach((u, ui) => {
+            if (!(isInt(u.assigned_count) && u.assigned_count >= 0))
+              out.push(`squads[${si}].roster[${ri}].uniform[${ui}].assigned_count=${u.assigned_count} is not a non-negative integer`);
+            if (!(isInt(u.missing_count) && inRange(u.missing_count, 0, u.assigned_count)))
+              out.push(
+                `squads[${si}].roster[${ri}].uniform[${ui}].missing_count=${u.missing_count} outside [0, assigned_count=${u.assigned_count}]`
+              );
+            missingTotal += u.missing_count || 0;
+          });
+          if (row.uniform_complete !== (missingTotal === 0))
+            out.push(`squads[${si}].roster[${ri}].uniform_complete=${row.uniform_complete} disagrees with summed missing_count=${missingTotal}`);
+        });
+        const t = sq.training ?? {};
+        if (!(isInt(t.month) && inRange(t.month, 0, 11)))
+          out.push(`squads[${si}].training.month=${t.month} outside 0..11`);
+        if (!isInt(t.cur_routine_idx) || t.cur_routine_idx < 0)
+          out.push(`squads[${si}].training.cur_routine_idx=${t.cur_routine_idx} is not a non-negative integer`);
+      });
+      return out;
+    },
+  },
 ];

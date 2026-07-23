@@ -84,7 +84,7 @@ No arguments; each reports on the loaded fort.
 - **`threats()`** — dangerous units grouped by type; active vs. contained, great-danger/invader/undead flags, plus each group's decisive traits (trapavoid, flier, fire, webber, building-destroyer, ranged).
 - **`unmet_needs()`** — the needs system aggregated: the top unmet needs ranked by how many dwarves are distracted, and how starved each is.
 - **`jobs_and_labor()`** — workforce utilization: busy vs. idle adults (children excluded), idle %, and a ranked breakdown of active jobs.
-- **`military()`** — squads, enlisted soldiers, filled positions, and readiness against hostiles on the map.
+- **`military()`** — squads, enlisted soldiers, filled positions, readiness against hostiles on the map, and per-squad roster equipment gaps (missing uniform pieces), ammo, and active training order.
 - **`injuries_and_health()`** — wounded / patients / bedridden / unconscious counts, plus the care needed (diagnosis, surgery, suture, …).
 - **`defenses()`** — active hostiles with map positions and distance/direction/z-delta to the fort core and nearest drawbridge, plus a controllable-structure inventory (bridges, levers, floodgates, hatches, cage traps, doors).
 - **`burrows()`** — every burrow's size and membership, plus the civilian-alert safety-burrow set (configured/active/linked burrows) — the read half of `civilian_alert`.

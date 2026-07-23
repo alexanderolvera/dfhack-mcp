@@ -35,6 +35,17 @@ backwards-compatible fixes only.
   queues a real pull job via DFHack's own `lever` script — reversible by
   pulling again — rather than an instant magic toggle, since the physical flip
   only happens once a dwarf completes the job.
+- **`military` squad equipment depth** ([#82](https://github.com/alexanderolvera/dfhack-mcp/issues/82))
+  — fulfills the original tool-API spec's `equipment_gaps` promise, unmet since
+  v1.0: the co-pilot could say "you have 21 soldiers" but not "8 of them have no
+  armor." Each squad now carries `roster[]` (per filled position: unit,
+  uniform aggregated by item type into assigned-vs-worn counts, and a
+  `uniform_complete` flag), `ammo` (configured ammunition specs and how many
+  are currently carried), and `training` (the active schedule month's sleep
+  mode, uniform mode, and orders). `alerts[]` also flags any roster member with
+  an incomplete uniform by name. `squad_position.occupant` turned out to be a
+  **historical figure id**, not a unit id — resolved via
+  `historical_figure.unit_id` before any per-soldier lookup.
 
 ## [1.2.0] - 2026-07-21
 
