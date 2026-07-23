@@ -72,12 +72,9 @@ for _, r in ipairs(hauling.routes) do
   for i, vid in ipairs(r.vehicle_ids) do
     local stop_idx = r.vehicle_stops[i]
     local current_stop_id = nil
+    -- r.stops indexing is 0-based, matching vehicle_stops[i]'s own convention
+    -- (no +1) -- see docs/tools/hauling_routes.md Implementation notes.
     if stop_idx and stop_idx >= 0 then
-      -- r.stops is a DFHack-wrapped vector<hauling_stop*>: direct numeric
-      -- indexing is 0-based (matches the underlying C++ vector), same as the
-      -- 0-based index vehicle_stops[i] already documents — no +1 needed.
-      -- Confirmed live: r.stops[stop_idx + 1] threw "index out of bounds" on
-      -- a real fort's single-stop routes; r.stops[stop_idx] is correct.
       local stop_obj = r.stops[stop_idx]
       if stop_obj then current_stop_id = stop_obj.id end
     end
@@ -103,6 +100,19 @@ if #routes > ROUTES_CAP then
   routes_truncated = true
 end
 
+-- Every vehicle a (possibly-capped) route actually references -- by
+-- route_vehicles[].vehicle_id or a stop's parked_vehicle_id -- must survive
+-- the vehicles[] cap below, or hauling_routes_cross_references_resolve would
+-- fail on an otherwise-valid fort just because the referenced vehicle's id
+-- happened to sort past the cap.
+local referenced_vehicle_ids = {}
+for _, r in ipairs(routes) do
+  for _, rv in ipairs(r.vehicles) do referenced_vehicle_ids[rv.vehicle_id] = true end
+  for _, s in ipairs(r.stops) do
+    if s.parked_vehicle_id then referenced_vehicle_ids[s.parked_vehicle_id] = true end
+  end
+end
+
 local vehicles = {}
 for _, v in ipairs(df.global.world.vehicles.all) do
   if df.vehicle_type[v.type] == 'ITEM' then
@@ -115,16 +125,22 @@ for _, v in ipairs(df.global.world.vehicles.all) do
     }
   end
 end
-table.sort(vehicles, function(a, b) return a.vehicle_id < b.vehicle_id end)
 
 local vehicles_total = #vehicles
 local vehicles_truncated = false
 if #vehicles > VEHICLES_CAP then
+  table.sort(vehicles, function(a, b)
+    local ra = referenced_vehicle_ids[a.vehicle_id] and 0 or 1
+    local rb = referenced_vehicle_ids[b.vehicle_id] and 0 or 1
+    if ra ~= rb then return ra < rb end
+    return a.vehicle_id < b.vehicle_id
+  end)
   local capped = {}
   for i = 1, VEHICLES_CAP do capped[i] = vehicles[i] end
   vehicles = capped
   vehicles_truncated = true
 end
+table.sort(vehicles, function(a, b) return a.vehicle_id < b.vehicle_id end)
 
 emit({
   routes = routes,

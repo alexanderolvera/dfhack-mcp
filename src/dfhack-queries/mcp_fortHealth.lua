@@ -6,6 +6,8 @@ if df.global.gamemode ~= df.game_mode.DWARF then
   return
 end
 
+local visibility = reqscript('mcp_unitVisibility')
+
 local T = df.item_type
 local CORPSE_TYPES = { [T.CORPSE] = true, [T.CORPSEPIECE] = true, [T.REMAINS] = true }
 local CLOTHES_TYPES = { [T.ARMOR] = true, [T.SHOES] = true, [T.HELM] = true, [T.GLOVES] = true, [T.PANTS] = true }
@@ -25,7 +27,7 @@ end
 
 local units_active, units_dead_on_map = 0, 0
 for _, u in ipairs(df.global.world.units.active) do
-  if dfhack.units.isActive(u) then
+  if dfhack.units.isActive(u) and not visibility.is_hidden(u) then
     if dfhack.units.isDead(u) then
       units_dead_on_map = units_dead_on_map + 1
     else

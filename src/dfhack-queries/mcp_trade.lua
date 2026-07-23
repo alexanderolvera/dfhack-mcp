@@ -152,10 +152,14 @@ for _, c in ipairs(df.global.plotinfo.caravans) do
   if (state == 'AtDepot' or state == 'Leaving') and c.time_remaining and c.time_remaining > 0 then
     row.leaving_in_days = math.floor(c.time_remaining / TICKS_PER_DAY)
   end
+  -- A field-path/calculation error here must be visible, not silently
+  -- indistinguishable from "no caravan to compute over" -- the no-caravan
+  -- fixture this was verified against can't tell those two cases apart, so a
+  -- real bug on a live caravan would otherwise pass every check unnoticed.
   local ok_m, m = pcall(manifest_of, c)
-  if ok_m then row.manifest = m end
+  if ok_m then row.manifest = m else row.manifest_error = tostring(m) end
   local ok_a, a = pcall(agreements_of, c)
-  if ok_a then row.agreements = a end
+  if ok_a then row.agreements = a else row.agreements_error = tostring(a) end
   caravans[#caravans + 1] = row
 end
 table.sort(caravans, function(a, b)

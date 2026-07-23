@@ -157,8 +157,28 @@ for _, agr in ipairs(df.global.world.agreements.all) do
   end
 end
 
-table.sort(location_petitions, function(a, b) return a.agreement_id < b.agreement_id end)
-table.sort(residency_petitions, function(a, b) return a.agreement_id < b.agreement_id end)
+-- Active rows (still outstanding, or sitting in the live decision queue) sort
+-- before resolved ones, so a long-lived fort's history doesn't crowd the
+-- current petitions this sensor exists to surface out of the capped page.
+-- Within a tier, ascending agreement_id (DF assigns these in creation order).
+local function petition_rank(p) return (p.status == 'outstanding' or p.awaiting_decision) and 0 or 1 end
+local function by_active_then_id(a, b)
+  local ra, rb = petition_rank(a), petition_rank(b)
+  if ra ~= rb then return ra < rb end
+  return a.agreement_id < b.agreement_id
+end
+table.sort(location_petitions, by_active_then_id)
+table.sort(residency_petitions, by_active_then_id)
+
+-- The true total must count every matching row before the cap below drops
+-- any — otherwise a truncated list would silently undercount.
+local awaiting_decision_count = 0
+for _, p in ipairs(location_petitions) do
+  if p.awaiting_decision then awaiting_decision_count = awaiting_decision_count + 1 end
+end
+for _, p in ipairs(residency_petitions) do
+  if p.awaiting_decision then awaiting_decision_count = awaiting_decision_count + 1 end
+end
 
 local function cap(list, n)
   local truncated = false
@@ -174,14 +194,6 @@ end
 local location_petitions_truncated, residency_petitions_truncated
 location_petitions, location_petitions_truncated = cap(location_petitions, LOCATION_CAP)
 residency_petitions, residency_petitions_truncated = cap(residency_petitions, RESIDENCY_CAP)
-
-local awaiting_decision_count = 0
-for _, p in ipairs(location_petitions) do
-  if p.awaiting_decision then awaiting_decision_count = awaiting_decision_count + 1 end
-end
-for _, p in ipairs(residency_petitions) do
-  if p.awaiting_decision then awaiting_decision_count = awaiting_decision_count + 1 end
-end
 
 local alerts = {}
 for _, p in ipairs(location_petitions) do

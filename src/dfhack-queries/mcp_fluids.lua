@@ -12,7 +12,6 @@ local TILE_BUDGET = 20000000
 local AQUIFER_LAYERS_CAP = 50
 local WATER_LAYERS_CAP = 200
 local FLOOD_RISK_CAP = 50
-local FLOOD_RISK_SAFETY_CAP = 2000
 local WELLS_CAP = 20
 local WELL_SCAN_DEPTH = 40
 local MAGMA_SEA_MIN_TILES = 20
@@ -60,7 +59,20 @@ end
 local aquifer_by_z = {}
 local water_by_z = {}
 local magma_by_z = {}
+
+-- flood_risk_tiles must be the TRUE global top FLOOD_RISK_CAP by (z desc, x
+-- asc, y asc), and flood_risk_total the true count of every qualifying tile
+-- -- not just however many were seen before some collection limit. Because
+-- the outer scan already walks z in strictly descending order (the sort's
+-- own primary key), every tile at a given z sorts before every tile at any
+-- lower z regardless of x/y. So: batch candidates per z-level, sort each
+-- batch once its z finishes, and merge it into the running top-N -- once
+-- that running set already holds FLOOD_RISK_CAP entries from z-levels at or
+-- above the current one, no lower z can ever displace them, so candidate
+-- collection (not the total count, which keeps running) can stop for good.
 local flood_risk = {}
+local flood_risk_total = 0
+local collecting_candidates = true
 
 local scanned_tiles = 0
 local scan_complete = true
@@ -69,6 +81,7 @@ local last_z_scanned = nil
 for z = z_count - 1, 0, -1 do
   if scanned_tiles >= TILE_BUDGET then scan_complete = false; break end
   last_z_scanned = z
+  local level_candidates = {}
   local by = 0
   while by < y_count do
     local bx = 0
@@ -104,15 +117,17 @@ for z = z_count - 1, 0, -1 do
                       if des.water_salt then wb.salt = wb.salt + 1 else wb.fresh = wb.fresh + 1 end
                       if des.water_stagnant then wb.stagnant = wb.stagnant + 1 else wb.flowing = wb.flowing + 1 end
                       if des.flow_size > wb.max_depth then wb.max_depth = des.flow_size end
-                      if des.flow_size >= 7 and core and #flood_risk < FLOOD_RISK_SAFETY_CAP
-                         and near_interior(x, y, z) then
-                        flood_risk[#flood_risk + 1] = {
-                          x = x, y = y, z = z,
-                          salt = des.water_salt, stagnant = des.water_stagnant,
-                          footing = terrain.sym(blk.tiletype[lx][ly], false),
-                          from_core = { dist = cheb(x, y, core.x, core.y), dz = core.z - z,
-                                        dir = bearing(core.x, core.y, x, y) },
-                        }
+                      if des.flow_size >= 7 and core and near_interior(x, y, z) then
+                        flood_risk_total = flood_risk_total + 1
+                        if collecting_candidates then
+                          level_candidates[#level_candidates + 1] = {
+                            x = x, y = y, z = z,
+                            salt = des.water_salt, stagnant = des.water_stagnant,
+                            footing = terrain.sym(blk.tiletype[lx][ly], false),
+                            from_core = { dist = cheb(x, y, core.x, core.y), dz = core.z - z,
+                                          dir = bearing(core.x, core.y, x, y) },
+                          }
+                        end
                       end
                     end
                   end
@@ -126,19 +141,24 @@ for z = z_count - 1, 0, -1 do
     end
     by = by + 16
   end
+
+  if collecting_candidates and #level_candidates > 0 then
+    table.sort(level_candidates, function(a, b)
+      if a.x ~= b.x then return a.x < b.x end
+      return a.y < b.y
+    end)
+    for _, c in ipairs(level_candidates) do flood_risk[#flood_risk + 1] = c end
+    if #flood_risk >= FLOOD_RISK_CAP then collecting_candidates = false end
+  end
 end
 
-table.sort(flood_risk, function(a, b)
-  if a.z ~= b.z then return a.z > b.z end
-  if a.x ~= b.x then return a.x < b.x end
-  return a.y < b.y
-end)
-local flood_risk_total = #flood_risk
 local flood_risk_truncated = false
 if #flood_risk > FLOOD_RISK_CAP then
   local capped = {}
   for i = 1, FLOOD_RISK_CAP do capped[i] = flood_risk[i] end
   flood_risk = capped
+  flood_risk_truncated = true
+elseif flood_risk_total > #flood_risk then
   flood_risk_truncated = true
 end
 

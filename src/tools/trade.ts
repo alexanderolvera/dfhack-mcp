@@ -44,7 +44,9 @@ export interface CaravanRow {
   civ?: CaravanCiv;
   leaving_in_days?: number;
   manifest?: CaravanManifest;
+  manifest_error?: string;
   agreements?: CaravanAgreements;
+  agreements_error?: string;
 }
 
 export interface BrokerState {
@@ -95,8 +97,12 @@ export const tradeDef: ToolDef = {
     'export rows are items this fort earns a bonus selling to the caravan, by ' +
     "DF's item type; import rows are items this fort pays a premium buying from " +
     "the caravan, by DF's own request-tab category — a different, coarser " +
-    'taxonomy than item type, so the two lists will not line up 1:1). Reports ' +
-    'the state and the numbers, not what to trade. Returns {"error":"no fort ' +
-    'loaded"} if no fort is active.',
+    'taxonomy than item type, so the two lists will not line up 1:1). If ' +
+    "reading either one fails against a real caravan (a field-path or " +
+    'calculation error, not simply "nothing to report"), that caravan\'s row ' +
+    "carries manifest_error/agreements_error (the raw error string) instead of " +
+    'the field, so a live check can tell a genuine bug apart from an empty ' +
+    'result. Reports the state and the numbers, not what to trade. Returns ' +
+    '{"error":"no fort loaded"} if no fort is active.',
   run: trade,
 };

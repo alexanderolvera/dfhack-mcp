@@ -38,7 +38,6 @@ export interface Pile {
   take_from: number[];
   take_from_truncated: boolean;
   item_count: number;
-  fullness_pct: number;
 }
 
 export interface BacklogEntry {
@@ -83,8 +82,11 @@ export const stockpilesDef: ToolDef = {
   description:
     "The fort's hauling/logistics picture: every stockpile as a fact sheet, plus " +
     "fort-wide backlog signals stockpiles alone don't surface. piles[] is one row " +
-    'per stockpile building: id, exact bounds (x1/y1/x2/y2/z), size (tile count — ' +
-    'also the denominator of the fullness estimate below), categories[] (which of ' +
+    'per stockpile building: id, exact bounds (x1/y1/x2/y2/z — the bounding box; ' +
+    'an irregularly-shaped pile\'s real footprint can be smaller, see size), ' +
+    'size (the pile\'s real tile count — for an irregular pile this reads its ' +
+    'room.extents occupancy map rather than the bounding box, so holes/' +
+    'excluded tiles are correctly excluded), categories[] (which of ' +
     "the 17 top-level stockpile groups this pile accepts — animals/food/" +
     'furniture/corpses/refuse/stone/ammo/coins/bars_blocks/gems/finished_goods/' +
     "leather/cloth/wood/weapons/armor/sheet; note Ore has no flag of its own in " +
@@ -103,12 +105,12 @@ export const stockpilesDef: ToolDef = {
     "tiles right now — via each item's resolved position, so items inside a bin " +
     'or barrel parked on the pile count too — regardless of whether the pile\'s ' +
     'own categories[] actually accept that item, since this is a positional fact, ' +
-    'not a settings-compliance check), and fullness_pct, a DELIBERATELY ROUGH ' +
-    'proxy (100 * item_count / (size * 4), a placeholder "~4 loose items per ' +
-    'tile" estimate) — NOT the game\'s real per-tile capacity math, which varies ' +
-    'by item size and container packing, so a bin/barrel-heavy pile can read well ' +
-    'over 100%; treat this as a directional signal ("this pile is busier than ' +
-    'that one"), never a precise percentage. Fort-wide: unstored_backlog[] groups ' +
+    'not a settings-compliance check). There is no fullness/occupancy percentage: ' +
+    'an earlier draft derived one from a placeholder items-per-tile constant, but ' +
+    'it produced numbers with no real relationship to the game\'s actual per-tile ' +
+    'capacity (which varies by item size and container packing) and was dropped ' +
+    'rather than ship a fabricated fact — join item_count against size yourself ' +
+    'if you want a rough density signal. Fort-wide: unstored_backlog[] groups ' +
     "loose items (on the ground, not rotten/dump/forbidden/under-construction/" +
     'trader-owned, and not sitting on ANY stockpile\'s tiles) by their raw DF item ' +
     'type token, with unstored_backlog_item_count as the grand total and a 150-' +

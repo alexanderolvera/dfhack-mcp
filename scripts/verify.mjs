@@ -109,16 +109,9 @@ const GOLDEN_NO_ARG = new Set(['tile_region', 'work_details']);
 // against a committed save). game_data/identify fuse world raws — kept in T2.
 const NETWORK_TOOLS = new Set(['wiki_search', 'wiki_lookup']);
 
-// Fields that are a LIVE instantaneous reading, not part of the frozen game
-// state, even against a paused fixture — verified live: fort_health's fps/gfps
-// read DFHack's own calculated_fps/calculated_gfps, which keep advancing off
-// the engine's real-time render/tick loop regardless of game-pause state (two
-// calls a few seconds apart returned 99/6 then 100/8, while every other field
-// in the same payload was byte-identical). Masked to null before the golden
-// snapshot/compare so T2 doesn't flap on wall-clock timing; the tool's real,
-// unmasked output is still shape/bounds-checked live by the
-// fort_health_wellformed_and_bounds_population invariant. See docs/VERIFY.md's
-// Special cases.
+// Fields that are a live instantaneous reading, not frozen game state, even
+// against a paused fixture — masked to null before the golden snapshot/compare
+// so T2 doesn't flap on wall-clock timing. See docs/VERIFY.md's Special cases.
 const VOLATILE_FIELDS = { fort_health: ['fps', 'gfps'] };
 
 function maskVolatile(name, data) {

@@ -848,7 +848,7 @@ export const INVARIANTS = [
   {
     name: 'fort_health_wellformed_and_bounds_population',
     tools: ['fort_health', 'fort_status'],
-    desc: 'fps/gfps and every item/unit count are non-negative, and units.active (all simulated units, unfiltered) is never less than fort_status.population (citizens are a subset of active units)',
+    desc: 'fps/gfps and every item/unit count are non-negative, and units.active (fog-of-war filtered like fort_status/threats) is never less than fort_status.population (citizens are a subset of active units)',
     check(p) {
       const d = p.fort_health;
       const out = [];
@@ -978,7 +978,7 @@ export const INVARIANTS = [
     name: 'stockpiles_wellformed',
     tools: ['stockpiles'],
     desc:
-      'pile counts/percentages stay non-negative, categories[] only names real bitfield flags, ' +
+      'pile counts stay non-negative, categories[] only names real bitfield flags, ' +
       'give_to/take_from links are internally reciprocal, piles are id-sorted, and cap/' +
       'truncation pairs (piles, links, backlog) are self-consistent',
     check(p) {
@@ -1015,8 +1015,6 @@ export const INVARIANTS = [
         if (!(isInt(pl.size) && pl.size >= 1)) out.push(`piles[${i}].size=${pl.size} is not >= 1`);
         if (!(isInt(pl.item_count) && pl.item_count >= 0))
           out.push(`piles[${i}].item_count=${pl.item_count} is negative`);
-        if (!(typeof pl.fullness_pct === 'number' && pl.fullness_pct >= 0))
-          out.push(`piles[${i}].fullness_pct=${pl.fullness_pct} is negative`);
         if (
           !Array.isArray(pl.categories) ||
           pl.categories.some((c) => !KNOWN_CATEGORIES.has(c))
@@ -1067,7 +1065,7 @@ export const INVARIANTS = [
   {
     name: 'petitions_wellformed',
     tools: ['petitions'],
-    desc: 'location/residency petition rows carry a known status and only the deity/guild_profession field their building kind allows, the 50-row caps and awaiting_decision_count are honored, and alerts are non-empty strings',
+    desc: 'location/residency petition rows carry a known status and only the deity/guild_profession field their building kind allows, active rows sort before resolved ones, the 50-row caps and awaiting_decision_count are honored, and alerts are non-empty strings',
     check(p) {
       const d = p.petitions;
       const out = [];
@@ -1081,7 +1079,11 @@ export const INVARIANTS = [
           out.push(`location_petitions length ${d.location_petitions.length} exceeds cap ${CAP}`);
         if (typeof d.location_petitions_truncated !== 'boolean')
           out.push(`location_petitions_truncated=${d.location_petitions_truncated} is not a boolean`);
+        let lastRank = 0;
         d.location_petitions.forEach((row, i) => {
+          const rank = row.status === 'outstanding' || row.awaiting_decision ? 0 : 1;
+          if (rank < lastRank) out.push(`location_petitions[${i}] is active but sorts after a resolved row`);
+          lastRank = rank;
           if (!isInt(row.agreement_id))
             out.push(`location_petitions[${i}].agreement_id=${row.agreement_id} is not an integer`);
           if (!['TEMPLE', 'GUILDHALL'].includes(row.building))
@@ -1112,7 +1114,11 @@ export const INVARIANTS = [
           out.push(
             `residency_petitions_truncated=${d.residency_petitions_truncated} is not a boolean`
           );
+        let lastRank = 0;
         d.residency_petitions.forEach((row, i) => {
+          const rank = row.status === 'outstanding' || row.awaiting_decision ? 0 : 1;
+          if (rank < lastRank) out.push(`residency_petitions[${i}] is active but sorts after a resolved row`);
+          lastRank = rank;
           if (!isInt(row.agreement_id))
             out.push(`residency_petitions[${i}].agreement_id=${row.agreement_id} is not an integer`);
           if (!['Residency', 'Citizenship'].includes(row.kind))

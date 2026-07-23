@@ -10,7 +10,6 @@ local PILES_CAP = 200
 local LINKS_CAP = 50
 local BACKLOG_CAP = 150
 local ROTTING_TYPES_CAP = 100
-local ITEMS_PER_TILE_ESTIMATE = 4
 
 local CATEGORY_FLAGS = {
   'animals', 'food', 'furniture', 'corpses', 'refuse', 'stone', 'ammo', 'coins',
@@ -32,6 +31,27 @@ local function capped_sorted_ids(vec)
   return ids, truncated
 end
 
+local STOCKPILE_EXTENT = df.building_extents_type.Stockpile
+
+-- A stockpile's true footprint is its room.extents occupancy map, not just its
+-- x1..x2/y1..y2 bounding box: an irregular (non-rectangular) pile carves holes
+-- out of that box, and DFHack's own membership check consults this map.
+-- room.extents is a raw DFHack is-array pointer with no length of its own --
+-- confirmed live it does NOT support Lua's `#` (that throws "attempt to get
+-- length of a userdata value") -- its element count is room.width*room.height,
+-- supplied by those sibling fields, not self-describing.
+local function extent_tiles(sp)
+  local ext = sp.room.extents
+  local ew, eh = sp.room.width, sp.room.height
+  if not ext or not ew or not eh or ew <= 0 or eh <= 0 then return nil end
+  return ext, sp.room.x, sp.room.y, ew, eh
+end
+
+local function in_extents(ext, ex, ey, ew, x, y)
+  local dx, dy = x - ex, y - ey
+  return ext[dy * ew + dx] == STOCKPILE_EXTENT
+end
+
 local piles = {}
 for _, sp in ipairs(df.global.world.buildings.other.STOCKPILE) do
   local categories = {}
@@ -43,10 +63,22 @@ for _, sp in ipairs(df.global.world.buildings.other.STOCKPILE) do
   local give_to, give_to_truncated = capped_sorted_ids(sp.links.give_to_pile)
   local take_from, take_from_truncated = capped_sorted_ids(sp.links.take_from_pile)
 
+  local ext, ex, ey, ew, eh = extent_tiles(sp)
+  local size = 0
+  if ext then
+    for dy = 0, eh - 1 do
+      for dx = 0, ew - 1 do
+        if ext[dy * ew + dx] == STOCKPILE_EXTENT then size = size + 1 end
+      end
+    end
+  else
+    size = (sp.x2 - sp.x1 + 1) * (sp.y2 - sp.y1 + 1)
+  end
+
   piles[#piles + 1] = {
     id = sp.id,
     x1 = sp.x1, y1 = sp.y1, x2 = sp.x2, y2 = sp.y2, z = sp.z,
-    size = (sp.x2 - sp.x1 + 1) * (sp.y2 - sp.y1 + 1),
+    size = size,
     categories = categories,
     barrels_allowed = sp.storage.max_barrels > 0,
     bins_allowed = sp.storage.max_bins > 0,
@@ -57,13 +89,16 @@ for _, sp in ipairs(df.global.world.buildings.other.STOCKPILE) do
     take_from = take_from,
     take_from_truncated = take_from_truncated,
     item_count = 0,
+    _extents = ext, _ex = ex, _ey = ey, _ew = ew,
   }
 end
 
 local function pile_at(x, y, z)
   for _, p in ipairs(piles) do
     if z == p.z and x >= p.x1 and x <= p.x2 and y >= p.y1 and y <= p.y2 then
-      return p
+      if not p._extents or in_extents(p._extents, p._ex, p._ey, p._ew, x, y) then
+        return p
+      end
     end
   end
   return nil
@@ -99,8 +134,7 @@ for _, item in ipairs(df.global.world.items.other.IN_PLAY) do
 end
 
 for _, p in ipairs(piles) do
-  local cap = p.size * ITEMS_PER_TILE_ESTIMATE
-  p.fullness_pct = cap > 0 and math.floor((100 * p.item_count / cap) + 0.5) or 0
+  p._extents, p._ex, p._ey, p._ew = nil, nil, nil, nil
 end
 
 table.sort(piles, function(a, b) return a.id < b.id end)

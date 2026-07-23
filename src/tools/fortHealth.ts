@@ -40,11 +40,14 @@ export const fortHealthDef: ToolDef = {
     'units.active/units.dead_on_map split df.global.world.units.active by ' +
     'isDead — active is every currently-simulated living unit (citizens, tame ' +
     'animals, wildlife, hostiles, visitors), dead_on_map is a dead unit whose ' +
-    "body hasn't yet been cleaned up into a corpse item; both are unfiltered by " +
-    'fog-of-war, deliberately, since an undiscovered cavern\'s unrevealed units ' +
-    'still cost simulation time — this tool reports computational load, not ' +
-    "what the fort has discovered. Stray/unassigned animal count is intentionally " +
-    "NOT duplicated here: call livestock_and_pastures and read its " +
+    "body hasn't yet been cleaned up into a corpse item; both are fog-of-war " +
+    'filtered (mcp_unitVisibility), like every other unit-enumerating tool in ' +
+    'this server, so an undiscovered cavern\'s unrevealed population is never ' +
+    'counted here even though it still costs real simulation time — this tool ' +
+    "intentionally undercounts true computational load rather than leak an " +
+    "unexplored area's population as an aggregate number. Stray/unassigned " +
+    "animal count is intentionally NOT duplicated here: call " +
+    "livestock_and_pastures and read its " +
     'unassigned_count. Returns {"error":"no fort loaded"} if no fort is active.',
   run: fortHealth,
 };
