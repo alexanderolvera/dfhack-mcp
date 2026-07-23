@@ -4,11 +4,11 @@ tags: [dfhack-mcp/tool, index]
 
 # Tool Index — dfhack-mcp
 
-One note per MCP tool (37 tools: 26 sensors, 4 reference, 6 gated actuators, 1 dev), tracking `src/tools/registry.ts`. Each note carries frontmatter (`tool` / `tier` / `gated` / `source` / `lua`), parameters from the zod schema, the real return shape from the Lua query, and a trimmed example from the frozen-fixture goldens where one exists.
+One note per MCP tool (38 tools: 27 sensors, 4 reference, 6 gated actuators, 1 dev), tracking `src/tools/registry.ts`. Each note carries frontmatter (`tool` / `tier` / `gated` / `source` / `lua`), parameters from the zod schema, the real return shape from the Lua query, and a trimmed example from the frozen-fixture goldens where one exists.
 
 Doctrine reminder: every tool is **facts-only** — it senses and reports; judgment stays with the AI client. Actuators are gated behind `DFHACK_MCP_ACTUATORS` and follow the §A0 preview/confirm contract; `run_lua` is dev-gated behind `DFHACK_MCP_DEV`.
 
-## Sensors (26)
+## Sensors (27)
 
 *Fort & dwarves*
 - [fort_status](fort_status.md) — one-call situational overview; canonical "is a fort loaded" probe
@@ -33,6 +33,7 @@ Doctrine reminder: every tool is **facts-only** — it senses and reports; judgm
 - [mandates_and_justice](mandates_and_justice.md) — nobles' mandates, crime, punishments
 - [nobles_and_administrators](nobles_and_administrators.md) — appointed positions and vacancies
 - [rooms_and_zones](rooms_and_zones.md) — bedrooms, temples, civzones, burial
+- [petitions](petitions.md) — location and residency/citizenship petitions awaiting decision
 - [livestock_and_pastures](livestock_and_pastures.md) — tame animals, pastures, cages, slaughter
 - [artifacts_and_engravings](artifacts_and_engravings.md) — artifacts and engraving coverage
 - [chronicle](chronicle.md) — recent events via the report stream (cursor-paginated)
