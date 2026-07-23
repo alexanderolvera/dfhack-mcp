@@ -53,10 +53,10 @@
     },
     {
       "ammo": {
-        "ammo_items_assigned": 113,
+        "ammo_items_assigned": 153,
         "specs": [
           {
-            "assigned_count": 129,
+            "assigned_count": 265,
             "item_type": "AMMO",
             "target_amount": 250
           }

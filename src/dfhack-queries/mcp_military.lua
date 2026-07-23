@@ -29,18 +29,24 @@ local function worn_item_ids(u)
   return worn
 end
 
+local SPECIAL_SLOTS = { { key = 'quiver', label = 'QUIVER' }, { key = 'backpack', label = 'BACKPACK' },
+  { key = 'flask', label = 'FLASK' } }
+
 local function uniform_rows(pos, worn)
   local by_type = {}
   local order = {}
+  local function row_for(tname)
+    local row = by_type[tname]
+    if not row then
+      row = { item_type = tname, assigned_count = 0, missing_count = 0 }
+      by_type[tname] = row
+      order[#order + 1] = tname
+    end
+    return row
+  end
   for _, slot in ipairs(pos.equipment.uniform) do
     for _, spec in ipairs(slot) do
-      local tname = df.item_type[spec.item_type]
-      local row = by_type[tname]
-      if not row then
-        row = { item_type = tname, assigned_count = 0, missing_count = 0 }
-        by_type[tname] = row
-        order[#order + 1] = tname
-      end
+      local row = row_for(df.item_type[spec.item_type])
       if #spec.assigned == 0 then
         row.assigned_count = row.assigned_count + 1
         row.missing_count = row.missing_count + 1
@@ -51,6 +57,17 @@ local function uniform_rows(pos, worn)
           if not worn[id] then row.missing_count = row.missing_count + 1 end
         end
       end
+    end
+  end
+  -- quiver/backpack/flask are assigned outside equipment.uniform (their own
+  -- single-item-id fields), so uniform-unstick.lua treats them as special
+  -- cases too — an unassigned or not-worn one is still a real gap.
+  for _, s in ipairs(SPECIAL_SLOTS) do
+    local id = pos.equipment[s.key]
+    if id ~= -1 then
+      local row = row_for(s.label)
+      row.assigned_count = row.assigned_count + 1
+      if not worn[id] then row.missing_count = row.missing_count + 1 end
     end
   end
   table.sort(order)
@@ -74,19 +91,38 @@ local function roster_row(pos)
   }
 end
 
+-- am.assigned / sq.ammo.ammo_items are vectors of ITEM ids, one per stack — a
+-- single assigned stack can hold many bolts (or be split into several partial
+-- stacks by DFHack's own archery logic), so counting ids undercounts/overcounts
+-- against am.amount, which is a bolt QUANTITY target. Sum actual stack sizes.
+local function ammo_quantity(item_id)
+  local it = df.item.find(item_id)
+  if not it then return 0 end
+  local ok, n = pcall(function() return it:getStackSize() end)
+  return (ok and n) or 0
+end
+
 local function ammo_facts(sq)
   local specs = {}
   for i = 0, #sq.ammo.ammunition - 1 do
     local am = sq.ammo.ammunition[i]
+    local assigned_qty = 0
+    for ai = 0, #am.assigned - 1 do
+      assigned_qty = assigned_qty + ammo_quantity(am.assigned[ai])
+    end
     specs[#specs + 1] = {
       item_type = df.item_type[am.item_type],
       target_amount = am.amount,
-      assigned_count = #am.assigned,
+      assigned_count = assigned_qty,
     }
+  end
+  local carried_qty = 0
+  for i = 0, #sq.ammo.ammo_items - 1 do
+    carried_qty = carried_qty + ammo_quantity(sq.ammo.ammo_items[i])
   end
   return {
     specs = specs,
-    ammo_items_assigned = #sq.ammo.ammo_items,
+    ammo_items_assigned = carried_qty,
   }
 end
 

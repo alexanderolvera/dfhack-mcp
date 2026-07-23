@@ -17,7 +17,7 @@ The same mechanism as DFHack's `gui/civ-alert` and the vanilla Squads panel's al
 ## Parameters
 | Name | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
-| burrow | string | One of burrow/burrow_id | — | Exact burrow name (from `burrows()`), e.g. "Inside+". Ignored when `burrow_id` is given. |
+| burrow | string | One of burrow/burrow_id | — | Exact burrow name (from `burrows()`), e.g. "Inside+". Ignored when `burrow_id` is given. Burrow names are user-editable and not guaranteed unique — if more than one burrow shares the name, the call is blocked (no token) asking for `burrow_id` instead, rather than silently picking one. |
 | burrow_id | number (int) | One of burrow/burrow_id | — | Burrow id (from `burrows()`) — preferred: unambiguous, and the only way to target a burrow with no custom name (DF allows this; the in-game UI falls back to "Burrow N"). |
 | enabled | boolean | Yes | — | true = add this burrow to the civilian alert and sound it; false = remove it. |
 | confirm_token | string | No | — | Omit to DRY-RUN (returns a preview + single-use token); pass the token to APPLY. |

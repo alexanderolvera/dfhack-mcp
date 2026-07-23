@@ -27,10 +27,14 @@ local function tile_count(b)
 end
 
 local function find_burrow(name)
+  local match, count = nil, 0
   for _, b in ipairs(df.global.plotinfo.burrows.list) do
-    if b.name == name then return b end
+    if b.name == name then
+      if not match then match = b end
+      count = count + 1
+    end
   end
-  return nil
+  return match, count
 end
 
 local function find_burrow_by_id(id)
@@ -109,8 +113,15 @@ local function parse_toggle()
     b = find_burrow_by_id(bid)
     if not b then blocked[#blocked + 1] = 'no burrow with id ' .. tostring(bid) end
   elseif bname and bname ~= '' then
-    b = find_burrow(bname)
-    if not b then blocked[#blocked + 1] = 'no burrow named "' .. bname .. '"' end
+    local count
+    b, count = find_burrow(bname)
+    if count == 0 then
+      blocked[#blocked + 1] = 'no burrow named "' .. bname .. '"'
+    elseif count > 1 then
+      blocked[#blocked + 1] = count .. ' burrows are named "' .. bname ..
+        '" — use burrow_id to disambiguate'
+      b = nil
+    end
   else
     blocked[#blocked + 1] = 'burrow (name) or burrow_id is required'
   end
