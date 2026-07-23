@@ -28,7 +28,7 @@ Doctrine reminder: every tool is **facts-only** — it senses and reports; judgm
 
 *Economy & society*
 - [stocks](stocks.md) — food/booze/materials counts
-- [stockpiles](stockpiles.md) — draft: per-pile settings/links/fullness, unstored and rotting-item backlog
+- [stockpiles](stockpiles.md) — per-pile settings/links/fullness, unstored and rotting-item backlog
 - [farming](farming.md) — farm plots, crop assignment by season, seed stock
 - [trade](trade.md) — depot, broker, caravan state
 - [work_order_list](work_order_list.md) — manager work-order queue
@@ -36,6 +36,7 @@ Doctrine reminder: every tool is **facts-only** — it senses and reports; judgm
 - [nobles_and_administrators](nobles_and_administrators.md) — appointed positions and vacancies
 - [rooms_and_zones](rooms_and_zones.md) — bedrooms, temples, civzones, burial
 - [petitions](petitions.md) — location and residency/citizenship petitions awaiting decision
+- [hauling_routes](hauling_routes.md) — minecart hauling routes, stops, vehicles
 - [livestock_and_pastures](livestock_and_pastures.md) — tame animals, pastures, cages, slaughter
 - [artifacts_and_engravings](artifacts_and_engravings.md) — artifacts and engraving coverage
 - [chronicle](chronicle.md) — recent events via the report stream (cursor-paginated)

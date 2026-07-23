@@ -1231,4 +1231,54 @@ export const INVARIANTS = [
       return out;
     },
   },
+  {
+    name: 'hauling_routes_cross_references_resolve',
+    tools: ['hauling_routes'],
+    desc:
+      'route/stop ids are unique, every route-level vehicle_id and every ' +
+      "stop's parked_vehicle_id resolves to a real entry in the top-level " +
+      "vehicles[], and a resolved vehicle's own route_id agrees with the " +
+      'route that claims it',
+    check(p) {
+      const d = p.hauling_routes;
+      const out = [];
+      const vehicleIds = new Set((d.vehicles ?? []).map((v) => v.vehicle_id));
+      const vehicleById = new Map((d.vehicles ?? []).map((v) => [v.vehicle_id, v]));
+      const seenRouteIds = new Set();
+      for (const r of d.routes ?? []) {
+        if (seenRouteIds.has(r.id)) out.push(`duplicate route id ${r.id}`);
+        seenRouteIds.add(r.id);
+
+        const seenStopIds = new Set();
+        for (const s of r.stops ?? []) {
+          if (seenStopIds.has(s.id)) out.push(`route ${r.id}: duplicate stop id ${s.id}`);
+          seenStopIds.add(s.id);
+          if (s.parked_vehicle_id !== undefined && !vehicleIds.has(s.parked_vehicle_id)) {
+            out.push(
+              `route ${r.id} stop ${s.id}: parked_vehicle_id ${s.parked_vehicle_id} not in top-level vehicles[]`
+            );
+          }
+        }
+
+        for (const rv of r.vehicles ?? []) {
+          if (!vehicleIds.has(rv.vehicle_id)) {
+            out.push(`route ${r.id}: vehicle_id ${rv.vehicle_id} not in top-level vehicles[]`);
+            continue;
+          }
+          const v = vehicleById.get(rv.vehicle_id);
+          if (v.route_id !== r.id) {
+            out.push(
+              `route ${r.id} claims vehicle ${rv.vehicle_id}, but that vehicle's route_id is ${v.route_id}`
+            );
+          }
+          if (rv.current_stop_id !== undefined && !seenStopIds.has(rv.current_stop_id)) {
+            out.push(
+              `route ${r.id}: vehicle ${rv.vehicle_id}'s current_stop_id ${rv.current_stop_id} is not one of this route's own stops`
+            );
+          }
+        }
+      }
+      return out;
+    },
+  },
 ];
