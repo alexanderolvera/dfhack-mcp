@@ -8,6 +8,28 @@ loosely while the tool surface is still evolving: **minor** releases (`1.x.0`)
 may change or remove tool output, and **patch** releases (`1.0.x`) are
 backwards-compatible fixes only.
 
+## [Unreleased]
+
+### Added
+
+- **`stockpiles` sensor** ([#79](https://github.com/alexanderolvera/dfhack-mcp/issues/79))
+  — hauling/logistics, previously invisible to an AI co-pilot: `stocks` reports
+  fort-wide material totals but nothing about where goods physically sit or
+  whether the piles themselves are configured sanely. Reports one row per
+  stockpile (accepted categories, exact bounds, barrel/bin/wheelbarrow
+  permissions, give/take hauling-route links, and an approximate fullness
+  reading) plus three fort-wide backlog signals: items piling up unstored
+  outside any pile, food/organic matter that has already rotted while sitting
+  unstored, and items currently flagged for dumping. Verified live against the
+  Dreamfort fixture (60 stockpiles): the dynamic bitfield-key category lookup
+  — the single highest-risk piece of the original draft — checks out exactly
+  against the game's own 17 named category flags, and `give_to`/`take_from`
+  hauling-route links are reciprocal across the fixture's full link graph
+  (now enforced fort-wide by a new `stockpiles_wellformed` invariant). The
+  fullness reading remains a deliberately rough proxy — confirmed to read
+  well over 100% on container-heavy and long-lived single-tile dump piles,
+  as documented.
+
 ## [1.2.0] - 2026-07-21
 
 ### Added
