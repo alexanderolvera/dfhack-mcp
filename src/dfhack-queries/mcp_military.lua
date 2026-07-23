@@ -13,10 +13,6 @@ local WORN_MODES = {
   [df.inv_item_role_type.Flask] = true,
 }
 
--- squad_position.occupant is a HISTORICAL FIGURE id, not a unit id. Only a
--- living, present unit can actually wear its uniform, so a dead or off-map
--- holder (still counted in `filled`) resolves to nil here rather than
--- generating a misleading "incomplete uniform" alert for gear on a corpse.
 local function occupant_unit(pos)
   if pos.occupant == -1 then return nil end
   local hf = df.historical_figure.find(pos.occupant)
@@ -33,9 +29,6 @@ local function worn_item_ids(u)
   return worn
 end
 
--- Flattens the doubly-nested equipment.uniform (slot -> spec[]) into one row per
--- distinct item_type, aggregating assigned/missing counts across every spec of
--- that type (a position can have >1 spec per type, e.g. two GLOVES specs).
 local function uniform_rows(pos, worn)
   local by_type = {}
   local order = {}

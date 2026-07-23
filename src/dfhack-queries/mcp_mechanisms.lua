@@ -33,11 +33,6 @@ local function job_facts(jobs)
   return out
 end
 
--- Resolves the building(s) a lever/pressure-plate's linked mechanism items point
--- at, mirroring DFHack's own lever.lua leverDescribe(). Bridge/Floodgate/Weapon
--- expose `gate_flags`; Door/Hatch expose `door_flags` instead (confirmed live —
--- both are a plain {closed: bool, ...} struct, no closing/opening transitional
--- bits). Support and any other target type reports no `state`.
 local function linked_targets(trap)
   local out = {}
   for _, m in ipairs(trap.linked_mechanisms) do

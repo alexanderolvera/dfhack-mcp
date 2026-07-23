@@ -93,16 +93,10 @@ local function alert_signature(list_len, civ_idx, alert_ids, burrow_id)
   local sorted = {}
   for _, id in ipairs(alert_ids) do sorted[#sorted + 1] = id end
   table.sort(sorted)
-  -- burrow_id is bound into the signature (not just the sorted alert set) so
-  -- that if the previewed burrow is deleted and a DIFFERENT burrow is renamed
-  -- to reuse its name before apply, the token can't silently retarget.
   return string.format('civalert/list_len=%d/civ_idx=%d/burrow_id=%d/burrows=%s',
     list_len, civ_idx, burrow_id, table.concat(sorted, ','))
 end
 
--- Targets by burrow_id when given (unambiguous — immune to rename/reuse);
--- falls back to exact name match, which cannot address a burrow with an
--- empty raw name (DF allows this; the in-game UI shows "Burrow N" for it).
 local function parse_toggle()
   local bname = a[2]
   local en_raw = a[3]
@@ -166,8 +160,6 @@ if sub == 'plan_alert' or sub == 'apply_alert' then
     return
   end
 
-  -- apply_alert: replicate gui/civ-alert.lua's get_civ_alert()/add-remove/sound-clear so
-  -- this actuator and the in-game "Squads" alert UI operate on the exact same slot.
   if #list < 2 then
     while #list < 2 do
       local item = df.alert_statest:new()
