@@ -978,7 +978,7 @@ export const INVARIANTS = [
     name: 'stockpiles_wellformed',
     tools: ['stockpiles'],
     desc:
-      'pile counts stay non-negative, categories[] only names real bitfield flags, ' +
+      'pile counts stay non-negative, occupied_tiles never exceeds size, categories[] only names real bitfield flags, ' +
       'give_to/take_from links are internally reciprocal, piles are id-sorted, and cap/' +
       'truncation pairs (piles, links, backlog) are self-consistent',
     check(p) {
@@ -1015,6 +1015,8 @@ export const INVARIANTS = [
         if (!(isInt(pl.size) && pl.size >= 1)) out.push(`piles[${i}].size=${pl.size} is not >= 1`);
         if (!(isInt(pl.item_count) && pl.item_count >= 0))
           out.push(`piles[${i}].item_count=${pl.item_count} is negative`);
+        if (!(isInt(pl.occupied_tiles) && pl.occupied_tiles >= 0 && pl.occupied_tiles <= pl.size))
+          out.push(`piles[${i}].occupied_tiles=${pl.occupied_tiles} outside [0, size=${pl.size}]`);
         if (
           !Array.isArray(pl.categories) ||
           pl.categories.some((c) => !KNOWN_CATEGORIES.has(c))

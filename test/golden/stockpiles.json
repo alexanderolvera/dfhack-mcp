@@ -16,6 +16,7 @@
       "item_count": 113,
       "links_only": true,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 1,
       "size": 1,
       "take_from": [],
       "take_from_truncated": false,
@@ -43,6 +44,7 @@
       "item_count": 16,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 8,
       "size": 8,
       "take_from": [],
       "take_from_truncated": false,
@@ -64,6 +66,7 @@
       "item_count": 842,
       "links_only": true,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 3,
       "size": 9,
       "take_from": [
         72
@@ -87,6 +90,7 @@
       "item_count": 12,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 12,
       "size": 12,
       "take_from": [],
       "take_from_truncated": false,
@@ -114,6 +118,7 @@
       "item_count": 0,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 0,
       "size": 6,
       "take_from": [],
       "take_from_truncated": false,
@@ -135,6 +140,7 @@
       "item_count": 3,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 3,
       "size": 4,
       "take_from": [
         192
@@ -160,6 +166,7 @@
       "item_count": 0,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 0,
       "size": 12,
       "take_from": [
         192
@@ -183,6 +190,7 @@
       "item_count": 4,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 4,
       "size": 4,
       "take_from": [
         192
@@ -208,6 +216,7 @@
       "item_count": 4,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 4,
       "size": 4,
       "take_from": [
         192
@@ -231,6 +240,7 @@
       "item_count": 0,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 0,
       "size": 2,
       "take_from": [
         192
@@ -254,6 +264,7 @@
       "item_count": 185,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 11,
       "size": 83,
       "take_from": [
         74
@@ -277,6 +288,7 @@
       "item_count": 92,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 8,
       "size": 83,
       "take_from": [],
       "take_from_truncated": false,
@@ -298,6 +310,7 @@
       "item_count": 0,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 0,
       "size": 5,
       "take_from": [],
       "take_from_truncated": false,
@@ -319,6 +332,7 @@
       "item_count": 0,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 0,
       "size": 5,
       "take_from": [
         66,
@@ -345,6 +359,7 @@
       "item_count": 0,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 0,
       "size": 3,
       "take_from": [],
       "take_from_truncated": false,
@@ -367,6 +382,7 @@
       "item_count": 2,
       "links_only": false,
       "max_wheelbarrows": 2,
+      "occupied_tiles": 2,
       "size": 6,
       "take_from": [],
       "take_from_truncated": false,
@@ -411,6 +427,7 @@
       "item_count": 2125,
       "links_only": true,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 1,
       "size": 1,
       "take_from": [],
       "take_from_truncated": false,
@@ -432,6 +449,7 @@
       "item_count": 0,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 0,
       "size": 4,
       "take_from": [
         176,
@@ -456,6 +474,7 @@
       "item_count": 3,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 3,
       "size": 4,
       "take_from": [
         176,
@@ -480,6 +499,7 @@
       "item_count": 1,
       "links_only": true,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 1,
       "size": 3,
       "take_from": [
         176,
@@ -505,6 +525,7 @@
       "item_count": 1,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 1,
       "size": 21,
       "take_from": [
         176,
@@ -529,6 +550,7 @@
       "item_count": 12,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 6,
       "size": 6,
       "take_from": [],
       "take_from_truncated": false,
@@ -550,6 +572,7 @@
       "item_count": 4,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 4,
       "size": 6,
       "take_from": [
         176,
@@ -574,6 +597,7 @@
       "item_count": 13,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 13,
       "size": 13,
       "take_from": [
         184,
@@ -601,6 +625,7 @@
       "item_count": 1051,
       "links_only": true,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 1,
       "size": 1,
       "take_from": [],
       "take_from_truncated": false,
@@ -622,6 +647,7 @@
       "item_count": 23,
       "links_only": false,
       "max_wheelbarrows": 10,
+      "occupied_tiles": 3,
       "size": 20,
       "take_from": [],
       "take_from_truncated": false,
@@ -643,6 +669,7 @@
       "item_count": 11,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 2,
       "size": 13,
       "take_from": [],
       "take_from_truncated": false,
@@ -664,6 +691,7 @@
       "item_count": 6,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 6,
       "size": 6,
       "take_from": [
         190,
@@ -690,6 +718,7 @@
       "item_count": 10,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 1,
       "size": 5,
       "take_from": [],
       "take_from_truncated": false,
@@ -714,6 +743,7 @@
       "item_count": 6,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 6,
       "size": 25,
       "take_from": [],
       "take_from_truncated": false,
@@ -737,6 +767,7 @@
       "item_count": 0,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 0,
       "size": 10,
       "take_from": [],
       "take_from_truncated": false,
@@ -759,6 +790,7 @@
       "item_count": 9,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 1,
       "size": 9,
       "take_from": [],
       "take_from_truncated": false,
@@ -801,6 +833,7 @@
       "item_count": 632,
       "links_only": true,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 1,
       "size": 1,
       "take_from": [],
       "take_from_truncated": false,
@@ -837,6 +870,7 @@
       "item_count": 1283,
       "links_only": true,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 1,
       "size": 1,
       "take_from": [],
       "take_from_truncated": false,
@@ -858,6 +892,7 @@
       "item_count": 12,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 6,
       "size": 6,
       "take_from": [],
       "take_from_truncated": false,
@@ -879,6 +914,7 @@
       "item_count": 3,
       "links_only": false,
       "max_wheelbarrows": 2,
+      "occupied_tiles": 3,
       "size": 6,
       "take_from": [],
       "take_from_truncated": false,
@@ -911,6 +947,7 @@
       "item_count": 1,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 1,
       "size": 15,
       "take_from": [],
       "take_from_truncated": false,
@@ -934,6 +971,7 @@
       "item_count": 8,
       "links_only": false,
       "max_wheelbarrows": 5,
+      "occupied_tiles": 4,
       "size": 10,
       "take_from": [],
       "take_from_truncated": false,
@@ -956,6 +994,7 @@
       "item_count": 19,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 19,
       "size": 21,
       "take_from": [
         176,
@@ -980,6 +1019,7 @@
       "item_count": 75,
       "links_only": true,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 1,
       "size": 1,
       "take_from": [],
       "take_from_truncated": false,
@@ -999,6 +1039,7 @@
       "item_count": 0,
       "links_only": true,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 0,
       "size": 1,
       "take_from": [],
       "take_from_truncated": false,
@@ -1026,6 +1067,7 @@
       "item_count": 65,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 19,
       "size": 25,
       "take_from": [],
       "take_from_truncated": false,
@@ -1053,6 +1095,7 @@
       "item_count": 89,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 25,
       "size": 25,
       "take_from": [],
       "take_from_truncated": false,
@@ -1074,6 +1117,7 @@
       "item_count": 16,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 2,
       "size": 2,
       "take_from": [
         176
@@ -1097,6 +1141,7 @@
       "item_count": 32,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 3,
       "size": 10,
       "take_from": [
         176
@@ -1134,6 +1179,7 @@
       "item_count": 11,
       "links_only": true,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 1,
       "size": 1,
       "take_from": [],
       "take_from_truncated": false,
@@ -1169,6 +1215,7 @@
       "item_count": 63,
       "links_only": true,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 1,
       "size": 1,
       "take_from": [],
       "take_from_truncated": false,
@@ -1190,6 +1237,7 @@
       "item_count": 0,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 0,
       "size": 6,
       "take_from": [],
       "take_from_truncated": false,
@@ -1211,6 +1259,7 @@
       "item_count": 10,
       "links_only": false,
       "max_wheelbarrows": 10,
+      "occupied_tiles": 10,
       "size": 45,
       "take_from": [],
       "take_from_truncated": false,
@@ -1232,6 +1281,7 @@
       "item_count": 42,
       "links_only": true,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 1,
       "size": 1,
       "take_from": [],
       "take_from_truncated": false,
@@ -1253,6 +1303,7 @@
       "item_count": 13,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 2,
       "size": 2,
       "take_from": [
         70,
@@ -1277,6 +1328,7 @@
       "item_count": 4,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 2,
       "size": 2,
       "take_from": [
         67,
@@ -1301,6 +1353,7 @@
       "item_count": 11,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 2,
       "size": 2,
       "take_from": [
         70,
@@ -1325,6 +1378,7 @@
       "item_count": 9,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 2,
       "size": 2,
       "take_from": [
         70,
@@ -1349,6 +1403,7 @@
       "item_count": 8,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 2,
       "size": 2,
       "take_from": [
         70,
@@ -1373,6 +1428,7 @@
       "item_count": 12,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 2,
       "size": 2,
       "take_from": [
         70,
@@ -1397,6 +1453,7 @@
       "item_count": 4,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 2,
       "size": 2,
       "take_from": [
         67,
@@ -1421,6 +1478,7 @@
       "item_count": 3,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 2,
       "size": 2,
       "take_from": [
         67,
@@ -1445,6 +1503,7 @@
       "item_count": 7,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 2,
       "size": 2,
       "take_from": [
         67,
@@ -1469,6 +1528,7 @@
       "item_count": 3,
       "links_only": false,
       "max_wheelbarrows": 0,
+      "occupied_tiles": 2,
       "size": 2,
       "take_from": [
         67,

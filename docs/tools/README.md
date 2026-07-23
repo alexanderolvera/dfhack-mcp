@@ -47,7 +47,7 @@ Doctrine reminder: every tool is **facts-only** — it senses and reports; judgm
 - [tile_region](tile_region.md) — bounded z-level tile read
 - [geology](geology.md) — embark geological survey
 - [environment](environment.md) — season, weather, temperature, biome, cavern pathing
-- [fluids](fluids.md) — aquifers, water/magma bodies, flood exposure, well source depth
+- [fluids](fluids.md) — aquifers, water/magma per z-level, flood exposure, well source depth
 
 ## Reference (4)
 

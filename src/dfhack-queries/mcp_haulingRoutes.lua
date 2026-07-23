@@ -129,16 +129,29 @@ end
 local vehicles_total = #vehicles
 local vehicles_truncated = false
 if #vehicles > VEHICLES_CAP then
-  table.sort(vehicles, function(a, b)
-    local ra = referenced_vehicle_ids[a.vehicle_id] and 0 or 1
-    local rb = referenced_vehicle_ids[b.vehicle_id] and 0 or 1
-    if ra ~= rb then return ra < rb end
-    return a.vehicle_id < b.vehicle_id
-  end)
-  local capped = {}
-  for i = 1, VEHICLES_CAP do capped[i] = vehicles[i] end
-  vehicles = capped
-  vehicles_truncated = true
+  -- Every referenced vehicle is kept unconditionally -- referential integrity
+  -- with routes[] takes priority over the cap being a hard ceiling, so
+  -- vehicles.length can exceed VEHICLES_CAP in the (unhit-on-fixture) case of
+  -- a fort whose capped routes alone reference more than 200 vehicles. Only
+  -- the unreferenced remainder is capped.
+  local referenced, unreferenced = {}, {}
+  for _, v in ipairs(vehicles) do
+    if referenced_vehicle_ids[v.vehicle_id] then referenced[#referenced + 1] = v
+    else unreferenced[#unreferenced + 1] = v end
+  end
+  local budget = VEHICLES_CAP - #referenced
+  if budget < #unreferenced then
+    vehicles_truncated = true
+    if budget > 0 then
+      local kept = {}
+      for i = 1, budget do kept[i] = unreferenced[i] end
+      unreferenced = kept
+    else
+      unreferenced = {}
+    end
+  end
+  vehicles = referenced
+  for _, v in ipairs(unreferenced) do vehicles[#vehicles + 1] = v end
 end
 table.sort(vehicles, function(a, b) return a.vehicle_id < b.vehicle_id end)
 

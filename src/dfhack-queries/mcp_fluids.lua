@@ -47,8 +47,12 @@ local function near_interior(x, y, z)
       if not (dx == 0 and dy == 0) then
         local nx, ny = x + dx, y + dy
         if nx >= 0 and ny >= 0 and nx < x_count and ny < y_count then
-          local g = dfhack.maps.getWalkableGroup(xyz2pos(nx, ny, z))
-          if g ~= 0 and interior_groups[g] then return true end
+          local blk = dfhack.maps.getTileBlock(nx, ny, z)
+          local revealed = blk and not blk.designation[nx % 16][ny % 16].hidden
+          if revealed then
+            local g = dfhack.maps.getWalkableGroup(xyz2pos(nx, ny, z))
+            if g ~= 0 and interior_groups[g] then return true end
+          end
         end
       end
     end

@@ -82,9 +82,11 @@ backwards-compatible fixes only.
   no markup: `export` rows are items the fort earns a bonus selling to the
   caravan, by DF's item type; `import` rows are items the fort pays a premium
   buying from the caravan, by DF's own request-tab category). Both fields are
-  computed per caravan inside a `pcall` and simply omitted if the live struct
-  doesn't match, so a caravan row still emits state/civ even if
-  manifest/agreements can't be read. Live-verified against the Dreamfort
+  computed per caravan inside a `pcall`; a caravan row still emits state/civ
+  either way, and if reading manifest/agreements fails against a real caravan
+  the row carries `manifest_error`/`agreements_error` (the raw error) instead
+  of the field, so a genuine bug can't look identical to "nothing to report."
+  Live-verified against the Dreamfort
   fixture container: the no-caravan-present path (still no caravan on-site in
   that fixture) is clean — depot/broker/goods fields match the pre-existing
   golden exactly and the new fields correctly never populate — but the

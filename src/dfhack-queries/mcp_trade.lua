@@ -70,8 +70,8 @@ local function manifest_of(c)
     local it = df.item.find(item_id)
     if it then
       m.count = m.count + 1
-      local ok, v = pcall(dfhack.items.getValue, it, c)
-      if ok and type(v) == 'number' then m.approx_value = m.approx_value + v end
+      -- No pcall: a valuation failure must reach manifest_error, not silently undercount.
+      m.approx_value = m.approx_value + dfhack.items.getValue(it, c)
       local ok2, ty = pcall(function() return df.item_type[it:getType()] end)
       local cat = (ok2 and ty) or 'UNKNOWN'
       cat_counts[cat] = (cat_counts[cat] or 0) + 1

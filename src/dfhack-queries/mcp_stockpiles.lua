@@ -33,13 +33,7 @@ end
 
 local STOCKPILE_EXTENT = df.building_extents_type.Stockpile
 
--- A stockpile's true footprint is its room.extents occupancy map, not just its
--- x1..x2/y1..y2 bounding box: an irregular (non-rectangular) pile carves holes
--- out of that box, and DFHack's own membership check consults this map.
--- room.extents is a raw DFHack is-array pointer with no length of its own --
--- confirmed live it does NOT support Lua's `#` (that throws "attempt to get
--- length of a userdata value") -- its element count is room.width*room.height,
--- supplied by those sibling fields, not self-describing.
+-- room.extents footprint reading -- see docs/tools/stockpiles.md Implementation notes.
 local function extent_tiles(sp)
   local ext = sp.room.extents
   local ew, eh = sp.room.width, sp.room.height
@@ -89,7 +83,7 @@ for _, sp in ipairs(df.global.world.buildings.other.STOCKPILE) do
     take_from = take_from,
     take_from_truncated = take_from_truncated,
     item_count = 0,
-    _extents = ext, _ex = ex, _ey = ey, _ew = ew,
+    _extents = ext, _ex = ex, _ey = ey, _ew = ew, _occupied = {},
   }
 end
 
@@ -126,6 +120,7 @@ for _, item in ipairs(df.global.world.items.other.IN_PLAY) do
   elseif not (fl.dump or fl.forbid or fl.construction or fl.trader or fl.garbage_collect) then
     if pile then
       pile.item_count = pile.item_count + 1
+      pile._occupied[x .. ',' .. y] = true
     elseif fl.on_ground then
       local tok = IT[item:getType()]
       backlog_counts[tok] = (backlog_counts[tok] or 0) + 1
@@ -134,7 +129,10 @@ for _, item in ipairs(df.global.world.items.other.IN_PLAY) do
 end
 
 for _, p in ipairs(piles) do
-  p._extents, p._ex, p._ey, p._ew = nil, nil, nil, nil
+  local occupied = 0
+  for _ in pairs(p._occupied) do occupied = occupied + 1 end
+  p.occupied_tiles = occupied
+  p._extents, p._ex, p._ey, p._ew, p._occupied = nil, nil, nil, nil, nil
 end
 
 table.sort(piles, function(a, b) return a.id < b.id end)

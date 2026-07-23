@@ -35,12 +35,19 @@ export interface Petitions {
   alerts: string[];
 }
 
-export function petitions(): Promise<Petitions | { error: string }> {
-  return runJsonScript<Petitions>(
+export async function petitions(): Promise<Petitions | { error: string }> {
+  const data = await runJsonScript<Petitions>(
     'petitions',
     [],
     ['location_petitions', 'residency_petitions', 'alerts']
   );
+  if ('error' in data) return data;
+  // Lua nil (no timeout tracked) is an OMITTED key in the JSON, not `null` --
+  // normalize to the documented null here so callers get the promised shape.
+  for (const p of data.residency_petitions) {
+    if (p.deadline_days === undefined) p.deadline_days = null;
+  }
+  return data;
 }
 
 export const petitionsDef: ToolDef = {

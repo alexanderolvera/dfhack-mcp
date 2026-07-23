@@ -38,6 +38,7 @@ export interface Pile {
   take_from: number[];
   take_from_truncated: boolean;
   item_count: number;
+  occupied_tiles: number;
 }
 
 export interface BacklogEntry {
@@ -105,12 +106,16 @@ export const stockpilesDef: ToolDef = {
     "tiles right now — via each item's resolved position, so items inside a bin " +
     'or barrel parked on the pile count too — regardless of whether the pile\'s ' +
     'own categories[] actually accept that item, since this is a positional fact, ' +
-    'not a settings-compliance check). There is no fullness/occupancy percentage: ' +
-    'an earlier draft derived one from a placeholder items-per-tile constant, but ' +
-    'it produced numbers with no real relationship to the game\'s actual per-tile ' +
-    'capacity (which varies by item size and container packing) and was dropped ' +
-    'rather than ship a fabricated fact — join item_count against size yourself ' +
-    'if you want a rough density signal. Fort-wide: unstored_backlog[] groups ' +
+    'not a settings-compliance check), and occupied_tiles (how many of the ' +
+    'pile\'s size tiles have at least one qualifying item on them right now — ' +
+    'a directly-counted fact, bounded [0, size], NOT a percentage or a capacity ' +
+    'estimate: an earlier draft derived a fullness_pct from a placeholder ' +
+    'items-per-tile constant that produced numbers with no real relationship ' +
+    "to DF's actual per-tile capacity (which varies by item size and container " +
+    'packing — a barrel-heavy tile can hold far more than one item) and was ' +
+    'dropped as a fabricated fact; occupied_tiles/size is a defensible coverage ' +
+    'ratio if you want one, but it is spatial coverage, not capacity headroom). ' +
+    'Fort-wide: unstored_backlog[] groups ' +
     "loose items (on the ground, not rotten/dump/forbidden/under-construction/" +
     'trader-owned, and not sitting on ANY stockpile\'s tiles) by their raw DF item ' +
     'type token, with unstored_backlog_item_count as the grand total and a 150-' +
