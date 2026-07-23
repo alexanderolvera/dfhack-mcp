@@ -91,10 +91,6 @@ local function roster_row(pos)
   }
 end
 
--- am.assigned / sq.ammo.ammo_items are vectors of ITEM ids, one per stack — a
--- single assigned stack can hold many bolts (or be split into several partial
--- stacks by DFHack's own archery logic), so counting ids undercounts/overcounts
--- against am.amount, which is a bolt QUANTITY target. Sum actual stack sizes.
 local function ammo_quantity(item_id)
   local it = df.item.find(item_id)
   if not it then return 0 end

@@ -90,7 +90,10 @@ export const civilianAlertDef = defineActuator<CivilianAlertArgs>({
     'resulting_sounding as FACTS; an already-satisfied request previews as a no-op. Pass ' +
     "the returned confirm_token to apply; the token is bound to the resolved burrow id " +
     "and is void if the alert's burrow set or sounding state changes in between. " +
-    'Reversal: the same call with enabled inverted. Verify with burrows.',
+    'Reversal: the same call with enabled inverted; undo.faithful (apply only) is false ' +
+    'when other burrows are also linked, since inverting restores only this burrow\'s own ' +
+    'membership, not necessarily the exact prior sounding state or the other burrows\' ' +
+    'membership. Verify with burrows.',
   tokenPrefix: 'ca',
   shape: {
     burrow: z

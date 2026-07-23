@@ -203,6 +203,30 @@ if sub == 'plan_alert' or sub == 'apply_alert' then
     new_alert_ids[#new_alert_ids + 1] = id
     new_alert_set[id] = true
   end
+  local new_sounding = df.global.plotinfo.alerts.civ_alert_idx ~= 0
+
+  -- The simple "call again with enabled inverted" reversal is NOT always
+  -- faithful: e.g. enabling a burrow while another is already linked-but-
+  -- silent sounds the alarm for both, but inverting only removes this
+  -- burrow's membership — it does not re-silence the other. Simulate the
+  -- inverse call from the POST-apply state and compare against the TRUE
+  -- pre-apply state to report this honestly rather than always claiming true.
+  local inv_ids = {}
+  for _, id in ipairs(new_alert_ids) do
+    if id ~= p.b.id then inv_ids[#inv_ids + 1] = id end
+  end
+  if not p.enabled then inv_ids[#inv_ids + 1] = p.b.id end
+  table.sort(inv_ids)
+  local inv_sounding = (not p.enabled) or (new_sounding and #inv_ids > 0)
+
+  local function same_id_set(a, b)
+    if #a ~= #b then return false end
+    for i, id in ipairs(a) do
+      if id ~= b[i] then return false end
+    end
+    return true
+  end
+  local faithful = (inv_sounding == currently_sounding) and same_id_set(inv_ids, alert_ids)
 
   emit({
     changes = {
@@ -210,13 +234,18 @@ if sub == 'plan_alert' or sub == 'apply_alert' then
       burrow_name = p.b.name,
       enabled = p.enabled,
       civilian_alert_burrows = new_alert_ids,
-      civilian_alert_sounding = df.global.plotinfo.alerts.civ_alert_idx ~= 0,
+      civilian_alert_sounding = new_sounding,
     },
     undo = {
       reversible = true,
       reversal = 'call civilian_alert again on the same burrow with enabled inverted',
-      note = 'if other burrows remain in the civilian-alert set, removing THIS burrow does not ' ..
-        'by itself silence the alarm for them — it only clears when the set becomes empty',
+      faithful = faithful,
+      note = faithful
+        and ('if other burrows remain in the civilian-alert set, removing THIS burrow does not ' ..
+          'by itself silence the alarm for them — it only clears when the set becomes empty')
+        or ('faithful=false: with other burrows also linked, inverting restores THIS burrow\'s ' ..
+          'own membership but not necessarily the exact prior sounding state or other burrows\' ' ..
+          'membership — check civilian_alert (from burrows()) before relying on it'),
     },
     readback = {
       burrow = burrow_facts(p.b, new_alert_set),

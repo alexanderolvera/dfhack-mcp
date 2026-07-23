@@ -51,10 +51,13 @@ An already-satisfied request (e.g. `enabled=true` on a burrow already linked and
   "undo": {
     "reversible": true,
     "reversal": "call civilian_alert again on the same burrow with enabled inverted",
+    "faithful": true,
     "note": "if other burrows remain in the civilian-alert set, removing THIS burrow does not by itself silence the alarm for them"
   }
 }
 ```
+
+`undo.faithful` is computed by simulating the inverse call against the post-apply state and comparing it to the true pre-apply state (both membership and sounding). It's `false` whenever another burrow is also linked at apply time — e.g. enabling a burrow while a different one is already linked-but-silent sounds the alarm for both, but inverting only removes this burrow's own membership, not the other burrow's, so it can't restore the original silent state.
 
 No golden fixture exists for this tool (actuators are not golden-tested).
 
