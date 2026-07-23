@@ -186,7 +186,9 @@
         }
       ],
       "training": {
-        "active_orders": [],
+        "active_orders": [
+          "TRAIN"
+        ],
         "cur_routine_idx": 2,
         "month": 11,
         "sleep_mode": "AnywhereAtWill",
@@ -420,7 +422,9 @@
         }
       ],
       "training": {
-        "active_orders": [],
+        "active_orders": [
+          "TRAIN"
+        ],
         "cur_routine_idx": 2,
         "month": 11,
         "sleep_mode": "AnywhereAtWill",
@@ -606,7 +610,9 @@
         }
       ],
       "training": {
-        "active_orders": [],
+        "active_orders": [
+          "TRAIN"
+        ],
         "cur_routine_idx": 2,
         "month": 11,
         "sleep_mode": "AnywhereAtWill",

@@ -66,7 +66,7 @@ None.
 - `assigned_positions` can overstate strength (dead/off-map members still fill slots); lead with `soldiers`.
 - No caps: squad/position/uniform-slot counts are small in practice (DF's own squad-size limit bounds `roster[]`).
 - `squad_position.occupant` is a **historical figure id**, resolved to a live unit via `historical_figure.unit_id` — a position holder currently off-map or dead still counts toward `filled` but is omitted from `roster[]` if no live unit resolves.
-- `missing_count` reflects "not currently worn/wielded," not "no item was ever assigned" — a soldier mid-equip (item assigned but not yet picked up) reads as missing until they physically don equip it.
+- `missing_count` counts two distinct shortages the same way: an item assigned to the uniform but not currently worn/wielded (a soldier mid-equip reads as missing until they physically pick it up and equip it), and a required uniform spec with NOTHING assigned yet (no suitable item found at all). Both read as "missing" — the tool doesn't distinguish "en route" from "nothing to route."
 - Reports facts; no stationing or tactical advice.
 
 ## Related

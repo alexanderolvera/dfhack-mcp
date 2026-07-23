@@ -1,7 +1,15 @@
 import { z } from 'zod';
 import { runJsonScript } from '../query.ts';
-import { defineActuator, type PlanResult, type ApplyResult } from '../actuator.ts';
+import { defineActuator, isQueryError, type PlanResult, type ApplyResult } from '../actuator.ts';
 import type { ToolDef } from '../register.ts';
+
+/** Lua's empty table encodes as `{}`, not `[]`; coerce a nested list field on an
+ *  object in-place so callers always see an array, even when empty. */
+function normalizeListField(obj: unknown, key: string): void {
+  if (obj && typeof obj === 'object' && !Array.isArray((obj as Record<string, unknown>)[key])) {
+    (obj as Record<string, unknown>)[key] = [];
+  }
+}
 
 export interface BurrowRow {
   id: number;
@@ -26,7 +34,11 @@ export interface Burrows {
 }
 
 export async function burrows(): Promise<Burrows | { error: string }> {
-  return runJsonScript<Burrows>('burrows', ['list'], ['burrows']);
+  const data = await runJsonScript<Burrows>('burrows', ['list'], ['burrows']);
+  if ('error' in data) return data;
+  normalizeListField(data.civilian_alert, 'burrows');
+  for (const b of data.burrows) normalizeListField(b, 'assigned_units');
+  return data;
 }
 
 export const burrowsDef: ToolDef = {
@@ -87,10 +99,17 @@ export const civilianAlertDef = defineActuator<CivilianAlertArgs>({
   },
   plan: async (a): Promise<PlanResult | { error: string }> => {
     const r = await runJsonScript<PlanResult>('burrows', alertArgv('plan_alert', a));
-    return r as PlanResult | { error: string };
+    if (isQueryError(r)) return r;
+    normalizeListField(r.preview, 'resulting_civilian_alert_burrows');
+    return r;
   },
   apply: async (a): Promise<ApplyResult | { error: string }> => {
     const r = await runJsonScript<ApplyResult>('burrows', alertArgv('apply_alert', a));
-    return r as ApplyResult | { error: string };
+    if (isQueryError(r)) return r;
+    normalizeListField(r.changes, 'civilian_alert_burrows');
+    const readback = r.readback as { burrow?: unknown; civilian_alert?: unknown } | undefined;
+    normalizeListField(readback?.burrow, 'assigned_units');
+    normalizeListField(readback?.civilian_alert, 'burrows');
+    return r;
   },
 });

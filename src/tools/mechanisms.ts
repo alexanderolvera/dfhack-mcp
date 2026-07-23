@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { runJsonScript } from '../query.ts';
-import { defineActuator, type PlanResult, type ApplyResult } from '../actuator.ts';
+import { defineActuator, isQueryError, type PlanResult, type ApplyResult } from '../actuator.ts';
 import type { ToolDef } from '../register.ts';
 
 export interface Pos {
@@ -13,10 +13,10 @@ export interface LinkedTarget {
   building_id: number;
   type: string;
   pos: Pos;
-  /** Only present when the target exposes gate flags (Bridge/Floodgate/Hatch/Weapon
-   *  spike) — e.g. 'raised'/'raising'/'lowering' for a Bridge, 'closed'/'closing'/
-   *  'opening' for a Floodgate/Hatch, 'retracted'/'retracting'/'unretracting' for
-   *  a Weapon spike. */
+  /** Bridge: 'raised'/'lowered'/'raising'/'lowering'. Weapon spike: 'retracted'/
+   *  'unretracted'/'retracting'/'unretracting'. Floodgate: 'closed'/'open'/
+   *  'closing'/'opening'. Door/Hatch (door_flags, not gate_flags): 'closed'/'open'
+   *  only, no transitional state. Absent for a target exposing neither (e.g. Support). */
   state?: string;
 }
 
@@ -97,9 +97,10 @@ export const mechanismsDef: ToolDef = {
     'levers[] lists every lever with its position, current state (0/1 — the physical ' +
     'orientation, NOT which way any linked gate is), linked_targets (every building its ' +
     'mechanism items connect to — bridge/door/floodgate/hatch/support/weapon-trap — with ' +
-    'that target\'s id, type, position, and a state string (raised/raising/lowering for a ' +
-    'Bridge, closed/closing/opening for a Floodgate/Hatch, retracted/retracting/' +
-    'unretracting for a Weapon spike) when the target exposes gate flags), and ' +
+    'that target\'s id, type, position, and a state string (raised/lowered/raising/' +
+    'lowering for a Bridge, closed/open/closing/opening for a Floodgate, closed/open ' +
+    '(no transitional state) for a Door/Hatch, retracted/unretracted/retracting/' +
+    'unretracting for a Weapon spike) when the target exposes one), and ' +
     'pending_pull_jobs (PullLever jobs already queued on it, so a caller can ' +
     'see a pull is already in flight before queuing another). pressure_plates[] lists ' +
     'every plate\'s linked_targets the same way, plus triggers — the configured trip ' +
@@ -112,6 +113,14 @@ export const mechanismsDef: ToolDef = {
 };
 
 const s = (v: unknown): string => (v === undefined || v === null || v === '' ? '' : String(v));
+
+/** Lua's empty table encodes as `{}`, not `[]`; coerce a nested list field on an
+ *  object in-place so callers always see an array, even when empty. */
+function normalizeListField(obj: unknown, key: string): void {
+  if (obj && typeof obj === 'object' && !Array.isArray((obj as Record<string, unknown>)[key])) {
+    (obj as Record<string, unknown>)[key] = [];
+  }
+}
 
 interface PullLeverArgs {
   lever_id: number;
@@ -151,10 +160,16 @@ export const pullLeverDef = defineActuator<PullLeverArgs>({
   },
   plan: async (a): Promise<PlanResult | { error: string }> => {
     const r = await runJsonScript<PlanResult>('mechanisms', pullArgv('plan_pull', a));
-    return r as PlanResult | { error: string };
+    if (isQueryError(r)) return r;
+    normalizeListField(r.preview, 'linked_targets');
+    normalizeListField(r.preview, 'pending_pull_jobs');
+    return r;
   },
   apply: async (a): Promise<ApplyResult | { error: string }> => {
     const r = await runJsonScript<ApplyResult>('mechanisms', pullArgv('apply_pull', a));
-    return r as ApplyResult | { error: string };
+    if (isQueryError(r)) return r;
+    normalizeListField(r.readback, 'linked_targets');
+    normalizeListField(r.readback, 'pending_pull_jobs');
+    return r;
   },
 });

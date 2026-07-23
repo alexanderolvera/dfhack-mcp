@@ -43,10 +43,17 @@ local function uniform_rows(pos, worn)
         by_type[tname] = row
         order[#order + 1] = tname
       end
-      for ai = 0, #spec.assigned - 1 do
-        local id = spec.assigned[ai]
-        row.assigned_count = row.assigned_count + 1
-        if not worn[id] then row.missing_count = row.missing_count + 1 end
+      if #spec.assigned == 0 then
+        -- A required spec with NOTHING assigned is the actual shortage case (no
+        -- suitable item found/allocated yet) — count it as one missing piece, or
+        -- it's invisible to missing_count and uniform_complete reads true.
+        row.missing_count = row.missing_count + 1
+      else
+        for ai = 0, #spec.assigned - 1 do
+          local id = spec.assigned[ai]
+          row.assigned_count = row.assigned_count + 1
+          if not worn[id] then row.missing_count = row.missing_count + 1 end
+        end
       end
     end
   end
@@ -93,7 +100,13 @@ local function training_facts(sq)
   local m = routine and routine.month[month]
   local orders = {}
   if m then
-    for i = 0, #m.orders - 1 do orders[#orders + 1] = df.squad_order_type[m.orders[i]] end
+    -- m.orders[i] is a squad_schedule_order WRAPPER ({order, min_count, positions}) —
+    -- the polymorphic squad_order lives at .order and needs :getType() (confirmed
+    -- live: indexing squad_order_type with the wrapper itself silently resolves to
+    -- nil, so orders always read empty without this).
+    for i = 0, #m.orders - 1 do
+      orders[#orders + 1] = df.squad_order_type[m.orders[i].order:getType()]
+    end
   end
   return {
     cur_routine_idx = sq.cur_routine_idx,

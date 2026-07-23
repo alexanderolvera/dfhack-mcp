@@ -14,13 +14,15 @@ local sub = a[1]
 local bt = df.building_type
 
 -- gate_flags field names differ per target building type (matches DFHack's own
--- lever.lua flag_names table) — Bridge uses raised/raising/lowering, Weapon
--- (upright spikes) uses retracted/retracting/unretracting, everything else
--- (Floodgate/Hatch) uses closed/closing/opening.
+-- lever.lua flag_names table) — Bridge uses raised/lowered/raising/lowering,
+-- Weapon (upright spikes) uses retracted/unretracted/retracting/unretracting,
+-- Floodgate uses closed/open/closing/opening. Confirmed live: `closed`/`raised`
+-- (the stable-state bit) are REAL fields on gate_flags, not just the two
+-- transitional bits — read all four, not only the transitional pair.
 local GATE_FLAG_NAMES = setmetatable({
-  [bt.Bridge] = { closed = 'raised', closing = 'raising', opening = 'lowering' },
-  [bt.Weapon] = { closed = 'retracted', closing = 'retracting', opening = 'unretracting' },
-}, { __index = function() return { closed = 'closed', closing = 'closing', opening = 'opening' } end })
+  [bt.Bridge] = { closed = 'raised', open = 'lowered', closing = 'raising', opening = 'lowering' },
+  [bt.Weapon] = { closed = 'retracted', open = 'unretracted', closing = 'retracting', opening = 'unretracting' },
+}, { __index = function() return { closed = 'closed', open = 'open', closing = 'closing', opening = 'opening' } end })
 
 local function job_facts(jobs)
   local out = {}
@@ -38,8 +40,10 @@ local function job_facts(jobs)
 end
 
 -- Resolves the building(s) a lever/pressure-plate's linked mechanism items point
--- at, mirroring DFHack's own lever.lua leverDescribe(). A gate-flags read is
--- wrapped in pcall since not every linkable building type exposes it.
+-- at, mirroring DFHack's own lever.lua leverDescribe(). Bridge/Floodgate/Weapon
+-- expose `gate_flags`; Door/Hatch expose `door_flags` instead (confirmed live —
+-- both are a plain {closed: bool, ...} struct, no closing/opening transitional
+-- bits). Support and any other target type reports no `state`.
 local function linked_targets(trap)
   local out = {}
   for _, m in ipairs(trap.linked_mechanisms) do
@@ -54,9 +58,15 @@ local function linked_targets(trap)
       local ok, flags = pcall(function() return tg.gate_flags end)
       if ok and flags then
         local names = GATE_FLAG_NAMES[tg:getType()]
-        target.state = flags[names.closing] and names.closing
-          or (flags[names.opening] and names.opening)
-          or names.closed
+        if flags[names.closing] then target.state = names.closing
+        elseif flags[names.opening] then target.state = names.opening
+        elseif flags[names.closed] then target.state = names.closed
+        else target.state = names.open end
+      else
+        local ok2, dflags = pcall(function() return tg.door_flags end)
+        if ok2 and dflags then
+          target.state = dflags.closed and 'closed' or 'open'
+        end
       end
       out[#out + 1] = target
     end
