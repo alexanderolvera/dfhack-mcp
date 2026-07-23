@@ -44,6 +44,7 @@ Doctrine reminder: every tool is **facts-only** — it senses and reports; judgm
 - [tile_region](tile_region.md) — bounded z-level tile read
 - [geology](geology.md) — embark geological survey
 - [environment](environment.md) — season, weather, temperature, biome, cavern pathing
+- [fluids](fluids.md) — aquifers, water/magma bodies, flood exposure, well source depth
 
 ## Reference (4)
 
@@ -70,5 +71,5 @@ Typical co-pilot flows these notes cross-link:
 - Threat triage: [threats](threats.md) → [identify](identify.md) → [defenses](defenses.md) / [military](military.md)
 - Production: [stocks](stocks.md) → [work_order_list](work_order_list.md) → [work_order_create](work_order_create.md)
 - Labor: [jobs_and_labor](jobs_and_labor.md) → [work_details](work_details.md) → [assign_work_detail](assign_work_detail.md)
-- Digging: [map_overview](map_overview.md) → [tile_region](tile_region.md) / [geology](geology.md) → [blueprint_apply](blueprint_apply.md)
+- Digging: [map_overview](map_overview.md) → [tile_region](tile_region.md) / [geology](geology.md) / [fluids](fluids.md) → [blueprint_apply](blueprint_apply.md)
 - Before a risky change: [game_save](game_save.md) → the actuator in question

@@ -1,0 +1,166 @@
+{
+  "aquifer_layers": [
+    {
+      "classification": "light",
+      "heavy_tiles": 0,
+      "light_tiles": 601,
+      "z_bottom": 127,
+      "z_top": 128
+    }
+  ],
+  "aquifer_layers_total": 1,
+  "aquifer_layers_truncated": false,
+  "flood_risk_tiles": [],
+  "flood_risk_total": 0,
+  "flood_risk_truncated": false,
+  "legend": {
+    " ": "open space / empty",
+    "#": "wall / solid rock",
+    ".": "floor / walkable ground",
+    "<": "up stair",
+    ">": "down stair",
+    "?": "undiscovered (fog of war)",
+    "F": "fortification",
+    "T": "tree / trunk / branch",
+    "r": "ramp",
+    "v": "ramp top",
+    "x": "up/down stair",
+    "~": "brook bed"
+  },
+  "scan": {
+    "complete": true,
+    "last_z_scanned": 0,
+    "tiles_scanned": 3048192
+  },
+  "water_layers": [
+    {
+      "flowing_tiles": 0,
+      "fresh_tiles": 511,
+      "max_depth": 7,
+      "salt_tiles": 0,
+      "stagnant_tiles": 511,
+      "tiles": 511,
+      "z": 130
+    },
+    {
+      "flowing_tiles": 140,
+      "fresh_tiles": 140,
+      "max_depth": 7,
+      "salt_tiles": 0,
+      "stagnant_tiles": 0,
+      "tiles": 140,
+      "z": 128
+    },
+    {
+      "flowing_tiles": 141,
+      "fresh_tiles": 141,
+      "max_depth": 7,
+      "salt_tiles": 0,
+      "stagnant_tiles": 0,
+      "tiles": 141,
+      "z": 127
+    },
+    {
+      "flowing_tiles": 1,
+      "fresh_tiles": 1,
+      "max_depth": 7,
+      "salt_tiles": 0,
+      "stagnant_tiles": 0,
+      "tiles": 1,
+      "z": 126
+    },
+    {
+      "flowing_tiles": 1,
+      "fresh_tiles": 1,
+      "max_depth": 7,
+      "salt_tiles": 0,
+      "stagnant_tiles": 0,
+      "tiles": 1,
+      "z": 125
+    },
+    {
+      "flowing_tiles": 1,
+      "fresh_tiles": 1,
+      "max_depth": 7,
+      "salt_tiles": 0,
+      "stagnant_tiles": 0,
+      "tiles": 1,
+      "z": 124
+    },
+    {
+      "flowing_tiles": 1,
+      "fresh_tiles": 1,
+      "max_depth": 7,
+      "salt_tiles": 0,
+      "stagnant_tiles": 0,
+      "tiles": 1,
+      "z": 123
+    },
+    {
+      "flowing_tiles": 72,
+      "fresh_tiles": 72,
+      "max_depth": 7,
+      "salt_tiles": 0,
+      "stagnant_tiles": 0,
+      "tiles": 72,
+      "z": 122
+    },
+    {
+      "flowing_tiles": 13,
+      "fresh_tiles": 13,
+      "max_depth": 7,
+      "salt_tiles": 0,
+      "stagnant_tiles": 0,
+      "tiles": 13,
+      "z": 121
+    }
+  ],
+  "water_layers_total": 9,
+  "water_layers_truncated": false,
+  "wells": [
+    {
+      "depth_to_source": 2,
+      "source": "water",
+      "x": 81,
+      "y": 38,
+      "z": 124
+    },
+    {
+      "depth_to_source": 2,
+      "source": "water",
+      "x": 85,
+      "y": 38,
+      "z": 124
+    },
+    {
+      "depth_to_source": 2,
+      "source": "water",
+      "x": 89,
+      "y": 38,
+      "z": 124
+    },
+    {
+      "depth_to_source": 2,
+      "source": "water",
+      "x": 93,
+      "y": 38,
+      "z": 124
+    },
+    {
+      "depth_to_source": 2,
+      "source": "water",
+      "x": 97,
+      "y": 38,
+      "z": 124
+    },
+    {
+      "depth_to_source": 2,
+      "source": "water",
+      "x": 99,
+      "y": 54,
+      "z": 124
+    }
+  ],
+  "wells_total": 6,
+  "wells_truncated": false
+}
