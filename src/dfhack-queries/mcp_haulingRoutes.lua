@@ -9,8 +9,11 @@ end
 local ROUTES_CAP = 100
 local VEHICLES_CAP = 200
 
-local DIRECTIONS = { [0] = 'North', [1] = 'South', [2] = 'East', [3] = 'West' }
-local LEAVE_MODES = { [0] = 'Push', [1] = 'Ride', [2] = 'Guide' }
+-- Live enum bindings (confirmed against a running fort: df.stop_depart_condition
+-- .T_direction/.T_mode reverse-lookup by ordinal, same convention as every other
+-- df-enum; out-of-range lookups return nil, same as a hand-rolled table would).
+local DIRECTIONS = df.stop_depart_condition.T_direction
+local LEAVE_MODES = df.stop_depart_condition.T_mode
 
 local hauling = df.global.plotinfo.hauling
 
@@ -70,7 +73,12 @@ for _, r in ipairs(hauling.routes) do
     local stop_idx = r.vehicle_stops[i]
     local current_stop_id = nil
     if stop_idx and stop_idx >= 0 then
-      local stop_obj = r.stops[stop_idx + 1]
+      -- r.stops is a DFHack-wrapped vector<hauling_stop*>: direct numeric
+      -- indexing is 0-based (matches the underlying C++ vector), same as the
+      -- 0-based index vehicle_stops[i] already documents — no +1 needed.
+      -- Confirmed live: r.stops[stop_idx + 1] threw "index out of bounds" on
+      -- a real fort's single-stop routes; r.stops[stop_idx] is correct.
+      local stop_obj = r.stops[stop_idx]
       if stop_obj then current_stop_id = stop_obj.id end
     end
     route_vehicles[#route_vehicles + 1] = { vehicle_id = vid, current_stop_id = current_stop_id }

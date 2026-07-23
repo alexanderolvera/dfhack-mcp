@@ -8,6 +8,20 @@ loosely while the tool surface is still evolving: **minor** releases (`1.x.0`)
 may change or remove tool output, and **patch** releases (`1.0.x`) are
 backwards-compatible fixes only.
 
+## [Unreleased]
+
+### Added
+
+- **`hauling_routes` sensor** ([#84](https://github.com/alexanderolvera/dfhack-mcp/issues/84))
+  — the sensor half of a deferred minecart-route actuator: nothing previously saw
+  track-based hauling at all. Reports every configured route with its stops (each
+  stop's linked stockpiles as take/give, and departure conditions — direction, dwarf
+  handling mode, and load-percent threshold), which vehicles are assigned to which
+  route, where each currently sits, and fort-wide vehicle state including
+  `minecart_assigned` — whether a vehicle's backing item still actually exists, since
+  a route can silently stop moving goods after its cart is destroyed or stolen while
+  the route itself keeps listing it.
+
 ## [1.2.0] - 2026-07-21
 
 ### Added

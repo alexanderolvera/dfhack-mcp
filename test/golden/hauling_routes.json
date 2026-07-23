@@ -1,0 +1,364 @@
+{
+  "routes": [
+    {
+      "id": 1,
+      "name": "Refuse/corpse quantum",
+      "stops": [
+        {
+          "conditions": [],
+          "id": 1,
+          "parked_vehicle_id": 0,
+          "pos": {
+            "x": 84,
+            "y": 63,
+            "z": 130
+          },
+          "stockpiles": [
+            {
+              "building_id": 80,
+              "give": false,
+              "take": true
+            },
+            {
+              "building_id": 81,
+              "give": false,
+              "take": true
+            }
+          ]
+        }
+      ],
+      "vehicles": [
+        {
+          "current_stop_id": 1,
+          "vehicle_id": 0
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Metalworker quantum",
+      "stops": [
+        {
+          "conditions": [],
+          "id": 1,
+          "parked_vehicle_id": 1,
+          "pos": {
+            "x": 84,
+            "y": 63,
+            "z": 125
+          },
+          "stockpiles": [
+            {
+              "building_id": 196,
+              "give": false,
+              "take": true
+            },
+            {
+              "building_id": 197,
+              "give": false,
+              "take": true
+            }
+          ]
+        }
+      ],
+      "vehicles": [
+        {
+          "current_stop_id": 1,
+          "vehicle_id": 1
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Stone/gem quantum",
+      "stops": [
+        {
+          "conditions": [],
+          "id": 1,
+          "parked_vehicle_id": 2,
+          "pos": {
+            "x": 84,
+            "y": 45,
+            "z": 125
+          },
+          "stockpiles": [
+            {
+              "building_id": 185,
+              "give": false,
+              "take": true
+            },
+            {
+              "building_id": 188,
+              "give": false,
+              "take": true
+            }
+          ]
+        }
+      ],
+      "vehicles": [
+        {
+          "current_stop_id": 1,
+          "vehicle_id": 2
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Cloth/bones quantum",
+      "stops": [
+        {
+          "conditions": [],
+          "id": 1,
+          "parked_vehicle_id": 3,
+          "pos": {
+            "x": 93,
+            "y": 54,
+            "z": 125
+          },
+          "stockpiles": [
+            {
+              "building_id": 189,
+              "give": false,
+              "take": true
+            }
+          ]
+        }
+      ],
+      "vehicles": [
+        {
+          "current_stop_id": 1,
+          "vehicle_id": 3
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Goods/wood quantum",
+      "stops": [
+        {
+          "conditions": [],
+          "id": 1,
+          "parked_vehicle_id": 4,
+          "pos": {
+            "x": 75,
+            "y": 54,
+            "z": 125
+          },
+          "stockpiles": [
+            {
+              "building_id": 190,
+              "give": false,
+              "take": true
+            },
+            {
+              "building_id": 191,
+              "give": false,
+              "take": true
+            },
+            {
+              "building_id": 195,
+              "give": false,
+              "take": true
+            }
+          ]
+        }
+      ],
+      "vehicles": [
+        {
+          "current_stop_id": 1,
+          "vehicle_id": 4
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Bolts quantum",
+      "stops": [
+        {
+          "conditions": [],
+          "id": 1,
+          "parked_vehicle_id": 5,
+          "pos": {
+            "x": 84,
+            "y": 47,
+            "z": 124
+          },
+          "stockpiles": [
+            {
+              "building_id": 423,
+              "give": false,
+              "take": true
+            }
+          ]
+        }
+      ],
+      "vehicles": [
+        {
+          "current_stop_id": 1,
+          "vehicle_id": 5
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "Organic trade goods quantum",
+      "stops": [
+        {
+          "conditions": [],
+          "id": 1,
+          "parked_vehicle_id": 6,
+          "pos": {
+            "x": 88,
+            "y": 52,
+            "z": 131
+          },
+          "stockpiles": [
+            {
+              "building_id": 458,
+              "give": false,
+              "take": true
+            }
+          ]
+        }
+      ],
+      "vehicles": [
+        {
+          "current_stop_id": 1,
+          "vehicle_id": 6
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "name": "Inorganic trade goods quantum",
+      "stops": [
+        {
+          "conditions": [],
+          "id": 1,
+          "parked_vehicle_id": 7,
+          "pos": {
+            "x": 88,
+            "y": 56,
+            "z": 131
+          },
+          "stockpiles": [
+            {
+              "building_id": 457,
+              "give": false,
+              "take": true
+            },
+            {
+              "building_id": 458,
+              "give": false,
+              "take": true
+            }
+          ]
+        }
+      ],
+      "vehicles": [
+        {
+          "current_stop_id": 1,
+          "vehicle_id": 7
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "name": "Prisoner/cage quantum",
+      "stops": [
+        {
+          "conditions": [],
+          "id": 1,
+          "parked_vehicle_id": 8,
+          "pos": {
+            "x": 78,
+            "y": 61,
+            "z": 131
+          },
+          "stockpiles": [
+            {
+              "building_id": 459,
+              "give": false,
+              "take": true
+            }
+          ]
+        }
+      ],
+      "vehicles": [
+        {
+          "current_stop_id": 1,
+          "vehicle_id": 8
+        }
+      ]
+    }
+  ],
+  "routes_total": 9,
+  "routes_truncated": false,
+  "vehicles": [
+    {
+      "item_id": 1067,
+      "minecart_assigned": true,
+      "on_track": true,
+      "route_id": 1,
+      "vehicle_id": 0
+    },
+    {
+      "item_id": 1114,
+      "minecart_assigned": true,
+      "on_track": true,
+      "route_id": 2,
+      "vehicle_id": 1
+    },
+    {
+      "item_id": 1133,
+      "minecart_assigned": true,
+      "on_track": true,
+      "route_id": 3,
+      "vehicle_id": 2
+    },
+    {
+      "item_id": 1167,
+      "minecart_assigned": true,
+      "on_track": true,
+      "route_id": 4,
+      "vehicle_id": 3
+    },
+    {
+      "item_id": 1193,
+      "minecart_assigned": true,
+      "on_track": true,
+      "route_id": 5,
+      "vehicle_id": 4
+    },
+    {
+      "item_id": 2719,
+      "minecart_assigned": true,
+      "on_track": true,
+      "route_id": 6,
+      "vehicle_id": 5
+    },
+    {
+      "item_id": 4656,
+      "minecart_assigned": true,
+      "on_track": true,
+      "route_id": 7,
+      "vehicle_id": 6
+    },
+    {
+      "item_id": 4963,
+      "minecart_assigned": true,
+      "on_track": true,
+      "route_id": 8,
+      "vehicle_id": 7
+    },
+    {
+      "item_id": 5158,
+      "minecart_assigned": true,
+      "on_track": true,
+      "route_id": 9,
+      "vehicle_id": 8
+    }
+  ],
+  "vehicles_total": 9,
+  "vehicles_truncated": false
+}
