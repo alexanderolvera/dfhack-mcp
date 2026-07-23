@@ -8,6 +8,45 @@ loosely while the tool surface is still evolving: **minor** releases (`1.x.0`)
 may change or remove tool output, and **patch** releases (`1.0.x`) are
 backwards-compatible fixes only.
 
+## [1.3.0] - 2026-07-22
+
+### Added
+
+- **`burrows` sensor + `civilian_alert` actuator** ([#77](https://github.com/alexanderolvera/dfhack-mcp/issues/77))
+  — the deferred "fort alarms" item, now unblocked: "siege spotted -> everyone
+  inside" was the single most-wanted emergency capability. `burrows()` reports
+  every burrow's exact tile count (`dfhack.burrows.isAssignedBlockTile` summed
+  over every assigned block, not a bounding box), its assigned units, and
+  whether it's currently one of the civilian alert's safety burrows.
+  `civilian_alert(burrow, enabled)` toggles a named burrow in or out of that set
+  — execute-never-decide, on the standard preview/confirm/apply loop — and
+  sounds or (once the set empties) silences the alarm accordingly, replicating
+  DFHack's own `gui/civ-alert` logic exactly so the in-game Squads alert button
+  and this actuator always operate on the same slot. Reversal: the same call
+  with `enabled` inverted.
+- **`mechanisms` sensor + `pull_lever` actuator** ([#78](https://github.com/alexanderolvera/dfhack-mcp/issues/78))
+  — completes the emergency-response trio: players forget lever wiring, and an
+  AI co-pilot literally cannot know it without this. `mechanisms()` lists every
+  lever with its position, state, and linked target(s) (bridge/door/floodgate/
+  hatch/support/weapon-trap, each with the target's own open/closed-family
+  state where available), every pressure plate's linked targets and trigger
+  conditions (citizens/creatures/minecart-weight/water-or-magma-depth), and
+  which levers/bridges are wired to nothing. `pull_lever(lever_id, urgent?)`
+  queues a real pull job via DFHack's own `lever` script — reversible by
+  pulling again — rather than an instant magic toggle, since the physical flip
+  only happens once a dwarf completes the job.
+- **`military` squad equipment depth** ([#82](https://github.com/alexanderolvera/dfhack-mcp/issues/82))
+  — fulfills the original tool-API spec's `equipment_gaps` promise, unmet since
+  v1.0: the co-pilot could say "you have 21 soldiers" but not "8 of them have no
+  armor." Each squad now carries `roster[]` (per filled position: unit,
+  uniform aggregated by item type into assigned-vs-worn counts, and a
+  `uniform_complete` flag), `ammo` (configured ammunition specs and how many
+  are currently carried), and `training` (the active schedule month's sleep
+  mode, uniform mode, and orders). `alerts[]` also flags any roster member with
+  an incomplete uniform by name. `squad_position.occupant` turned out to be a
+  **historical figure id**, not a unit id — resolved via
+  `historical_figure.unit_id` before any per-soldier lookup.
+
 ## [1.2.0] - 2026-07-21
 
 ### Added
@@ -437,7 +476,8 @@ server stays strictly read-only). First release published to npm — install wit
   by name with argv (`src/dfhack-queries/`), so a DF/DFHack version bump is a
   localized fix.
 
-[Unreleased]: https://github.com/alexanderolvera/dfhack-mcp/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/alexanderolvera/dfhack-mcp/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/alexanderolvera/dfhack-mcp/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/alexanderolvera/dfhack-mcp/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/alexanderolvera/dfhack-mcp/compare/v1.0.1...v1.1.0
 [1.0.0]: https://github.com/alexanderolvera/dfhack-mcp/compare/v0.1.0...v1.0.0

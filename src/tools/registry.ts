@@ -1,6 +1,7 @@
 import type { ToolDef } from '../register.ts';
 import { artifactsAndEngravingsDef } from './artifacts.ts';
 import { blueprintApplyDef, blueprintUndoDef } from './blueprint.ts';
+import { burrowsDef, civilianAlertDef } from './burrows.ts';
 import { chronicleDef } from './chronicle.ts';
 import { citizenDef } from './citizen.ts';
 import { defensesDef } from './defenses.ts';
@@ -17,6 +18,7 @@ import { jobsAndLaborDef } from './jobsAndLabor.ts';
 import { livestockAndPasturesDef } from './livestockAndPastures.ts';
 import { mapOverviewDef } from './mapOverview.ts';
 import { mandatesAndJusticeDef } from './mandatesAndJustice.ts';
+import { mechanismsDef, pullLeverDef } from './mechanisms.ts';
 import { militaryDef } from './military.ts';
 import { moodsDef } from './moods.ts';
 import { noblesAndAdministratorsDef } from './noblesAndAdministrators.ts';
@@ -38,8 +40,10 @@ export const ALL_TOOLS: ToolDef[] = [
   assignWorkDetailDef,
   blueprintApplyDef,
   blueprintUndoDef,
+  burrowsDef,
   chronicleDef,
   citizenDef,
+  civilianAlertDef,
   defensesDef,
   environmentDef,
   farmingDef,
@@ -54,9 +58,11 @@ export const ALL_TOOLS: ToolDef[] = [
   livestockAndPasturesDef,
   mapOverviewDef,
   mandatesAndJusticeDef,
+  mechanismsDef,
   militaryDef,
   moodsDef,
   noblesAndAdministratorsDef,
+  pullLeverDef,
   roomsAndZonesDef,
   runLuaDef,
   siteHistoryDef,
