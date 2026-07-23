@@ -1,0 +1,1604 @@
+{
+  "dump_flagged_count": 0,
+  "piles": [
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "corpses",
+        "refuse"
+      ],
+      "fullness_pct": 2825,
+      "give_to": [
+        79
+      ],
+      "give_to_truncated": false,
+      "id": 66,
+      "item_count": 113,
+      "links_only": true,
+      "max_wheelbarrows": 0,
+      "size": 1,
+      "take_from": [],
+      "take_from_truncated": false,
+      "x1": 84,
+      "x2": 84,
+      "y1": 64,
+      "y2": 64,
+      "z": 130
+    },
+    {
+      "barrels_allowed": true,
+      "bins_allowed": false,
+      "categories": [
+        "food"
+      ],
+      "fullness_pct": 50,
+      "give_to": [
+        1831,
+        2129,
+        2130,
+        2131,
+        2132
+      ],
+      "give_to_truncated": false,
+      "id": 67,
+      "item_count": 16,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 8,
+      "take_from": [],
+      "take_from_truncated": false,
+      "x1": 88,
+      "x2": 91,
+      "y1": 39,
+      "y2": 40,
+      "z": 130
+    },
+    {
+      "barrels_allowed": true,
+      "bins_allowed": false,
+      "categories": [
+        "food"
+      ],
+      "fullness_pct": 2339,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 68,
+      "item_count": 842,
+      "links_only": true,
+      "max_wheelbarrows": 0,
+      "size": 9,
+      "take_from": [
+        72
+      ],
+      "take_from_truncated": false,
+      "x1": 85,
+      "x2": 85,
+      "y1": 39,
+      "y2": 47,
+      "z": 130
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "bars_blocks"
+      ],
+      "fullness_pct": 25,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 69,
+      "item_count": 12,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 12,
+      "take_from": [],
+      "take_from_truncated": false,
+      "x1": 86,
+      "x2": 86,
+      "y1": 39,
+      "y2": 50,
+      "z": 130
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "food"
+      ],
+      "fullness_pct": 0,
+      "give_to": [
+        1830,
+        2125,
+        2126,
+        2127,
+        2128
+      ],
+      "give_to_truncated": false,
+      "id": 70,
+      "item_count": 0,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 6,
+      "take_from": [],
+      "take_from_truncated": false,
+      "x1": 89,
+      "x2": 91,
+      "y1": 43,
+      "y2": 44,
+      "z": 130
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "furniture"
+      ],
+      "fullness_pct": 19,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 71,
+      "item_count": 3,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 4,
+      "take_from": [
+        192
+      ],
+      "take_from_truncated": false,
+      "x1": 78,
+      "x2": 78,
+      "y1": 47,
+      "y2": 50,
+      "z": 130
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "food"
+      ],
+      "fullness_pct": 0,
+      "give_to": [
+        68
+      ],
+      "give_to_truncated": false,
+      "id": 72,
+      "item_count": 0,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 12,
+      "take_from": [
+        192
+      ],
+      "take_from_truncated": false,
+      "x1": 82,
+      "x2": 85,
+      "y1": 48,
+      "y2": 50,
+      "z": 130
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "furniture"
+      ],
+      "fullness_pct": 25,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 73,
+      "item_count": 4,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 4,
+      "take_from": [
+        192
+      ],
+      "take_from_truncated": false,
+      "x1": 72,
+      "x2": 73,
+      "y1": 49,
+      "y2": 50,
+      "z": 130
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "finished_goods"
+      ],
+      "fullness_pct": 25,
+      "give_to": [
+        76
+      ],
+      "give_to_truncated": false,
+      "id": 74,
+      "item_count": 4,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 4,
+      "take_from": [
+        192
+      ],
+      "take_from_truncated": false,
+      "x1": 72,
+      "x2": 73,
+      "y1": 51,
+      "y2": 52,
+      "z": 130
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "furniture"
+      ],
+      "fullness_pct": 0,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 75,
+      "item_count": 0,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 2,
+      "take_from": [
+        192
+      ],
+      "take_from_truncated": false,
+      "x1": 78,
+      "x2": 78,
+      "y1": 51,
+      "y2": 52,
+      "z": 130
+    },
+    {
+      "barrels_allowed": true,
+      "bins_allowed": false,
+      "categories": [
+        "food"
+      ],
+      "fullness_pct": 47,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 76,
+      "item_count": 186,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 100,
+      "take_from": [
+        74
+      ],
+      "take_from_truncated": false,
+      "x1": 88,
+      "x2": 97,
+      "y1": 54,
+      "y2": 63,
+      "z": 130
+    },
+    {
+      "barrels_allowed": true,
+      "bins_allowed": false,
+      "categories": [
+        "food"
+      ],
+      "fullness_pct": 23,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 77,
+      "item_count": 93,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 100,
+      "take_from": [],
+      "take_from_truncated": false,
+      "x1": 71,
+      "x2": 80,
+      "y1": 54,
+      "y2": 63,
+      "z": 130
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "food"
+      ],
+      "fullness_pct": 0,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 78,
+      "item_count": 0,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 6,
+      "take_from": [],
+      "take_from_truncated": false,
+      "x1": 80,
+      "x2": 81,
+      "y1": 58,
+      "y2": 60,
+      "z": 130
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "refuse"
+      ],
+      "fullness_pct": 0,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 79,
+      "item_count": 0,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 6,
+      "take_from": [
+        66,
+        80
+      ],
+      "take_from_truncated": false,
+      "x1": 87,
+      "x2": 88,
+      "y1": 58,
+      "y2": 60,
+      "z": 130
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "refuse"
+      ],
+      "fullness_pct": 0,
+      "give_to": [
+        79
+      ],
+      "give_to_truncated": false,
+      "id": 80,
+      "item_count": 0,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 3,
+      "take_from": [],
+      "take_from_truncated": false,
+      "x1": 83,
+      "x2": 83,
+      "y1": 60,
+      "y2": 62,
+      "z": 130
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "corpses",
+        "refuse"
+      ],
+      "fullness_pct": 8,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 81,
+      "item_count": 2,
+      "links_only": false,
+      "max_wheelbarrows": 2,
+      "size": 6,
+      "take_from": [],
+      "take_from_truncated": false,
+      "x1": 84,
+      "x2": 85,
+      "y1": 60,
+      "y2": 62,
+      "z": 130
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "ammo",
+        "animals",
+        "armor",
+        "bars_blocks",
+        "cloth",
+        "coins",
+        "finished_goods",
+        "food",
+        "furniture",
+        "gems",
+        "leather",
+        "sheet",
+        "stone",
+        "weapons",
+        "wood"
+      ],
+      "fullness_pct": 53125,
+      "give_to": [
+        177,
+        178,
+        179,
+        180,
+        182,
+        198,
+        422,
+        423
+      ],
+      "give_to_truncated": false,
+      "id": 176,
+      "item_count": 2125,
+      "links_only": true,
+      "max_wheelbarrows": 0,
+      "size": 1,
+      "take_from": [],
+      "take_from_truncated": false,
+      "x1": 84,
+      "x2": 84,
+      "y1": 64,
+      "y2": 64,
+      "z": 125
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "bars_blocks"
+      ],
+      "fullness_pct": 0,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 177,
+      "item_count": 0,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 4,
+      "take_from": [
+        176,
+        196
+      ],
+      "take_from_truncated": false,
+      "x1": 82,
+      "x2": 82,
+      "y1": 64,
+      "y2": 67,
+      "z": 125
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "bars_blocks"
+      ],
+      "fullness_pct": 19,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 178,
+      "item_count": 3,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 4,
+      "take_from": [
+        176,
+        196
+      ],
+      "take_from_truncated": false,
+      "x1": 86,
+      "x2": 86,
+      "y1": 64,
+      "y2": 67,
+      "z": 125
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "stone"
+      ],
+      "fullness_pct": 8,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 179,
+      "item_count": 1,
+      "links_only": true,
+      "max_wheelbarrows": 0,
+      "size": 3,
+      "take_from": [
+        176,
+        197
+      ],
+      "take_from_truncated": false,
+      "x1": 83,
+      "x2": 85,
+      "y1": 65,
+      "y2": 65,
+      "z": 125
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "armor",
+        "weapons"
+      ],
+      "fullness_pct": 1,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 180,
+      "item_count": 1,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 21,
+      "take_from": [
+        176,
+        196
+      ],
+      "take_from_truncated": false,
+      "x1": 71,
+      "x2": 77,
+      "y1": 65,
+      "y2": 67,
+      "z": 125
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "furniture"
+      ],
+      "fullness_pct": 50,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 181,
+      "item_count": 12,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 6,
+      "take_from": [],
+      "take_from_truncated": false,
+      "x1": 78,
+      "x2": 83,
+      "y1": 69,
+      "y2": 69,
+      "z": 125
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "bars_blocks"
+      ],
+      "fullness_pct": 17,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 182,
+      "item_count": 4,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 6,
+      "take_from": [
+        176,
+        196
+      ],
+      "take_from_truncated": false,
+      "x1": 85,
+      "x2": 90,
+      "y1": 69,
+      "y2": 69,
+      "z": 125
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "gems"
+      ],
+      "fullness_pct": 25,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 183,
+      "item_count": 13,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 13,
+      "take_from": [
+        184,
+        188
+      ],
+      "take_from_truncated": false,
+      "x1": 78,
+      "x2": 90,
+      "y1": 39,
+      "y2": 39,
+      "z": 125
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "gems",
+        "stone"
+      ],
+      "fullness_pct": 26275,
+      "give_to": [
+        183
+      ],
+      "give_to_truncated": false,
+      "id": 184,
+      "item_count": 1051,
+      "links_only": true,
+      "max_wheelbarrows": 0,
+      "size": 1,
+      "take_from": [],
+      "take_from_truncated": false,
+      "x1": 84,
+      "x2": 84,
+      "y1": 44,
+      "y2": 44,
+      "z": 125
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "stone"
+      ],
+      "fullness_pct": 29,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 185,
+      "item_count": 23,
+      "links_only": false,
+      "max_wheelbarrows": 10,
+      "size": 20,
+      "take_from": [],
+      "take_from_truncated": false,
+      "x1": 82,
+      "x2": 86,
+      "y1": 46,
+      "y2": 49,
+      "z": 125
+    },
+    {
+      "barrels_allowed": true,
+      "bins_allowed": false,
+      "categories": [
+        "food"
+      ],
+      "fullness_pct": 21,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 186,
+      "item_count": 11,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 13,
+      "take_from": [],
+      "take_from_truncated": false,
+      "x1": 99,
+      "x2": 99,
+      "y1": 48,
+      "y2": 60,
+      "z": 125
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "wood"
+      ],
+      "fullness_pct": 25,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 187,
+      "item_count": 6,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 6,
+      "take_from": [
+        190,
+        192
+      ],
+      "take_from_truncated": false,
+      "x1": 69,
+      "x2": 69,
+      "y1": 48,
+      "y2": 53,
+      "z": 125
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "gems"
+      ],
+      "fullness_pct": 50,
+      "give_to": [
+        183
+      ],
+      "give_to_truncated": false,
+      "id": 188,
+      "item_count": 10,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 5,
+      "take_from": [],
+      "take_from_truncated": false,
+      "x1": 82,
+      "x2": 86,
+      "y1": 50,
+      "y2": 50,
+      "z": 125
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "cloth",
+        "leather",
+        "refuse",
+        "sheet"
+      ],
+      "fullness_pct": 6,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 189,
+      "item_count": 6,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 25,
+      "take_from": [],
+      "take_from_truncated": false,
+      "x1": 88,
+      "x2": 92,
+      "y1": 52,
+      "y2": 56,
+      "z": 125
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "wood"
+      ],
+      "fullness_pct": 0,
+      "give_to": [
+        187
+      ],
+      "give_to_truncated": false,
+      "id": 190,
+      "item_count": 0,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 10,
+      "take_from": [],
+      "take_from_truncated": false,
+      "x1": 76,
+      "x2": 77,
+      "y1": 52,
+      "y2": 56,
+      "z": 125
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "finished_goods",
+        "food"
+      ],
+      "fullness_pct": 25,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 191,
+      "item_count": 9,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 9,
+      "take_from": [],
+      "take_from_truncated": false,
+      "x1": 78,
+      "x2": 80,
+      "y1": 52,
+      "y2": 54,
+      "z": 125
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "ammo",
+        "animals",
+        "armor",
+        "bars_blocks",
+        "cloth",
+        "coins",
+        "finished_goods",
+        "food",
+        "furniture",
+        "gems",
+        "leather",
+        "sheet",
+        "stone",
+        "weapons",
+        "wood"
+      ],
+      "fullness_pct": 15800,
+      "give_to": [
+        71,
+        72,
+        73,
+        74,
+        75,
+        187
+      ],
+      "give_to_truncated": false,
+      "id": 192,
+      "item_count": 632,
+      "links_only": true,
+      "max_wheelbarrows": 0,
+      "size": 1,
+      "take_from": [],
+      "take_from_truncated": false,
+      "x1": 74,
+      "x2": 74,
+      "y1": 54,
+      "y2": 54,
+      "z": 125
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "ammo",
+        "animals",
+        "armor",
+        "bars_blocks",
+        "cloth",
+        "coins",
+        "finished_goods",
+        "food",
+        "furniture",
+        "gems",
+        "leather",
+        "refuse",
+        "sheet",
+        "stone",
+        "weapons",
+        "wood"
+      ],
+      "fullness_pct": 32075,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 193,
+      "item_count": 1283,
+      "links_only": true,
+      "max_wheelbarrows": 0,
+      "size": 1,
+      "take_from": [],
+      "take_from_truncated": false,
+      "x1": 94,
+      "x2": 94,
+      "y1": 54,
+      "y2": 54,
+      "z": 125
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "food"
+      ],
+      "fullness_pct": 50,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 194,
+      "item_count": 12,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 6,
+      "take_from": [],
+      "take_from_truncated": false,
+      "x1": 69,
+      "x2": 69,
+      "y1": 55,
+      "y2": 60,
+      "z": 125
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "furniture"
+      ],
+      "fullness_pct": 13,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 195,
+      "item_count": 3,
+      "links_only": false,
+      "max_wheelbarrows": 2,
+      "size": 6,
+      "take_from": [],
+      "take_from_truncated": false,
+      "x1": 78,
+      "x2": 80,
+      "y1": 55,
+      "y2": 56,
+      "z": 125
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "ammo",
+        "armor",
+        "bars_blocks",
+        "cloth",
+        "coins",
+        "weapons"
+      ],
+      "fullness_pct": 2,
+      "give_to": [
+        177,
+        178,
+        180,
+        182,
+        198
+      ],
+      "give_to_truncated": false,
+      "id": 196,
+      "item_count": 1,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 15,
+      "take_from": [],
+      "take_from_truncated": false,
+      "x1": 82,
+      "x2": 86,
+      "y1": 58,
+      "y2": 60,
+      "z": 125
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "stone"
+      ],
+      "fullness_pct": 20,
+      "give_to": [
+        179
+      ],
+      "give_to_truncated": false,
+      "id": 197,
+      "item_count": 8,
+      "links_only": false,
+      "max_wheelbarrows": 5,
+      "size": 10,
+      "take_from": [],
+      "take_from_truncated": false,
+      "x1": 82,
+      "x2": 86,
+      "y1": 61,
+      "y2": 62,
+      "z": 125
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "armor",
+        "weapons"
+      ],
+      "fullness_pct": 23,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 198,
+      "item_count": 19,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 21,
+      "take_from": [
+        176,
+        196
+      ],
+      "take_from_truncated": false,
+      "x1": 71,
+      "x2": 77,
+      "y1": 61,
+      "y2": 63,
+      "z": 125
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "ammo"
+      ],
+      "fullness_pct": 1875,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 418,
+      "item_count": 75,
+      "links_only": true,
+      "max_wheelbarrows": 0,
+      "size": 1,
+      "take_from": [],
+      "take_from_truncated": false,
+      "x1": 84,
+      "x2": 84,
+      "y1": 48,
+      "y2": 48,
+      "z": 124
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [],
+      "fullness_pct": 0,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 419,
+      "item_count": 0,
+      "links_only": true,
+      "max_wheelbarrows": 0,
+      "size": 1,
+      "take_from": [],
+      "take_from_truncated": false,
+      "x1": 84,
+      "x2": 84,
+      "y1": 57,
+      "y2": 57,
+      "z": 124
+    },
+    {
+      "barrels_allowed": true,
+      "bins_allowed": false,
+      "categories": [
+        "food"
+      ],
+      "fullness_pct": 65,
+      "give_to": [
+        1830,
+        2125,
+        2126,
+        2127,
+        2128
+      ],
+      "give_to_truncated": false,
+      "id": 420,
+      "item_count": 65,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 25,
+      "take_from": [],
+      "take_from_truncated": false,
+      "x1": 68,
+      "x2": 72,
+      "y1": 66,
+      "y2": 70,
+      "z": 124
+    },
+    {
+      "barrels_allowed": true,
+      "bins_allowed": false,
+      "categories": [
+        "food"
+      ],
+      "fullness_pct": 89,
+      "give_to": [
+        1831,
+        2129,
+        2130,
+        2131,
+        2132
+      ],
+      "give_to_truncated": false,
+      "id": 421,
+      "item_count": 89,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 25,
+      "take_from": [],
+      "take_from_truncated": false,
+      "x1": 74,
+      "x2": 78,
+      "y1": 66,
+      "y2": 70,
+      "z": 124
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": true,
+      "categories": [
+        "bars_blocks"
+      ],
+      "fullness_pct": 167,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 422,
+      "item_count": 20,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 3,
+      "take_from": [
+        176
+      ],
+      "take_from_truncated": false,
+      "x1": 99,
+      "x2": 99,
+      "y1": 53,
+      "y2": 55,
+      "z": 124
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "ammo"
+      ],
+      "fullness_pct": 80,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 423,
+      "item_count": 32,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 10,
+      "take_from": [
+        176
+      ],
+      "take_from_truncated": false,
+      "x1": 80,
+      "x2": 89,
+      "y1": 45,
+      "y2": 45,
+      "z": 123
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "ammo",
+        "animals",
+        "armor",
+        "bars_blocks",
+        "cloth",
+        "coins",
+        "finished_goods",
+        "food",
+        "furniture",
+        "gems",
+        "leather",
+        "sheet",
+        "stone",
+        "weapons",
+        "wood"
+      ],
+      "fullness_pct": 275,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 456,
+      "item_count": 11,
+      "links_only": true,
+      "max_wheelbarrows": 0,
+      "size": 1,
+      "take_from": [],
+      "take_from_truncated": false,
+      "x1": 89,
+      "x2": 89,
+      "y1": 56,
+      "y2": 56,
+      "z": 131
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "ammo",
+        "animals",
+        "armor",
+        "bars_blocks",
+        "cloth",
+        "coins",
+        "finished_goods",
+        "food",
+        "furniture",
+        "gems",
+        "leather",
+        "sheet",
+        "stone",
+        "weapons",
+        "wood"
+      ],
+      "fullness_pct": 1575,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 457,
+      "item_count": 63,
+      "links_only": true,
+      "max_wheelbarrows": 0,
+      "size": 1,
+      "take_from": [],
+      "take_from_truncated": false,
+      "x1": 89,
+      "x2": 89,
+      "y1": 52,
+      "y2": 52,
+      "z": 131
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "finished_goods"
+      ],
+      "fullness_pct": 0,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 458,
+      "item_count": 0,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 6,
+      "take_from": [],
+      "take_from_truncated": false,
+      "x1": 88,
+      "x2": 89,
+      "y1": 53,
+      "y2": 55,
+      "z": 131
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "animals"
+      ],
+      "fullness_pct": 6,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 459,
+      "item_count": 10,
+      "links_only": false,
+      "max_wheelbarrows": 10,
+      "size": 45,
+      "take_from": [],
+      "take_from_truncated": false,
+      "x1": 88,
+      "x2": 96,
+      "y1": 46,
+      "y2": 50,
+      "z": 131
+    },
+    {
+      "barrels_allowed": false,
+      "bins_allowed": false,
+      "categories": [
+        "animals"
+      ],
+      "fullness_pct": 1050,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 460,
+      "item_count": 42,
+      "links_only": true,
+      "max_wheelbarrows": 0,
+      "size": 1,
+      "take_from": [],
+      "take_from_truncated": false,
+      "x1": 78,
+      "x2": 78,
+      "y1": 62,
+      "y2": 62,
+      "z": 131
+    },
+    {
+      "barrels_allowed": true,
+      "bins_allowed": false,
+      "categories": [
+        "food"
+      ],
+      "fullness_pct": 163,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 1830,
+      "item_count": 13,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 2,
+      "take_from": [
+        70,
+        420
+      ],
+      "take_from_truncated": false,
+      "x1": 88,
+      "x2": 89,
+      "y1": 40,
+      "y2": 40,
+      "z": 124
+    },
+    {
+      "barrels_allowed": true,
+      "bins_allowed": false,
+      "categories": [
+        "food"
+      ],
+      "fullness_pct": 50,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 1831,
+      "item_count": 4,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 2,
+      "take_from": [
+        67,
+        421
+      ],
+      "take_from_truncated": false,
+      "x1": 90,
+      "x2": 90,
+      "y1": 39,
+      "y2": 40,
+      "z": 124
+    },
+    {
+      "barrels_allowed": true,
+      "bins_allowed": false,
+      "categories": [
+        "food"
+      ],
+      "fullness_pct": 138,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 2125,
+      "item_count": 11,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 2,
+      "take_from": [
+        70,
+        420
+      ],
+      "take_from_truncated": false,
+      "x1": 84,
+      "x2": 85,
+      "y1": 40,
+      "y2": 40,
+      "z": 124
+    },
+    {
+      "barrels_allowed": true,
+      "bins_allowed": false,
+      "categories": [
+        "food"
+      ],
+      "fullness_pct": 113,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 2126,
+      "item_count": 9,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 2,
+      "take_from": [
+        70,
+        420
+      ],
+      "take_from_truncated": false,
+      "x1": 96,
+      "x2": 97,
+      "y1": 40,
+      "y2": 40,
+      "z": 124
+    },
+    {
+      "barrels_allowed": true,
+      "bins_allowed": false,
+      "categories": [
+        "food"
+      ],
+      "fullness_pct": 100,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 2127,
+      "item_count": 8,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 2,
+      "take_from": [
+        70,
+        420
+      ],
+      "take_from_truncated": false,
+      "x1": 92,
+      "x2": 93,
+      "y1": 40,
+      "y2": 40,
+      "z": 124
+    },
+    {
+      "barrels_allowed": true,
+      "bins_allowed": false,
+      "categories": [
+        "food"
+      ],
+      "fullness_pct": 150,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 2128,
+      "item_count": 12,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 2,
+      "take_from": [
+        70,
+        420
+      ],
+      "take_from_truncated": false,
+      "x1": 80,
+      "x2": 81,
+      "y1": 40,
+      "y2": 40,
+      "z": 124
+    },
+    {
+      "barrels_allowed": true,
+      "bins_allowed": false,
+      "categories": [
+        "food"
+      ],
+      "fullness_pct": 50,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 2129,
+      "item_count": 4,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 2,
+      "take_from": [
+        67,
+        421
+      ],
+      "take_from_truncated": false,
+      "x1": 98,
+      "x2": 98,
+      "y1": 39,
+      "y2": 40,
+      "z": 124
+    },
+    {
+      "barrels_allowed": true,
+      "bins_allowed": false,
+      "categories": [
+        "food"
+      ],
+      "fullness_pct": 38,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 2130,
+      "item_count": 3,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 2,
+      "take_from": [
+        67,
+        421
+      ],
+      "take_from_truncated": false,
+      "x1": 94,
+      "x2": 94,
+      "y1": 39,
+      "y2": 40,
+      "z": 124
+    },
+    {
+      "barrels_allowed": true,
+      "bins_allowed": false,
+      "categories": [
+        "food"
+      ],
+      "fullness_pct": 88,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 2131,
+      "item_count": 7,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 2,
+      "take_from": [
+        67,
+        421
+      ],
+      "take_from_truncated": false,
+      "x1": 86,
+      "x2": 86,
+      "y1": 39,
+      "y2": 40,
+      "z": 124
+    },
+    {
+      "barrels_allowed": true,
+      "bins_allowed": false,
+      "categories": [
+        "food"
+      ],
+      "fullness_pct": 38,
+      "give_to": [],
+      "give_to_truncated": false,
+      "id": 2132,
+      "item_count": 3,
+      "links_only": false,
+      "max_wheelbarrows": 0,
+      "size": 2,
+      "take_from": [
+        67,
+        421
+      ],
+      "take_from_truncated": false,
+      "x1": 82,
+      "x2": 82,
+      "y1": 39,
+      "y2": 40,
+      "z": 124
+    }
+  ],
+  "piles_total": 60,
+  "piles_truncated": false,
+  "rotting_outside_stockpiles": {
+    "by_type": [],
+    "by_type_truncated": false,
+    "count": 0
+  },
+  "unstored_backlog": [
+    {
+      "count": 2,
+      "item_type": "ARMOR"
+    },
+    {
+      "count": 27,
+      "item_type": "BAG"
+    },
+    {
+      "count": 568,
+      "item_type": "BOULDER"
+    },
+    {
+      "count": 3,
+      "item_type": "GLOVES"
+    },
+    {
+      "count": 4,
+      "item_type": "GOBLET"
+    },
+    {
+      "count": 1,
+      "item_type": "PANTS"
+    },
+    {
+      "count": 1,
+      "item_type": "REMAINS"
+    },
+    {
+      "count": 1,
+      "item_type": "RING"
+    },
+    {
+      "count": 8,
+      "item_type": "ROUGH"
+    },
+    {
+      "count": 247,
+      "item_type": "THREAD"
+    },
+    {
+      "count": 18,
+      "item_type": "TOOL"
+    },
+    {
+      "count": 106,
+      "item_type": "WOOD"
+    }
+  ],
+  "unstored_backlog_item_count": 986,
+  "unstored_backlog_truncated": false
+}

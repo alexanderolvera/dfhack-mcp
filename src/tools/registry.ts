@@ -23,6 +23,7 @@ import { noblesAndAdministratorsDef } from './noblesAndAdministrators.ts';
 import { roomsAndZonesDef } from './roomsAndZones.ts';
 import { runLuaDef } from './runLua.ts';
 import { siteHistoryDef } from './siteHistory.ts';
+import { stockpilesDef } from './stockpiles.ts';
 import { stocksDef } from './stocks.ts';
 import { threatsDef } from './threats.ts';
 import { tileRegionDef } from './tileRegion.ts';
@@ -60,6 +61,7 @@ export const ALL_TOOLS: ToolDef[] = [
   roomsAndZonesDef,
   runLuaDef,
   siteHistoryDef,
+  stockpilesDef,
   stocksDef,
   threatsDef,
   tileRegionDef,

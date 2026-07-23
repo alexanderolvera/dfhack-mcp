@@ -4,11 +4,11 @@ tags: [dfhack-mcp/tool, index]
 
 # Tool Index — dfhack-mcp
 
-One note per MCP tool (37 tools: 26 sensors, 4 reference, 6 gated actuators, 1 dev), tracking `src/tools/registry.ts`. Each note carries frontmatter (`tool` / `tier` / `gated` / `source` / `lua`), parameters from the zod schema, the real return shape from the Lua query, and a trimmed example from the frozen-fixture goldens where one exists.
+One note per MCP tool (38 tools: 27 sensors, 4 reference, 6 gated actuators, 1 dev), tracking `src/tools/registry.ts`. Each note carries frontmatter (`tool` / `tier` / `gated` / `source` / `lua`), parameters from the zod schema, the real return shape from the Lua query, and a trimmed example from the frozen-fixture goldens where one exists.
 
 Doctrine reminder: every tool is **facts-only** — it senses and reports; judgment stays with the AI client. Actuators are gated behind `DFHACK_MCP_ACTUATORS` and follow the §A0 preview/confirm contract; `run_lua` is dev-gated behind `DFHACK_MCP_DEV`.
 
-## Sensors (26)
+## Sensors (27)
 
 *Fort & dwarves*
 - [fort_status](fort_status.md) — one-call situational overview; canonical "is a fort loaded" probe
@@ -27,6 +27,7 @@ Doctrine reminder: every tool is **facts-only** — it senses and reports; judgm
 
 *Economy & society*
 - [stocks](stocks.md) — food/booze/materials counts
+- [stockpiles](stockpiles.md) — draft: per-pile settings/links/fullness, unstored and rotting-item backlog
 - [farming](farming.md) — farm plots, crop assignment by season, seed stock
 - [trade](trade.md) — depot, broker, caravan state
 - [work_order_list](work_order_list.md) — manager work-order queue

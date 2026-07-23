@@ -940,4 +940,94 @@ export const INVARIANTS = [
       return out;
     },
   },
+  {
+    name: 'stockpiles_wellformed',
+    tools: ['stockpiles'],
+    desc:
+      'pile counts/percentages stay non-negative, categories[] only names real bitfield flags, ' +
+      'give_to/take_from links are internally reciprocal, piles are id-sorted, and cap/' +
+      'truncation pairs (piles, links, backlog) are self-consistent',
+    check(p) {
+      const d = p.stockpiles;
+      const out = [];
+      const KNOWN_CATEGORIES = new Set([
+        'animals', 'food', 'furniture', 'corpses', 'refuse', 'stone', 'ammo', 'coins',
+        'bars_blocks', 'gems', 'finished_goods', 'leather', 'cloth', 'wood', 'weapons',
+        'armor', 'sheet',
+      ]);
+      const PILES_CAP = 200;
+      const LINKS_CAP = 50;
+
+      if (!Array.isArray(d.piles)) {
+        out.push('piles is not an array');
+        return out;
+      }
+      if (d.piles.length > PILES_CAP)
+        out.push(`piles length ${d.piles.length} exceeds cap ${PILES_CAP}`);
+      if (!(isInt(d.piles_total) && d.piles_total >= 0))
+        out.push(`piles_total=${d.piles_total} is not a non-negative integer`);
+      if (Boolean(d.piles_truncated) !== (d.piles_total > d.piles.length))
+        out.push(
+          `piles_truncated=${d.piles_truncated} disagrees with piles_total ${d.piles_total} vs listed ${d.piles.length}`
+        );
+
+      const byId = new Map();
+      let lastId = -Infinity;
+      d.piles.forEach((pl, i) => {
+        if (!isInt(pl.id)) out.push(`piles[${i}].id=${pl.id} is not an integer`);
+        if (!(pl.id > lastId)) out.push(`piles is not strictly ascending by id at index ${i}`);
+        lastId = pl.id;
+        byId.set(pl.id, pl);
+        if (!(isInt(pl.size) && pl.size >= 1)) out.push(`piles[${i}].size=${pl.size} is not >= 1`);
+        if (!(isInt(pl.item_count) && pl.item_count >= 0))
+          out.push(`piles[${i}].item_count=${pl.item_count} is negative`);
+        if (!(typeof pl.fullness_pct === 'number' && pl.fullness_pct >= 0))
+          out.push(`piles[${i}].fullness_pct=${pl.fullness_pct} is negative`);
+        if (
+          !Array.isArray(pl.categories) ||
+          pl.categories.some((c) => !KNOWN_CATEGORIES.has(c))
+        )
+          out.push(`piles[${i}].categories has an unknown token: ${JSON.stringify(pl.categories)}`);
+        for (const key of ['give_to', 'take_from']) {
+          const arr = pl[key];
+          if (!Array.isArray(arr)) {
+            out.push(`piles[${i}].${key} is not an array`);
+            continue;
+          }
+          if (arr.length > LINKS_CAP)
+            out.push(`piles[${i}].${key} length ${arr.length} exceeds cap ${LINKS_CAP}`);
+          for (let j = 1; j < arr.length; j++) {
+            if (!(arr[j] > arr[j - 1])) {
+              out.push(`piles[${i}].${key} is not strictly ascending at index ${j}`);
+              break;
+            }
+          }
+        }
+      });
+
+      // give_to/take_from are the same relation read from both ends — when neither side's
+      // link list was truncated, a link on one pile must show up as the reciprocal on the other.
+      for (const pl of d.piles) {
+        if (pl.give_to_truncated) continue;
+        for (const g of pl.give_to ?? []) {
+          const other = byId.get(g);
+          if (other && !other.take_from_truncated && !(other.take_from ?? []).includes(pl.id))
+            out.push(`pile ${pl.id} give_to ${g}, but pile ${g} has no reciprocal take_from`);
+        }
+      }
+
+      const sumBacklog = (d.unstored_backlog ?? []).reduce((a, b) => a + (b.count ?? 0), 0);
+      if (!d.unstored_backlog_truncated && sumBacklog !== d.unstored_backlog_item_count)
+        out.push(
+          `unstored_backlog sums to ${sumBacklog} but unstored_backlog_item_count=${d.unstored_backlog_item_count}`
+        );
+      if (!(isInt(d.dump_flagged_count) && d.dump_flagged_count >= 0))
+        out.push(`dump_flagged_count=${d.dump_flagged_count} is not a non-negative integer`);
+      const r = d.rotting_outside_stockpiles ?? {};
+      if (!(isInt(r.count) && r.count >= 0))
+        out.push(`rotting_outside_stockpiles.count=${r.count} is not a non-negative integer`);
+
+      return out;
+    },
+  },
 ];
