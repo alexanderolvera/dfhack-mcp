@@ -6,10 +6,10 @@ not an autopilot. Point Claude (or any MCP client) at it and ask _"how's my fort
 doing?"_ — it reads happiness, threats, stocks, jobs, health, and defenses
 straight from the running game and answers in plain language.
 
-**Read-only by default.** The 31 sensor and reference tools only observe the
+**Read-only by default.** The 32 sensor and reference tools only observe the
 game. A handful of **actuators** that _change_ the fort — queue manager orders,
-apply quickfort blueprints, assign labor, sound the civilian alert — ship
-behind an explicit opt-in and stay hidden until you enable them (see
+apply quickfort blueprints, assign labor, sound the civilian alert, pull a lever —
+ship behind an explicit opt-in and stay hidden until you enable them (see
 [Taking action](#taking-action-actuators)).
 
 Two kinds of tools:
@@ -88,6 +88,7 @@ No arguments; each reports on the loaded fort.
 - **`injuries_and_health()`** — wounded / patients / bedridden / unconscious counts, plus the care needed (diagnosis, surgery, suture, …).
 - **`defenses()`** — active hostiles with map positions and distance/direction/z-delta to the fort core and nearest drawbridge, plus a controllable-structure inventory (bridges, levers, floodgates, hatches, cage traps, doors).
 - **`burrows()`** — every burrow's size and membership, plus the civilian-alert safety-burrow set (configured/active/linked burrows) — the read half of `civilian_alert`.
+- **`mechanisms()`** — every lever's position, state, and linked target(s) (bridge/door/floodgate/hatch/support/weapon-trap); pressure-plate trigger conditions; unlinked levers and bridges.
 - **`moods()`** — any active strange mood (fey/secretive/possessed/macabre/fell): the dwarf, driving skill, workshop state, and each demanded material cross-referenced against fort stock — the "demands bones, fort has zero" early warning.
 - **`mandates_and_justice()`** — the nobility's overhead: active production mandates and export bans, unmet noble room demands, and justice state (open cases, convictions awaiting punishment, restraint capacity).
 - **`rooms_and_zones()`** — the facility inventory, each count paired with its demand-side number: bedrooms, dining halls, the hospital, wells, temples, taverns, libraries, guildhalls, and coffins free vs. dead awaiting burial. The supply-side companion to `unmet_needs()`.
@@ -184,6 +185,8 @@ own reversal path.
 
 - **`burrows()`** — _read-only, always available._ Every burrow's size and membership, plus the civilian alert's own state: `configured` (has the fort ever set one up), `active` (is it sounding right now), and the linked burrow ids.
 - **`civilian_alert(burrow, enabled)`** — add or remove one burrow from the civilian-alert safety set. `enabled=true` also sounds the alarm if it wasn't already; `enabled=false` only silences it once the set becomes fully empty. Reversal: the same call with `enabled` inverted.
+- **`mechanisms()`** — _read-only, always available._ Every lever/pressure-plate's position and linked target(s) (bridge/door/floodgate/hatch/support/weapon-trap), plus unlinked levers and bridges.
+- **`pull_lever(lever_id, urgent?)`** — queue a job for a dwarf to pull a named lever (`urgent` defaults to do-now priority). This queues the job; the physical toggle happens once a dwarf completes it, not on apply. Reversal: pull the same lever again.
 
 **Saving the game**
 

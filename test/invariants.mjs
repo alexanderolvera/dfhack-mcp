@@ -988,4 +988,34 @@ export const INVARIANTS = [
       return out;
     },
   },
+  {
+    name: 'mechanisms_wellformed',
+    tools: ['mechanisms'],
+    desc: 'lever state is 0/1, unlinked_levers is exactly the levers with no linked_targets, and unlinked_bridges never appears as any linked_target building_id',
+    check(p) {
+      const d = p.mechanisms;
+      const out = [];
+      if (!Array.isArray(d.levers)) return ['levers is not an array'];
+      const linkedTargetIds = new Set();
+      const emptyLeverIds = new Set();
+      d.levers.forEach((lv, i) => {
+        if (lv.state !== 0 && lv.state !== 1) out.push(`levers[${i}].state=${lv.state} is not 0 or 1`);
+        if (!Array.isArray(lv.linked_targets)) {
+          out.push(`levers[${i}].linked_targets is not an array`);
+          return;
+        }
+        if (lv.linked_targets.length === 0) emptyLeverIds.add(lv.building_id);
+        lv.linked_targets.forEach((t) => linkedTargetIds.add(t.building_id));
+      });
+      const unlinkedSet = new Set(d.unlinked_levers ?? []);
+      if (unlinkedSet.size !== emptyLeverIds.size || [...unlinkedSet].some((id) => !emptyLeverIds.has(id)))
+        out.push(
+          `unlinked_levers ${JSON.stringify(d.unlinked_levers)} disagrees with the levers actually carrying 0 linked_targets`
+        );
+      (d.unlinked_bridges ?? []).forEach((id) => {
+        if (linkedTargetIds.has(id)) out.push(`unlinked_bridges lists ${id}, but a lever/plate targets it`);
+      });
+      return out;
+    },
+  },
 ];

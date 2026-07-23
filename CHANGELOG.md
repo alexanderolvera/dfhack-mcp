@@ -24,6 +24,17 @@ backwards-compatible fixes only.
   DFHack's own `gui/civ-alert` logic exactly so the in-game Squads alert button
   and this actuator always operate on the same slot. Reversal: the same call
   with `enabled` inverted.
+- **`mechanisms` sensor + `pull_lever` actuator** ([#78](https://github.com/alexanderolvera/dfhack-mcp/issues/78))
+  — completes the emergency-response trio: players forget lever wiring, and an
+  AI co-pilot literally cannot know it without this. `mechanisms()` lists every
+  lever with its position, state, and linked target(s) (bridge/door/floodgate/
+  hatch/support/weapon-trap, each with the target's own open/closed-family
+  state where available), every pressure plate's linked targets and trigger
+  conditions (citizens/creatures/minecart-weight/water-or-magma-depth), and
+  which levers/bridges are wired to nothing. `pull_lever(lever_id, urgent?)`
+  queues a real pull job via DFHack's own `lever` script — reversible by
+  pulling again — rather than an instant magic toggle, since the physical flip
+  only happens once a dwarf completes the job.
 
 ## [1.2.0] - 2026-07-21
 

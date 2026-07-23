@@ -100,6 +100,10 @@ const TOOL_ARGS = {
   // resolveLiveArgs fills a real burrow name from burrows(); the static
   // placeholder keeps T0 well-formed and reaches the no-fort guard.
   civilian_alert: { burrow: 'placeholder', enabled: true },
+  // pull_lever dry-run (NO confirm_token -> preview only, never mutates).
+  // resolveLiveArgs fills a real lever building id from mechanisms(); the
+  // static placeholder keeps T0 well-formed and reaches the no-fort guard.
+  pull_lever: { lever_id: 0 },
 };
 
 // Tools whose committed golden is captured with NO args even though they carry a
@@ -129,6 +133,7 @@ const NO_GOLDEN = new Set([
   'work_order_list',
   'assign_work_detail',
   'civilian_alert',
+  'pull_lever',
 ]);
 
 // --- helpers ----------------------------------------------------------------
@@ -273,6 +278,11 @@ async function resolveLiveArgs(client) {
   const br = await callJson(client, 'burrows');
   const firstBurrow = br.data?.burrows?.[0]?.name;
   if (firstBurrow != null) TOOL_ARGS.civilian_alert = { burrow: firstBurrow, enabled: true };
+  // pull_lever(lever_id) <- mechanisms()'s first lever, so the DRY-RUN previews a
+  // real lever (still never applied — no confirm_token).
+  const mech = await callJson(client, 'mechanisms');
+  const firstLever = mech.data?.levers?.[0]?.building_id;
+  if (firstLever != null) TOOL_ARGS.pull_lever = { lever_id: firstLever };
 }
 
 async function tier1(client) {

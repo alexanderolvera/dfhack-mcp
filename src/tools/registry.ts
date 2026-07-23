@@ -18,6 +18,7 @@ import { jobsAndLaborDef } from './jobsAndLabor.ts';
 import { livestockAndPasturesDef } from './livestockAndPastures.ts';
 import { mapOverviewDef } from './mapOverview.ts';
 import { mandatesAndJusticeDef } from './mandatesAndJustice.ts';
+import { mechanismsDef, pullLeverDef } from './mechanisms.ts';
 import { militaryDef } from './military.ts';
 import { moodsDef } from './moods.ts';
 import { noblesAndAdministratorsDef } from './noblesAndAdministrators.ts';
@@ -57,9 +58,11 @@ export const ALL_TOOLS: ToolDef[] = [
   livestockAndPasturesDef,
   mapOverviewDef,
   mandatesAndJusticeDef,
+  mechanismsDef,
   militaryDef,
   moodsDef,
   noblesAndAdministratorsDef,
+  pullLeverDef,
   roomsAndZonesDef,
   runLuaDef,
   siteHistoryDef,
