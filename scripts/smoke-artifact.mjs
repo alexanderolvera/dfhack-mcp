@@ -47,7 +47,7 @@ try {
   const problems = [];
   if (handshakeVersion !== version)
     problems.push(`handshake version ${handshakeVersion} != package ${version}`);
-  if (tools.length !== 37) problems.push(`expected 37 tools (actuators on), got ${tools.length}`);
+  if (tools.length !== 41) problems.push(`expected 41 tools (actuators on), got ${tools.length}`);
   if (missing.length) problems.push(`missing tools: ${missing.join(', ')}`);
 
   if (problems.length) {

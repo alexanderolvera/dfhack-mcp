@@ -38,7 +38,7 @@ is `dist/index.js`, run by whatever Node the caller has. It builds a fresh
 tarball into a throwaway directory so its deps resolve from the registry —
 not this repo's `node_modules` — then boots the installed bundle over MCP
 with the gates pinned explicitly (`DFHACK_MCP_ACTUATORS=1`, `DFHACK_MCP_DEV`
-unset) so the expected 37-tool count can't drift with whatever
+unset) so the expected 41-tool count can't drift with whatever
 `DFHACK_MCP_*` the caller's shell happens to export. It asserts the handshake
 version, tool count, and a handful of required tool names. Runnable locally
 (needs network for the registry install); exit 0 means the artifact is
