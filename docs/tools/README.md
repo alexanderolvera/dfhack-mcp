@@ -12,6 +12,7 @@ Doctrine reminder: every tool is **facts-only** — it senses and reports; judgm
 
 *Fort & dwarves*
 - [fort_status](fort_status.md) — one-call situational overview; canonical "is a fort loaded" probe
+- [fort_health](fort_health.md) — FPS/GFPS, item clutter by category, unit counts — the fort's computational health
 - [citizen](citizen.md) — deep dossier on one dwarf
 - [find_unit](find_unit.md) — name/profession search → unit ids
 - [unmet_needs](unmet_needs.md) — need fulfillment across the fort
