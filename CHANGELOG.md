@@ -3,10 +3,7 @@
 All notable changes to this project are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
-loosely while the tool surface is still evolving: **minor** releases (`1.x.0`)
-may change or remove tool output, and **patch** releases (`1.0.x`) are
-backwards-compatible fixes only.
+and this project follows Semantic Versioning, where minor releases add functionality in a backward-compatible manner, and only major releases may break compatibility.
 
 ## [1.2.0] - 2026-07-21
 

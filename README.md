@@ -192,6 +192,7 @@ All optional, set in your MCP client's `env` for the server:
 | `DFHACK_PORT`          | `5000`      | Port for DFHack's Remote RPC.                                                                                           |
 | `DFHACK_MCP_ACTUATORS` | _(unset)_   | Set to `1` to expose the write actuators (off = strictly read-only).                                                    |
 | `DFHACK_MCP_DEV`       | _(unset)_   | Set to `1` to expose `run_lua`, a raw DFHack Lua escape hatch (reads **and writes** game state; for tool authors only). |
+| `DFHACK_MCP_QUERY_DIR` | _(unset)_   | Overrides the DFHack query script path for containerized environments (see [docker/README.md](docker/README.md)). |
 
 ## Troubleshooting
 

@@ -1,7 +1,8 @@
 import { cleanHtml } from './clean.ts';
+import pkg from '../../package.json';
 
 const API = 'https://dwarffortresswiki.org/api.php';
-const USER_AGENT = 'dfhack-mcp/0.1 (personal DF co-pilot)';
+const USER_AGENT = `${pkg.name}/${pkg.version} (personal DF co-pilot)`;
 // The wiki kept DF2014 for the Steam/Premium release — a known constant, no v50.
 export const VERSION_NS = 'DF2014';
 const SEARCH_LIMIT = 8;

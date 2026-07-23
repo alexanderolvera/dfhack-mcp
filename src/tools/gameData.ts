@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Provides access to the loaded world's raw data (ground truth) across six dossier kinds:
+ * creature, material, plant, reaction, item, building.
+ * This is the authoritative source for procedural creatures that never appear on the wiki.
+ */
 import { runJsonScript } from '../query.ts';
 import { z } from 'zod';
 import type { ToolDef } from '../register.ts';
