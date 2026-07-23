@@ -8,6 +8,27 @@ loosely while the tool surface is still evolving: **minor** releases (`1.x.0`)
 may change or remove tool output, and **patch** releases (`1.0.x`) are
 backwards-compatible fixes only.
 
+## [Unreleased]
+
+### Changed
+
+- **`trade`: caravan manifest and liaison price agreements** ([#85](https://github.com/alexanderolvera/dfhack-mcp/issues/85))
+  — each caravan row now also reports `manifest` (count, approximate value, and a
+  by-`item_type` breakdown of goods the caravan itself is carrying, before
+  anything is unloaded to the depot — distinct from `goods_at_depot`) and
+  `agreements` (active liaison price agreements as `price_pct_min`/`max`, 100 =
+  no markup: `export` rows are items the fort earns a bonus selling to the
+  caravan, by DF's item type; `import` rows are items the fort pays a premium
+  buying from the caravan, by DF's own request-tab category). Both fields are
+  computed per caravan inside a `pcall` and simply omitted if the live struct
+  doesn't match, so a caravan row still emits state/civ even if
+  manifest/agreements can't be read. Live-verified against the Dreamfort
+  fixture container: the no-caravan-present path (still no caravan on-site in
+  that fixture) is clean — depot/broker/goods fields match the pre-existing
+  golden exactly and the new fields correctly never populate — but the
+  populated-manifest/agreements path itself remains unexercised against real
+  data, same limitation as the original draft.
+
 ## [1.2.0] - 2026-07-21
 
 ### Added

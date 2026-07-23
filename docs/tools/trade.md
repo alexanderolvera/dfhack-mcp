@@ -81,7 +81,7 @@ None.
 ```
 
 ## Caveats & limits
-> **Status: draft, not yet verified against a live fort with a caravan present.** Field paths below follow DFHack 53.15-r2's documented structures but have not been confirmed against a running game — this is exactly the untested path CONTRIBUTING/VERIFY already flag for `trade`. Needs a `verify:t1`/`verify:t2` pass with a real caravan on-site and a re-authored golden before this ships.
+> **Status: the no-caravan-present path is live-verified; the populated manifest/agreements path is not.** Run against the Dreamfort fixture container (DFHack 53.15), which — like the fixture this code was originally drafted against — has no caravan currently at the depot: `verify:t1 --require-fort`, a direct `trade` call, `verify:invariants`, and `verify:t2 --update` all pass clean, the depot/broker/goods fields match the pre-existing golden exactly, and `caravans: []` means the new `manifest`/`agreements` code paths (and their `pcall` guards) simply never ran — there was nothing for them to run on. This confirms the extension doesn't crash or corrupt existing `trade` output when there's nothing to report. It does **not** confirm the manifest/agreement field paths themselves: those still follow DFHack 53.15-r2's documented structures unconfirmed against a live struct. Getting a fixture with a caravan actually on-site is the top priority for the next live check.
 
 - With multiple depots, a complete + accessible one is preferred so the summary reflects the depot actually usable for trade.
 - `leaving_in_days` appears only in states AtDepot/Leaving with a positive countdown (`time_remaining / 1200` ticks-per-day).
@@ -94,7 +94,7 @@ None.
 - Both agreement lists are aggregated per category (`entries` + a `price_pct` range), not itemized per material/subtype — deliberately, per "facts not itemized junk," and because per-entry material/subtype names aren't reliably decodable from the struct alone.
 - `manifest`/`agreements` are computed per caravan inside a `pcall`; if the live struct shape doesn't match what's coded here, the whole caravan row still emits (state/civ/leaving_in_days) but silently omits `manifest` and/or `agreements` rather than failing the tool.
 - `broker.present: false` with `assigned: true` means a noble on paper with no live unit on the map (dead/absent).
-- Authoring caveat from the Lua header: the fixture used to write this had NO caravan visiting — the active-caravan fields (Approaching/AtDepot/Leaving, `leaving_in_days`, merchant goods, and now `manifest`/`agreements`) are coded from the `caravan_state` struct but were not observed live; the quiet path (state none, depot + broker) is fully verified.
+- Authoring caveat from the Lua header: the original draft fixture had NO caravan visiting, and the Dreamfort container used for this pass's live verification has the same gap — the active-caravan fields (Approaching/AtDepot/Leaving, `leaving_in_days`, merchant goods, and `manifest`/`agreements`) are coded from the `caravan_state` struct but still have not been observed live; the quiet path (state none, depot + broker) is fully verified, twice now.
 - Returns `{"error":"no fort loaded"}` if no fort is active.
 
 ## Implementation notes
