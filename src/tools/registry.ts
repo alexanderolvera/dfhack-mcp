@@ -7,6 +7,7 @@ import { defensesDef } from './defenses.ts';
 import { environmentDef } from './environment.ts';
 import { farmingDef } from './farming.ts';
 import { findUnitDef } from './findUnit.ts';
+import { fortHealthDef } from './fortHealth.ts';
 import { fortStatusDef } from './fortStatus.ts';
 import { gameDataDef } from './gameData.ts';
 import { gameSaveDef } from './gameSave.ts';
@@ -44,6 +45,7 @@ export const ALL_TOOLS: ToolDef[] = [
   environmentDef,
   farmingDef,
   findUnitDef,
+  fortHealthDef,
   fortStatusDef,
   gameDataDef,
   gameSaveDef,
