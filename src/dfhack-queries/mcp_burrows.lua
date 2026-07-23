@@ -33,10 +33,13 @@ local function find_burrow(name)
   return nil
 end
 
--- The civilian-alert slot is ALWAYS alerts.list[1] by DFHack's own convention
--- (see gui/civ-alert.lua's get_civ_alert()); list[0] is the built-in "No alert".
--- READ-ONLY: never creates the slot — a fresh fort with no configured alert yet
--- simply reports civilian_alert.configured = false.
+local function find_burrow_by_id(id)
+  for _, b in ipairs(df.global.plotinfo.burrows.list) do
+    if b.id == id then return b end
+  end
+  return nil
+end
+
 local function civ_alert_burrow_ids()
   local list = df.global.plotinfo.alerts.list
   if #list < 2 then return {} end
@@ -86,25 +89,36 @@ if sub == nil or sub == 'list' then
   return
 end
 
-local function alert_signature(list_len, civ_idx, alert_ids)
+local function alert_signature(list_len, civ_idx, alert_ids, burrow_id)
   local sorted = {}
   for _, id in ipairs(alert_ids) do sorted[#sorted + 1] = id end
   table.sort(sorted)
-  return string.format('civalert/list_len=%d/civ_idx=%d/burrows=%s', list_len, civ_idx,
-    table.concat(sorted, ','))
+  -- burrow_id is bound into the signature (not just the sorted alert set) so
+  -- that if the previewed burrow is deleted and a DIFFERENT burrow is renamed
+  -- to reuse its name before apply, the token can't silently retarget.
+  return string.format('civalert/list_len=%d/civ_idx=%d/burrow_id=%d/burrows=%s',
+    list_len, civ_idx, burrow_id, table.concat(sorted, ','))
 end
 
+-- Targets by burrow_id when given (unambiguous — immune to rename/reuse);
+-- falls back to exact name match, which cannot address a burrow with an
+-- empty raw name (DF allows this; the in-game UI shows "Burrow N" for it).
 local function parse_toggle()
   local bname = a[2]
   local en_raw = a[3]
+  local id_raw = a[4]
   local enabled = (en_raw == 'true' or en_raw == '1')
   local blocked = {}
-  if not bname or bname == '' then
-    blocked[#blocked + 1] = 'burrow name is required'
-  end
-  local b = (bname and bname ~= '') and find_burrow(bname) or nil
-  if bname and bname ~= '' and not b then
-    blocked[#blocked + 1] = 'no burrow named "' .. bname .. '"'
+  local bid = tonumber(id_raw)
+  local b
+  if bid then
+    b = find_burrow_by_id(bid)
+    if not b then blocked[#blocked + 1] = 'no burrow with id ' .. tostring(bid) end
+  elseif bname and bname ~= '' then
+    b = find_burrow(bname)
+    if not b then blocked[#blocked + 1] = 'no burrow named "' .. bname .. '"' end
+  else
+    blocked[#blocked + 1] = 'burrow (name) or burrow_id is required'
   end
   return { bname = bname, enabled = enabled, b = b, blocked = blocked }
 end
@@ -146,7 +160,7 @@ if sub == 'plan_alert' or sub == 'apply_alert' then
         resulting_civilian_alert_burrows = resulting_ids,
         resulting_sounding = resulting_sounding,
       },
-      signature = alert_signature(list_len, civ_idx, alert_ids),
+      signature = alert_signature(list_len, civ_idx, alert_ids, p.b.id),
       noop = noop or nil,
     })
     return

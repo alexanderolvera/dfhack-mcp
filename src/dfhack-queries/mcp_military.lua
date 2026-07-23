@@ -13,11 +13,16 @@ local WORN_MODES = {
   [df.inv_item_role_type.Flask] = true,
 }
 
--- squad_position.occupant is a HISTORICAL FIGURE id, not a unit id.
+-- squad_position.occupant is a HISTORICAL FIGURE id, not a unit id. Only a
+-- living, present unit can actually wear its uniform, so a dead or off-map
+-- holder (still counted in `filled`) resolves to nil here rather than
+-- generating a misleading "incomplete uniform" alert for gear on a corpse.
 local function occupant_unit(pos)
   if pos.occupant == -1 then return nil end
   local hf = df.historical_figure.find(pos.occupant)
-  return hf and df.unit.find(hf.unit_id) or nil
+  local u = hf and df.unit.find(hf.unit_id)
+  if not u or dfhack.units.isDead(u) or not dfhack.units.isActive(u) then return nil end
+  return u
 end
 
 local function worn_item_ids(u)
@@ -44,9 +49,7 @@ local function uniform_rows(pos, worn)
         order[#order + 1] = tname
       end
       if #spec.assigned == 0 then
-        -- A required spec with NOTHING assigned is the actual shortage case (no
-        -- suitable item found/allocated yet) — count it as one missing piece, or
-        -- it's invisible to missing_count and uniform_complete reads true.
+        row.assigned_count = row.assigned_count + 1
         row.missing_count = row.missing_count + 1
       else
         for ai = 0, #spec.assigned - 1 do
@@ -73,7 +76,7 @@ local function roster_row(pos)
   return {
     unit_id = u.id,
     name = dfhack.units.getReadableName(u),
-    uniform = rows,
+    uniform = missing_total > 0 and rows or {},
     uniform_complete = missing_total == 0,
   }
 end
@@ -100,10 +103,6 @@ local function training_facts(sq)
   local m = routine and routine.month[month]
   local orders = {}
   if m then
-    -- m.orders[i] is a squad_schedule_order WRAPPER ({order, min_count, positions}) —
-    -- the polymorphic squad_order lives at .order and needs :getType() (confirmed
-    -- live: indexing squad_order_type with the wrapper itself silently resolves to
-    -- nil, so orders always read empty without this).
     for i = 0, #m.orders - 1 do
       orders[#orders + 1] = df.squad_order_type[m.orders[i].order:getType()]
     end

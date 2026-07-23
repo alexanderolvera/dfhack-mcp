@@ -13,12 +13,6 @@ local sub = a[1]
 
 local bt = df.building_type
 
--- gate_flags field names differ per target building type (matches DFHack's own
--- lever.lua flag_names table) — Bridge uses raised/lowered/raising/lowering,
--- Weapon (upright spikes) uses retracted/unretracted/retracting/unretracting,
--- Floodgate uses closed/open/closing/opening. Confirmed live: `closed`/`raised`
--- (the stable-state bit) are REAL fields on gate_flags, not just the two
--- transitional bits — read all four, not only the transitional pair.
 local GATE_FLAG_NAMES = setmetatable({
   [bt.Bridge] = { closed = 'raised', open = 'lowered', closing = 'raising', opening = 'lowering' },
   [bt.Weapon] = { closed = 'retracted', open = 'unretracted', closing = 'retracting', opening = 'unretracting' },
@@ -167,14 +161,21 @@ local function find_lever(id)
 end
 
 local function pull_signature(lever)
-  local ids = {}
-  for _, tgt in ipairs(linked_targets(lever)) do ids[#ids + 1] = tgt.building_id end
-  table.sort(ids)
-  local job_ids = {}
-  for _, j in ipairs(job_facts(lever.jobs)) do job_ids[#job_ids + 1] = j.id end
-  table.sort(job_ids)
+  local targets = linked_targets(lever)
+  table.sort(targets, function(x, y) return x.building_id < y.building_id end)
+  local target_parts = {}
+  for _, t in ipairs(targets) do
+    target_parts[#target_parts + 1] = string.format('%d:%s', t.building_id, tostring(t.state))
+  end
+  local jobs = job_facts(lever.jobs)
+  table.sort(jobs, function(x, y) return x.id < y.id end)
+  local job_parts = {}
+  for _, j in ipairs(jobs) do
+    job_parts[#job_parts + 1] = string.format('%d:%s:%s:%s', j.id, tostring(j.do_now),
+      tostring(j.repeating), tostring(j.suspended))
+  end
   return string.format('pull/id=%d/state=%d/targets=%s/jobs=%s', lever.id, lever.state,
-    table.concat(ids, ','), table.concat(job_ids, ','))
+    table.concat(target_parts, ','), table.concat(job_parts, ','))
 end
 
 local function parse_pull()

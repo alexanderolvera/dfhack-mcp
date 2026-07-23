@@ -114,8 +114,6 @@ export const mechanismsDef: ToolDef = {
 
 const s = (v: unknown): string => (v === undefined || v === null || v === '' ? '' : String(v));
 
-/** Lua's empty table encodes as `{}`, not `[]`; coerce a nested list field on an
- *  object in-place so callers always see an array, even when empty. */
 function normalizeListField(obj: unknown, key: string): void {
   if (obj && typeof obj === 'object' && !Array.isArray((obj as Record<string, unknown>)[key])) {
     (obj as Record<string, unknown>)[key] = [];

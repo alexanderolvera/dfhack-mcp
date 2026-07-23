@@ -50,7 +50,7 @@ No golden fixture exists for this tool (actuators are not golden-tested).
 
 ## Caveats & limits
 - Gated: registered only when `DFHACK_MCP_ACTUATORS` is set; the default server is read-only.
-- Tokens are single-use and void if the lever's state, linked targets, or queued-job set changes between preview and apply.
+- Tokens are single-use and void if the lever's own state, any linked target's building id OR reported state (e.g. a bridge finishing a raise/lower between preview and apply), or any queued job's id or do-now/repeat/suspend flags change between preview and apply.
 - **Queuing, not flipping.** `readback` still shows the pre-pull `state` and `linked_targets` state — the toggle happens later, once a dwarf performs the job. There's no "did it actually happen yet" readback here; call `mechanisms()` again after the job clears to see the result.
 - Returns `{"error":"no fort loaded"}` if no fort is active.
 
