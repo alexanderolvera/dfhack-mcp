@@ -1,8 +1,6 @@
 {
-  "active_hostiles": 5,
-  "alerts": [
-    "5 great-danger creatures loose (megabeast/titan/demon/FB); traits: trapavoid, fire, building_destroyer, ranged"
-  ],
+  "active_hostiles": 0,
+  "alerts": [],
   "contained": 2,
   "groups": [
     {
@@ -35,25 +33,6 @@
       ],
       "token": "GOBLIN",
       "traits": [
-        "ranged"
-      ],
-      "undead": false
-    },
-    {
-      "contained": false,
-      "count": 5,
-      "crazed": false,
-      "great_danger": true,
-      "invader": false,
-      "name": "Monster Of Vomit",
-      "ranged_attacks": [
-        "Spray vapor"
-      ],
-      "token": "DEMON_19",
-      "traits": [
-        "trapavoid",
-        "fire",
-        "building_destroyer",
         "ranged"
       ],
       "undead": false
