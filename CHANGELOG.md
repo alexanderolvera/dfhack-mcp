@@ -8,6 +8,24 @@ loosely while the tool surface is still evolving: **minor** releases (`1.x.0`)
 may change or remove tool output, and **patch** releases (`1.0.x`) are
 backwards-compatible fixes only.
 
+## [Unreleased]
+
+### Added
+
+- **`fluids` sensor** ([#80](https://github.com/alexanderolvera/dfhack-mcp/issues/80))
+  — water/magma engineering facts the Earthworks tier (`tile_region`, `geology`) reads
+  past: revealed aquifer layers by light/heavy classification, standing/flowing water
+  aggregated per z-level (salt/fresh, stagnant/flowing, depth), the magma sea's top
+  z-level once struck, full-depth water tiles exposed next to the fort's walkable
+  interior (a flood-exposure fact, not a leak prediction), and each well's water
+  source with depth-to-source — extending `rooms_and_zones`' well read rather than
+  duplicating it. Fog-of-war safe throughout, `reqscript`ing the shared
+  `mcp_readTerrain` legend/glyph convention. Verified live against DFHack 53.15-r2 and
+  the Dreamfort fixture: `aquifer_layers` and `wells` cross-checked against `geology`
+  and `rooms_and_zones` and agree; the magma-sea size-floor heuristic and salt-water
+  detection remain honestly flagged as unexercised, since the fixture never revealed
+  magma or salt water.
+
 ## [1.2.0] - 2026-07-21
 
 ### Added

@@ -940,4 +940,76 @@ export const INVARIANTS = [
       return out;
     },
   },
+  {
+    name: 'fluids_wellformed_and_wells_agree_with_rooms',
+    tools: ['fluids', 'rooms_and_zones'],
+    desc: 'aquifer/water layer z-ranges are ordered with non-negative tile counts, all four capped lists honor their _total/_truncated pairs, magma_sea (when present) clears its own size floor, and fluids.wells agrees with rooms_and_zones.wells on count/z/source',
+    check(p) {
+      const d = p.fluids;
+      const out = [];
+      // aquifer_layers: z_top >= z_bottom, non-negative tile counts, known classification.
+      (d.aquifer_layers ?? []).forEach((a, i) => {
+        if (!(isInt(a.z_top) && isInt(a.z_bottom) && a.z_top >= a.z_bottom))
+          out.push(`aquifer_layers[${i}] z_top=${a.z_top} < z_bottom=${a.z_bottom}`);
+        if (!(isInt(a.light_tiles) && a.light_tiles >= 0))
+          out.push(`aquifer_layers[${i}].light_tiles=${a.light_tiles} is not a non-negative integer`);
+        if (!(isInt(a.heavy_tiles) && a.heavy_tiles >= 0))
+          out.push(`aquifer_layers[${i}].heavy_tiles=${a.heavy_tiles} is not a non-negative integer`);
+        if (!['light', 'heavy', 'mixed'].includes(a.classification))
+          out.push(`aquifer_layers[${i}].classification="${a.classification}" is not light|heavy|mixed`);
+      });
+      // water_layers: non-negative counts, sub-buckets never exceed the row total, depth 1..7.
+      (d.water_layers ?? []).forEach((w, i) => {
+        if (!(isInt(w.tiles) && w.tiles >= 0))
+          out.push(`water_layers[${i}].tiles=${w.tiles} is not a non-negative integer`);
+        if (w.salt_tiles + w.fresh_tiles !== w.tiles)
+          out.push(`water_layers[${i}] salt_tiles+fresh_tiles != tiles (${w.salt_tiles}+${w.fresh_tiles} != ${w.tiles})`);
+        if (w.stagnant_tiles + w.flowing_tiles !== w.tiles)
+          out.push(`water_layers[${i}] stagnant_tiles+flowing_tiles != tiles (${w.stagnant_tiles}+${w.flowing_tiles} != ${w.tiles})`);
+        if (!inRange(w.max_depth, 1, 7))
+          out.push(`water_layers[${i}].max_depth=${w.max_depth} outside 1..7`);
+      });
+      // magma_sea, when present, genuinely clears its own documented 20-tile floor.
+      if (d.magma_sea !== undefined) {
+        if (!(isInt(d.magma_sea.revealed_tile_count) && d.magma_sea.revealed_tile_count >= 20))
+          out.push(`magma_sea.revealed_tile_count=${d.magma_sea.revealed_tile_count} is below the documented 20-tile floor`);
+        if (!isInt(d.magma_sea.top_z)) out.push(`magma_sea.top_z=${d.magma_sea.top_z} is not an integer`);
+      }
+      // Every capped list agrees with its own _total/_truncated pair.
+      for (const [listKey, totalKey, truncKey, cap] of [
+        ['aquifer_layers', 'aquifer_layers_total', 'aquifer_layers_truncated', 50],
+        ['water_layers', 'water_layers_total', 'water_layers_truncated', 200],
+        ['flood_risk_tiles', 'flood_risk_total', 'flood_risk_truncated', 50],
+        ['wells', 'wells_total', 'wells_truncated', 20],
+      ]) {
+        const list = d[listKey];
+        if (!Array.isArray(list)) {
+          out.push(`${listKey} is not an array`);
+          continue;
+        }
+        if (list.length > cap) out.push(`${listKey} length ${list.length} exceeds the cap of ${cap}`);
+        const shouldTrunc = isInt(d[totalKey]) && d[totalKey] > list.length;
+        if (Boolean(d[truncKey]) !== shouldTrunc)
+          out.push(`${truncKey}=${d[truncKey]} disagrees with ${totalKey}=${d[totalKey]} vs listed ${list.length}`);
+        if (!d[truncKey] && isInt(d[totalKey]) && d[totalKey] !== list.length)
+          out.push(`untruncated ${totalKey}=${d[totalKey]} !== listed ${list.length}`);
+      }
+      // wells cross-reference: fluids extends rooms_and_zones' well read with x/y/depth,
+      // so — deliberately mirroring the same scan — they must agree on count, and (when
+      // neither list is truncated) each fluids well's z/source has a matching counterpart.
+      const rz = p.rooms_and_zones;
+      if (isInt(d.wells_total) && isInt(rz.wells_total) && d.wells_total !== rz.wells_total)
+        out.push(`fluids.wells_total=${d.wells_total} != rooms_and_zones.wells_total=${rz.wells_total}`);
+      if (!d.wells_truncated && !rz.wells_truncated && Array.isArray(d.wells) && Array.isArray(rz.wells)) {
+        const rzRemaining = [...rz.wells];
+        for (const w of d.wells) {
+          const idx = rzRemaining.findIndex((r) => r.z === w.z && r.source === w.source);
+          if (idx === -1)
+            out.push(`fluids well at (${w.x},${w.y},${w.z}) source=${w.source} has no matching rooms_and_zones well`);
+          else rzRemaining.splice(idx, 1);
+        }
+      }
+      return out;
+    },
+  },
 ];

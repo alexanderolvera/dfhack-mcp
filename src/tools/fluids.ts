@@ -49,7 +49,8 @@ export interface Fluids {
   water_layers: WaterLayer[];
   water_layers_total: number;
   water_layers_truncated: boolean;
-  magma_sea: MagmaSea | null;
+  /** Absent (not `null`) when no revealed z-level clears the magma-sea size floor — DFHack's Lua `json` module has no null sentinel, so an unset field is omitted rather than encoded as `null` (same convention as `wells[].depth_to_source`). */
+  magma_sea?: MagmaSea;
   flood_risk_tiles: FloodRiskTile[];
   flood_risk_total: number;
   flood_risk_truncated: boolean;
@@ -86,9 +87,9 @@ export const fluidsDef: ToolDef = {
     'single lake spanning two z-levels appears as two rows) — capped at 200 z-levels. ' +
     'magma_sea is the highest revealed z-level with at least 20 revealed magma tiles ' +
     '(a size floor meant to separate a real magma sea from a small pool/volcano pipe), ' +
-    'or null if no such level is revealed. flood_risk_tiles[] lists revealed FULL-depth ' +
-    '(max_depth 7/7) water tiles chebyshev-adjacent to a tile in the same walkable group ' +
-    "as any citizen — a flood-EXPOSURE fact (this water sits next to fort-reachable " +
+    'omitted (not a null field) if no such level is revealed. flood_risk_tiles[] lists ' +
+    'revealed FULL-depth (max_depth 7/7) water tiles chebyshev-adjacent to a tile in the ' +
+    "same walkable group as any citizen — a flood-EXPOSURE fact (this water sits next to fort-reachable " +
     'space right now), not a prediction of whether or when it floods anything; capped ' +
     'at 50 (flood_risk_total/flood_risk_truncated track the real count). wells[] extends ' +
     "rooms_and_zones' well read with each well's x/y and the water source found scanning " +
