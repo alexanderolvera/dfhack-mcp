@@ -940,4 +940,99 @@ export const INVARIANTS = [
       return out;
     },
   },
+  {
+    name: 'petitions_wellformed',
+    tools: ['petitions'],
+    desc: 'location/residency petition rows carry a known status and only the deity/guild_profession field their building kind allows, the 50-row caps and awaiting_decision_count are honored, and alerts are non-empty strings',
+    check(p) {
+      const d = p.petitions;
+      const out = [];
+      const STATUSES = new Set(['outstanding', 'satisfied', 'denied', 'expired']);
+      const CAP = 50;
+
+      if (!Array.isArray(d.location_petitions)) {
+        out.push('location_petitions is not an array');
+      } else {
+        if (d.location_petitions.length > CAP)
+          out.push(`location_petitions length ${d.location_petitions.length} exceeds cap ${CAP}`);
+        if (typeof d.location_petitions_truncated !== 'boolean')
+          out.push(`location_petitions_truncated=${d.location_petitions_truncated} is not a boolean`);
+        d.location_petitions.forEach((row, i) => {
+          if (!isInt(row.agreement_id))
+            out.push(`location_petitions[${i}].agreement_id=${row.agreement_id} is not an integer`);
+          if (!['TEMPLE', 'GUILDHALL'].includes(row.building))
+            out.push(`location_petitions[${i}].building="${row.building}" is not TEMPLE/GUILDHALL`);
+          if (![1, 2].includes(row.tier))
+            out.push(`location_petitions[${i}].tier=${row.tier} is not 1 or 2`);
+          if (!(isInt(row.age_days) && row.age_days >= 0))
+            out.push(`location_petitions[${i}].age_days=${row.age_days} is not a non-negative integer`);
+          if (typeof row.warned_ready !== 'boolean')
+            out.push(`location_petitions[${i}].warned_ready=${row.warned_ready} is not a boolean`);
+          if (typeof row.awaiting_decision !== 'boolean')
+            out.push(`location_petitions[${i}].awaiting_decision=${row.awaiting_decision} is not a boolean`);
+          if (!STATUSES.has(row.status))
+            out.push(`location_petitions[${i}].status="${row.status}" is not a known status`);
+          if (row.building === 'TEMPLE' && 'guild_profession' in row)
+            out.push(`location_petitions[${i}] is TEMPLE but carries guild_profession`);
+          if (row.building === 'GUILDHALL' && 'deity' in row)
+            out.push(`location_petitions[${i}] is GUILDHALL but carries deity`);
+        });
+      }
+
+      if (!Array.isArray(d.residency_petitions)) {
+        out.push('residency_petitions is not an array');
+      } else {
+        if (d.residency_petitions.length > CAP)
+          out.push(`residency_petitions length ${d.residency_petitions.length} exceeds cap ${CAP}`);
+        if (typeof d.residency_petitions_truncated !== 'boolean')
+          out.push(
+            `residency_petitions_truncated=${d.residency_petitions_truncated} is not a boolean`
+          );
+        d.residency_petitions.forEach((row, i) => {
+          if (!isInt(row.agreement_id))
+            out.push(`residency_petitions[${i}].agreement_id=${row.agreement_id} is not an integer`);
+          if (!['Residency', 'Citizenship'].includes(row.kind))
+            out.push(`residency_petitions[${i}].kind="${row.kind}" is not Residency/Citizenship`);
+          if (!(isInt(row.age_days) && row.age_days >= 0))
+            out.push(`residency_petitions[${i}].age_days=${row.age_days} is not a non-negative integer`);
+          if (row.deadline_days !== null && !(isInt(row.deadline_days) && row.deadline_days >= 0))
+            out.push(
+              `residency_petitions[${i}].deadline_days=${row.deadline_days} is not null or a non-negative integer`
+            );
+          if (typeof row.awaiting_decision !== 'boolean')
+            out.push(`residency_petitions[${i}].awaiting_decision=${row.awaiting_decision} is not a boolean`);
+          if (!STATUSES.has(row.status))
+            out.push(`residency_petitions[${i}].status="${row.status}" is not a known status`);
+        });
+      }
+
+      if (!(isInt(d.awaiting_decision_count) && d.awaiting_decision_count >= 0)) {
+        out.push(`awaiting_decision_count=${d.awaiting_decision_count} is not a non-negative integer`);
+      } else if (Array.isArray(d.location_petitions) && Array.isArray(d.residency_petitions)) {
+        const visible =
+          d.location_petitions.filter((r) => r.awaiting_decision).length +
+          d.residency_petitions.filter((r) => r.awaiting_decision).length;
+        const anyTruncated = d.location_petitions_truncated || d.residency_petitions_truncated;
+        if (!anyTruncated && d.awaiting_decision_count !== visible)
+          out.push(
+            `awaiting_decision_count=${d.awaiting_decision_count} != visible awaiting rows ${visible} (untruncated)`
+          );
+        if (d.awaiting_decision_count < visible)
+          out.push(
+            `awaiting_decision_count=${d.awaiting_decision_count} is less than visible awaiting rows ${visible}`
+          );
+      }
+
+      if (!Array.isArray(d.alerts)) {
+        out.push('alerts is not an array');
+      } else {
+        d.alerts.forEach((s, i) => {
+          if (typeof s !== 'string' || !s.trim())
+            out.push(`alerts[${i}] is not a non-empty string`);
+        });
+      }
+
+      return out;
+    },
+  },
 ];
