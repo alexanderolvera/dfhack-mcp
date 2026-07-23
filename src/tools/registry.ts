@@ -21,6 +21,7 @@ import { mandatesAndJusticeDef } from './mandatesAndJustice.ts';
 import { militaryDef } from './military.ts';
 import { moodsDef } from './moods.ts';
 import { noblesAndAdministratorsDef } from './noblesAndAdministrators.ts';
+import { petitionsDef } from './petitions.ts';
 import { roomsAndZonesDef } from './roomsAndZones.ts';
 import { runLuaDef } from './runLua.ts';
 import { siteHistoryDef } from './siteHistory.ts';
@@ -60,6 +61,7 @@ export const ALL_TOOLS: ToolDef[] = [
   militaryDef,
   moodsDef,
   noblesAndAdministratorsDef,
+  petitionsDef,
   roomsAndZonesDef,
   runLuaDef,
   siteHistoryDef,

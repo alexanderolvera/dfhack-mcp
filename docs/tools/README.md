@@ -34,6 +34,7 @@ Doctrine reminder: every tool is **facts-only** — it senses and reports; judgm
 - [mandates_and_justice](mandates_and_justice.md) — nobles' mandates, crime, punishments
 - [nobles_and_administrators](nobles_and_administrators.md) — appointed positions and vacancies
 - [rooms_and_zones](rooms_and_zones.md) — bedrooms, temples, civzones, burial
+- [petitions](petitions.md) — location and residency/citizenship petitions awaiting decision
 - [livestock_and_pastures](livestock_and_pastures.md) — tame animals, pastures, cages, slaughter
 - [artifacts_and_engravings](artifacts_and_engravings.md) — artifacts and engraving coverage
 - [chronicle](chronicle.md) — recent events via the report stream (cursor-paginated)

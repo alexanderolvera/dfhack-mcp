@@ -42,6 +42,16 @@ backwards-compatible fixes only.
   and `rooms_and_zones` and agree; the magma-sea size-floor heuristic and salt-water
   detection remain honestly flagged as unexercised, since the fixture never revealed
   magma or salt water.
+- **`petitions` sensor** ([#81](https://github.com/alexanderolvera/dfhack-mcp/issues/81))
+  — the fort's outstanding agreements as facts: location petitions (temple/guildhall
+  requests from a deity's worshippers or a guild) and residency/citizenship petitions
+  (a migrant or visitor asking to join the fort), each with petitioner, agreed date,
+  and resolution status, cross-referenced against the fort's live pending-decision
+  queue. A location petition can sit agreed-to-but-never-built indefinitely
+  (`warned_ready` catches it), and a residency/citizenship petition has a real
+  decision window that expires if ignored — both previously invisible failure modes.
+  The demand-fulfillment counterpart to `rooms_and_zones`'s inferred
+  `needed_by_worshippers`.
 
 ## [1.2.0] - 2026-07-21
 
