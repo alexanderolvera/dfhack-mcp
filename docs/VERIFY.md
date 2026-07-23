@@ -192,6 +192,16 @@ Never `--update` against a non-fixture fort.
   is the clock-stepping exception: its AC is about *only-new-events after time
   passes*, so its check steps the clock rather than staying frozen. Everything
   else is frozen by default.
+- **`fort_health`'s `fps`/`gfps`** are a live-reading exception discovered verifying
+  against the fixture: `df.global.enabler.calculated_fps`/`calculated_gfps` measure
+  DFHack's own render/tick-loop cadence, which keeps advancing in real time even
+  against a paused fort — confirmed live (two calls a few seconds apart returned
+  `99`/`6` then `100`/`8`) while every other field in the same payload stayed
+  byte-identical. `scripts/verify.mjs`'s `VOLATILE_FIELDS` masks just those two
+  fields to `null` before the golden snapshot/compare, so T2 doesn't flap on
+  wall-clock timing; the real values are still shape/bounds-checked live by the
+  `fort_health_wellformed_and_bounds_population` invariant. See
+  [`docs/tools/fort_health.md`](tools/fort_health.md)'s Implementation notes.
 - **Actuators** (write tools, Tier 2 / M3) verify as **fixture → apply → assert
   readback → restore-fixture**. Still deterministic; the committed save is the
   anchor the apply is measured against and restored to.

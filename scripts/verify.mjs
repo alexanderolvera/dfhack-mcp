@@ -109,6 +109,26 @@ const GOLDEN_NO_ARG = new Set(['tile_region', 'work_details']);
 // against a committed save). game_data/identify fuse world raws — kept in T2.
 const NETWORK_TOOLS = new Set(['wiki_search', 'wiki_lookup']);
 
+// Fields that are a LIVE instantaneous reading, not part of the frozen game
+// state, even against a paused fixture — verified live: fort_health's fps/gfps
+// read DFHack's own calculated_fps/calculated_gfps, which keep advancing off
+// the engine's real-time render/tick loop regardless of game-pause state (two
+// calls a few seconds apart returned 99/6 then 100/8, while every other field
+// in the same payload was byte-identical). Masked to null before the golden
+// snapshot/compare so T2 doesn't flap on wall-clock timing; the tool's real,
+// unmasked output is still shape/bounds-checked live by the
+// fort_health_wellformed_and_bounds_population invariant. See docs/VERIFY.md's
+// Special cases.
+const VOLATILE_FIELDS = { fort_health: ['fps', 'gfps'] };
+
+function maskVolatile(name, data) {
+  const fields = VOLATILE_FIELDS[name];
+  if (!fields || !data || typeof data !== 'object') return data;
+  const masked = { ...data };
+  for (const f of fields) if (f in masked) masked[f] = null;
+  return masked;
+}
+
 // Tools reached in every tier but NOT captured as T2 goldens. The actuators
 // return a fresh random confirm_token in their dry-run preview (non-deterministic);
 // work_order_list is a large, fort-specific order set better checked by a
@@ -347,7 +367,7 @@ async function tier2(client) {
       console.log(`  ○ ${name}: not goldened (covered by invariant + reachability)`);
       continue;
     }
-    const snapshot = JSON.stringify(canonicalize(data), null, 2) + '\n';
+    const snapshot = JSON.stringify(canonicalize(maskVolatile(name, data)), null, 2) + '\n';
     const file = join(GOLDEN_DIR, `${name}.json`);
     if (update || !existsSync(file)) {
       writeFileSync(file, snapshot);

@@ -8,6 +8,21 @@ loosely while the tool surface is still evolving: **minor** releases (`1.x.0`)
 may change or remove tool output, and **patch** releases (`1.0.x`) are
 backwards-compatible fixes only.
 
+## [Unreleased]
+
+### Added
+
+- **`fort_health` sensor** ([#83](https://github.com/alexanderolvera/dfhack-mcp/issues/83))
+  — the fort's computational health as facts: the engine's own currently
+  calculated simulation/graphics frame rates (`fps`/`gfps`, the same numbers
+  DF's own status bar shows), fort-wide item-object counts broken out by the
+  classic clutter candidates (stone, corpses, clothes — raw totals distinct
+  from `stocks`' usable-stock counts), and unit counts split active vs.
+  dead-on-map. FPS death is the true endgame boss of Dwarf Fortress, and
+  nothing in this server reported the fort's computational health before this
+  tool; `fort_health` gives an AI co-pilot the raw facts to notice a fort
+  trending toward simulation collapse before it happens.
+
 ## [1.2.0] - 2026-07-21
 
 ### Added

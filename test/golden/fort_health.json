@@ -1,0 +1,14 @@
+{
+  "fps": null,
+  "gfps": null,
+  "items": {
+    "clothes": 1146,
+    "corpses": 407,
+    "stone": 2075,
+    "total": 12038
+  },
+  "units": {
+    "active": 177,
+    "dead_on_map": 0
+  }
+}

@@ -846,6 +846,40 @@ export const INVARIANTS = [
     },
   },
   {
+    name: 'fort_health_wellformed_and_bounds_population',
+    tools: ['fort_health', 'fort_status'],
+    desc: 'fps/gfps and every item/unit count are non-negative, and units.active (all simulated units, unfiltered) is never less than fort_status.population (citizens are a subset of active units)',
+    check(p) {
+      const d = p.fort_health;
+      const out = [];
+      for (const k of ['fps', 'gfps']) {
+        if (!(isInt(d[k]) && d[k] >= 0)) out.push(`${k}=${d[k]} is not a non-negative integer`);
+      }
+      const items = d.items ?? {};
+      for (const k of ['total', 'stone', 'corpses', 'clothes']) {
+        if (!(isInt(items[k]) && items[k] >= 0))
+          out.push(`items.${k}=${items[k]} is not a non-negative integer`);
+      }
+      for (const k of ['stone', 'corpses', 'clothes']) {
+        if (isInt(items[k]) && isInt(items.total) && items[k] > items.total)
+          out.push(`items.${k}=${items[k]} exceeds items.total=${items.total}`);
+      }
+      const units = d.units ?? {};
+      for (const k of ['active', 'dead_on_map']) {
+        if (!(isInt(units[k]) && units[k] >= 0))
+          out.push(`units.${k}=${units[k]} is not a non-negative integer`);
+      }
+      // units.active is every currently-simulated living unit (citizens, tame
+      // animals, wildlife, hostiles, visitors) — a superset of the fort's own
+      // citizens, so it can never fall below fort_status's citizen population.
+      if (isInt(units.active) && isInt(p.fort_status.population) && units.active < p.fort_status.population)
+        out.push(
+          `units.active=${units.active} is less than fort_status.population=${p.fort_status.population}`
+        );
+      return out;
+    },
+  },
+  {
     name: 'work_details_wellformed',
     tools: ['work_details'],
     desc: 'each detail has a non-empty name, a known mode, string labor tokens, ascending integer members agreeing with member_count + the 200 cap/truncation flag (cursor-aware), members_cursor present iff truncated, and parallel member_names',
