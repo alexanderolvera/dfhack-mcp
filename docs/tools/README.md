@@ -28,7 +28,7 @@ Doctrine reminder: every tool is **facts-only** — it senses and reports; judgm
 *Economy & society*
 - [stocks](stocks.md) — food/booze/materials counts
 - [farming](farming.md) — farm plots, crop assignment by season, seed stock
-- [trade](trade.md) — depot, broker, caravan state
+- [trade](trade.md) — depot, broker, caravan state, caravan manifest, and liaison price agreements
 - [work_order_list](work_order_list.md) — manager work-order queue
 - [mandates_and_justice](mandates_and_justice.md) — nobles' mandates, crime, punishments
 - [nobles_and_administrators](nobles_and_administrators.md) — appointed positions and vacancies
