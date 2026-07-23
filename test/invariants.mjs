@@ -991,7 +991,7 @@ export const INVARIANTS = [
   {
     name: 'mechanisms_wellformed',
     tools: ['mechanisms'],
-    desc: 'lever state is 0/1, unlinked_levers is exactly the levers with no linked_targets, and unlinked_bridges never appears as any linked_target building_id',
+    desc: 'lever state is 0/1, unlinked_levers is exactly the levers with no linked_targets, unlinked_bridges never appears as any lever OR plate linked_target building_id, and the four capped lists honor their 200 cap + truncation flag',
     check(p) {
       const d = p.mechanisms;
       const out = [];
@@ -1007,6 +1007,9 @@ export const INVARIANTS = [
         if (lv.linked_targets.length === 0) emptyLeverIds.add(lv.building_id);
         lv.linked_targets.forEach((t) => linkedTargetIds.add(t.building_id));
       });
+      (d.pressure_plates ?? []).forEach((pl) => {
+        (pl.linked_targets ?? []).forEach((t) => linkedTargetIds.add(t.building_id));
+      });
       const unlinkedSet = new Set(d.unlinked_levers ?? []);
       if (unlinkedSet.size !== emptyLeverIds.size || [...unlinkedSet].some((id) => !emptyLeverIds.has(id)))
         out.push(
@@ -1015,6 +1018,22 @@ export const INVARIANTS = [
       (d.unlinked_bridges ?? []).forEach((id) => {
         if (linkedTargetIds.has(id)) out.push(`unlinked_bridges lists ${id}, but a lever/plate targets it`);
       });
+      const capChecks = [
+        ['levers', d.levers, d.lever_count, d.levers_truncated],
+        ['pressure_plates', d.pressure_plates, d.plate_count, d.pressure_plates_truncated],
+        ['unlinked_levers', d.unlinked_levers, d.unlinked_levers?.length, d.unlinked_levers_truncated],
+        ['unlinked_bridges', d.unlinked_bridges, d.unlinked_bridges?.length, d.unlinked_bridges_truncated],
+      ];
+      for (const [name, list, total, truncated] of capChecks) {
+        if (!Array.isArray(list)) {
+          out.push(`${name} is not an array`);
+          continue;
+        }
+        if (list.length > 200) out.push(`${name} length ${list.length} exceeds the cap of 200`);
+        const shouldTrunc = isInt(total) && total > list.length;
+        if (Boolean(truncated) !== shouldTrunc)
+          out.push(`${name}_truncated=${truncated} disagrees with total ${total} vs listed ${list.length}`);
+      }
       return out;
     },
   },

@@ -273,11 +273,12 @@ async function resolveLiveArgs(client) {
     const target = details.find((d) => !(d.members ?? []).includes(uid));
     if (target) TOOL_ARGS.assign_work_detail = { unit_id: uid, detail: target.name, enabled: true };
   }
-  // civilian_alert(burrow) <- burrows()'s first burrow, so the DRY-RUN previews a
-  // real toggle (still never applied — no confirm_token).
+  // civilian_alert(burrow_id) <- burrows()'s first burrow, so the DRY-RUN previews a
+  // real toggle (still never applied — no confirm_token). Resolved by id, not name:
+  // an unnamed burrow has name === '', which fails the actuator's min-length schema.
   const br = await callJson(client, 'burrows');
-  const firstBurrow = br.data?.burrows?.[0]?.name;
-  if (firstBurrow != null) TOOL_ARGS.civilian_alert = { burrow: firstBurrow, enabled: true };
+  const firstBurrowId = br.data?.burrows?.[0]?.id;
+  if (firstBurrowId != null) TOOL_ARGS.civilian_alert = { burrow_id: firstBurrowId, enabled: true };
   // pull_lever(lever_id) <- mechanisms()'s first lever, so the DRY-RUN previews a
   // real lever (still never applied — no confirm_token).
   const mech = await callJson(client, 'mechanisms');

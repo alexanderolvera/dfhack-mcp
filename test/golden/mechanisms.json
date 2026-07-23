@@ -210,8 +210,12 @@
       "state": 0
     }
   ],
+  "levers_truncated": false,
   "plate_count": 0,
   "pressure_plates": [],
+  "pressure_plates_truncated": false,
   "unlinked_bridges": [],
-  "unlinked_levers": []
+  "unlinked_bridges_truncated": false,
+  "unlinked_levers": [],
+  "unlinked_levers_truncated": false
 }

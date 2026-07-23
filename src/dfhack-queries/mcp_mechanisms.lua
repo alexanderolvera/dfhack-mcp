@@ -99,6 +99,17 @@ local function plate_facts(b)
   }
 end
 
+local LEVER_CAP, PLATE_CAP, UNLINKED_CAP = 200, 200, 200
+
+local function cap(list, n)
+  local truncated = false
+  while #list > n do
+    table.remove(list)
+    truncated = true
+  end
+  return truncated
+end
+
 if sub == nil or sub == 'list' then
   local levers, plates = {}, {}
   local linked_target_ids = {}
@@ -135,14 +146,26 @@ if sub == nil or sub == 'list' then
   end
   table.sort(unlinked_bridges)
 
+  -- Counts are captured from the FULL sets, before any of the four lists below
+  -- get capped, so *_count always reflects the true total even when truncated.
+  local lever_count, plate_count, bridge_count = #levers, #plates, #bridges
+  local levers_truncated = cap(levers, LEVER_CAP)
+  local plates_truncated = cap(plates, PLATE_CAP)
+  local unlinked_levers_truncated = cap(unlinked_levers, UNLINKED_CAP)
+  local unlinked_bridges_truncated = cap(unlinked_bridges, UNLINKED_CAP)
+
   emit({
-    lever_count = #levers,
+    lever_count = lever_count,
     levers = levers,
-    plate_count = #plates,
+    levers_truncated = levers_truncated,
+    plate_count = plate_count,
     pressure_plates = plates,
+    pressure_plates_truncated = plates_truncated,
     unlinked_levers = unlinked_levers,
-    bridge_count = #bridges,
+    unlinked_levers_truncated = unlinked_levers_truncated,
+    bridge_count = bridge_count,
     unlinked_bridges = unlinked_bridges,
+    unlinked_bridges_truncated = unlinked_bridges_truncated,
   })
   return
 end

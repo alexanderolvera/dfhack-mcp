@@ -63,11 +63,15 @@ export interface PressurePlateRow {
 export interface Mechanisms {
   lever_count: number;
   levers: LeverRow[];
+  levers_truncated: boolean;
   plate_count: number;
   pressure_plates: PressurePlateRow[];
+  pressure_plates_truncated: boolean;
   unlinked_levers: number[];
+  unlinked_levers_truncated: boolean;
   bridge_count: number;
   unlinked_bridges: number[];
+  unlinked_bridges_truncated: boolean;
 }
 
 export async function mechanisms(): Promise<Mechanisms | { error: string }> {
@@ -107,7 +111,10 @@ export const mechanismsDef: ToolDef = {
     'conditions (citizens, creatures with a weight range, a minecart-weight range on ' +
     'track, or water/magma depth ranges). unlinked_levers is the ids of levers wired to ' +
     'nothing (dead ends); unlinked_bridges is bridges no lever or plate in the fort ' +
-    'currently operates (must be hand-opened/closed, or are permanently fixed). Pairs ' +
+    'currently operates (must be hand-opened/closed, or are permanently fixed). ' +
+    'levers[]/pressure_plates[]/unlinked_levers[]/unlinked_bridges[] are each capped at ' +
+    '200 (id-sorted) with their own *_truncated flag — lever_count/plate_count/' +
+    'bridge_count are always the true totals regardless of truncation. Pairs ' +
     'with the pull_lever actuator. Returns {"error":"no fort loaded"} if no fort is active.',
   run: mechanisms,
 };

@@ -18,13 +18,13 @@ Completes the emergency-response trio with `civilian_alert` and the nearest-draw
 None.
 
 ## Returns
-- `lever_count`, `levers[]` — `{ building_id, name, pos, state, linked_targets, pending_pull_jobs }` per lever, id-sorted.
+- `lever_count`, `levers[]`, `levers_truncated` — `{ building_id, name, pos, state, linked_targets, pending_pull_jobs }` per lever, id-sorted and capped at 200; `lever_count` is always the true total regardless of truncation.
   - `state` — the lever's own physical orientation, 0 or 1 (NOT which way any linked gate is).
   - `linked_targets[]` — `{ building_id, type, pos, state? }`, one per building the lever's mechanism items connect to (bridge/door/floodgate/hatch/support/weapon-trap). `state`: `raised`/`lowered`/`raising`/`lowering` for a Bridge, `closed`/`open`/`closing`/`opening` for a Floodgate, `closed`/`open` (no transitional state) for a Door/Hatch, `retracted`/`unretracted`/`retracting`/`unretracting` for a Weapon spike; absent for a target exposing neither `gate_flags` nor `door_flags` (e.g. Support).
   - `pending_pull_jobs[]` — `{ id, do_now, repeating, suspended }`, PullLever jobs already queued on this lever.
-- `plate_count`, `pressure_plates[]` — `{ building_id, name, pos, linked_targets, triggers }` per pressure plate, id-sorted. `triggers` is the configured trip conditions: `citizens` (bool), `creatures` (bool) with `creature_weight_min`/`max`, `minecart_track` (bool) with `minecart_weight_min`/`max`, `water`/`magma` (bool) each with a `_depth_min`/`_depth_max` range.
-- `unlinked_levers[]` — building ids of levers wired to nothing (dead ends).
-- `bridge_count`, `unlinked_bridges[]` — building ids of bridges no lever or plate in the fort currently operates.
+- `plate_count`, `pressure_plates[]`, `pressure_plates_truncated` — `{ building_id, name, pos, linked_targets, triggers }` per pressure plate, id-sorted and capped at 200. `triggers` is the configured trip conditions: `citizens` (bool), `creatures` (bool) with `creature_weight_min`/`max`, `minecart_track` (bool) with `minecart_weight_min`/`max`, `water`/`magma` (bool) each with a `_depth_min`/`_depth_max` range.
+- `unlinked_levers[]`, `unlinked_levers_truncated` — building ids of levers wired to nothing (dead ends), capped at 200.
+- `bridge_count`, `unlinked_bridges[]`, `unlinked_bridges_truncated` — building ids of bridges no lever or plate in the fort currently operates, capped at 200.
 
 ```json
 {
@@ -38,17 +38,21 @@ None.
       ]
     }
   ],
+  "levers_truncated": false,
   "plate_count": 0,
   "pressure_plates": [],
+  "pressure_plates_truncated": false,
   "unlinked_levers": [],
+  "unlinked_levers_truncated": false,
   "bridge_count": 8,
-  "unlinked_bridges": []
+  "unlinked_bridges": [],
+  "unlinked_bridges_truncated": false
 }
 ```
 
 ## Caveats & limits
 - Returns `{"error":"no fort loaded"}` when no fort is active.
-- No caps: lever/plate/bridge counts are small in practice (fort mechanism counts rarely reach the dozens).
+- `levers[]`/`pressure_plates[]`/`unlinked_levers[]`/`unlinked_bridges[]` are each independently capped at 200 (id-sorted before capping) with their own `*_truncated` flag; `lever_count`/`plate_count`/`bridge_count` are always the true totals, unaffected by truncation.
 - `state` on a linked target is best-effort — only buildings that expose `gate_flags` or `door_flags` report it (wrapped in `pcall`); a Support or an unusual target type reports no `state`.
 - A lever/plate can have zero, one, or multiple `linked_targets` (multiple mechanisms can be installed on one trap); `unlinked_levers` is exactly the levers with an empty list.
 
