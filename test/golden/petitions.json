@@ -1,0 +1,33 @@
+{
+  "alerts": [],
+  "awaiting_decision_count": 0,
+  "location_petitions": [
+    {
+      "age_days": 424,
+      "agreed_year": 6,
+      "agreement_id": 1,
+      "awaiting_decision": false,
+      "building": "GUILDHALL",
+      "guild_profession": "farmer",
+      "petitioner": "The Guild of Leaves",
+      "status": "satisfied",
+      "tier": 1,
+      "warned_ready": false
+    },
+    {
+      "age_days": 278,
+      "agreed_year": 7,
+      "agreement_id": 2,
+      "awaiting_decision": false,
+      "building": "GUILDHALL",
+      "guild_profession": "craftsman",
+      "petitioner": "The Hall of Fortresses",
+      "status": "satisfied",
+      "tier": 1,
+      "warned_ready": false
+    }
+  ],
+  "location_petitions_truncated": false,
+  "residency_petitions": [],
+  "residency_petitions_truncated": false
+}

@@ -8,6 +8,91 @@ loosely while the tool surface is still evolving: **minor** releases (`1.x.0`)
 may change or remove tool output, and **patch** releases (`1.0.x`) are
 backwards-compatible fixes only.
 
+## [Unreleased]
+
+### Added
+
+- **`stockpiles` sensor** ([#79](https://github.com/alexanderolvera/dfhack-mcp/issues/79))
+  — hauling/logistics, previously invisible to an AI co-pilot: `stocks` reports
+  fort-wide material totals but nothing about where goods physically sit or
+  whether the piles themselves are configured sanely. Reports one row per
+  stockpile (accepted categories, exact bounds, barrel/bin/wheelbarrow
+  permissions, give/take hauling-route links, and an approximate fullness
+  reading) plus three fort-wide backlog signals: items piling up unstored
+  outside any pile, food/organic matter that has already rotted while sitting
+  unstored, and items currently flagged for dumping. Verified live against the
+  Dreamfort fixture (60 stockpiles): the dynamic bitfield-key category lookup
+  — the single highest-risk piece of the original draft — checks out exactly
+  against the game's own 17 named category flags, and `give_to`/`take_from`
+  hauling-route links are reciprocal across the fixture's full link graph
+  (now enforced fort-wide by a new `stockpiles_wellformed` invariant). The
+  fullness reading remains a deliberately rough proxy — confirmed to read
+  well over 100% on container-heavy and long-lived single-tile dump piles,
+  as documented.
+- **`fluids` sensor** ([#80](https://github.com/alexanderolvera/dfhack-mcp/issues/80))
+  — water/magma engineering facts the Earthworks tier (`tile_region`, `geology`) reads
+  past: revealed aquifer layers by light/heavy classification, standing/flowing water
+  aggregated per z-level (salt/fresh, stagnant/flowing, depth), the magma sea's top
+  z-level once struck, full-depth water tiles exposed next to the fort's walkable
+  interior (a flood-exposure fact, not a leak prediction), and each well's water
+  source with depth-to-source — extending `rooms_and_zones`' well read rather than
+  duplicating it. Fog-of-war safe throughout, `reqscript`ing the shared
+  `mcp_readTerrain` legend/glyph convention. Verified live against DFHack 53.15-r2 and
+  the Dreamfort fixture: `aquifer_layers` and `wells` cross-checked against `geology`
+  and `rooms_and_zones` and agree; the magma-sea size-floor heuristic and salt-water
+  detection remain honestly flagged as unexercised, since the fixture never revealed
+  magma or salt water.
+- **`petitions` sensor** ([#81](https://github.com/alexanderolvera/dfhack-mcp/issues/81))
+  — the fort's outstanding agreements as facts: location petitions (temple/guildhall
+  requests from a deity's worshippers or a guild) and residency/citizenship petitions
+  (a migrant or visitor asking to join the fort), each with petitioner, agreed date,
+  and resolution status, cross-referenced against the fort's live pending-decision
+  queue. A location petition can sit agreed-to-but-never-built indefinitely
+  (`warned_ready` catches it), and a residency/citizenship petition has a real
+  decision window that expires if ignored — both previously invisible failure modes.
+  The demand-fulfillment counterpart to `rooms_and_zones`'s inferred
+  `needed_by_worshippers`.
+- **`fort_health` sensor** ([#83](https://github.com/alexanderolvera/dfhack-mcp/issues/83))
+  — the fort's computational health as facts: the engine's own currently
+  calculated simulation/graphics frame rates (`fps`/`gfps`, the same numbers
+  DF's own status bar shows), fort-wide item-object counts broken out by the
+  classic clutter candidates (stone, corpses, clothes — raw totals distinct
+  from `stocks`' usable-stock counts), and unit counts split active vs.
+  dead-on-map. FPS death is the true endgame boss of Dwarf Fortress, and
+  nothing in this server reported the fort's computational health before this
+  tool; `fort_health` gives an AI co-pilot the raw facts to notice a fort
+  trending toward simulation collapse before it happens.
+- **`hauling_routes` sensor** ([#84](https://github.com/alexanderolvera/dfhack-mcp/issues/84))
+  — the sensor half of a deferred minecart-route actuator: nothing previously saw
+  track-based hauling at all. Reports every configured route with its stops (each
+  stop's linked stockpiles as take/give, and departure conditions — direction, dwarf
+  handling mode, and load-percent threshold), which vehicles are assigned to which
+  route, where each currently sits, and fort-wide vehicle state including
+  `minecart_assigned` — whether a vehicle's backing item still actually exists, since
+  a route can silently stop moving goods after its cart is destroyed or stolen while
+  the route itself keeps listing it.
+
+### Changed
+
+- **`trade`: caravan manifest and liaison price agreements** ([#85](https://github.com/alexanderolvera/dfhack-mcp/issues/85))
+  — each caravan row now also reports `manifest` (count, approximate value, and a
+  by-`item_type` breakdown of goods the caravan itself is carrying, before
+  anything is unloaded to the depot — distinct from `goods_at_depot`) and
+  `agreements` (active liaison price agreements as `price_pct_min`/`max`, 100 =
+  no markup: `export` rows are items the fort earns a bonus selling to the
+  caravan, by DF's item type; `import` rows are items the fort pays a premium
+  buying from the caravan, by DF's own request-tab category). Both fields are
+  computed per caravan inside a `pcall`; a caravan row still emits state/civ
+  either way, and if reading manifest/agreements fails against a real caravan
+  the row carries `manifest_error`/`agreements_error` (the raw error) instead
+  of the field, so a genuine bug can't look identical to "nothing to report."
+  Live-verified against the Dreamfort
+  fixture container: the no-caravan-present path (still no caravan on-site in
+  that fixture) is clean — depot/broker/goods fields match the pre-existing
+  golden exactly and the new fields correctly never populate — but the
+  populated-manifest/agreements path itself remains unexercised against real
+  data, same limitation as the original draft.
+
 ## [1.2.0] - 2026-07-21
 
 ### Added

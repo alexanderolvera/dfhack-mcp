@@ -8,6 +8,9 @@ end
 
 local TICKS_PER_DAY = 1200
 local CARAVANS_CAP = 8
+local MANIFEST_CATEGORY_CAP = 30
+local AGREEMENT_CAP = 30
+local PRICE_FIXED_POINT = 128
 
 local depots = df.global.world.buildings.other.TRADE_DEPOT or {}
 local depot = { exists = false, accessible = false, complete = false, trader_requested = false }
@@ -48,6 +51,98 @@ local function civ_of(eid)
   return civ
 end
 
+local function capped_sorted(list, cap, less)
+  table.sort(list, less)
+  local truncated = false
+  if #list > cap then
+    local kept = {}
+    for i = 1, cap do kept[i] = list[i] end
+    list = kept
+    truncated = true
+  end
+  return list, truncated
+end
+
+local function manifest_of(c)
+  local m = { count = 0, approx_value = 0 }
+  local cat_counts = {}
+  for _, item_id in ipairs(c.goods) do
+    local it = df.item.find(item_id)
+    if it then
+      m.count = m.count + 1
+      -- No pcall: a valuation failure must reach manifest_error, not silently undercount.
+      m.approx_value = m.approx_value + dfhack.items.getValue(it, c)
+      local ok2, ty = pcall(function() return df.item_type[it:getType()] end)
+      local cat = (ok2 and ty) or 'UNKNOWN'
+      cat_counts[cat] = (cat_counts[cat] or 0) + 1
+    end
+  end
+  local cats = {}
+  for cat, n in pairs(cat_counts) do cats[#cats + 1] = { category = cat, count = n } end
+  local list, truncated = capped_sorted(cats, MANIFEST_CATEGORY_CAP, function(a, b) return a.category < b.category end)
+  m.by_category = list
+  m.by_category_truncated = truncated
+  return m
+end
+
+local function price_pct(fixed_point)
+  return math.floor(fixed_point * 100 / PRICE_FIXED_POINT)
+end
+
+local function export_agreements_of(c)
+  local rows = {}
+  local bp = c.buy_prices
+  if bp and bp.items then
+    local by_cat = {}
+    for idx, price in ipairs(bp.price) do
+      local ty = bp.items.item_type[idx]
+      local cat = df.item_type[ty] or tostring(ty)
+      local pct = price_pct(price)
+      local e = by_cat[cat]
+      if not e then
+        e = { category = cat, entries = 0, price_pct_min = pct, price_pct_max = pct }
+        by_cat[cat] = e
+      end
+      e.entries = e.entries + 1
+      if pct < e.price_pct_min then e.price_pct_min = pct end
+      if pct > e.price_pct_max then e.price_pct_max = pct end
+    end
+    for _, e in pairs(by_cat) do rows[#rows + 1] = e end
+  end
+  return capped_sorted(rows, AGREEMENT_CAP, function(a, b) return a.category < b.category end)
+end
+
+local function import_agreements_of(c)
+  local rows = {}
+  local sp = c.sell_prices
+  if sp and sp.price then
+    for cat_idx, price_vec in ipairs(sp.price) do
+      if #price_vec > 0 then
+        local cat = df.entity_sell_category[cat_idx] or tostring(cat_idx)
+        local pmin, pmax = nil, nil
+        for _, price in ipairs(price_vec) do
+          local pct = price_pct(price)
+          if not pmin or pct < pmin then pmin = pct end
+          if not pmax or pct > pmax then pmax = pct end
+        end
+        rows[#rows + 1] = { category = cat, entries = #price_vec, price_pct_min = pmin, price_pct_max = pmax }
+      end
+    end
+  end
+  return capped_sorted(rows, AGREEMENT_CAP, function(a, b) return a.category < b.category end)
+end
+
+local function agreements_of(c)
+  local export_rows, export_truncated = export_agreements_of(c)
+  local import_rows, import_truncated = import_agreements_of(c)
+  return {
+    export = export_rows,
+    export_truncated = export_truncated,
+    import = import_rows,
+    import_truncated = import_truncated,
+  }
+end
+
 local caravans = {}
 for _, c in ipairs(df.global.plotinfo.caravans) do
   local state = TS[c.trade_state] or tostring(c.trade_state)
@@ -57,6 +152,14 @@ for _, c in ipairs(df.global.plotinfo.caravans) do
   if (state == 'AtDepot' or state == 'Leaving') and c.time_remaining and c.time_remaining > 0 then
     row.leaving_in_days = math.floor(c.time_remaining / TICKS_PER_DAY)
   end
+  -- A field-path/calculation error here must be visible, not silently
+  -- indistinguishable from "no caravan to compute over" -- the no-caravan
+  -- fixture this was verified against can't tell those two cases apart, so a
+  -- real bug on a live caravan would otherwise pass every check unnoticed.
+  local ok_m, m = pcall(manifest_of, c)
+  if ok_m then row.manifest = m else row.manifest_error = tostring(m) end
+  local ok_a, a = pcall(agreements_of, c)
+  if ok_a then row.agreements = a else row.agreements_error = tostring(a) end
   caravans[#caravans + 1] = row
 end
 table.sort(caravans, function(a, b)

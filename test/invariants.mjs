@@ -846,6 +846,40 @@ export const INVARIANTS = [
     },
   },
   {
+    name: 'fort_health_wellformed_and_bounds_population',
+    tools: ['fort_health', 'fort_status'],
+    desc: 'fps/gfps and every item/unit count are non-negative, and units.active (fog-of-war filtered like fort_status/threats) is never less than fort_status.population (citizens are a subset of active units)',
+    check(p) {
+      const d = p.fort_health;
+      const out = [];
+      for (const k of ['fps', 'gfps']) {
+        if (!(isInt(d[k]) && d[k] >= 0)) out.push(`${k}=${d[k]} is not a non-negative integer`);
+      }
+      const items = d.items ?? {};
+      for (const k of ['total', 'stone', 'corpses', 'clothes']) {
+        if (!(isInt(items[k]) && items[k] >= 0))
+          out.push(`items.${k}=${items[k]} is not a non-negative integer`);
+      }
+      for (const k of ['stone', 'corpses', 'clothes']) {
+        if (isInt(items[k]) && isInt(items.total) && items[k] > items.total)
+          out.push(`items.${k}=${items[k]} exceeds items.total=${items.total}`);
+      }
+      const units = d.units ?? {};
+      for (const k of ['active', 'dead_on_map']) {
+        if (!(isInt(units[k]) && units[k] >= 0))
+          out.push(`units.${k}=${units[k]} is not a non-negative integer`);
+      }
+      // units.active is every currently-simulated living unit (citizens, tame
+      // animals, wildlife, hostiles, visitors) — a superset of the fort's own
+      // citizens, so it can never fall below fort_status's citizen population.
+      if (isInt(units.active) && isInt(p.fort_status.population) && units.active < p.fort_status.population)
+        out.push(
+          `units.active=${units.active} is less than fort_status.population=${p.fort_status.population}`
+        );
+      return out;
+    },
+  },
+  {
     name: 'work_details_wellformed',
     tools: ['work_details'],
     desc: 'each detail has a non-empty name, a known mode, string labor tokens, ascending integer members agreeing with member_count + the 200 cap/truncation flag (cursor-aware), members_cursor present iff truncated, and parallel member_names',
@@ -937,6 +971,321 @@ export const INVARIANTS = [
         if (!Array.isArray(wd.member_names) || wd.member_names.length !== wd.members.length)
           out.push(`details[${i}].member_names is not parallel to members`);
       });
+      return out;
+    },
+  },
+  {
+    name: 'stockpiles_wellformed',
+    tools: ['stockpiles'],
+    desc:
+      'pile counts stay non-negative, occupied_tiles never exceeds size, categories[] only names real bitfield flags, ' +
+      'give_to/take_from links are internally reciprocal, piles are id-sorted, and cap/' +
+      'truncation pairs (piles, links, backlog) are self-consistent',
+    check(p) {
+      const d = p.stockpiles;
+      const out = [];
+      const KNOWN_CATEGORIES = new Set([
+        'animals', 'food', 'furniture', 'corpses', 'refuse', 'stone', 'ammo', 'coins',
+        'bars_blocks', 'gems', 'finished_goods', 'leather', 'cloth', 'wood', 'weapons',
+        'armor', 'sheet',
+      ]);
+      const PILES_CAP = 200;
+      const LINKS_CAP = 50;
+
+      if (!Array.isArray(d.piles)) {
+        out.push('piles is not an array');
+        return out;
+      }
+      if (d.piles.length > PILES_CAP)
+        out.push(`piles length ${d.piles.length} exceeds cap ${PILES_CAP}`);
+      if (!(isInt(d.piles_total) && d.piles_total >= 0))
+        out.push(`piles_total=${d.piles_total} is not a non-negative integer`);
+      if (Boolean(d.piles_truncated) !== (d.piles_total > d.piles.length))
+        out.push(
+          `piles_truncated=${d.piles_truncated} disagrees with piles_total ${d.piles_total} vs listed ${d.piles.length}`
+        );
+
+      const byId = new Map();
+      let lastId = -Infinity;
+      d.piles.forEach((pl, i) => {
+        if (!isInt(pl.id)) out.push(`piles[${i}].id=${pl.id} is not an integer`);
+        if (!(pl.id > lastId)) out.push(`piles is not strictly ascending by id at index ${i}`);
+        lastId = pl.id;
+        byId.set(pl.id, pl);
+        if (!(isInt(pl.size) && pl.size >= 1)) out.push(`piles[${i}].size=${pl.size} is not >= 1`);
+        if (!(isInt(pl.item_count) && pl.item_count >= 0))
+          out.push(`piles[${i}].item_count=${pl.item_count} is negative`);
+        if (!(isInt(pl.occupied_tiles) && pl.occupied_tiles >= 0 && pl.occupied_tiles <= pl.size))
+          out.push(`piles[${i}].occupied_tiles=${pl.occupied_tiles} outside [0, size=${pl.size}]`);
+        if (
+          !Array.isArray(pl.categories) ||
+          pl.categories.some((c) => !KNOWN_CATEGORIES.has(c))
+        )
+          out.push(`piles[${i}].categories has an unknown token: ${JSON.stringify(pl.categories)}`);
+        for (const key of ['give_to', 'take_from']) {
+          const arr = pl[key];
+          if (!Array.isArray(arr)) {
+            out.push(`piles[${i}].${key} is not an array`);
+            continue;
+          }
+          if (arr.length > LINKS_CAP)
+            out.push(`piles[${i}].${key} length ${arr.length} exceeds cap ${LINKS_CAP}`);
+          for (let j = 1; j < arr.length; j++) {
+            if (!(arr[j] > arr[j - 1])) {
+              out.push(`piles[${i}].${key} is not strictly ascending at index ${j}`);
+              break;
+            }
+          }
+        }
+      });
+
+      // give_to/take_from are the same relation read from both ends — when neither side's
+      // link list was truncated, a link on one pile must show up as the reciprocal on the other.
+      for (const pl of d.piles) {
+        if (pl.give_to_truncated) continue;
+        for (const g of pl.give_to ?? []) {
+          const other = byId.get(g);
+          if (other && !other.take_from_truncated && !(other.take_from ?? []).includes(pl.id))
+            out.push(`pile ${pl.id} give_to ${g}, but pile ${g} has no reciprocal take_from`);
+        }
+      }
+
+      const sumBacklog = (d.unstored_backlog ?? []).reduce((a, b) => a + (b.count ?? 0), 0);
+      if (!d.unstored_backlog_truncated && sumBacklog !== d.unstored_backlog_item_count)
+        out.push(
+          `unstored_backlog sums to ${sumBacklog} but unstored_backlog_item_count=${d.unstored_backlog_item_count}`
+        );
+      if (!(isInt(d.dump_flagged_count) && d.dump_flagged_count >= 0))
+        out.push(`dump_flagged_count=${d.dump_flagged_count} is not a non-negative integer`);
+      const r = d.rotting_outside_stockpiles ?? {};
+      if (!(isInt(r.count) && r.count >= 0))
+        out.push(`rotting_outside_stockpiles.count=${r.count} is not a non-negative integer`);
+
+      return out;
+    },
+  },
+  {
+    name: 'petitions_wellformed',
+    tools: ['petitions'],
+    desc: 'location/residency petition rows carry a known status and only the deity/guild_profession field their building kind allows, active rows sort before resolved ones, the 50-row caps and awaiting_decision_count are honored, and alerts are non-empty strings',
+    check(p) {
+      const d = p.petitions;
+      const out = [];
+      const STATUSES = new Set(['outstanding', 'satisfied', 'denied', 'expired']);
+      const CAP = 50;
+
+      if (!Array.isArray(d.location_petitions)) {
+        out.push('location_petitions is not an array');
+      } else {
+        if (d.location_petitions.length > CAP)
+          out.push(`location_petitions length ${d.location_petitions.length} exceeds cap ${CAP}`);
+        if (typeof d.location_petitions_truncated !== 'boolean')
+          out.push(`location_petitions_truncated=${d.location_petitions_truncated} is not a boolean`);
+        let lastRank = 0;
+        d.location_petitions.forEach((row, i) => {
+          const rank = row.status === 'outstanding' || row.awaiting_decision ? 0 : 1;
+          if (rank < lastRank) out.push(`location_petitions[${i}] is active but sorts after a resolved row`);
+          lastRank = rank;
+          if (!isInt(row.agreement_id))
+            out.push(`location_petitions[${i}].agreement_id=${row.agreement_id} is not an integer`);
+          if (!['TEMPLE', 'GUILDHALL'].includes(row.building))
+            out.push(`location_petitions[${i}].building="${row.building}" is not TEMPLE/GUILDHALL`);
+          if (![1, 2].includes(row.tier))
+            out.push(`location_petitions[${i}].tier=${row.tier} is not 1 or 2`);
+          if (!(isInt(row.age_days) && row.age_days >= 0))
+            out.push(`location_petitions[${i}].age_days=${row.age_days} is not a non-negative integer`);
+          if (typeof row.warned_ready !== 'boolean')
+            out.push(`location_petitions[${i}].warned_ready=${row.warned_ready} is not a boolean`);
+          if (typeof row.awaiting_decision !== 'boolean')
+            out.push(`location_petitions[${i}].awaiting_decision=${row.awaiting_decision} is not a boolean`);
+          if (!STATUSES.has(row.status))
+            out.push(`location_petitions[${i}].status="${row.status}" is not a known status`);
+          if (row.building === 'TEMPLE' && 'guild_profession' in row)
+            out.push(`location_petitions[${i}] is TEMPLE but carries guild_profession`);
+          if (row.building === 'GUILDHALL' && 'deity' in row)
+            out.push(`location_petitions[${i}] is GUILDHALL but carries deity`);
+        });
+      }
+
+      if (!Array.isArray(d.residency_petitions)) {
+        out.push('residency_petitions is not an array');
+      } else {
+        if (d.residency_petitions.length > CAP)
+          out.push(`residency_petitions length ${d.residency_petitions.length} exceeds cap ${CAP}`);
+        if (typeof d.residency_petitions_truncated !== 'boolean')
+          out.push(
+            `residency_petitions_truncated=${d.residency_petitions_truncated} is not a boolean`
+          );
+        let lastRank = 0;
+        d.residency_petitions.forEach((row, i) => {
+          const rank = row.status === 'outstanding' || row.awaiting_decision ? 0 : 1;
+          if (rank < lastRank) out.push(`residency_petitions[${i}] is active but sorts after a resolved row`);
+          lastRank = rank;
+          if (!isInt(row.agreement_id))
+            out.push(`residency_petitions[${i}].agreement_id=${row.agreement_id} is not an integer`);
+          if (!['Residency', 'Citizenship'].includes(row.kind))
+            out.push(`residency_petitions[${i}].kind="${row.kind}" is not Residency/Citizenship`);
+          if (!(isInt(row.age_days) && row.age_days >= 0))
+            out.push(`residency_petitions[${i}].age_days=${row.age_days} is not a non-negative integer`);
+          if (row.deadline_days !== null && !(isInt(row.deadline_days) && row.deadline_days >= 0))
+            out.push(
+              `residency_petitions[${i}].deadline_days=${row.deadline_days} is not null or a non-negative integer`
+            );
+          if (typeof row.awaiting_decision !== 'boolean')
+            out.push(`residency_petitions[${i}].awaiting_decision=${row.awaiting_decision} is not a boolean`);
+          if (!STATUSES.has(row.status))
+            out.push(`residency_petitions[${i}].status="${row.status}" is not a known status`);
+        });
+      }
+
+      if (!(isInt(d.awaiting_decision_count) && d.awaiting_decision_count >= 0)) {
+        out.push(`awaiting_decision_count=${d.awaiting_decision_count} is not a non-negative integer`);
+      } else if (Array.isArray(d.location_petitions) && Array.isArray(d.residency_petitions)) {
+        const visible =
+          d.location_petitions.filter((r) => r.awaiting_decision).length +
+          d.residency_petitions.filter((r) => r.awaiting_decision).length;
+        const anyTruncated = d.location_petitions_truncated || d.residency_petitions_truncated;
+        if (!anyTruncated && d.awaiting_decision_count !== visible)
+          out.push(
+            `awaiting_decision_count=${d.awaiting_decision_count} != visible awaiting rows ${visible} (untruncated)`
+          );
+        if (d.awaiting_decision_count < visible)
+          out.push(
+            `awaiting_decision_count=${d.awaiting_decision_count} is less than visible awaiting rows ${visible}`
+          );
+      }
+
+      if (!Array.isArray(d.alerts)) {
+        out.push('alerts is not an array');
+      } else {
+        d.alerts.forEach((s, i) => {
+          if (typeof s !== 'string' || !s.trim())
+            out.push(`alerts[${i}] is not a non-empty string`);
+        });
+      }
+
+      return out;
+    },
+  },
+  {
+    name: 'fluids_wellformed_and_wells_agree_with_rooms',
+    tools: ['fluids', 'rooms_and_zones'],
+    desc: 'aquifer/water layer z-ranges are ordered with non-negative tile counts, all four capped lists honor their _total/_truncated pairs, magma_sea (when present) clears its own size floor, and fluids.wells agrees with rooms_and_zones.wells on count/z/source',
+    check(p) {
+      const d = p.fluids;
+      const out = [];
+      // aquifer_layers: z_top >= z_bottom, non-negative tile counts, known classification.
+      (d.aquifer_layers ?? []).forEach((a, i) => {
+        if (!(isInt(a.z_top) && isInt(a.z_bottom) && a.z_top >= a.z_bottom))
+          out.push(`aquifer_layers[${i}] z_top=${a.z_top} < z_bottom=${a.z_bottom}`);
+        if (!(isInt(a.light_tiles) && a.light_tiles >= 0))
+          out.push(`aquifer_layers[${i}].light_tiles=${a.light_tiles} is not a non-negative integer`);
+        if (!(isInt(a.heavy_tiles) && a.heavy_tiles >= 0))
+          out.push(`aquifer_layers[${i}].heavy_tiles=${a.heavy_tiles} is not a non-negative integer`);
+        if (!['light', 'heavy', 'mixed'].includes(a.classification))
+          out.push(`aquifer_layers[${i}].classification="${a.classification}" is not light|heavy|mixed`);
+      });
+      // water_layers: non-negative counts, sub-buckets never exceed the row total, depth 1..7.
+      (d.water_layers ?? []).forEach((w, i) => {
+        if (!(isInt(w.tiles) && w.tiles >= 0))
+          out.push(`water_layers[${i}].tiles=${w.tiles} is not a non-negative integer`);
+        if (w.salt_tiles + w.fresh_tiles !== w.tiles)
+          out.push(`water_layers[${i}] salt_tiles+fresh_tiles != tiles (${w.salt_tiles}+${w.fresh_tiles} != ${w.tiles})`);
+        if (w.stagnant_tiles + w.flowing_tiles !== w.tiles)
+          out.push(`water_layers[${i}] stagnant_tiles+flowing_tiles != tiles (${w.stagnant_tiles}+${w.flowing_tiles} != ${w.tiles})`);
+        if (!inRange(w.max_depth, 1, 7))
+          out.push(`water_layers[${i}].max_depth=${w.max_depth} outside 1..7`);
+      });
+      // magma_sea, when present, genuinely clears its own documented 20-tile floor.
+      if (d.magma_sea !== undefined) {
+        if (!(isInt(d.magma_sea.revealed_tile_count) && d.magma_sea.revealed_tile_count >= 20))
+          out.push(`magma_sea.revealed_tile_count=${d.magma_sea.revealed_tile_count} is below the documented 20-tile floor`);
+        if (!isInt(d.magma_sea.top_z)) out.push(`magma_sea.top_z=${d.magma_sea.top_z} is not an integer`);
+      }
+      // Every capped list agrees with its own _total/_truncated pair.
+      for (const [listKey, totalKey, truncKey, cap] of [
+        ['aquifer_layers', 'aquifer_layers_total', 'aquifer_layers_truncated', 50],
+        ['water_layers', 'water_layers_total', 'water_layers_truncated', 200],
+        ['flood_risk_tiles', 'flood_risk_total', 'flood_risk_truncated', 50],
+        ['wells', 'wells_total', 'wells_truncated', 20],
+      ]) {
+        const list = d[listKey];
+        if (!Array.isArray(list)) {
+          out.push(`${listKey} is not an array`);
+          continue;
+        }
+        if (list.length > cap) out.push(`${listKey} length ${list.length} exceeds the cap of ${cap}`);
+        const shouldTrunc = isInt(d[totalKey]) && d[totalKey] > list.length;
+        if (Boolean(d[truncKey]) !== shouldTrunc)
+          out.push(`${truncKey}=${d[truncKey]} disagrees with ${totalKey}=${d[totalKey]} vs listed ${list.length}`);
+        if (!d[truncKey] && isInt(d[totalKey]) && d[totalKey] !== list.length)
+          out.push(`untruncated ${totalKey}=${d[totalKey]} !== listed ${list.length}`);
+      }
+      // wells cross-reference: fluids extends rooms_and_zones' well read with x/y/depth,
+      // so — deliberately mirroring the same scan — they must agree on count, and (when
+      // neither list is truncated) each fluids well's z/source has a matching counterpart.
+      const rz = p.rooms_and_zones;
+      if (isInt(d.wells_total) && isInt(rz.wells_total) && d.wells_total !== rz.wells_total)
+        out.push(`fluids.wells_total=${d.wells_total} != rooms_and_zones.wells_total=${rz.wells_total}`);
+      if (!d.wells_truncated && !rz.wells_truncated && Array.isArray(d.wells) && Array.isArray(rz.wells)) {
+        const rzRemaining = [...rz.wells];
+        for (const w of d.wells) {
+          const idx = rzRemaining.findIndex((r) => r.z === w.z && r.source === w.source);
+          if (idx === -1)
+            out.push(`fluids well at (${w.x},${w.y},${w.z}) source=${w.source} has no matching rooms_and_zones well`);
+          else rzRemaining.splice(idx, 1);
+        }
+      }
+      return out;
+    },
+  },
+  {
+    name: 'hauling_routes_cross_references_resolve',
+    tools: ['hauling_routes'],
+    desc:
+      'route/stop ids are unique, every route-level vehicle_id and every ' +
+      "stop's parked_vehicle_id resolves to a real entry in the top-level " +
+      "vehicles[], and a resolved vehicle's own route_id agrees with the " +
+      'route that claims it',
+    check(p) {
+      const d = p.hauling_routes;
+      const out = [];
+      const vehicleIds = new Set((d.vehicles ?? []).map((v) => v.vehicle_id));
+      const vehicleById = new Map((d.vehicles ?? []).map((v) => [v.vehicle_id, v]));
+      const seenRouteIds = new Set();
+      for (const r of d.routes ?? []) {
+        if (seenRouteIds.has(r.id)) out.push(`duplicate route id ${r.id}`);
+        seenRouteIds.add(r.id);
+
+        const seenStopIds = new Set();
+        for (const s of r.stops ?? []) {
+          if (seenStopIds.has(s.id)) out.push(`route ${r.id}: duplicate stop id ${s.id}`);
+          seenStopIds.add(s.id);
+          if (s.parked_vehicle_id !== undefined && !vehicleIds.has(s.parked_vehicle_id)) {
+            out.push(
+              `route ${r.id} stop ${s.id}: parked_vehicle_id ${s.parked_vehicle_id} not in top-level vehicles[]`
+            );
+          }
+        }
+
+        for (const rv of r.vehicles ?? []) {
+          if (!vehicleIds.has(rv.vehicle_id)) {
+            out.push(`route ${r.id}: vehicle_id ${rv.vehicle_id} not in top-level vehicles[]`);
+            continue;
+          }
+          const v = vehicleById.get(rv.vehicle_id);
+          if (v.route_id !== r.id) {
+            out.push(
+              `route ${r.id} claims vehicle ${rv.vehicle_id}, but that vehicle's route_id is ${v.route_id}`
+            );
+          }
+          if (rv.current_stop_id !== undefined && !seenStopIds.has(rv.current_stop_id)) {
+            out.push(
+              `route ${r.id}: vehicle ${rv.vehicle_id}'s current_stop_id ${rv.current_stop_id} is not one of this route's own stops`
+            );
+          }
+        }
+      }
       return out;
     },
   },
