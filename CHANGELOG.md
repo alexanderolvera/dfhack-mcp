@@ -8,6 +8,23 @@ loosely while the tool surface is still evolving: **minor** releases (`1.x.0`)
 may change or remove tool output, and **patch** releases (`1.0.x`) are
 backwards-compatible fixes only.
 
+## [Unreleased]
+
+### Added
+
+- **`burrows` sensor + `civilian_alert` actuator** ([#77](https://github.com/alexanderolvera/dfhack-mcp/issues/77))
+  — the deferred "fort alarms" item, now unblocked: "siege spotted -> everyone
+  inside" was the single most-wanted emergency capability. `burrows()` reports
+  every burrow's exact tile count (`dfhack.burrows.isAssignedBlockTile` summed
+  over every assigned block, not a bounding box), its assigned units, and
+  whether it's currently one of the civilian alert's safety burrows.
+  `civilian_alert(burrow, enabled)` toggles a named burrow in or out of that set
+  — execute-never-decide, on the standard preview/confirm/apply loop — and
+  sounds or (once the set empties) silences the alarm accordingly, replicating
+  DFHack's own `gui/civ-alert` logic exactly so the in-game Squads alert button
+  and this actuator always operate on the same slot. Reversal: the same call
+  with `enabled` inverted.
+
 ## [1.2.0] - 2026-07-21
 
 ### Added

@@ -6,10 +6,11 @@ not an autopilot. Point Claude (or any MCP client) at it and ask _"how's my fort
 doing?"_ — it reads happiness, threats, stocks, jobs, health, and defenses
 straight from the running game and answers in plain language.
 
-**Read-only by default.** The 30 sensor and reference tools only observe the
+**Read-only by default.** The 31 sensor and reference tools only observe the
 game. A handful of **actuators** that _change_ the fort — queue manager orders,
-apply quickfort blueprints, assign labor — ship behind an explicit opt-in and
-stay hidden until you enable them (see [Taking action](#taking-action-actuators)).
+apply quickfort blueprints, assign labor, sound the civilian alert — ship
+behind an explicit opt-in and stay hidden until you enable them (see
+[Taking action](#taking-action-actuators)).
 
 Two kinds of tools:
 
@@ -86,6 +87,7 @@ No arguments; each reports on the loaded fort.
 - **`military()`** — squads, enlisted soldiers, filled positions, and readiness against hostiles on the map.
 - **`injuries_and_health()`** — wounded / patients / bedridden / unconscious counts, plus the care needed (diagnosis, surgery, suture, …).
 - **`defenses()`** — active hostiles with map positions and distance/direction/z-delta to the fort core and nearest drawbridge, plus a controllable-structure inventory (bridges, levers, floodgates, hatches, cage traps, doors).
+- **`burrows()`** — every burrow's size and membership, plus the civilian-alert safety-burrow set (configured/active/linked burrows) — the read half of `civilian_alert`.
 - **`moods()`** — any active strange mood (fey/secretive/possessed/macabre/fell): the dwarf, driving skill, workshop state, and each demanded material cross-referenced against fort stock — the "demands bones, fort has zero" early warning.
 - **`mandates_and_justice()`** — the nobility's overhead: active production mandates and export bans, unmet noble room demands, and justice state (open cases, convictions awaiting punishment, restraint capacity).
 - **`rooms_and_zones()`** — the facility inventory, each count paired with its demand-side number: bedrooms, dining halls, the hospital, wells, temples, taverns, libraries, guildhalls, and coffins free vs. dead awaiting burial. The supply-side companion to `unmet_needs()`.
@@ -177,6 +179,11 @@ own reversal path.
 
 - **`work_details()`** — _read-only, always available._ Every work detail (the game's labor groups): name, mode, the labor tokens it enables, and its assigned citizens (id-sorted, capped at 200 with the full `member_count`).
 - **`assign_work_detail(unit_id, detail, enabled)`** — add or remove one citizen to/from one detail. The preview reports `currently_member`, `resulting_members_count`, and `only_member`; an already-satisfied request previews as a no-op. Reversal: the same call with `enabled` inverted.
+
+**Emergency response**
+
+- **`burrows()`** — _read-only, always available._ Every burrow's size and membership, plus the civilian alert's own state: `configured` (has the fort ever set one up), `active` (is it sounding right now), and the linked burrow ids.
+- **`civilian_alert(burrow, enabled)`** — add or remove one burrow from the civilian-alert safety set. `enabled=true` also sounds the alarm if it wasn't already; `enabled=false` only silences it once the set becomes fully empty. Reversal: the same call with `enabled` inverted.
 
 **Saving the game**
 

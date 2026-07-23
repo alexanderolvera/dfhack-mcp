@@ -1,6 +1,7 @@
 import type { ToolDef } from '../register.ts';
 import { artifactsAndEngravingsDef } from './artifacts.ts';
 import { blueprintApplyDef, blueprintUndoDef } from './blueprint.ts';
+import { burrowsDef, civilianAlertDef } from './burrows.ts';
 import { chronicleDef } from './chronicle.ts';
 import { citizenDef } from './citizen.ts';
 import { defensesDef } from './defenses.ts';
@@ -38,8 +39,10 @@ export const ALL_TOOLS: ToolDef[] = [
   assignWorkDetailDef,
   blueprintApplyDef,
   blueprintUndoDef,
+  burrowsDef,
   chronicleDef,
   citizenDef,
+  civilianAlertDef,
   defensesDef,
   environmentDef,
   farmingDef,

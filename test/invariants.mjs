@@ -940,4 +940,52 @@ export const INVARIANTS = [
       return out;
     },
   },
+  {
+    name: 'burrows_wellformed',
+    tools: ['burrows'],
+    desc: 'each burrow has a non-negative tile_count and ascending assigned_units honoring its 200 cap/truncation flag, and civilian_alert.burrows/active only ever name real, configured burrows',
+    check(p) {
+      const d = p.burrows;
+      const out = [];
+      if (!isInt(d.count) || d.count < 0) out.push(`count=${d.count} is not a non-negative integer`);
+      if (!Array.isArray(d.burrows)) return [...out, 'burrows is not an array'];
+      if (d.burrows.length !== d.count)
+        out.push(`burrows.length=${d.burrows.length} != count=${d.count}`);
+      const ids = new Set();
+      d.burrows.forEach((b, i) => {
+        if (!isInt(b.id)) out.push(`burrows[${i}].id=${b.id} is not an integer`);
+        ids.add(b.id);
+        if (!(isInt(b.tile_count) && b.tile_count >= 0))
+          out.push(`burrows[${i}].tile_count=${b.tile_count} is not a non-negative integer`);
+        if (!Array.isArray(b.assigned_units)) {
+          out.push(`burrows[${i}].assigned_units is not an array`);
+          return;
+        }
+        if (b.assigned_units.length > 200)
+          out.push(`burrows[${i}].assigned_units length ${b.assigned_units.length} exceeds cap 200`);
+        for (let j = 1; j < b.assigned_units.length; j++) {
+          if (!(b.assigned_units[j] > b.assigned_units[j - 1]))
+            out.push(`burrows[${i}].assigned_units not strictly ascending at index ${j}`);
+        }
+        const shouldTrunc = isInt(b.assigned_units_total) && b.assigned_units_total > b.assigned_units.length;
+        if (Boolean(b.assigned_units_truncated) !== shouldTrunc)
+          out.push(
+            `burrows[${i}].assigned_units_truncated disagrees with total ${b.assigned_units_total} vs listed ${b.assigned_units.length}`
+          );
+      });
+      const ca = d.civilian_alert ?? {};
+      if (typeof ca.configured !== 'boolean') out.push(`civilian_alert.configured=${ca.configured} is not a boolean`);
+      if (typeof ca.active !== 'boolean') out.push(`civilian_alert.active=${ca.active} is not a boolean`);
+      if (ca.active && !ca.configured) out.push('civilian_alert.active is true but configured is false');
+      (ca.burrows ?? []).forEach((id) => {
+        if (!ids.has(id)) out.push(`civilian_alert.burrows names unknown burrow id ${id}`);
+      });
+      d.burrows.forEach((b) => {
+        const linked = (ca.burrows ?? []).includes(b.id);
+        if (b.civilian_alert_linked !== linked)
+          out.push(`burrows[${b.id}].civilian_alert_linked=${b.civilian_alert_linked} disagrees with civilian_alert.burrows`);
+      });
+      return out;
+    },
+  },
 ];

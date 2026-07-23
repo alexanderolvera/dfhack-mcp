@@ -4,11 +4,11 @@ tags: [dfhack-mcp/tool, index]
 
 # Tool Index — dfhack-mcp
 
-One note per MCP tool (37 tools: 26 sensors, 4 reference, 6 gated actuators, 1 dev), tracking `src/tools/registry.ts`. Each note carries frontmatter (`tool` / `tier` / `gated` / `source` / `lua`), parameters from the zod schema, the real return shape from the Lua query, and a trimmed example from the frozen-fixture goldens where one exists.
+One note per MCP tool (39 tools: 27 sensors, 4 reference, 7 gated actuators, 1 dev), tracking `src/tools/registry.ts`. Each note carries frontmatter (`tool` / `tier` / `gated` / `source` / `lua`), parameters from the zod schema, the real return shape from the Lua query, and a trimmed example from the frozen-fixture goldens where one exists.
 
 Doctrine reminder: every tool is **facts-only** — it senses and reports; judgment stays with the AI client. Actuators are gated behind `DFHACK_MCP_ACTUATORS` and follow the §A0 preview/confirm contract; `run_lua` is dev-gated behind `DFHACK_MCP_DEV`.
 
-## Sensors (26)
+## Sensors (27)
 
 *Fort & dwarves*
 - [fort_status](fort_status.md) — one-call situational overview; canonical "is a fort loaded" probe
@@ -24,6 +24,7 @@ Doctrine reminder: every tool is **facts-only** — it senses and reports; judgm
 - [threats](threats.md) — hostile groups with tactical traits
 - [defenses](defenses.md) — fortifications, traps, perimeter read
 - [military](military.md) — squads and readiness
+- [burrows](burrows.md) — burrow membership and the civilian-alert safety set
 
 *Economy & society*
 - [stocks](stocks.md) — food/booze/materials counts
@@ -51,11 +52,12 @@ Doctrine reminder: every tool is **facts-only** — it senses and reports; judgm
 - [wiki_search](wiki_search.md) — DF2014 wiki search
 - [wiki_lookup](wiki_lookup.md) — DF2014 wiki page as clean cached text
 
-## Actuators (6, gated)
+## Actuators (7, gated)
 
 - [work_order_create](work_order_create.md) / [work_order_cancel](work_order_cancel.md) — manager work orders
 - [blueprint_apply](blueprint_apply.md) / [blueprint_undo](blueprint_undo.md) — quickfort-style dig blueprints
 - [assign_work_detail](assign_work_detail.md) — put a dwarf on/off a work detail
+- [civilian_alert](civilian_alert.md) — toggle a burrow in/out of the civilian-alert safety set
 - [game_save](game_save.md) — checkpoint the fort with a quicksave
 
 ## Dev (1)
@@ -67,6 +69,7 @@ Doctrine reminder: every tool is **facts-only** — it senses and reports; judgm
 Typical co-pilot flows these notes cross-link:
 - Orient: [fort_status](fort_status.md) → [chronicle](chronicle.md) → drill-downs
 - Threat triage: [threats](threats.md) → [identify](identify.md) → [defenses](defenses.md) / [military](military.md)
+- Emergency response: [threats](threats.md) → [burrows](burrows.md) → [civilian_alert](civilian_alert.md)
 - Production: [stocks](stocks.md) → [work_order_list](work_order_list.md) → [work_order_create](work_order_create.md)
 - Labor: [jobs_and_labor](jobs_and_labor.md) → [work_details](work_details.md) → [assign_work_detail](assign_work_detail.md)
 - Digging: [map_overview](map_overview.md) → [tile_region](tile_region.md) / [geology](geology.md) → [blueprint_apply](blueprint_apply.md)
