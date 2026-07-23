@@ -8,7 +8,7 @@ loosely while the tool surface is still evolving: **minor** releases (`1.x.0`)
 may change or remove tool output, and **patch** releases (`1.0.x`) are
 backwards-compatible fixes only.
 
-## [Unreleased]
+## [1.3.0] - 2026-07-22
 
 ### Added
 
@@ -476,7 +476,8 @@ server stays strictly read-only). First release published to npm — install wit
   by name with argv (`src/dfhack-queries/`), so a DF/DFHack version bump is a
   localized fix.
 
-[Unreleased]: https://github.com/alexanderolvera/dfhack-mcp/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/alexanderolvera/dfhack-mcp/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/alexanderolvera/dfhack-mcp/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/alexanderolvera/dfhack-mcp/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/alexanderolvera/dfhack-mcp/compare/v1.0.1...v1.1.0
 [1.0.0]: https://github.com/alexanderolvera/dfhack-mcp/compare/v0.1.0...v1.0.0
