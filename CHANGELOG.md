@@ -15,436 +15,204 @@ backwards-compatible fixes only.
 ### Added
 
 - **`stockpiles` sensor** ([#79](https://github.com/alexanderolvera/dfhack-mcp/issues/79))
-  — hauling/logistics, previously invisible to an AI co-pilot: `stocks` reports
-  fort-wide material totals but nothing about where goods physically sit or
-  whether the piles themselves are configured sanely. Reports one row per
-  stockpile (accepted categories, exact bounds, barrel/bin/wheelbarrow
-  permissions, give/take hauling-route links, and `occupied_tiles` — how many
-  of the pile's tiles have at least one qualifying item on them right now)
-  plus three fort-wide backlog signals: items piling up unstored outside any
-  pile, food/organic matter that has already rotted while sitting unstored,
-  and items currently flagged for dumping. Verified live against the
-  Dreamfort fixture (60 stockpiles): the dynamic bitfield-key category lookup
-  — the single highest-risk piece of the original draft — checks out exactly
-  against the game's own 17 named category flags, and `give_to`/`take_from`
-  hauling-route links are reciprocal across the fixture's full link graph
-  (now enforced fort-wide by a new `stockpiles_wellformed` invariant).
-  `occupied_tiles` is a directly-counted, bounded `[0, size]` spatial fact,
-  not a capacity/fullness percentage — an earlier draft's `fullness_pct`
-  heuristic was dropped before shipping since it had no real relationship to
-  DF's actual per-tile capacity and read well over 100% on container-heavy
-  piles.
+  — one row per stockpile (accepted categories, bounds, container permissions,
+  give/take links, and `occupied_tiles`), plus three fort-wide backlog signals:
+  items sitting unstored, food already rotted while unstored, and items flagged
+  for dumping.
 - **`fluids` sensor** ([#80](https://github.com/alexanderolvera/dfhack-mcp/issues/80))
-  — water/magma engineering facts the Earthworks tier (`tile_region`, `geology`) reads
-  past: revealed aquifer layers by light/heavy classification, standing/flowing water
-  aggregated per z-level (salt/fresh, stagnant/flowing, depth), the magma sea's top
-  z-level once struck, full-depth water tiles exposed next to the fort's walkable
-  interior (a flood-exposure fact, not a leak prediction), and each well's water
-  source with depth-to-source — extending `rooms_and_zones`' well read rather than
-  duplicating it. Fog-of-war safe throughout, `reqscript`ing the shared
-  `mcp_readTerrain` legend/glyph convention. Verified live against DFHack 53.15-r2 and
-  the Dreamfort fixture: `aquifer_layers` and `wells` cross-checked against `geology`
-  and `rooms_and_zones` and agree; the magma-sea size-floor heuristic and salt-water
-  detection remain honestly flagged as unexercised, since the fixture never revealed
-  magma or salt water.
+  — aquifer layers by light/heavy, standing water per z-level, the magma sea's
+  top once struck, full-depth water exposed next to the fort's interior, and
+  each well's water source and depth. Fog-of-war safe throughout.
 - **`petitions` sensor** ([#81](https://github.com/alexanderolvera/dfhack-mcp/issues/81))
-  — the fort's outstanding agreements as facts: location petitions (temple/guildhall
-  requests from a deity's worshippers or a guild) and residency/citizenship petitions
-  (a migrant or visitor asking to join the fort), each with petitioner, agreed date,
-  and resolution status, cross-referenced against the fort's live pending-decision
-  queue. A location petition can sit agreed-to-but-never-built indefinitely
-  (`warned_ready` catches it), and a residency/citizenship petition has a real
-  decision window that expires if ignored — both previously invisible failure modes.
-  The demand-fulfillment counterpart to `rooms_and_zones`'s inferred
-  `needed_by_worshippers`.
+  — temple/guildhall location petitions and residency/citizenship petitions,
+  with petitioner, age, status, and which are awaiting a decision right now.
+  `warned_ready` catches the classic silent failure: agreed to, ready to build,
+  never zoned.
 - **`fort_health` sensor** ([#83](https://github.com/alexanderolvera/dfhack-mcp/issues/83))
-  — the fort's computational health as facts: the engine's own currently
-  calculated simulation/graphics frame rates (`fps`/`gfps`, the same numbers
-  DF's own status bar shows), fort-wide item-object counts broken out by the
-  classic clutter candidates (stone, corpses, clothes — raw totals distinct
-  from `stocks`' usable-stock counts), and unit counts split active vs.
-  dead-on-map. FPS death is the true endgame boss of Dwarf Fortress, and
-  nothing in this server reported the fort's computational health before this
-  tool; `fort_health` gives an AI co-pilot the raw facts to notice a fort
-  trending toward simulation collapse before it happens.
+  — the engine's own `fps`/`gfps`, fort-wide item counts broken out by the
+  classic clutter candidates (stone, corpses, clothes), and unit counts split
+  live vs. dead-on-map.
 - **`hauling_routes` sensor** ([#84](https://github.com/alexanderolvera/dfhack-mcp/issues/84))
-  — the sensor half of a deferred minecart-route actuator: nothing previously saw
-  track-based hauling at all. Reports every configured route with its stops (each
-  stop's linked stockpiles as take/give, and departure conditions — direction, dwarf
-  handling mode, and load-percent threshold), which vehicles are assigned to which
-  route, where each currently sits, and fort-wide vehicle state including
-  `backing_item_exists` — whether a vehicle's backing item still actually exists, since
-  a route can silently stop moving goods after its cart is destroyed or stolen while
-  the route itself keeps listing it.
-- **Listed on the official MCP Registry** as
-  `io.github.alexanderolvera/dfhack-mcp`. A new `server.json` describes the server for
-  registry clients (npm package, stdio transport, the three `DFHACK_*` environment
-  variables), and a `mcp-registry` job in the release workflow publishes it on every
-  `v*` tag via GitHub Actions OIDC — no new secret, and no manual bootstrap, unlike
-  npm trusted publishing. The job runs _after_ the npm publish, because the registry
-  validates ownership by fetching the published tarball and matching the new `mcpName`
-  field in its `package.json` against `server.json`'s `name`. It is a separate job so
-  a registry outage can neither block nor re-trigger the immutable npm publish.
-  Nothing about installing changes: `npx -y dfhack-mcp` and the registry listing
-  resolve to the same build.
+  — every minecart route with its stops, linked stockpiles, and departure
+  conditions, plus fort-wide vehicle state including whether a vehicle's
+  backing cart still exists (a destroyed cart silently stops a route).
+- **Listed on the official MCP Registry** as `io.github.alexanderolvera/dfhack-mcp`.
+  A new `server.json` describes the server for registry clients, published on
+  every `v*` tag. Installing is unchanged — `npx -y dfhack-mcp` and the registry
+  listing resolve to the same build.
 
 ### Changed
 
-- **`trade`: caravan manifest and liaison price agreements** ([#85](https://github.com/alexanderolvera/dfhack-mcp/issues/85))
-  — each caravan row now also reports `manifest` (count, approximate value, and a
-  by-`item_type` breakdown of goods the caravan itself is carrying, before
-  anything is unloaded to the depot — distinct from `goods_at_depot`) and
-  `agreements` (active liaison price agreements as `price_pct_min`/`max`, 100 =
-  no markup: `export` rows are items the fort earns a bonus selling to the
-  caravan, by DF's item type; `import` rows are items the fort pays a premium
-  buying from the caravan, by DF's own request-tab category). Both fields are
-  computed per caravan inside a `pcall`; a caravan row still emits state/civ
-  either way, and if reading manifest/agreements fails against a real caravan
-  the row carries `manifest_error`/`agreements_error` (the raw error) instead
-  of the field, so a genuine bug can't look identical to "nothing to report."
-  Live-verified against the Dreamfort
-  fixture container: the no-caravan-present path (still no caravan on-site in
-  that fixture) is clean — depot/broker/goods fields match the pre-existing
-  golden exactly and the new fields correctly never populate — but the
-  populated-manifest/agreements path itself remains unexercised against real
-  data, same limitation as the original draft.
-
-- **`zod` is now a direct dependency** (`^4.4.3`). `src/` imports it in 19 files
-  — `actuator.ts` plus every tool's input schema — but it was only ever present
-  as a transitive install of `@modelcontextprotocol/sdk`, which declares it as a
-  _required_ peer. Nothing was broken (npm hoists it, and the SDK's
-  `^3.25 || ^4.0` range still dedupes to a single copy), but the version the
-  server's own schemas compiled against was decided by the SDK's tree rather
-  than by this package — an SDK bump could have moved zod majors underneath us
-  with no changelog entry here. `test/metadata.test.mjs` now also guards the
-  `package.json` ↔ `server.json` contract (name/`mcpName`, both versions, npm
-  identifier, the registry's 100-char description cap) so a forgotten bump fails
-  at PR time rather than mid-release, after npm has already gone out.
+- **`trade` now reports each caravan's manifest and price agreements**
+  ([#85](https://github.com/alexanderolvera/dfhack-mcp/issues/85)) — `manifest`
+  is what the caravan itself carries (distinct from `goods_at_depot`);
+  `agreements` is the liaison's active price agreements as `price_pct_min`/`max`
+  (100 = no markup). If either read fails the row carries
+  `manifest_error`/`agreements_error` instead, so a bug can't look like "nothing
+  to report."
+- **`zod` is now a direct dependency** (`^4.4.3`). It was only ever a transitive
+  install of the MCP SDK, so an SDK bump could have moved zod majors underneath
+  the server's schemas. A new metadata test also guards the
+  `package.json` ↔ `server.json` contract so a forgotten version bump fails at
+  PR time rather than mid-release.
 
 ### Fixed
 
-- **Every DF-sourced name was emitted as raw CP437, arriving mangled.**
-- **`trade` capped its liaison price agreements below DF's own ceiling.** 
+- **DF names arrived mangled.** DF stores text in CP437, so any accented
+  character in a generated name — very common — decoded as `U+FFFD`:
+  `Såkzul Kelkosh` read as `S�kzul Kelkosh`. Every tool that reports a name was
+  affected, since v0.1.0. Names are now converted to UTF-8 at the point of
+  serialization.
+- **`trade` hid half its price agreements.** Both agreement lists capped at 30
+  rows *after* an alphabetical sort, so everything past `Headwear` was silently
+  dropped — a real caravan has 61 import categories. The cap sat below DF's own
+  enum ceiling, so it cost data without bounding anything; raised to 150.
 
 ## [1.3.0] - 2026-07-22
 
 ### Added
 
-- **`burrows` sensor + `civilian_alert` actuator** ([#77](https://github.com/alexanderolvera/dfhack-mcp/issues/77))
-  — the deferred "fort alarms" item, now unblocked: "siege spotted -> everyone
-  inside" was the single most-wanted emergency capability. `burrows()` reports
-  every burrow's exact tile count (`dfhack.burrows.isAssignedBlockTile` summed
-  over every assigned block, not a bounding box), its assigned units, and
-  whether it's currently one of the civilian alert's safety burrows.
-  `civilian_alert(burrow, enabled)` toggles a named burrow in or out of that set
-  — execute-never-decide, on the standard preview/confirm/apply loop — and
-  sounds or (once the set empties) silences the alarm accordingly, replicating
-  DFHack's own `gui/civ-alert` logic exactly so the in-game Squads alert button
-  and this actuator always operate on the same slot. Reversal: the same call
-  with `enabled` inverted.
-- **`mechanisms` sensor + `pull_lever` actuator** ([#78](https://github.com/alexanderolvera/dfhack-mcp/issues/78))
-  — completes the emergency-response trio: players forget lever wiring, and an
-  AI co-pilot literally cannot know it without this. `mechanisms()` lists every
-  lever with its position, state, and linked target(s) (bridge/door/floodgate/
-  hatch/support/weapon-trap, each with the target's own open/closed-family
-  state where available), every pressure plate's linked targets and trigger
-  conditions (citizens/creatures/minecart-weight/water-or-magma-depth), and
-  which levers/bridges are wired to nothing. `pull_lever(lever_id, urgent?)`
-  queues a real pull job via DFHack's own `lever` script — reversible by
-  pulling again — rather than an instant magic toggle, since the physical flip
-  only happens once a dwarf completes the job.
-- **`military` squad equipment depth** ([#82](https://github.com/alexanderolvera/dfhack-mcp/issues/82))
-  — fulfills the original tool-API spec's `equipment_gaps` promise, unmet since
-  v1.0: the co-pilot could say "you have 21 soldiers" but not "8 of them have no
-  armor." Each squad now carries `roster[]` (per filled position: unit,
-  uniform aggregated by item type into assigned-vs-worn counts, and a
-  `uniform_complete` flag), `ammo` (configured ammunition specs and how many
-  are currently carried), and `training` (the active schedule month's sleep
-  mode, uniform mode, and orders). `alerts[]` also flags any roster member with
-  an incomplete uniform by name. `squad_position.occupant` turned out to be a
-  **historical figure id**, not a unit id — resolved via
-  `historical_figure.unit_id` before any per-soldier lookup.
+- **`burrows` sensor + `civilian_alert` actuator**
+  ([#77](https://github.com/alexanderolvera/dfhack-mcp/issues/77)) — "siege
+  spotted, everyone inside." `burrows()` reports each burrow's exact tile count,
+  assigned units, and whether it's a civilian-alert safety burrow;
+  `civilian_alert(burrow, enabled)` toggles one in or out of that set and sounds
+  or silences the alarm to match. Uses the same slot as the in-game Squads alert
+  button. Reversal: the same call inverted.
+- **`mechanisms` sensor + `pull_lever` actuator**
+  ([#78](https://github.com/alexanderolvera/dfhack-mcp/issues/78)) — lever
+  wiring, made legible. Lists every lever with its position, state, and linked
+  targets (with each target's own open/closed state), every pressure plate's
+  targets and trigger conditions, and which levers and bridges are wired to
+  nothing. `pull_lever(lever_id, urgent?)` queues a real pull job rather than an
+  instant toggle, so the flip happens when a dwarf completes it.
+- **`military` squad equipment depth**
+  ([#82](https://github.com/alexanderolvera/dfhack-mcp/issues/82)) — fulfills
+  the long-promised `equipment_gaps`: the co-pilot can now say "8 of them have
+  no armor," not just "you have 21 soldiers." Each squad reports `roster[]`
+  (per-soldier uniform gaps and a `uniform_complete` flag), `ammo`, and
+  `training`; `alerts[]` names anyone with an incomplete uniform.
 
 ## [1.2.0] - 2026-07-21
 
 ### Added
 
-- **`nobles_and_administrators` sensor** ([#75](https://github.com/alexanderolvera/dfhack-mcp/issues/75))
-  — every appointed fort position (manager, bookkeeper, broker, chief medical dwarf,
-  sheriff, captain of the guard, expedition leader/mayor, militia commander/captain,
-  hammerer, dungeon master, messenger, champion, and any baron+ the site has grown
-  into) with its holder(s) or vacancy, plus the bookkeeper's precision level, whether
-  a mayoral election is pending, and monarch arrival state. A vacant position is a
-  common, previously invisible cause of `work_order_create`/`trade`/justice-punishment
-  failures; `superseded_by` explains the expected vacancies (sheriff → captain of the
-  guard, expedition leader → mayor) so they don't read as problems.
-- **`farming` sensor** ([#76](https://github.com/alexanderolvera/dfhack-mcp/issues/76))
-  — the early-survival pipeline between `game_data`'s abstract "what's plantable" and
-  `stocks`'s food _outputs_: each farm plot's tile size, surface/underground status,
-  crop assignment per season (fallow if none), and seed availability for that crop;
-  plus fort-wide seed totals by plant. `no_crop_assigned` flags an idle plot before it
-  becomes a food crisis.
-- **`livestock_and_pastures` sensor** ([#74](https://github.com/alexanderolvera/dfhack-mcp/issues/74))
-  — the single largest post-v1.0 blind spot: every fort manages animals and `threats`
-  only ever saw hostiles. Reports tame animal counts by species/sex/adult, pets vs.
-  livestock, which grazers have no pasture (they can't graze — silent starvation),
-  egg-layer/nestbox coverage, animals marked for slaughter, war/hunting training
-  state, occupied cages, and how many animals are roaming unassigned.
-- **Cheap sensor extensions bundle** ([#87](https://github.com/alexanderolvera/dfhack-mcp/issues/87))
-  — three small additions to existing tools:
-  - `rooms_and_zones`: `ghosts` — active apparitions currently on the map, plus a
-    count of this civ's dead who are world-flagged unquiet ghosts
-    (`historical_figure.flags.ghost`) with no apparition currently active locally.
-  - `stocks`: `clothing` — citizens wearing worn (`wear >= 2` — DF's "X" heavily-
-    worn/threadbare or "XX" tattered/mangled stages) shoes, armor, pants,
-    gloves, or a helm, plus a fort-wide no-shoes-worn count — a chronic,
-    easy-to-miss stress source.
-  - `jobs_and_labor`: `cancellations` — recent job-cancellation announcements
-    aggregated by reason (`chronicle` reports each one individually but never
-    summed them), surfacing a repeating systemic cause (e.g. 7x "Equipment
-    mismatch") that would otherwise read as unrelated one-off events.
-
-  Two items from the original issue were scoped out rather than shipped
-  unreliable or duplicated: `stocks`' proposed "seed totals by plant" is now
-  `farming`'s `seed_totals[]` (shipped in this same release, #76) — adding a
-  second copy in `stocks` would have been exactly the kind of second-source-of-
-  truth drift this project avoids. `rooms_and_zones`' proposed "unmemorialized
-  dead with no corpse" was dropped after live verification showed the natural
-  heuristic (a dead citizen with no loose `CORPSE`/`CORPSEPIECE` item) can't
-  distinguish "buried long ago" from "corpse lost forever" — both look identical
-  once the item is gone — so it would have misreported safely-buried citizens as
-  ghost-risk. `ghosts.unquiet_dead_count` (above) reports the same underlying
-  concern from a field DF itself computes, instead.
+- **`nobles_and_administrators` sensor**
+  ([#75](https://github.com/alexanderolvera/dfhack-mcp/issues/75)) — every
+  appointed position with its holder or vacancy, the bookkeeper's precision
+  level, pending mayoral election, and monarch arrival state. A vacant position
+  is a common, previously invisible cause of work-order/trade/justice failures;
+  `superseded_by` marks the expected vacancies so they don't read as problems.
+- **`farming` sensor**
+  ([#76](https://github.com/alexanderolvera/dfhack-mcp/issues/76)) — each plot's
+  size, crop assignment per season, and seed availability, plus fort-wide seed
+  totals by plant. `no_crop_assigned` flags an idle plot before it becomes a
+  food crisis.
+- **`livestock_and_pastures` sensor**
+  ([#74](https://github.com/alexanderolvera/dfhack-mcp/issues/74)) — tame animals
+  by species/sex/age, pets vs. livestock, grazers with no pasture (silent
+  starvation), egg-layer and nestbox coverage, animals marked for slaughter,
+  training state, occupied cages, and how many roam unassigned.
+- **Small extensions to three existing tools**
+  ([#87](https://github.com/alexanderolvera/dfhack-mcp/issues/87)):
+  - `rooms_and_zones`: `ghosts` — active apparitions, plus a count of this civ's
+    world-flagged unquiet dead not visible locally.
+  - `stocks`: `clothing` — citizens in worn-out gear, and how many wear no shoes
+    at all. A chronic, easy-to-miss stress source.
+  - `jobs_and_labor`: `cancellations` — job cancellations aggregated by reason,
+    surfacing a systemic cause (e.g. 7× "Equipment mismatch") that otherwise
+    reads as unrelated one-offs.
 
 ### Fixed
 
-- **`environment_wellformed` invariant checked a removed field** — `environment`'s
-  `temperature_band` was cut in 1.1.0 (a redundant 3rd encoding of `water_frozen`),
-  but `test/invariants.mjs` still asserted it was one of `freezing`/`above_freezing`/
-  `unknown`. Since the field no longer exists, the check always failed on `undefined`
-  — a stale test, not a live-data bug. Rewritten to check the surviving
-  `temperature`/`water_frozen` pair only.
-- **`livestock_and_pastures` and `rooms_and_zones.ghosts` leaked undiscovered-map
-  units** — both new sensors enumerated `world.units.active` without the mandatory
-  `mcp_unitVisibility` fog-of-war gate CONTRIBUTING.md requires of every unit-listing
-  tool (the same class of bug fixed on `threats`/`fort_status` before v1.0). Fixed by
-  filtering every unit fact (the tame-animal enumeration, cage occupants, active
-  ghosts) through `is_hidden(u)`; the tame-animal enumeration also now requires
-  `dfhack.units.isOwnCiv(u)` so a visiting caravan's or diplomat's pack animal is
-  never counted as this fort's livestock.
-- **`nobles_and_administrators` holders could omit their only stable id** — a
-  position holder living off-map (no loaded unit) had neither field the shipped
-  invariant required. Holders now always carry `histfig_id`; `unit_id` remains
-  present only when a live unit exists.
-- **`farming` claimed "no eligible crop" but only checked "no crop assigned"** — a
-  plot with a crop assigned in every season, none of them actually eligible for
-  their season, read as fine. Added a per-season `eligible` fact (the plant raw's
-  own season flag) and a plot-level `no_eligible_crop`, deliberately NOT extended to
-  surface/depth eligibility — live verification found a plant flagged surface-only
-  (`REED_ROPE`, `underground_depth_min == max == 0`) successfully planted
-  underground in the fixture, so asserting a depth rule would have been wrong, not
-  just incomplete.
-- **Unbounded payload risk on two new list fields** — `farming.plots[]` (no cap:
-  an old/modded fort's plot count could grow without bound) and
-  `livestock_and_pastures.cages[]` (same, for occupied cages) now cap at 200 and 50
-  respectively. `plots[]` gets the established `plots_total`/`plots_truncated`
-  pair; `cages[]` gets `cages_truncated` only (a `cages_total` scalar would just
-  restate `cages.length` when untruncated, so it's omitted — unlike `plots`,
-  where the pre-cap total is otherwise unrecoverable from the response). `NEST_BOX`
-  buildings still under construction no longer count toward nestbox coverage.
-- **`nobles_and_administrators` position `holders[]` could arrive as `{}`** — a
-  vacant position's empty nested Lua table wasn't coerced to `[]` like every other
-  nested list field in this release, so `.length`/`.forEach()` would have thrown
-  for a vacant position.
-- **`farming.seasons[].seeds_available` duplicated `seed_totals[]`** — the exact
-  same fort-wide count was repeated under every plot/season growing that crop
-  (the shipped invariant literally required the two copies stay identical — a
-  clear sign it was pure duplication, not new information, contrary to this
-  project's own rule against re-packaging a fact already in the same payload).
-  Removed; join a season's `crop` token against `seed_totals[]` instead.
-- **`jobs_and_labor.cancellations` counted report rows, not occurrences** — DF
-  collapses consecutive identical job cancellations into one report and tallies
-  the extras in that report's `repeat_count` (the same field `chronicle` already
-  exposes), so a reason repeating for months could still read as a handful of
-  rows. Now weighted by `1 + repeat_count` per report; verified live against the
-  fixture, a 7-row "Equipment mismatch" cluster was actually 61 occurrences once
-  weighted.
-- **`livestock_and_pastures` nestbox coverage used a same-z bounding-box check**
-  — an irregularly-shaped or hole-containing pen could report nestbox coverage
-  for a tile that was never actually part of the zone. Switched to
-  `dfhack.buildings.containsTile`, the same containment check `tile_region`
-  already uses for building extents.
-- **`rooms_and_zones`'s active-ghost alert reported the capped count, not the
-  real one** — with more than 50 active ghosts, the alert would read exactly
-  "50 active ghosts" regardless of the true total, silently hiding the overflow
-  `active_truncated` was meant to flag. The alert now uses the pre-cap total,
-  with a `+` suffix when truncated.
-- **`livestock_and_pastures.cages[].occupants[]` was itself unbounded** — the
-  50-cage cap only bounded the number of cage rows; a single densely-packed
-  cage trap could still serialize an unlimited occupant list. Each cage's own
-  `occupants[]` now caps at 20 with its own `occupants_total`/
-  `occupants_truncated` pair.
-- **`livestock_and_pastures`'s tool description overstated its own civ-ownership
-  gate** — it read as if every unit fact were restricted to this fort's civ, but
-  `cages[].occupants[]` deliberately isn't (a cage's contents are a structural
-  fact independent of ownership). Reworded: fog-of-war applies to every unit
-  fact; civ-ownership applies only to the tame-animal enumeration.
-- **`docs/VERIFY.md` documented a stale artifact-smoke tool count** (33) after
-  the actual assertion in `scripts/smoke-artifact.mjs` moved to 36 across this
-  release's four new/extended tools. Updated to match.
-- **`livestock_and_pastures.egg_layers` counted juveniles that can't lay yet**
-  — `LAYS_EGGS` is a caste _capability_, not an age-independent fact; the
-  fixture proved it live: the reported 96 egg layers were exactly 83 juvenile
-  - 12 adult female geese + 1 adult female guineafowl. Now gated on the
-    already-computed `adult` flag (matching DFHack's own `autonestbox` behavior,
-    which likewise waits for adulthood), collapsing the fixture's count to the
-    correct 13. `grazers` intentionally has no such gate — a juvenile still
-    grazes.
-- **`livestock_and_pastures.by_group[]` was the one list left uncapped** — a
-  large or heavily-modded creature roster could grow this without bound. Now
-  capped at 100 distinct species/sex/adult combinations, with the established
-  `by_group_total`/`by_group_truncated` pair.
-- **`jobs_and_labor`'s cancellation-reason regex matched the first colon
-  reachable, not the last one the documentation promised** — a cancellation
-  reason containing its own colon would retain extra prefix text and split
-  aggregation buckets that should have merged. Switched to a greedy `.*:`
-  prefix, the standard Lua idiom for "match after the last occurrence."
-- **`stocks`'s `tattered_citizens` field name overstated the wear threshold it
-  actually reports** — DF's wear scale has 4 stages (pristine → `x`item`x` →
-  `X`item`X` "heavily worn"/threadbare → `XX`item`XX` "tattered"/mangled →
-  destroyed); the `wear >= 2` threshold this field always used includes BOTH
-  the `X` and `XX` stages, not tattered alone. Renamed to `worn_citizens` /
-  `worn_citizens_truncated`; the threshold itself is unchanged.
-- **`livestock_and_pastures` counted dead animals as living tame livestock** —
-  a severe overcounting bug, not an edge case: on the Dreamfort fixture, 187 of
-  the 264 `isTame` matches in `world.units.active` were already-dead corpses
-  (mostly slaughtered geese) whose unit records simply linger. Added the same
-  `isActive(u)`/`not isDead(u)` guard `threats` already uses. The fixture's
-  real numbers: `tame_total` 264 → 77, `unassigned_count` 206 → 19, all 17
-  grazers now correctly show pastured (was 19 falsely "unpastured" dead
-  animals). Every downstream count and list was affected.
-- **`farming.plots[].surface` conflated "open to the sky" with "aboveground"**
-  — `designation.outside` means light/weather exposure, not a subterranean
-  designation; a roofed surface plot and a genuinely underground plot both
-  read `outside: false` and were indistinguishable. Renamed the field to
-  `open_to_sky` (Lua, TS, docs) rather than keep a name implying a fact it
-  doesn't check — no depth/subterranean claim is made at all now.
-- **`farming.seed_totals[]` was the one list left uncapped** — a heavily
-  modded plant raw set could grow this without bound, same class of gap as
-  `plots[]` (already capped) and `by_group[]` on the other new tool. Now
-  capped at 100 distinct plants, with `seed_totals_count`/
-  `seed_totals_truncated`.
-- **`stocks.md`'s clothing caveat wrongly excluded cloaks and shirts** — both
-  use DF's `ARMOR` item type, which the query's `WORN_SLOT` already includes;
-  only unworn spares (and slot types genuinely outside the checked set, e.g. a
-  backpack) are actually excluded. Corrected.
-- **`rooms_and_zones.unquiet_dead_count`'s description overstated its own
-  fog-of-war honesty** — it read as "no apparition currently active locally,"
-  but a ghost hidden behind fog of war is excluded from `active[]` (never
-  leaked) while still counted in `unquiet_dead_count`, since the world-level
-  ghost fact is fair game even when its exact location isn't. Reworded to
-  "not represented in the visible `active[]` list," which is what the code
-  actually guarantees.
-- **CHANGELOG wording overstated `cages[]`'s cap metadata** — an earlier entry
-  said both `plots[]` and `cages[]` got "the established total/truncated
-  pair," but `cages[]` only ever exposed `cages_truncated` (no `cages_total`
-  scalar — omitted because it would just restate `cages.length` when
-  untruncated, unlike `plots_total`, which is otherwise unrecoverable).
-  Corrected the earlier entry rather than add a field the design didn't call
-  for.
+- **`livestock_and_pastures` counted dead animals as living livestock.** On the
+  test fixture, 187 of 264 `isTame` matches were corpses whose unit records
+  linger. `tame_total` fell 264 → 77 and `unassigned_count` 206 → 19; every
+  downstream count was affected.
+- **`livestock_and_pastures` and `rooms_and_zones.ghosts` leaked
+  undiscovered-map units** — both enumerated units without the required
+  fog-of-war gate. Now filtered, and tame animals additionally require
+  `isOwnCiv`, so a visiting caravan's pack animal isn't counted as yours.
+- **`livestock_and_pastures.egg_layers` counted juveniles that can't lay yet.**
+  `LAYS_EGGS` is a caste capability, not an age-independent fact; now gated on
+  adulthood, which corrected the fixture's count from 96 to 13. `grazers` has no
+  such gate — a juvenile still grazes.
+- **`jobs_and_labor.cancellations` counted report rows, not occurrences.** DF
+  collapses repeats into one report with a `repeat_count`; a 7-row cluster was
+  really 61 occurrences. Now weighted correctly.
+- **`farming` claimed "no eligible crop" but only checked "no crop assigned."**
+  Added a per-season `eligible` fact and a plot-level `no_eligible_crop`.
+- **Several lists were unbounded** and could grow without limit on old or modded
+  forts: `farming.plots[]`, `farming.seed_totals[]`,
+  `livestock_and_pastures.cages[]`, its per-cage `occupants[]`, and `by_group[]`
+  are now all capped with truncation flags.
+- **`livestock_and_pastures` nestbox coverage used a bounding-box check**, so an
+  irregular pen could report coverage for a tile outside the zone. Now uses
+  DF's own containment check.
+- **`rooms_and_zones`'s ghost alert reported the capped count**, so it always
+  read "50 active ghosts" past that point. Now uses the true total with a `+`
+  when truncated.
+- **`nobles_and_administrators` holders could omit their only stable id.**
+  Holders now always carry `histfig_id`; `unit_id` appears only when a live unit
+  exists. A vacant position's `holders[]` also no longer arrives as `{}` instead
+  of `[]`.
+- **`farming.seasons[].seeds_available` duplicated `seed_totals[]`** — removed;
+  join a season's `crop` against `seed_totals[]` instead.
+- **Renamed two misleading fields.** `stocks.tattered_citizens` →
+  `worn_citizens` (the threshold always included both heavily-worn *and*
+  tattered stages); `farming.plots[].surface` → `open_to_sky` (it reports light
+  exposure, not depth — a roofed surface plot and an underground one both read
+  `false`).
+- **`environment_wellformed` invariant checked a field removed in 1.1.0**, so it
+  always failed on `undefined`. A stale test, not a live-data bug.
+- **Doc corrections** — `stocks.md` wrongly excluded cloaks and shirts from its
+  clothing caveat; `rooms_and_zones.unquiet_dead_count` overstated its
+  fog-of-war guarantee; `docs/VERIFY.md` had a stale tool count.
 
 ## [1.1.0] - 2026-07-21
 
 ### Fixed
 
-- **`dfclient` retry re-executes failing scripts** ([#64](https://github.com/alexanderolvera/dfhack-mcp/issues/64))
-  — a script failure (DFHack reachable, the script ran and errored) was indistinguishable
-  from a transport failure, so it triggered a reconnect-and-retry — risking a second
-  execution of an actuator that had already partially run. `RpcError` (a real FAIL frame)
-  is now rethrown as-is; only genuine transport errors reconnect and retry once.
-- **wiki cache dir escaped the npm package** ([#65](https://github.com/alexanderolvera/dfhack-mcp/issues/65))
-  — the cache path was computed relative to the source module's depth, which doesn't
-  survive tsup's single-file bundle: for an npm/npx install it resolved to
-  `node_modules/cache`, outside the package. Now uses an OS per-user cache dir
-  (`$XDG_CACHE_HOME`/`%LOCALAPPDATA%`/`~/.cache`, under `dfhack-mcp`), overridable via
-  `DFHACK_MCP_CACHE_DIR`.
-- **`verify` T0 always forced the actuator gate** ([#68](https://github.com/alexanderolvera/dfhack-mcp/issues/68))
-  — T0 unconditionally set `DFHACK_MCP_ACTUATORS=1` before deriving the expected tool
-  set, so it only ever asserted the full actuators-on surface and never the default
-  read-only surface npm users actually get; the dev-only `run_lua` also had zero
-  coverage anywhere. T0 now runs twice against isolated subprocesses — gates off
-  (default surface) and gates on (full surface, including `run_lua`) — and
-  `docs/VERIFY.md` documents both passes.
-- **`docs/tools/game_save.md` was missing entirely** — the actuator shipped without
-  its doc page. Added, and `docs/tools/README.md`'s tool/actuator counts corrected
-  (34 tools, 6 actuators — they'd gone stale when `game_save` landed).
-- Two orphaned-but-functional live-verification scripts (`scripts/verify-game-data.mjs`,
-  `scripts/verify-wiki.mjs`) weren't wired to any npm script or doc, the same way
-  `verify-identify.mjs` had silently rotted (see Removed). Added `npm run verify:game-data`
-  / `npm run verify:wiki` and a `docs/VERIFY.md` section so they can't quietly stop working
-  again.
+- **A failing script could be re-executed on retry**
+  ([#64](https://github.com/alexanderolvera/dfhack-mcp/issues/64)) — a script
+  error was indistinguishable from a transport error, so it triggered a
+  reconnect-and-retry, risking a second run of an actuator that had already
+  partially applied. Real RPC failures now rethrow; only transport errors retry.
+- **The wiki cache escaped the npm package**
+  ([#65](https://github.com/alexanderolvera/dfhack-mcp/issues/65)) — the path
+  didn't survive bundling and resolved outside the package. Now uses an OS
+  per-user cache dir, overridable via `DFHACK_MCP_CACHE_DIR`.
+- **T0 only ever tested the actuators-on surface**
+  ([#68](https://github.com/alexanderolvera/dfhack-mcp/issues/68)) — never the
+  default read-only surface npm users actually get, and `run_lua` had no
+  coverage at all. T0 now runs both gate states.
+- **`docs/tools/game_save.md` was missing entirely**, and the tool index counts
+  had gone stale.
+- **Two live-verification scripts weren't wired to anything** and had silently
+  rotted. Added `npm run verify:game-data` / `verify:wiki` so they can't again.
 
 ### Removed
 
-- **`identify`'s `tactics[]` field** — a hand-curated summary (`trapavoid`, `flier`,
-  `fire`, `building_destroyer`, `webber`, `ranged`) that mostly restated values already
-  present in the returned `creature.flags[]`/`interactions[]`, for the cost of a second,
-  driftable source of truth. Its `ranged` derivation had its own overfire bug
-  ([#66](https://github.com/alexanderolvera/dfhack-mcp/issues/66) — it fired on any
-  interaction, including a cat's "Clean"/"Head bump") before the field was cut entirely.
-  The dossier's own `flags[]`/`interactions[]` carry the same facts directly; `identify`'s
-  fire-vs-building-destroyer wiki-page selection (unrelated to this field) is unaffected.
-  The orphaned dev script `scripts/verify-identify.mjs` (a stale import predating
-  `identify`'s split into a directory) was removed alongside it.
-- **A handful of redundant output fields and `alerts[]` lines**, each a second encoding
-  of a fact already present elsewhere in the same response, found in a repo-wide audit
-  for the same pattern as `tactics[]`:
-  - `game_data`/`identify` creature dossier: `blurb` (a duplicate of `description`,
-    already redundant once both are present — `blurb` still appears alone on
-    disambiguation-list stubs, where `description` isn't returned).
-  - `game_data` plant dossier: `subterranean` (the exact negation of `surface`, sitting
-    next to it).
-  - `artifacts_and_engravings` maker: `is_current_citizen` (a boolean restating whether
-    `unit_id` is present — `top_engravers[]` in the same tool already uses the
-    presence-of-`unit_id` convention alone, with no such twin).
-  - `environment`: `temperature_band` (a 3-state string restating the 3-state
-    `water_frozen`/`null`).
-  - `fort_status` alert: "N dwarves miserable" (restates `happiness.miserable`, already
-    a labeled count in the same response).
-  - `injuries_and_health` alerts: "N dwarves need medical care" and "top care need: ..."
-    (restate the already-emitted `patients` count and `care_needs[0]`).
-  - `moods` alert: the unclaimed-workshop line (restates each `active[]` row's own
-    `workshop_status`/`name`/`mood` fields).
-  - `military` alert: the base "N hostiles on map vs M soldiers in K squads" sentence
-    (re-concatenates `hostiles_on_map`/`soldiers`/`squad_count`, all already top-level
-    fields); the genuine "NO defenders against a great-danger creature" callout is kept.
-  - `threats` alert: "N dangerous creatures caged/chained" (restates the already-emitted
-    `contained` field).
-  - `geology`'s `alerts[]` field is removed entirely — both of its lines (aquifer range,
-    magma reached) were pure restatements of the already-emitted `aquifer` object and
-    `magma_reached` boolean, and nothing legitimate was left in the array once they were
-    cut.
-
-  Two similar-looking cases were reviewed and deliberately **kept**: `game_data`
-  material's `name` (duplicates `state_names.solid`, but every dossier kind shares a
-  uniform `{kind, token, name, ...}` envelope, so dropping it only for `material` would
-  break that consistency) and `chronicle`'s `cursor` (duplicates `newest_retained_id`,
-  but is the ergonomic, self-documenting name for the specific "pass this back as
-  `since`" use case).
+- **`identify`'s `tactics[]` field** — a hand-curated summary that mostly
+  restated the dossier's own `flags[]`/`interactions[]`, for the cost of a
+  second source of truth that could drift. Its `ranged` derivation also
+  overfired on any interaction, including a cat's head-bump
+  ([#66](https://github.com/alexanderolvera/dfhack-mcp/issues/66)).
+- **A batch of redundant output fields and alert lines**, each a second encoding
+  of a fact already present in the same response: `blurb`
+  (duplicated `description`), plant `subterranean` (the negation of `surface`),
+  `is_current_citizen`, `temperature_band`, and several `alerts[]` lines that
+  merely restated labeled counts. `geology`'s `alerts[]` is gone entirely.
+  `game_data` material's `name` and `chronicle`'s `cursor` look similar but were
+  deliberately kept — one preserves a uniform dossier envelope, the other is the
+  ergonomic name for a specific use.
 
 ### Changed
 
-- **Repo-wide comment-hygiene pass.** All 28 `dfhack-queries/*.lua` scripts and the
-  TypeScript source, scripts, and tests were swept per a new convention recorded in
-  `AGENTS.md`: no comment blocks in code — confirmed DFHack field paths, version
-  quirks, and design rationale now live in each tool's `docs/tools/*.md` page (a new
-  "Implementation notes" section on most of them) or, for cross-cutting internals with
-  no single tool doc (`mcp_readTerrain.lua`/`mcp_unitVisibility.lua`'s fog-of-war gates,
-  the actuator contract, connection retry), a new "Shared internals" section in
-  `CONTRIBUTING.md`. JSDoc is now reserved for functions genuinely consumed across a
-  module boundary, written as a tagged summary rather than untagged prose. No output,
-  schema, or logic changed — verified via `luac -p` on all 28 Lua files, `tsc --noEmit`,
-  the full lint/unit-test suite, and a live T0 run.
+- **Repo-wide comment-hygiene pass.** Field paths, version quirks, and design
+  rationale moved out of code comments into each tool's `docs/tools/*.md` page,
+  or into `CONTRIBUTING.md` for cross-cutting internals. No output, schema, or
+  logic changed.
 
 ## [1.0.0] - 2026-07-19
 
@@ -455,130 +223,50 @@ server stays strictly read-only). First release published to npm — install wit
 
 ### Added
 
-- **`game_data` plant — a defensible `farm_plantable` fact** (issue #35). Each plant
-  dossier now carries `farm_plantable`, DF's own farm-plot eligibility as a labeled
-  boolean: `true` iff the plant has a plantable seed (the `SEED` flag) and is neither
-  a tree nor a grass. This closes the crop/wild-shrub gap that deferred #35: probed
-  live on 53.15, the rule yields exactly the vanilla crop roster (110 plants) and
-  correctly excludes the two gather-only wild shrubs that carry no seed (kobold bulb,
-  valley herb) and the 47 seeded trees you cannot farm. Facts only — the same
-  classification the game uses to build a plot's planting list, not advice.
-- **A2 actuators — quickfort blueprints** (issue #25, behind `DFHACK_MCP_ACTUATORS`).
-  The highest-value actuator: an agent drafts a quickfort CSV and applies it to
-  designate dig/zone. `blueprint_apply` and `blueprint_undo` (gated, dry-run →
-  confirm → apply → undo) built on the §A0 foundation; there is no separate read
-  sensor — `blueprint_apply` without a `confirm_token` _is_ the preview, and its
-  dry-run parses quickfort's own statistics. The malformed-CSV gate (spike #11): a
-  bad blueprint does not error in quickfort — it partially applies — so the dry-run
-  blocks (no token) whenever it reports invalid key sequences or undesignatable
-  tiles. Fog-of-war tiles under the footprint are surfaced as a fact (never blocked).
-  Reversal is quickfort's native undo, whose handle is `faithful:true` only when no
-  footprint tile carried a pre-existing designation; when some did, undo would clear
-  those too, so the handle is `faithful:false` with a `not_reproduced` note. v1 scope: dig + zone only;
-  build/place are rejected. Verified live end-to-end on the fixture: dig
-  preview → apply → undo (dig flag 0→1→0), zone preview → apply → undo (civzone
-  0→4→0), the malformed/unsupported-mode blocks, and the tamper/replay token
-  rejections.
-- **A3 — labor via work details** (issue #26, behind `DFHACK_MCP_ACTUATORS`). A
-  read-only `work_details()` sensor (always available) lists every work detail with
-  its mode, the labor tokens it enables, and its assigned citizens (id-sorted,
-  capped at 200 with a `members_truncated` flag + full `member_count`, plus
-  `member_names`). The gated `assign_work_detail(unit_id, detail, enabled)` actuator
-  adds/removes one citizen to/from one detail; the preview flags `currently_member`,
-  `resulting_members_count`, and `only_member` as facts, an already-satisfied
-  request previews as a no-op, and the reversal is the same call with `enabled`
-  inverted (`prior_member` echoed; the undo handle also carries `prior_labors`, the
-  exact pre-edit labor-cache bytes, and is `faithful:true` only when that cache was
-  already consistent — `faithful:false` with a `not_reproduced` note when some
-  affected labor's cache was stale and the inverse recomputes rather than restores
-  it). Resolves the spike-flagged
-  labor-propagation risk: `assigned_units` (at
-  `df.global.plotinfo.labor_info.work_details`) is the durable source of truth, and
-  because the game reconciles `unit.status.labors` from it only on a frame advance
-  (its automatic-professions system), `apply` mirrors the affected labors onto the
-  unit immediately — recomputed as the union across all details, matching what the
-  game reconciles to. Verified live end-to-end on the fixture (assign → member +
-  labors propagate → restore), including the no-op and tamper/replay rejections.
-- **A1 actuators — manager work orders** (issue #24, behind `DFHACK_MCP_ACTUATORS`).
-  The first actuators built on the §A0 foundation: `work_order_create` and
-  `work_order_cancel` (gated, dry-run → confirm → apply → undo) plus a read-only
-  `work_order_list` sensor (always available; the Q1 manager-screen view and the
-  actuators' readback). Create flags `would_duplicate` and `manager_present`; cancel
-  returns a recreate spec as its undo handle. Verified live end-to-end on the fixture
-  (create → appears in list → cancel → gone), including the tamper/replay rejections.
-  The validation lane also refined the foundation: actuators now pass the
-  `{error:'no fort loaded'}` guard straight through (like every read tool), and the
-  verify harness exercises the full gated surface via safe dry-runs.
-- **Actuator foundation — the §A0 mutation contract** (issue #8 §A0; de-risked by
-  spike #11). `src/actuator.ts` implements the shared dry-run → single-use
-  `confirm_token` → apply → undo-handle + readback loop once, so the coming
-  `work_order_*` / `blueprint_*` / `assign_work_detail` tools supply only their
-  version-fragile `plan()`/`apply()` bodies. Tokens are single-use and scoped to
-  the operation's **own** targets (an unrelated world change does not void them; a
-  change to the target does). A new `DFHACK_MCP_ACTUATORS` gate keeps every
-  mutating tool out of `tools/list` unless explicitly enabled — **the default
-  server remains strictly read-only**. Adds `npm run test:unit` (node:test,
-  CI-gated) covering the protocol, and a `docs`/README section on the contract.
-- **`game_data` — the remaining raws kinds** (issues #1, #2, #3). The unified
-  `game_data` lookup now implements every kind; none report "not yet
-  implemented". Each mirrors the creature contract (one strong hit → a curated
-  dossier; several → a capped disambiguation list; none →
-  `{match_count:0,matches:[]}`):
-  - **`material`** — resolves via `dfhack.matinfo` over the loaded inorganics
-    (metals, stones, gems, ores), plus a direct token lookup for
-    fully-qualified `PLANT:`/`CREATURE:` tokens. Exposes token, state names
-    (solid/liquid/gas), melting/boiling/ignite points as DF-urist + Celsius
-    facts, a `flammable` flag, solid/liquid density, and curated notable flags.
-  - **`plant`** — token, name, `type` (tree/grass/shrub), value, growth time,
-    growth seasons, surface/subterranean + depth, biomes, `yields`
-    (drink/seed/thread/mill/extract_*), growths, and produced materials.
-  - **`reaction`** — token, name, required skill, building
-    (category + workshop/furnace + custom workshop token), reagents, products.
-  - **`item`** — itemdefs across all classes (weapon/armor/tool/ammo/…) with
-    token, names, class, value, a per-class stat block, and weapon attacks.
-  - **`building`** — custom (raws-defined) workshops: token, name, category,
-    purpose, footprint, build stages, and the reactions available there.
-
-- **`defenses` Level 2 — terrain-aware inside/outside** (issue #4). Each active
-  threat is now classified `inside`/`outside` the fort's walled perimeter,
-  defined concretely as sharing a DF walkability group with the fort's citizens
-  (a threat can walk to your population through connected open space without
-  breaching a wall). Adds `interior` (the citizen walk group(s)), per-threat
-  `walk_group` + `location` + `footing` (the threat's own tile, fog-of-war
-  respected), and `perimeter_terrain`: an ASCII tile grid of the busiest citizen
-  level with wall/fortification and open-to-sky vs covered counts.
-- **`mcp_readTerrain` shared terrain helper** (spike #10). A fog-of-war-safe
-  single-z terrain reader used by `defenses` and future spatial tools:
-  undiscovered tiles render as `?` and never leak their real type. Usable
-  directly or via `reqscript`. Reads tiles in Lua (block-cached) rather than RFR
-  `GetBlockList`, which leaks undiscovered terrain and ships a ~50× larger
-  payload.
-- **`citizen(unit_id)` — the character sheet** (issue #13). A deep dossier on
-  one citizen, chained by `unit_id` from `find_unit` (or `chronicle`). Where
-  `find_unit` stays compact, `citizen` is the depth: the walkable social graph
-  (spouse, parents, children, friends, grudges — each with a `unit_id` you can
-  pass back into `citizen` to walk the graph), worshipped deities with worship
-  strength, NOTABLE personality extremes (top/bottom facets only, not the full
-  50-facet dump), skills of note, likes/detests, physical highlights, and recent
-  thoughts phrased as the game phrases them, tied to current stress. Friends are
-  positive-affection acquaintances; grudges are relationships gone negative, each
-  carrying its raw love/trust/respect scores as labeled facts. Empty categories
-  degrade to `[]`; a missing/invalid `unit_id` yields a labeled `{error}`, never
-  a traceback. Facts only — it senses, it does not advise. `find_unit`'s
-  description now points at `citizen` for depth.
+- **Actuator foundation — the mutation contract** (issue #8) — `src/actuator.ts`
+  implements the shared dry-run → single-use `confirm_token` → apply →
+  undo-handle loop once, so each actuator supplies only its own plan/apply
+  bodies. Tokens are single-use and scoped to the operation's own targets. The
+  `DFHACK_MCP_ACTUATORS` gate keeps every mutating tool out of `tools/list`
+  unless explicitly enabled.
+- **Manager work orders** (issue #24) — `work_order_create` / `work_order_cancel`
+  actuators plus an always-available `work_order_list` sensor. Create flags
+  `would_duplicate` and `manager_present`; cancel returns a recreate spec as its
+  undo handle.
+- **Quickfort blueprints** (issue #25) — `blueprint_apply` / `blueprint_undo`,
+  dig and zone only. `blueprint_apply` without a token *is* the preview. A
+  malformed blueprint partially applies rather than erroring in quickfort, so
+  the preview blocks outright on invalid keys or undesignatable tiles.
+  Fog-of-war tiles under the footprint are reported, never blocked.
+- **Labor via work details** (issue #26) — a `work_details()` sensor plus the
+  `assign_work_detail` actuator. The game only reconciles a unit's labors on a
+  frame advance, so apply mirrors them immediately to match what the game would
+  settle on.
+- **`game_data` — the remaining raws kinds** (issues #1, #2, #3) — `material`,
+  `plant`, `reaction`, `item`, and `building` dossiers now all implemented, each
+  mirroring the creature contract (one strong hit → dossier; several → a capped
+  disambiguation list; none → an empty match set).
+- **`game_data` plant `farm_plantable`** (issue #35) — DF's own farm-plot
+  eligibility as a labeled boolean. Probed live, it yields exactly the vanilla
+  crop roster and correctly excludes gather-only wild shrubs and seeded trees.
+- **`citizen(unit_id)` — the character sheet** (issue #13) — a deep dossier on
+  one dwarf: the walkable social graph (each relation carries a `unit_id` you
+  can pass back in), worshipped deities, notable personality extremes, skills,
+  likes, and recent thoughts tied to current stress.
+- **`defenses` terrain-aware inside/outside** (issue #4) — each threat is
+  classified by whether it shares a walkability group with your citizens, i.e.
+  whether it can reach them without breaching a wall. Adds per-threat position
+  and footing, plus a perimeter terrain grid.
+- **`mcp_readTerrain` shared terrain helper** (spike #10) — a fog-of-war-safe
+  single-z reader where undiscovered tiles render as `?` and never leak their
+  real type. Reads tiles in Lua rather than over RPC, which leaked undiscovered
+  terrain and shipped a ~50× larger payload.
 
 ### Changed
 
-- **Facts-only doctrine.** Tools report facts, not advice — they sense the game
-  the way a player reads a screen, and judgment is left to the agent.
-  - `defenses` no longer emits tactical `alerts` or `notes`; it returns only
-    positions, the controllable-structure inventory, and the relative geometry
-    between them. Caveats (walls not yet covered, lever↔bridge linkage not
-    recorded) moved into the tool description.
-  - `unmet_needs` no longer emits a `suggestion` per need; it reports the need
-    type and how starved it is (`worst_focus`). How to satisfy a need is game
-    knowledge the agent looks up.
-  - Recorded the rule in the README's Contributing guide for future tools.
+- **Facts-only doctrine.** Tools report what is true and leave judgment to the
+  agent. `defenses` no longer emits tactical advice, and `unmet_needs` no longer
+  suggests how to satisfy a need — both now report only the underlying facts.
 
 ## [0.1.0] - 2026-07-16
 
