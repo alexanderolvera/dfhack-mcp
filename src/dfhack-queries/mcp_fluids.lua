@@ -47,9 +47,7 @@ local function near_interior(x, y, z)
       if not (dx == 0 and dy == 0) then
         local nx, ny = x + dx, y + dy
         if nx >= 0 and ny >= 0 and nx < x_count and ny < y_count then
-          local blk = dfhack.maps.getTileBlock(nx, ny, z)
-          local revealed = blk and not blk.designation[nx % 16][ny % 16].hidden
-          if revealed then
+          if not terrain.is_hidden(nx, ny, z) then
             local g = dfhack.maps.getWalkableGroup(xyz2pos(nx, ny, z))
             if g ~= 0 and interior_groups[g] then return true end
           end
@@ -64,16 +62,7 @@ local aquifer_by_z = {}
 local water_by_z = {}
 local magma_by_z = {}
 
--- flood_risk_tiles must be the TRUE global top FLOOD_RISK_CAP by (z desc, x
--- asc, y asc), and flood_risk_total the true count of every qualifying tile
--- -- not just however many were seen before some collection limit. Because
--- the outer scan already walks z in strictly descending order (the sort's
--- own primary key), every tile at a given z sorts before every tile at any
--- lower z regardless of x/y. So: batch candidates per z-level, sort each
--- batch once its z finishes, and merge it into the running top-N -- once
--- that running set already holds FLOOD_RISK_CAP entries from z-levels at or
--- above the current one, no lower z can ever displace them, so candidate
--- collection (not the total count, which keeps running) can stop for good.
+-- Per-z-level top-N batching -- see docs/tools/fluids.md Implementation notes.
 local flood_risk = {}
 local flood_risk_total = 0
 local collecting_candidates = true
@@ -100,7 +89,7 @@ for z = z_count - 1, 0, -1 do
               if x < x_count then
                 scanned_tiles = scanned_tiles + 1
                 local des = blk.designation[lx][ly]
-                if not des.hidden then
+                if not terrain.is_hidden(x, y, z, blk) then
                   if des.water_table then
                     local occ = blk.occupancy[lx][ly]
                     local bucket = aquifer_by_z[z]
@@ -240,7 +229,7 @@ local function well_water_source(w)
     if blk then
       local lx, ly = x % 16, y % 16
       local des = blk.designation[lx][ly]
-      if des.hidden then return { source = 'unknown', depth_to_source = nil } end
+      if terrain.is_hidden(x, y, z, blk) then return { source = 'unknown', depth_to_source = nil } end
       if des.flow_size > 0 then
         return { source = des.liquid_type and 'magma' or 'water', depth_to_source = w.z - z }
       end

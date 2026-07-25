@@ -12,7 +12,7 @@ tags: [dfhack-mcp/tool]
 > Every stockpile as a fact sheet, plus the fort-wide hauling backlog no single pile shows.
 
 ## Purpose
-Hauling/logistics is a top-3 mid-game sink and, until now, fully invisible to an AI co-pilot: `stocks` reports fort-wide totals but nothing about where goods physically sit, and nothing else reports whether the piles themselves are configured sanely, linked correctly, or falling behind. `stockpiles` closes that gap: one row per stockpile (categories accepted, exact bounds, container permissions, give/take links, and how full it actually is), plus three fort-wide backlog signals — unstored items piling up outside any pile, food/organic matter that has already rotted while sitting unstored, and items currently flagged for dumping. Reports what is true of the piles and the backlog, not what to build or reconfigure.
+Hauling/logistics is a top-3 mid-game sink and, until now, fully invisible to an AI co-pilot: `stocks` reports fort-wide totals but nothing about where goods physically sit, and nothing else reports whether the piles themselves are configured sanely, linked correctly, or falling behind. `stockpiles` closes that gap: one row per stockpile (categories accepted, exact bounds, container permissions, give/take links, and how much of its footprint is currently occupied), plus three fort-wide backlog signals — unstored items piling up outside any pile, food/organic matter that has already rotted while sitting unstored, and items currently flagged for dumping. Reports what is true of the piles and the backlog, not what to build or reconfigure.
 
 ## Parameters
 None.

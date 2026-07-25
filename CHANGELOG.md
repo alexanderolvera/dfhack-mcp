@@ -17,18 +17,21 @@ backwards-compatible fixes only.
   fort-wide material totals but nothing about where goods physically sit or
   whether the piles themselves are configured sanely. Reports one row per
   stockpile (accepted categories, exact bounds, barrel/bin/wheelbarrow
-  permissions, give/take hauling-route links, and an approximate fullness
-  reading) plus three fort-wide backlog signals: items piling up unstored
-  outside any pile, food/organic matter that has already rotted while sitting
-  unstored, and items currently flagged for dumping. Verified live against the
+  permissions, give/take hauling-route links, and `occupied_tiles` — how many
+  of the pile's tiles have at least one qualifying item on them right now)
+  plus three fort-wide backlog signals: items piling up unstored outside any
+  pile, food/organic matter that has already rotted while sitting unstored,
+  and items currently flagged for dumping. Verified live against the
   Dreamfort fixture (60 stockpiles): the dynamic bitfield-key category lookup
   — the single highest-risk piece of the original draft — checks out exactly
   against the game's own 17 named category flags, and `give_to`/`take_from`
   hauling-route links are reciprocal across the fixture's full link graph
-  (now enforced fort-wide by a new `stockpiles_wellformed` invariant). The
-  fullness reading remains a deliberately rough proxy — confirmed to read
-  well over 100% on container-heavy and long-lived single-tile dump piles,
-  as documented.
+  (now enforced fort-wide by a new `stockpiles_wellformed` invariant).
+  `occupied_tiles` is a directly-counted, bounded `[0, size]` spatial fact,
+  not a capacity/fullness percentage — an earlier draft's `fullness_pct`
+  heuristic was dropped before shipping since it had no real relationship to
+  DF's actual per-tile capacity and read well over 100% on container-heavy
+  piles.
 - **`fluids` sensor** ([#80](https://github.com/alexanderolvera/dfhack-mcp/issues/80))
   — water/magma engineering facts the Earthworks tier (`tile_region`, `geology`) reads
   past: revealed aquifer layers by light/heavy classification, standing/flowing water
@@ -68,7 +71,7 @@ backwards-compatible fixes only.
   stop's linked stockpiles as take/give, and departure conditions — direction, dwarf
   handling mode, and load-percent threshold), which vehicles are assigned to which
   route, where each currently sits, and fort-wide vehicle state including
-  `minecart_assigned` — whether a vehicle's backing item still actually exists, since
+  `backing_item_exists` — whether a vehicle's backing item still actually exists, since
   a route can silently stop moving goods after its cart is destroyed or stolen while
   the route itself keeps listing it.
 

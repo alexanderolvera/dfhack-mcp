@@ -49,7 +49,6 @@ export interface Fluids {
   water_layers: WaterLayer[];
   water_layers_total: number;
   water_layers_truncated: boolean;
-  /** Absent (not `null`) when no revealed z-level clears the magma-sea size floor — DFHack's Lua `json` module has no null sentinel, so an unset field is omitted rather than encoded as `null` (same convention as `wells[].depth_to_source`). */
   magma_sea?: MagmaSea;
   flood_risk_tiles: FloodRiskTile[];
   flood_risk_total: number;

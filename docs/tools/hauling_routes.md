@@ -14,7 +14,7 @@ tags: [dfhack-mcp/tool]
 > The fort's minecart hauling infrastructure as facts: routes, their stops, and the vehicle objects that run them.
 
 ## Purpose
-Issue #84 names `hauling_routes` as the sensor half of a deferred minecart-route actuator (v1.4, "Logistics & Engineering") — nothing currently sees track-based hauling at all. This tool reports what's configured (routes and their stops, each stop's linked stockpiles and departure conditions) and what's actually running (which vehicles are assigned to which route, where each currently sits, and whether a vehicle still has a real minecart item backing it). It composes with `rooms_and_zones`/a future `stockpiles` sensor, which see the stockpiles themselves but not how track-based hauling moves goods between them.
+Issue #84 names `hauling_routes` as the sensor half of a deferred minecart-route actuator (v1.4, "Logistics & Engineering") — nothing currently sees track-based hauling at all. This tool reports what's configured (routes and their stops, each stop's linked stockpiles and departure conditions) and what's actually running (which vehicles are assigned to which route, where each currently sits, and whether a vehicle still has a real minecart item backing it). It composes with `rooms_and_zones`/[stockpiles](stockpiles.md), which see the stockpiles themselves but not how track-based hauling moves goods between them.
 
 ## Parameters
 None.
@@ -28,8 +28,8 @@ None.
     - `parked_vehicle_id` — the vehicle (see the top-level `vehicles[]`) physically parked at this exact stop right now; absent if none is.
   - `vehicles[]` — `{ vehicle_id, current_stop_id? }`, the vehicles assigned to run this route. DF assigns a vehicle to a *route*, not to an individual stop — see Caveats. `current_stop_id` is which of this route's own stops the vehicle currently occupies; absent if it's in transit between stops (or the position didn't resolve).
 - `routes_total` (number), `routes_truncated` (boolean).
-- `vehicles[]` — every hauling vehicle fort-wide (capped at 200 — see `vehicles_total`/`vehicles_truncated`), regardless of route assignment: `{ vehicle_id, item_id, minecart_assigned, route_id?, on_track }`.
-  - `minecart_assigned` — whether the vehicle's backing item still actually exists. A vehicle can persist as a stale reference (still listed on its route) after its physical minecart/wheelbarrow is destroyed, melted, or stolen — this is the one fact this tool reports that a player would otherwise only discover by noticing a route silently stopped moving.
+- `vehicles[]` — every hauling vehicle fort-wide (capped at 200 — see `vehicles_total`/`vehicles_truncated`), regardless of route assignment: `{ vehicle_id, item_id, backing_item_exists, route_id?, on_track }`.
+  - `backing_item_exists` — whether the vehicle's backing item still actually exists. This is `true` for any vehicle whose physical item is intact **whether or not it's assigned to a route** — it is not a route-assignment signal (`route_id` is that). A vehicle can persist as a stale reference (still listed on its route) after its physical minecart/wheelbarrow is destroyed, melted, or stolen — this is the one fact this tool reports that a player would otherwise only discover by noticing a route silently stopped moving.
   - `route_id` — the route this vehicle is currently assigned to; absent for an idle/unassigned vehicle.
   - `on_track` — whether the vehicle is currently riding a minecart track (`VEHICLE_FLAG_ON_TRACK`).
 - `vehicles_total` (number), `vehicles_truncated` (boolean).
@@ -63,7 +63,7 @@ None.
   "routes_total": 1,
   "routes_truncated": false,
   "vehicles": [
-    { "vehicle_id": 3, "item_id": 4021, "minecart_assigned": true, "route_id": 0, "on_track": true }
+    { "vehicle_id": 3, "item_id": 4021, "backing_item_exists": true, "route_id": 0, "on_track": true }
   ],
   "vehicles_total": 1,
   "vehicles_truncated": false
@@ -85,7 +85,7 @@ A route's `vehicle_ids`/`vehicle_stops` are parallel arrays (same index = same v
 
 `direction`/`mode` originally resolved through a static table hand-built from `df.hauling.xml`'s declared enum-item order. Live introspection confirmed the values match (`stop_depart_condition.T_direction` reverse-lookup gives `North`/`South`/`East`/`West` for `0`-`3`; `T_mode` gives `Push`/`Ride`/`Guide` for `0`-`2`, and out-of-range lookups return `nil` on both), so the tool now binds directly to `df.stop_depart_condition.T_direction`/`T_mode` instead of maintaining a parallel hand-rolled copy that could drift.
 
-Vehicles come from `df.global.world.vehicles.all`, filtered to `vehicle_type` `ITEM`; `route_id` (confirmed field name live) is the route it serves (absent when `-1`); `minecart_assigned` is `df.item.find(item_id) ~= nil` — confirmed live to read `true` for every one of Dreamfort's 9 in-use minecarts (all backing items still exist on this paused fixture, so the "stale reference after the cart is destroyed" case itself remains unexercised — the mechanism (`df.item.find` returning `nil` for a missing item id) is standard DFHack behavior, not something specific to this tool).
+Vehicles come from `df.global.world.vehicles.all`, filtered to `vehicle_type` `ITEM`; `route_id` (confirmed field name live) is the route it serves (absent when `-1`); `backing_item_exists` is `df.item.find(item_id) ~= nil` — confirmed live to read `true` for every one of Dreamfort's 9 in-use minecarts (all backing items still exist on this paused fixture, so the "stale reference after the cart is destroyed" case itself remains unexercised — the mechanism (`df.item.find` returning `nil` for a missing item id) is standard DFHack behavior, not something specific to this tool).
 
 ## Related
 [rooms_and_zones](rooms_and_zones.md) · [map_overview](map_overview.md) · [tile_region](tile_region.md)

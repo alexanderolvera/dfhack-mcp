@@ -28,7 +28,7 @@ Doctrine reminder: every tool is **facts-only** — it senses and reports; judgm
 
 *Economy & society*
 - [stocks](stocks.md) — food/booze/materials counts
-- [stockpiles](stockpiles.md) — per-pile settings/links/fullness, unstored and rotting-item backlog
+- [stockpiles](stockpiles.md) — per-pile settings/links/tile occupancy, unstored and rotting-item backlog
 - [farming](farming.md) — farm plots, crop assignment by season, seed stock
 - [trade](trade.md) — depot, broker, caravan state, caravan manifest, and liaison price agreements
 - [work_order_list](work_order_list.md) — manager work-order queue

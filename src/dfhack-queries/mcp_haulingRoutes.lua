@@ -9,9 +9,7 @@ end
 local ROUTES_CAP = 100
 local VEHICLES_CAP = 200
 
--- Live enum bindings (confirmed against a running fort: df.stop_depart_condition
--- .T_direction/.T_mode reverse-lookup by ordinal, same convention as every other
--- df-enum; out-of-range lookups return nil, same as a hand-rolled table would).
+-- Live enum bindings -- see docs/tools/hauling_routes.md Caveats/Implementation notes.
 local DIRECTIONS = df.stop_depart_condition.T_direction
 local LEAVE_MODES = df.stop_depart_condition.T_mode
 
@@ -119,7 +117,7 @@ for _, v in ipairs(df.global.world.vehicles.all) do
     vehicles[#vehicles + 1] = {
       vehicle_id = v.id,
       item_id = v.item_id,
-      minecart_assigned = df.item.find(v.item_id) ~= nil,
+      backing_item_exists = df.item.find(v.item_id) ~= nil,
       route_id = (v.route_id and v.route_id ~= -1) and v.route_id or nil,
       on_track = v.flag.ON_TRACK or false,
     }
@@ -139,7 +137,7 @@ if #vehicles > VEHICLES_CAP then
     if referenced_vehicle_ids[v.vehicle_id] then referenced[#referenced + 1] = v
     else unreferenced[#unreferenced + 1] = v end
   end
-  local budget = VEHICLES_CAP - #referenced
+  local budget = math.max(0, VEHICLES_CAP - #referenced)
   if budget < #unreferenced then
     vehicles_truncated = true
     if budget > 0 then

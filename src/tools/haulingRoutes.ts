@@ -40,7 +40,7 @@ export interface HaulingRoute {
 export interface Vehicle {
   vehicle_id: number;
   item_id: number;
-  minecart_assigned: boolean;
+  backing_item_exists: boolean;
   route_id?: number;
   on_track: boolean;
 }
@@ -94,9 +94,10 @@ export const haulingRoutesDef: ToolDef = {
     'currently occupies, absent if in transit or unknown. The top-level ' +
     'vehicles[] is every hauling vehicle fort-wide (minecarts and other cart- ' +
     'type haulers; battering rams excluded) as {vehicle_id, item_id, ' +
-    'minecart_assigned, route_id?, on_track} — minecart_assigned is whether the ' +
-    "vehicle's backing item still exists (a vehicle can persist as a stale " +
-    'reference after its physical cart is destroyed or stolen); route_id is ' +
+    'backing_item_exists, route_id?, on_track} — backing_item_exists is whether ' +
+    "the vehicle's backing item still exists (a vehicle can persist as a stale " +
+    'reference after its physical cart is destroyed or stolen, regardless of ' +
+    'whether it is assigned to a route); route_id is ' +
     'absent for a vehicle not currently assigned to any route. Both routes[] ' +
     '(capped 100, see routes_total/routes_truncated) and the top-level ' +
     'vehicles[] (capped 200, see vehicles_total/vehicles_truncated) are sorted ' +

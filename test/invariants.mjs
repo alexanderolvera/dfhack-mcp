@@ -869,9 +869,7 @@ export const INVARIANTS = [
         if (!(isInt(units[k]) && units[k] >= 0))
           out.push(`units.${k}=${units[k]} is not a non-negative integer`);
       }
-      // units.active is every currently-simulated living unit (citizens, tame
-      // animals, wildlife, hostiles, visitors) — a superset of the fort's own
-      // citizens, so it can never fall below fort_status's citizen population.
+      // units.active >= fort_status.population -- see docs/tools/fort_health.md Implementation notes.
       if (isInt(units.active) && isInt(p.fort_status.population) && units.active < p.fort_status.population)
         out.push(
           `units.active=${units.active} is less than fort_status.population=${p.fort_status.population}`
@@ -1042,11 +1040,19 @@ export const INVARIANTS = [
       // give_to/take_from are the same relation read from both ends — when neither side's
       // link list was truncated, a link on one pile must show up as the reciprocal on the other.
       for (const pl of d.piles) {
-        if (pl.give_to_truncated) continue;
-        for (const g of pl.give_to ?? []) {
-          const other = byId.get(g);
-          if (other && !other.take_from_truncated && !(other.take_from ?? []).includes(pl.id))
-            out.push(`pile ${pl.id} give_to ${g}, but pile ${g} has no reciprocal take_from`);
+        if (!pl.give_to_truncated) {
+          for (const g of pl.give_to ?? []) {
+            const other = byId.get(g);
+            if (other && !other.take_from_truncated && !(other.take_from ?? []).includes(pl.id))
+              out.push(`pile ${pl.id} give_to ${g}, but pile ${g} has no reciprocal take_from`);
+          }
+        }
+        if (!pl.take_from_truncated) {
+          for (const t of pl.take_from ?? []) {
+            const other = byId.get(t);
+            if (other && !other.give_to_truncated && !(other.give_to ?? []).includes(pl.id))
+              out.push(`pile ${pl.id} take_from ${t}, but pile ${t} has no reciprocal give_to`);
+          }
         }
       }
 

@@ -297,63 +297,63 @@
   "vehicles": [
     {
       "item_id": 1067,
-      "minecart_assigned": true,
+      "backing_item_exists": true,
       "on_track": true,
       "route_id": 1,
       "vehicle_id": 0
     },
     {
       "item_id": 1114,
-      "minecart_assigned": true,
+      "backing_item_exists": true,
       "on_track": true,
       "route_id": 2,
       "vehicle_id": 1
     },
     {
       "item_id": 1133,
-      "minecart_assigned": true,
+      "backing_item_exists": true,
       "on_track": true,
       "route_id": 3,
       "vehicle_id": 2
     },
     {
       "item_id": 1167,
-      "minecart_assigned": true,
+      "backing_item_exists": true,
       "on_track": true,
       "route_id": 4,
       "vehicle_id": 3
     },
     {
       "item_id": 1193,
-      "minecart_assigned": true,
+      "backing_item_exists": true,
       "on_track": true,
       "route_id": 5,
       "vehicle_id": 4
     },
     {
       "item_id": 2719,
-      "minecart_assigned": true,
+      "backing_item_exists": true,
       "on_track": true,
       "route_id": 6,
       "vehicle_id": 5
     },
     {
       "item_id": 4656,
-      "minecart_assigned": true,
+      "backing_item_exists": true,
       "on_track": true,
       "route_id": 7,
       "vehicle_id": 6
     },
     {
       "item_id": 4963,
-      "minecart_assigned": true,
+      "backing_item_exists": true,
       "on_track": true,
       "route_id": 8,
       "vehicle_id": 7
     },
     {
       "item_id": 5158,
-      "minecart_assigned": true,
+      "backing_item_exists": true,
       "on_track": true,
       "route_id": 9,
       "vehicle_id": 8

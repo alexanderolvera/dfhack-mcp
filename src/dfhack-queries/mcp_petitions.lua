@@ -157,10 +157,7 @@ for _, agr in ipairs(df.global.world.agreements.all) do
   end
 end
 
--- Active rows (still outstanding, or sitting in the live decision queue) sort
--- before resolved ones, so a long-lived fort's history doesn't crowd the
--- current petitions this sensor exists to surface out of the capped page.
--- Within a tier, ascending agreement_id (DF assigns these in creation order).
+-- Active-first sort and pre-cap counting -- see docs/tools/petitions.md Caveats.
 local function petition_rank(p) return (p.status == 'outstanding' or p.awaiting_decision) and 0 or 1 end
 local function by_active_then_id(a, b)
   local ra, rb = petition_rank(a), petition_rank(b)
@@ -170,8 +167,6 @@ end
 table.sort(location_petitions, by_active_then_id)
 table.sort(residency_petitions, by_active_then_id)
 
--- The true total must count every matching row before the cap below drops
--- any — otherwise a truncated list would silently undercount.
 local awaiting_decision_count = 0
 for _, p in ipairs(location_petitions) do
   if p.awaiting_decision then awaiting_decision_count = awaiting_decision_count + 1 end
