@@ -940,4 +940,136 @@ export const INVARIANTS = [
       return out;
     },
   },
+  {
+    name: 'burrows_wellformed',
+    tools: ['burrows'],
+    desc: 'each burrow has a non-negative tile_count and ascending assigned_units honoring its 200 cap/truncation flag, and civilian_alert.burrows/active only ever name real, configured burrows',
+    check(p) {
+      const d = p.burrows;
+      const out = [];
+      if (!isInt(d.count) || d.count < 0) out.push(`count=${d.count} is not a non-negative integer`);
+      if (!Array.isArray(d.burrows)) return [...out, 'burrows is not an array'];
+      if (d.burrows.length !== d.count)
+        out.push(`burrows.length=${d.burrows.length} != count=${d.count}`);
+      const ids = new Set();
+      d.burrows.forEach((b, i) => {
+        if (!isInt(b.id)) out.push(`burrows[${i}].id=${b.id} is not an integer`);
+        ids.add(b.id);
+        if (!(isInt(b.tile_count) && b.tile_count >= 0))
+          out.push(`burrows[${i}].tile_count=${b.tile_count} is not a non-negative integer`);
+        if (!Array.isArray(b.assigned_units)) {
+          out.push(`burrows[${i}].assigned_units is not an array`);
+          return;
+        }
+        if (b.assigned_units.length > 200)
+          out.push(`burrows[${i}].assigned_units length ${b.assigned_units.length} exceeds cap 200`);
+        for (let j = 1; j < b.assigned_units.length; j++) {
+          if (!(b.assigned_units[j] > b.assigned_units[j - 1]))
+            out.push(`burrows[${i}].assigned_units not strictly ascending at index ${j}`);
+        }
+        const shouldTrunc = isInt(b.assigned_units_total) && b.assigned_units_total > b.assigned_units.length;
+        if (Boolean(b.assigned_units_truncated) !== shouldTrunc)
+          out.push(
+            `burrows[${i}].assigned_units_truncated disagrees with total ${b.assigned_units_total} vs listed ${b.assigned_units.length}`
+          );
+      });
+      const ca = d.civilian_alert ?? {};
+      if (typeof ca.configured !== 'boolean') out.push(`civilian_alert.configured=${ca.configured} is not a boolean`);
+      if (typeof ca.active !== 'boolean') out.push(`civilian_alert.active=${ca.active} is not a boolean`);
+      if (ca.active && !ca.configured) out.push('civilian_alert.active is true but configured is false');
+      (ca.burrows ?? []).forEach((id) => {
+        if (!ids.has(id)) out.push(`civilian_alert.burrows names unknown burrow id ${id}`);
+      });
+      d.burrows.forEach((b) => {
+        const linked = (ca.burrows ?? []).includes(b.id);
+        if (b.civilian_alert_linked !== linked)
+          out.push(`burrows[${b.id}].civilian_alert_linked=${b.civilian_alert_linked} disagrees with civilian_alert.burrows`);
+      });
+      return out;
+    },
+  },
+  {
+    name: 'mechanisms_wellformed',
+    tools: ['mechanisms'],
+    desc: 'lever state is 0/1, unlinked_levers is exactly the levers with no linked_targets, unlinked_bridges never appears as any lever OR plate linked_target building_id, and the four capped lists honor their 200 cap + truncation flag',
+    check(p) {
+      const d = p.mechanisms;
+      const out = [];
+      if (!Array.isArray(d.levers)) return ['levers is not an array'];
+      const linkedTargetIds = new Set();
+      const emptyLeverIds = new Set();
+      d.levers.forEach((lv, i) => {
+        if (lv.state !== 0 && lv.state !== 1) out.push(`levers[${i}].state=${lv.state} is not 0 or 1`);
+        if (!Array.isArray(lv.linked_targets)) {
+          out.push(`levers[${i}].linked_targets is not an array`);
+          return;
+        }
+        if (lv.linked_targets.length === 0) emptyLeverIds.add(lv.building_id);
+        lv.linked_targets.forEach((t) => linkedTargetIds.add(t.building_id));
+      });
+      (d.pressure_plates ?? []).forEach((pl) => {
+        (pl.linked_targets ?? []).forEach((t) => linkedTargetIds.add(t.building_id));
+      });
+      const unlinkedSet = new Set(d.unlinked_levers ?? []);
+      if (unlinkedSet.size !== emptyLeverIds.size || [...unlinkedSet].some((id) => !emptyLeverIds.has(id)))
+        out.push(
+          `unlinked_levers ${JSON.stringify(d.unlinked_levers)} disagrees with the levers actually carrying 0 linked_targets`
+        );
+      (d.unlinked_bridges ?? []).forEach((id) => {
+        if (linkedTargetIds.has(id)) out.push(`unlinked_bridges lists ${id}, but a lever/plate targets it`);
+      });
+      const capChecks = [
+        ['levers', d.levers, d.lever_count, d.levers_truncated],
+        ['pressure_plates', d.pressure_plates, d.plate_count, d.pressure_plates_truncated],
+        ['unlinked_levers', d.unlinked_levers, d.unlinked_levers?.length, d.unlinked_levers_truncated],
+        ['unlinked_bridges', d.unlinked_bridges, d.unlinked_bridges?.length, d.unlinked_bridges_truncated],
+      ];
+      for (const [name, list, total, truncated] of capChecks) {
+        if (!Array.isArray(list)) {
+          out.push(`${name} is not an array`);
+          continue;
+        }
+        if (list.length > 200) out.push(`${name} length ${list.length} exceeds the cap of 200`);
+        const shouldTrunc = isInt(total) && total > list.length;
+        if (Boolean(truncated) !== shouldTrunc)
+          out.push(`${name}_truncated=${truncated} disagrees with total ${total} vs listed ${list.length}`);
+      }
+      return out;
+    },
+  },
+  {
+    name: 'military_roster_wellformed',
+    tools: ['military'],
+    desc: "each squad's roster uniform rows have non-negative assigned/missing counts (missing <= assigned) agreeing with uniform_complete, filled never exceeds positions, and training.month is a valid 0-11 index",
+    check(p) {
+      const d = p.military;
+      const out = [];
+      if (!Array.isArray(d.squads)) return ['squads is not an array'];
+      d.squads.forEach((sq, si) => {
+        if (!(isInt(sq.filled) && isInt(sq.positions) && inRange(sq.filled, 0, sq.positions)))
+          out.push(`squads[${si}] filled=${sq.filled} outside [0, positions=${sq.positions}]`);
+        (sq.roster ?? []).forEach((row, ri) => {
+          if (!isInt(row.unit_id)) out.push(`squads[${si}].roster[${ri}].unit_id=${row.unit_id} is not an integer`);
+          let missingTotal = 0;
+          (row.uniform ?? []).forEach((u, ui) => {
+            if (!(isInt(u.assigned_count) && u.assigned_count >= 0))
+              out.push(`squads[${si}].roster[${ri}].uniform[${ui}].assigned_count=${u.assigned_count} is not a non-negative integer`);
+            if (!(isInt(u.missing_count) && inRange(u.missing_count, 0, u.assigned_count)))
+              out.push(
+                `squads[${si}].roster[${ri}].uniform[${ui}].missing_count=${u.missing_count} outside [0, assigned_count=${u.assigned_count}]`
+              );
+            missingTotal += u.missing_count || 0;
+          });
+          if (row.uniform_complete !== (missingTotal === 0))
+            out.push(`squads[${si}].roster[${ri}].uniform_complete=${row.uniform_complete} disagrees with summed missing_count=${missingTotal}`);
+        });
+        const t = sq.training ?? {};
+        if (!(isInt(t.month) && inRange(t.month, 0, 11)))
+          out.push(`squads[${si}].training.month=${t.month} outside 0..11`);
+        if (!isInt(t.cur_routine_idx) || t.cur_routine_idx < 0)
+          out.push(`squads[${si}].training.cur_routine_idx=${t.cur_routine_idx} is not a non-negative integer`);
+      });
+      return out;
+    },
+  },
 ];
