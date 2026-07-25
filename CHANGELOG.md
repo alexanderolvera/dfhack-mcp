@@ -74,6 +74,17 @@ backwards-compatible fixes only.
   `backing_item_exists` — whether a vehicle's backing item still actually exists, since
   a route can silently stop moving goods after its cart is destroyed or stolen while
   the route itself keeps listing it.
+- **Listed on the official MCP Registry** as
+  `io.github.alexanderolvera/dfhack-mcp`. A new `server.json` describes the server for
+  registry clients (npm package, stdio transport, the three `DFHACK_*` environment
+  variables), and a `mcp-registry` job in the release workflow publishes it on every
+  `v*` tag via GitHub Actions OIDC — no new secret, and no manual bootstrap, unlike
+  npm trusted publishing. The job runs _after_ the npm publish, because the registry
+  validates ownership by fetching the published tarball and matching the new `mcpName`
+  field in its `package.json` against `server.json`'s `name`. It is a separate job so
+  a registry outage can neither block nor re-trigger the immutable npm publish.
+  Nothing about installing changes: `npx -y dfhack-mcp` and the registry listing
+  resolve to the same build.
 
 ### Changed
 
@@ -95,6 +106,18 @@ backwards-compatible fixes only.
   golden exactly and the new fields correctly never populate — but the
   populated-manifest/agreements path itself remains unexercised against real
   data, same limitation as the original draft.
+
+- **`zod` is now a direct dependency** (`^4.4.3`). `src/` imports it in 19 files
+  — `actuator.ts` plus every tool's input schema — but it was only ever present
+  as a transitive install of `@modelcontextprotocol/sdk`, which declares it as a
+  _required_ peer. Nothing was broken (npm hoists it, and the SDK's
+  `^3.25 || ^4.0` range still dedupes to a single copy), but the version the
+  server's own schemas compiled against was decided by the SDK's tree rather
+  than by this package — an SDK bump could have moved zod majors underneath us
+  with no changelog entry here. `test/metadata.test.mjs` now also guards the
+  `package.json` ↔ `server.json` contract (name/`mcpName`, both versions, npm
+  identifier, the registry's 100-char description cap) so a forgotten bump fails
+  at PR time rather than mid-release, after npm has already gone out.
 
 ## [1.3.0] - 2026-07-22
 
@@ -150,7 +173,7 @@ backwards-compatible fixes only.
   guard, expedition leader → mayor) so they don't read as problems.
 - **`farming` sensor** ([#76](https://github.com/alexanderolvera/dfhack-mcp/issues/76))
   — the early-survival pipeline between `game_data`'s abstract "what's plantable" and
-  `stocks`'s food *outputs*: each farm plot's tile size, surface/underground status,
+  `stocks`'s food _outputs_: each farm plot's tile size, surface/underground status,
   crop assignment per season (fallow if none), and seed availability for that crop;
   plus fort-wide seed totals by plant. `no_crop_assigned` flags an idle plot before it
   becomes a food crisis.
@@ -263,13 +286,13 @@ backwards-compatible fixes only.
   the actual assertion in `scripts/smoke-artifact.mjs` moved to 36 across this
   release's four new/extended tools. Updated to match.
 - **`livestock_and_pastures.egg_layers` counted juveniles that can't lay yet**
-  — `LAYS_EGGS` is a caste *capability*, not an age-independent fact; the
+  — `LAYS_EGGS` is a caste _capability_, not an age-independent fact; the
   fixture proved it live: the reported 96 egg layers were exactly 83 juvenile
-  + 12 adult female geese + 1 adult female guineafowl. Now gated on the
-  already-computed `adult` flag (matching DFHack's own `autonestbox` behavior,
-  which likewise waits for adulthood), collapsing the fixture's count to the
-  correct 13. `grazers` intentionally has no such gate — a juvenile still
-  grazes.
+  - 12 adult female geese + 1 adult female guineafowl. Now gated on the
+    already-computed `adult` flag (matching DFHack's own `autonestbox` behavior,
+    which likewise waits for adulthood), collapsing the fixture's count to the
+    correct 13. `grazers` intentionally has no such gate — a juvenile still
+    grazes.
 - **`livestock_and_pastures.by_group[]` was the one list left uncapped** — a
   large or heavily-modded creature roster could grow this without bound. Now
   capped at 100 distinct species/sex/adult combinations, with the established

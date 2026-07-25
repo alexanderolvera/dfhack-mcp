@@ -46,9 +46,14 @@ nothing to build. Point your MCP client at it with `npx`:
 
 That's it for Claude Desktop / Claude Code / any stdio MCP client. `npx -y
 dfhack-mcp` fetches and runs the latest release; its runtime dependencies — the
-MCP SDK and the
+MCP SDK, `zod`, and the
 [`dfhack-remote-node`](https://www.npmjs.com/package/dfhack-remote-node) RPC
 transport — are pulled from npm automatically.
+
+Clients that browse the [official MCP Registry](https://registry.modelcontextprotocol.io)
+can find this server there as **`io.github.alexanderolvera/dfhack-mcp`**; the
+listing is generated from [`server.json`](server.json) and points at the same npm
+package, so either route installs the identical build.
 
 Then just have your fort running (next section) and ask your agent something like
 _"check on my fort and flag anything urgent."_
