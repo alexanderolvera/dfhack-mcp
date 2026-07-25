@@ -161,6 +161,7 @@ for _, sq in ipairs(df.global.world.squads.all) do
     end
     assigned_positions = assigned_positions + filled
     squads[#squads+1] = {
+      squad_id = sq.id,
       name = name,
       filled = filled,
       positions = total,
