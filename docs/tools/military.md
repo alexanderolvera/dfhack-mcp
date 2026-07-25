@@ -9,10 +9,10 @@ tags: [dfhack-mcp/tool]
 
 # military
 
-> The fort's military: number of squads, how many living present dwarves are actually enlisted, filled squad positions, and readiness read against hostiles currently on the map.
+> The fort's military: squads, readiness against hostiles on the map, and — per squad — the roster's actual equipment gaps, ammo, and active training order.
 
 ## Purpose
-Reports the fort's fighting strength and reads it against what is actually on the map. Two deliberately different counts: `soldiers` is living, present citizens actually in a squad, while `assigned_positions` is filled squad slots — a slot can still hold a member who is dead or off-map, and the gap between the two numbers is the point. Hostile counts use the same predicate as `threats` (great-danger creatures split out). An AI co-pilot calls it when assessing defense readiness or after `threats` reports contacts.
+Reports the fort's fighting strength and reads it against what is actually on the map. Two deliberately different counts: `soldiers` is living, present citizens actually in a squad, while `assigned_positions` is filled squad slots — a slot can still hold a member who is dead or off-map, and the gap between the two numbers is the point. Hostile counts use the same predicate as `threats` (great-danger creatures split out). Each squad also carries `roster[]`, `ammo`, and `training` — the tool-API spec's originally-promised `equipment_gaps` ("you have 21 soldiers" vs. "8 of them have no armor"), previously unfulfilled. An AI co-pilot calls it when assessing defense readiness, after `threats` reports contacts, or before a siege to confirm the squad is actually equipped.
 
 ## Parameters
 None.
@@ -24,23 +24,48 @@ None.
 - `adults` (number) — adult citizens.
 - `hostiles_on_map` (number) — active, living, dangerous non-citizens not caged/chained.
 - `great_danger_on_map` (number) — the subset DFHack flags as great danger.
-- `squads[]` — `{ name, filled, positions }` per squad (translated name, falling back to alias, then "Squad N").
-- `alerts[]` — "no military squads — the fort is undefended"; a NO-defenders callout when a great-danger creature faces zero soldiers (`hostiles_on_map`/`soldiers`/`squad_count` are already their own fields, so a plain hostiles-vs-soldiers count isn't separately alerted).
+- `squads[]` — `{ name, filled, positions, roster, ammo, training }` per squad (translated name, falling back to alias, then "Squad N").
+  - `roster[]` — one row per FILLED position **whose occupant is a living, present unit** (see Caveats): `{ unit_id, name, uniform, uniform_complete }`. `uniform_complete` is true iff nothing is missing. `uniform[]` is empty when `uniform_complete` is true — populated ONLY when there's a gap, aggregated by item type (`ARMOR`/`HELM`/`PANTS`/`GLOVES`/`SHOES`/`SHIELD`/`WEAPON`/`QUIVER`/`BACKPACK`/`FLASK`/...) as `{ item_type, assigned_count, missing_count }`: `assigned_count` is how many items the uniform calls for (a required-but-never-found item still counts as 1, so it's never less than `missing_count`), `missing_count` is how many of those are not currently worn/wielded (DF's own `uniform-unstick` logic) or were never found/assigned at all. `QUIVER`/`BACKPACK`/`FLASK` are assigned outside the main uniform slots (DF tracks them as their own fields) but checked the same way — a marksdwarf with an unassigned quiver shows up here, not silently inside `uniform_complete: true`.
+  - `ammo` — `{ specs, ammo_items_assigned }`. `specs[]` is `{ item_type, target_amount, assigned_count }` — `target_amount` is the squad's shared configured total (e.g. 250 bolts for the whole squad), **not per soldier**. Both `assigned_count` and `ammo_items_assigned` are actual bolt QUANTITIES (summed stack sizes), not a count of assigned item-stack objects — one assigned stack can hold many bolts, or DFHack's archery logic can split one stack into several partial ones, so counting stacks would over/undercount against `target_amount`. `ammo_items_assigned` is zero for a melee-only squad.
+  - `training` — `{ cur_routine_idx, month, sleep_mode?, uniform_mode?, active_orders }`, the active training-schedule month's settings. `sleep_mode`/`uniform_mode`/`active_orders` are absent/empty when the fort has never customized that routine's month (the common case).
+- `alerts[]` — "no military squads — the fort is undefended"; a NO-defenders callout when a great-danger creature faces zero soldiers; an incomplete-uniform callout per roster member.
 
 ```json
 {
-  "adults": 77,
-  "alerts": [],
-  "assigned_positions": 13,
-  "great_danger_on_map": 5,
-  "hostiles_on_map": 5,
-  "soldiers": 13,
-  "squad_count": 3,
+  "squad_count": 2,
+  "soldiers": 9,
+  "assigned_positions": 9,
   "squads": [
-    { "filled": 4, "name": "The Waxy Tomes", "positions": 10 },
-    { "filled": 5, "name": "The Torrid Portals", "positions": 10 },
-    { "filled": 4, "name": "The Mischief of Basements", "positions": 10 }
-  ]
+    {
+      "name": "The Waxy Tomes", "filled": 4, "positions": 10,
+      "roster": [
+        {
+          "unit_id": 111, "name": "Tun Lolumavuz \"Woodenmines\", militia commander",
+          "uniform": [],
+          "uniform_complete": true
+        }
+      ],
+      "ammo": { "specs": [], "ammo_items_assigned": 0 },
+      "training": { "cur_routine_idx": 2, "month": 11, "sleep_mode": "AnywhereAtWill", "uniform_mode": "Regular", "active_orders": [] }
+    },
+    {
+      "name": "The Torrid Portals", "filled": 5, "positions": 10,
+      "ammo": { "specs": [{ "item_type": "AMMO", "target_amount": 250, "assigned_count": 129 }], "ammo_items_assigned": 113 }
+    }
+  ],
+  "alerts": []
+}
+```
+
+A roster row with a gap (illustrative, not a live capture — the fixture's soldiers are all fully equipped):
+```json
+{
+  "unit_id": 485, "name": "Likot Oshoshnish \"Hermittrades\", Marksdwarf",
+  "uniform": [
+    { "item_type": "ARMOR", "assigned_count": 1, "missing_count": 1 },
+    { "item_type": "SHIELD", "assigned_count": 1, "missing_count": 0 }
+  ],
+  "uniform_complete": false
 }
 ```
 
@@ -48,8 +73,13 @@ None.
 - Returns `{"error":"no fort loaded"}` when no fort is active.
 - Caged/chained hostiles are excluded from `hostiles_on_map` (same predicate as `threats`), so a full zoo of caged goblins reads as zero threat.
 - `assigned_positions` can overstate strength (dead/off-map members still fill slots); lead with `soldiers`.
-- No caps: squads list is uncapped (fort squad counts are small in practice).
-- Reports facts about readiness; no training/equipment detail and no stationing advice.
+- No caps: squad/position/uniform-slot counts are small in practice (DF's own squad-size limit bounds `roster[]`); `uniform[]` is additionally kept empty for any fully-equipped soldier, so payload size tracks actual gaps, not fort size.
+- `squad_position.occupant` is a **historical figure id**, resolved to a live unit via `historical_figure.unit_id` — a position holder currently off-map or dead still counts toward `filled` but is excluded from `roster[]` (a dead soldier's gear sitting on their corpse would otherwise read as a false "incomplete uniform" alert).
+- `missing_count` counts two distinct shortages the same way: an item assigned to the uniform but not currently worn/wielded (a soldier mid-equip reads as missing until they physically pick it up and equip it), and a required uniform spec with NOTHING assigned yet (no suitable item found at all — counted as 1 assigned, 1 missing, so `missing_count` never exceeds `assigned_count`). Both read as "missing" — the tool doesn't distinguish "en route" from "nothing to route."
+- Reports facts; no stationing or tactical advice.
+
+## Implementation notes
+`squad_position.occupant` is a historical figure id, not a unit id — resolved via `df.historical_figure.find(occupant).unit_id` then `df.unit.find(...)`, filtered through `dfhack.units.isActive`/`isDead` before being treated as "present" for uniform purposes. `pos.equipment.uniform` is doubly-nested (slot → spec[]), flattened into one `uniform[]` row per distinct item type by aggregating assigned/missing counts across every spec of that type (a position can have more than one spec per type, e.g. two GLOVES specs); each `squad_uniform_spec` carries no explicit required-quantity field, so a spec with zero `.assigned` items (nothing found/allocated yet) is counted as one required-and-missing piece rather than being invisible to the tally. Training orders live at `sq.schedule.routine[cur_routine_idx].month[current_month].orders[i]` — each entry is a `squad_schedule_order` WRAPPER (`{order, min_count, positions}`), not the polymorphic `squad_order` itself; the type name comes from `.order:getType()`, confirmed live (indexing the enum with the wrapper directly silently resolves to `nil`, which is why a naive read makes `active_orders` look permanently empty). `quiver`/`backpack`/`flask` live on `equipment` as their own single-item-id fields (`-1` when unassigned), not inside `equipment.uniform` — folded into the same by-type aggregation and worn-check as everything else, so an assigned-but-not-worn or never-assigned quiver isn't invisible to `uniform_complete`. Ammo quantities (`assigned_count`, `ammo_items_assigned`) sum each assigned item's `getStackSize()` rather than counting item ids — one assigned stack can hold many bolts (or DFHack's archery logic can split one stack into several partial ones), so an id count would misstate the quantity against `target_amount`. Confirmed live on DFHack 53.15-r2 against the Dreamfort fixture: all sampled squads' default schedule carries a real `TRAIN` order for the current month; `squad_ammo_spec.amount` (250 in the fixture) is shared across the whole squad, and summing stack sizes gives 265 assigned / 153 carried against that one target (the naive id-count read 129/113 — a ~2x undercount); dropping a marksdwarf's quiver to the ground live-confirmed a `QUIVER` gap appears in `uniform[]` and flips `uniform_complete` to `false`.
 
 ## Related
-[threats](threats.md) · [defenses](defenses.md) · [citizen](citizen.md) · [injuries_and_health](injuries_and_health.md)
+[threats](threats.md) · [defenses](defenses.md) · [mechanisms](mechanisms.md) · [citizen](citizen.md) · [injuries_and_health](injuries_and_health.md)

@@ -1,0 +1,30 @@
+{
+  "burrows": [
+    {
+      "assigned_units": [],
+      "assigned_units_total": 0,
+      "assigned_units_truncated": false,
+      "civilian_alert_linked": true,
+      "id": 0,
+      "name": "Inside+",
+      "tile_count": 24367
+    },
+    {
+      "assigned_units": [],
+      "assigned_units_total": 0,
+      "assigned_units_truncated": false,
+      "civilian_alert_linked": false,
+      "id": 1,
+      "name": "Clearcutting area",
+      "tile_count": 1668
+    }
+  ],
+  "civilian_alert": {
+    "active": false,
+    "burrows": [
+      0
+    ],
+    "configured": true
+  },
+  "count": 2
+}
