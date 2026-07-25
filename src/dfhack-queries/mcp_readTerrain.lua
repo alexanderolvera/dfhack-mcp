@@ -101,8 +101,10 @@ if dfhack_flags and dfhack_flags.module then
   return
 end
 
+local emit = reqscript('mcp_jsonOut').emit
+
 if df.global.gamemode ~= df.game_mode.DWARF then
-  print(json.encode({ error = 'no fort loaded' }))
+  emit({ error = 'no fort loaded' })
   return
 end
 
@@ -113,8 +115,8 @@ local z = tonumber(a[3])
 local w = tonumber(a[4]) or 100
 local h = tonumber(a[5]) or 100
 if not (x0 and y0 and z) then
-  print(json.encode({ error = 'usage: mcp_readTerrain X0 Y0 Z [W] [H]' }))
+  emit({ error = 'usage: mcp_readTerrain X0 Y0 Z [W] [H]' })
   return
 end
 
-print(json.encode(read_window(x0, y0, z, w, h)))
+emit(read_window(x0, y0, z, w, h))

@@ -1,5 +1,5 @@
 local json = require('json')
-local function emit(t) print(json.encode(t)) end
+local emit = reqscript('mcp_jsonOut').emit
 
 if df.global.gamemode ~= df.game_mode.DWARF then
   emit({ error = 'no fort loaded' })
@@ -9,7 +9,7 @@ end
 local TICKS_PER_DAY = 1200
 local CARAVANS_CAP = 8
 local MANIFEST_CATEGORY_CAP = 30
-local AGREEMENT_CAP = 30
+local AGREEMENT_CAP = 150
 local PRICE_FIXED_POINT = 128
 
 local depots = df.global.world.buildings.other.TRADE_DEPOT or {}

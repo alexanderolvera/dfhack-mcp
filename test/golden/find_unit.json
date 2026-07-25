@@ -16,7 +16,7 @@
     {
       "age": 85,
       "current_job": "CarveRamp",
-      "name": "At�r R�senastod \"Coalgulfs\", Miner",
+      "name": "Atír Rîsenastod \"Coalgulfs\", Miner",
       "patient": false,
       "profession": "Miner",
       "stress": "content",
@@ -38,7 +38,7 @@
     {
       "age": 89,
       "current_job": "idle",
-      "name": "Obok Sacat�ton \"Dothalls\", Stone Carver",
+      "name": "Obok Sacatîton \"Dothalls\", Stone Carver",
       "patient": false,
       "profession": "Stone Carver",
       "stress": "content",
@@ -49,7 +49,7 @@
     {
       "age": 60,
       "current_job": "Eat",
-      "name": "Cog Lisatzunt�r \"Notchanvils\", Stonecrafter",
+      "name": "Cog Lisatzuntîr \"Notchanvils\", Stonecrafter",
       "patient": false,
       "profession": "Stonecrafter",
       "stress": "ecstatic",
@@ -60,7 +60,7 @@
     {
       "age": 75,
       "current_job": "idle",
-      "name": "Olin Kilrud�shrir \"Bronzequakes\", Carpenter",
+      "name": "Olin Kilrudùshrir \"Bronzequakes\", Carpenter",
       "patient": false,
       "profession": "Carpenter",
       "stress": "ecstatic",

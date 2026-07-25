@@ -119,6 +119,11 @@ backwards-compatible fixes only.
   identifier, the registry's 100-char description cap) so a forgotten bump fails
   at PR time rather than mid-release, after npm has already gone out.
 
+### Fixed
+
+- **Every DF-sourced name was emitted as raw CP437, arriving mangled.**
+- **`trade` capped its liaison price agreements below DF's own ceiling.** 
+
 ## [1.3.0] - 2026-07-22
 
 ### Added

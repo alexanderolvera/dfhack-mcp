@@ -1,6 +1,6 @@
 local args = {...}
 local json = require('json')
-local function emit(t) print(json.encode(t)) end
+local emit = reqscript('mcp_jsonOut').emit
 
 if df.global.gamemode ~= df.game_mode.DWARF then
   emit({ error = 'no fort loaded' })

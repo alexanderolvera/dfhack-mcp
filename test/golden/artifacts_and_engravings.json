@@ -118,7 +118,7 @@
         "token": "CREATURE:MULE:LEATHER"
       },
       "name": {
-        "dwarven": "Al�th M�thkat",
+        "dwarven": "Alåth Mûthkat",
         "english": "The Bolt of Mansions"
       },
       "quality": "Masterful",
@@ -164,7 +164,7 @@
         "token": "PLANT:CHERRY:WOOD"
       },
       "name": {
-        "dwarven": "Z�leramas",
+        "dwarven": "Zèleramas",
         "english": "Primedepth"
       },
       "quality": "Masterful",
@@ -202,7 +202,7 @@
       "item_type": "BOX",
       "maker": {
         "histfig_id": 230,
-        "name": "Al�th Booktrades",
+        "name": "Alåth Booktrades",
         "unit_id": 357
       },
       "material": {
@@ -565,7 +565,7 @@
       {
         "count": 64,
         "histfig_id": 172,
-        "name": "At�r Coalgulfs",
+        "name": "Atír Coalgulfs",
         "unit_id": 112
       },
       {

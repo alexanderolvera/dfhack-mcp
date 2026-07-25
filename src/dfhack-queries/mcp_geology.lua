@@ -1,7 +1,7 @@
 -- mcp_geology: see docs/tools/geology.md for the data model and field paths.
 
 local json = require('json')
-local function emit(t) print(json.encode(t)) end
+local emit = reqscript('mcp_jsonOut').emit
 
 if df.global.gamemode ~= df.game_mode.DWARF then
   emit({ error = 'no fort loaded' })
