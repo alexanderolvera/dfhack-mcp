@@ -8,10 +8,13 @@ import { defensesDef } from './defenses.ts';
 import { environmentDef } from './environment.ts';
 import { farmingDef } from './farming.ts';
 import { findUnitDef } from './findUnit.ts';
+import { fluidsDef } from './fluids.ts';
+import { fortHealthDef } from './fortHealth.ts';
 import { fortStatusDef } from './fortStatus.ts';
 import { gameDataDef } from './gameData.ts';
 import { gameSaveDef } from './gameSave.ts';
 import { geologyDef } from './geology.ts';
+import { haulingRoutesDef } from './haulingRoutes.ts';
 import { identifyDef } from './identify/index.ts';
 import { injuriesAndHealthDef } from './injuriesAndHealth.ts';
 import { jobsAndLaborDef } from './jobsAndLabor.ts';
@@ -22,9 +25,11 @@ import { mechanismsDef, pullLeverDef } from './mechanisms.ts';
 import { militaryDef } from './military.ts';
 import { moodsDef } from './moods.ts';
 import { noblesAndAdministratorsDef } from './noblesAndAdministrators.ts';
+import { petitionsDef } from './petitions.ts';
 import { roomsAndZonesDef } from './roomsAndZones.ts';
 import { runLuaDef } from './runLua.ts';
 import { siteHistoryDef } from './siteHistory.ts';
+import { stockpilesDef } from './stockpiles.ts';
 import { stocksDef } from './stocks.ts';
 import { threatsDef } from './threats.ts';
 import { tileRegionDef } from './tileRegion.ts';
@@ -48,10 +53,13 @@ export const ALL_TOOLS: ToolDef[] = [
   environmentDef,
   farmingDef,
   findUnitDef,
+  fluidsDef,
+  fortHealthDef,
   fortStatusDef,
   gameDataDef,
   gameSaveDef,
   geologyDef,
+  haulingRoutesDef,
   identifyDef,
   injuriesAndHealthDef,
   jobsAndLaborDef,
@@ -62,10 +70,12 @@ export const ALL_TOOLS: ToolDef[] = [
   militaryDef,
   moodsDef,
   noblesAndAdministratorsDef,
+  petitionsDef,
   pullLeverDef,
   roomsAndZonesDef,
   runLuaDef,
   siteHistoryDef,
+  stockpilesDef,
   stocksDef,
   threatsDef,
   tileRegionDef,

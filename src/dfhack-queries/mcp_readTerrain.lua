@@ -38,6 +38,15 @@ function sym(tt, hidden)
   else return '.' end
 end
 
+-- Fail-closed single-tile fog-of-war check, sharable across every reader that
+-- needs a per-tile (not per-window) test. Pass an already-fetched block (blk)
+-- to skip the re-fetch when the caller has one in hand; omit it otherwise.
+function is_hidden(x, y, z, blk)
+  blk = blk or dfhack.maps.getTileBlock(x, y, z)
+  if not blk then return true end
+  return blk.designation[x % 16][y % 16].hidden
+end
+
 function read_window(x0, y0, z, w, h)
   local m = df.global.world.map
   local cache = {}

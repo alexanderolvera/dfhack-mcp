@@ -38,7 +38,7 @@ is `dist/index.js`, run by whatever Node the caller has. It builds a fresh
 tarball into a throwaway directory so its deps resolve from the registry —
 not this repo's `node_modules` — then boots the installed bundle over MCP
 with the gates pinned explicitly (`DFHACK_MCP_ACTUATORS=1`, `DFHACK_MCP_DEV`
-unset) so the expected 36-tool count can't drift with whatever
+unset) so the expected 41-tool count can't drift with whatever
 `DFHACK_MCP_*` the caller's shell happens to export. It asserts the handshake
 version, tool count, and a handful of required tool names. Runnable locally
 (needs network for the registry install); exit 0 means the artifact is
@@ -192,6 +192,16 @@ Never `--update` against a non-fixture fort.
   is the clock-stepping exception: its AC is about *only-new-events after time
   passes*, so its check steps the clock rather than staying frozen. Everything
   else is frozen by default.
+- **`fort_health`'s `fps`/`gfps`** are a live-reading exception discovered verifying
+  against the fixture: `df.global.enabler.calculated_fps`/`calculated_gfps` measure
+  DFHack's own render/tick-loop cadence, which keeps advancing in real time even
+  against a paused fort — confirmed live (two calls a few seconds apart returned
+  `99`/`6` then `100`/`8`) while every other field in the same payload stayed
+  byte-identical. `scripts/verify.mjs`'s `VOLATILE_FIELDS` masks just those two
+  fields to `null` before the golden snapshot/compare, so T2 doesn't flap on
+  wall-clock timing; the real values are still shape/bounds-checked live by the
+  `fort_health_wellformed_and_bounds_population` invariant. See
+  [`docs/tools/fort_health.md`](tools/fort_health.md)'s Implementation notes.
 - **Actuators** (write tools, Tier 2 / M3) verify as **fixture → apply → assert
   readback → restore-fixture**. Still deterministic; the committed save is the
   anchor the apply is measured against and restored to.

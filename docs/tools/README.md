@@ -4,14 +4,15 @@ tags: [dfhack-mcp/tool, index]
 
 # Tool Index — dfhack-mcp
 
-One note per MCP tool (41 tools: 28 sensors, 4 reference, 8 gated actuators, 1 dev), tracking `src/tools/registry.ts`. Each note carries frontmatter (`tool` / `tier` / `gated` / `source` / `lua`), parameters from the zod schema, the real return shape from the Lua query, and a trimmed example from the frozen-fixture goldens where one exists.
+One note per MCP tool (46 tools: 33 sensors, 4 reference, 8 gated actuators, 1 dev), tracking `src/tools/registry.ts`. Each note carries frontmatter (`tool` / `tier` / `gated` / `source` / `lua`), parameters from the zod schema, the real return shape from the Lua query, and a trimmed example from the frozen-fixture goldens where one exists.
 
 Doctrine reminder: every tool is **facts-only** — it senses and reports; judgment stays with the AI client. Actuators are gated behind `DFHACK_MCP_ACTUATORS` and follow the §A0 preview/confirm contract; `run_lua` is dev-gated behind `DFHACK_MCP_DEV`.
 
-## Sensors (28)
+## Sensors (33)
 
 *Fort & dwarves*
 - [fort_status](fort_status.md) — one-call situational overview; canonical "is a fort loaded" probe
+- [fort_health](fort_health.md) — FPS/GFPS, item clutter by category, unit counts — the fort's computational health
 - [citizen](citizen.md) — deep dossier on one dwarf
 - [find_unit](find_unit.md) — name/profession search → unit ids
 - [unmet_needs](unmet_needs.md) — need fulfillment across the fort
@@ -29,12 +30,15 @@ Doctrine reminder: every tool is **facts-only** — it senses and reports; judgm
 
 *Economy & society*
 - [stocks](stocks.md) — food/booze/materials counts
+- [stockpiles](stockpiles.md) — per-pile settings/links/tile occupancy, unstored and rotting-item backlog
 - [farming](farming.md) — farm plots, crop assignment by season, seed stock
-- [trade](trade.md) — depot, broker, caravan state
+- [trade](trade.md) — depot, broker, caravan state, caravan manifest, and liaison price agreements
 - [work_order_list](work_order_list.md) — manager work-order queue
 - [mandates_and_justice](mandates_and_justice.md) — nobles' mandates, crime, punishments
 - [nobles_and_administrators](nobles_and_administrators.md) — appointed positions and vacancies
 - [rooms_and_zones](rooms_and_zones.md) — bedrooms, temples, civzones, burial
+- [petitions](petitions.md) — location and residency/citizenship petitions awaiting decision
+- [hauling_routes](hauling_routes.md) — minecart hauling routes, stops, vehicles
 - [livestock_and_pastures](livestock_and_pastures.md) — tame animals, pastures, cages, slaughter
 - [artifacts_and_engravings](artifacts_and_engravings.md) — artifacts and engraving coverage
 - [chronicle](chronicle.md) — recent events via the report stream (cursor-paginated)
@@ -45,6 +49,7 @@ Doctrine reminder: every tool is **facts-only** — it senses and reports; judgm
 - [tile_region](tile_region.md) — bounded z-level tile read
 - [geology](geology.md) — embark geological survey
 - [environment](environment.md) — season, weather, temperature, biome, cavern pathing
+- [fluids](fluids.md) — aquifers, water/magma per z-level, flood exposure, well source depth
 
 ## Reference (4)
 
@@ -74,5 +79,5 @@ Typical co-pilot flows these notes cross-link:
 - Emergency response: [threats](threats.md) → [burrows](burrows.md) → [civilian_alert](civilian_alert.md); [mechanisms](mechanisms.md) → [pull_lever](pull_lever.md)
 - Production: [stocks](stocks.md) → [work_order_list](work_order_list.md) → [work_order_create](work_order_create.md)
 - Labor: [jobs_and_labor](jobs_and_labor.md) → [work_details](work_details.md) → [assign_work_detail](assign_work_detail.md)
-- Digging: [map_overview](map_overview.md) → [tile_region](tile_region.md) / [geology](geology.md) → [blueprint_apply](blueprint_apply.md)
+- Digging: [map_overview](map_overview.md) → [tile_region](tile_region.md) / [geology](geology.md) / [fluids](fluids.md) → [blueprint_apply](blueprint_apply.md)
 - Before a risky change: [game_save](game_save.md) → the actuator in question
