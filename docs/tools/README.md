@@ -4,11 +4,11 @@ tags: [dfhack-mcp/tool, index]
 
 # Tool Index — dfhack-mcp
 
-One note per MCP tool (46 tools: 33 sensors, 4 reference, 8 gated actuators, 1 dev), tracking `src/tools/registry.ts`. Each note carries frontmatter (`tool` / `tier` / `gated` / `source` / `lua`), parameters from the zod schema, the real return shape from the Lua query, and a trimmed example from the frozen-fixture goldens where one exists.
+One note per MCP tool (47 tools: 34 sensors, 4 reference, 8 gated actuators, 1 dev), tracking `src/tools/registry.ts`. Each note carries frontmatter (`tool` / `tier` / `gated` / `source` / `lua`), parameters from the zod schema, the real return shape from the Lua query, and a trimmed example from the frozen-fixture goldens where one exists.
 
 Doctrine reminder: every tool is **facts-only** — it senses and reports; judgment stays with the AI client. Actuators are gated behind `DFHACK_MCP_ACTUATORS` and follow the §A0 preview/confirm contract; `run_lua` is dev-gated behind `DFHACK_MCP_DEV`.
 
-## Sensors (33)
+## Sensors (34)
 
 *Fort & dwarves*
 - [fort_status](fort_status.md) — one-call situational overview; canonical "is a fort loaded" probe
@@ -50,6 +50,7 @@ Doctrine reminder: every tool is **facts-only** — it senses and reports; judgm
 - [geology](geology.md) — embark geological survey
 - [environment](environment.md) — season, weather, temperature, biome, cavern pathing
 - [fluids](fluids.md) — aquifers, water/magma per z-level, flood exposure, well source depth
+- [blueprint_library](blueprint_library.md) — quickfort blueprints on disk (shipped library + user's own)
 
 ## Reference (4)
 
@@ -79,5 +80,5 @@ Typical co-pilot flows these notes cross-link:
 - Emergency response: [threats](threats.md) → [burrows](burrows.md) → [civilian_alert](civilian_alert.md); [mechanisms](mechanisms.md) → [pull_lever](pull_lever.md)
 - Production: [stocks](stocks.md) → [work_order_list](work_order_list.md) → [work_order_create](work_order_create.md)
 - Labor: [jobs_and_labor](jobs_and_labor.md) → [work_details](work_details.md) → [assign_work_detail](assign_work_detail.md)
-- Digging: [map_overview](map_overview.md) → [tile_region](tile_region.md) / [geology](geology.md) / [fluids](fluids.md) → [blueprint_apply](blueprint_apply.md)
+- Digging: [map_overview](map_overview.md) → [tile_region](tile_region.md) / [geology](geology.md) / [fluids](fluids.md) → [blueprint_library](blueprint_library.md) → [blueprint_apply](blueprint_apply.md)
 - Before a risky change: [game_save](game_save.md) → the actuator in question
