@@ -23,6 +23,8 @@ local function age_days(year, tick)
   return math.floor(delta / TICKS_PER_DAY)
 end
 
+-- end_tick's real unit is unconfirmed (df-structures original-name
+-- end_season_count, not end_year_tick) -- see docs/tools/petitions.md Caveats.
 local function deadline_days(end_year, end_tick)
   if not end_year or end_year < 0 then return nil end
   local delta = total_ticks(end_year, end_tick) - now_ticks
