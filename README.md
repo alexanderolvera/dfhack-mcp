@@ -84,7 +84,7 @@ No arguments; each reports on the loaded fort.
 - **`threats()`** — dangerous units grouped by type; active vs. contained, great-danger/invader/undead flags, plus each group's decisive traits (trapavoid, flier, fire, webber, building-destroyer, ranged).
 - **`unmet_needs()`** — the needs system aggregated: the top unmet needs ranked by how many dwarves are distracted, and how starved each is.
 - **`jobs_and_labor()`** — workforce utilization: busy vs. idle adults (children excluded), idle %, and a ranked breakdown of active jobs.
-- **`military()`** — squads, enlisted soldiers, filled positions, readiness against hostiles on the map, and per-squad roster equipment gaps (missing uniform pieces), ammo, and active training order.
+- **`military()`** — squads (each with its `squad_id`, the id `squad_orders` targets), enlisted soldiers, filled positions, readiness against hostiles on the map, and per-squad roster equipment gaps (missing uniform pieces), ammo, and active training order.
 - **`injuries_and_health()`** — wounded / patients / bedridden / unconscious counts, plus the care needed (diagnosis, surgery, suture, …).
 - **`defenses()`** — active hostiles with map positions and distance/direction/z-delta to the fort core and nearest drawbridge, plus a controllable-structure inventory (bridges, levers, floodgates, hatches, cage traps, doors).
 - **`burrows()`** — every burrow's size and membership, plus the civilian-alert safety-burrow set (configured/active/linked burrows) — the read half of `civilian_alert`.
@@ -187,6 +187,7 @@ own reversal path.
 - **`civilian_alert(burrow, enabled)`** — add or remove one burrow from the civilian-alert safety set. `enabled=true` also sounds the alarm if it wasn't already; `enabled=false` only silences it once the set becomes fully empty. Reversal: the same call with `enabled` inverted.
 - **`mechanisms()`** — _read-only, always available._ Every lever/pressure-plate's position and linked target(s) (bridge/door/floodgate/hatch/support/weapon-trap), plus unlinked levers and bridges.
 - **`pull_lever(lever_id, urgent?)`** — queue a job for a dwarf to pull a named lever (`urgent` defaults to do-now priority). This queues the job; the physical toggle happens once a dwarf completes it, not on apply. Reversal: pull the same lever again.
+- **`squad_orders(squad_id, order, ...)`** — order a squad to `move` to a tile, `kill` named units, or `cancel` its orders. The highest-stakes actuator here: it sends real dwarves into real combat, and the ones who die stay dead. Orders **replace** rather than stack (DF treats a squad's order list as its whole standing instruction set), so an apply first clears what the squad was already doing. A kill target on an **undiscovered tile is refused** — targeting it would act on knowledge the fort doesn't have. Reversal: `order="cancel"`, which _releases_ the squad; it does not walk anyone back or un-fight a fight.
 
 **Saving the game**
 

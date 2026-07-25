@@ -10,6 +10,45 @@ backwards-compatible fixes only.
 
 ## [Unreleased]
 
+### Added — v1.5 (Blueprint Library & Squad Command)
+
+- **`squad_orders` actuator** ([#86](https://github.com/alexanderolvera/dfhack-mcp/issues/86))
+  — the emergency loop's final actuator and the highest-stakes tool in the server:
+  order a squad to `move` to a tile, `kill` named units, or `cancel` its orders,
+  on the standard preview/confirm contract. `burrows`/`civilian_alert` move
+  civilians out of danger and `mechanisms`/`pull_lever` seals the fort; this
+  commands the military. Landed only after those two proved the loop, exactly as
+  the issue staged it.
+
+  Three findings came out of live verification that the design could not have
+  been correct without. **Orders replace, they do not stack** — DF treats
+  `squad.orders` as a squad's whole standing instruction set, so an apply must
+  first clear what the squad was already doing (reported as
+  `replaces_existing_orders`/`cleared_previous_orders`, and the reason
+  `undo.faithful` is false whenever anything was cleared). **DF removes a
+  completed KILL order itself** — once the targets die the order simply
+  disappears, so an empty order list must not be read as "the order never took".
+  And **not every creature is a historical figure** (the fixture's own hostiles
+  reported `hist_figure_id == -1`), so `histfigs` only ever receives real ids.
+
+  The fog-of-war doctrine now covers **writes**: a kill order against a unit
+  standing on an undiscovered tile is blocked, since issuing it would act on
+  knowledge the fort does not have — the write-side twin of the X-ray leak fixed
+  on `threats`/`fort_status` before v1.0. Verified against a fixture whose only
+  four hostiles happened to all be on undiscovered tiles; every one was correctly
+  refused. Movement into unexplored space is deliberately NOT blocked (only
+  reported, as `target_undiscovered`) — ordering a squad somewhere unseen is a
+  legitimate command; naming a specific unseen creature is not.
+
+- **`military`: `squad_id`** ([#86](https://github.com/alexanderolvera/dfhack-mcp/issues/86))
+  — every squad row now carries its stable game id. `name` is a *display* string
+  that falls back to the alias and then to a synthesized `"Squad <id>"`, and DF
+  enforces no uniqueness across either, so it could never be an actuator's
+  target. This was a hard prerequisite for `squad_orders` — every actuator here
+  addresses its target by a stable id from its paired sensor (`pull_lever` ←
+  `mechanisms`, `civilian_alert` ← `burrows`). `military_roster_wellformed` now
+  asserts the id is present and unique across squads.
+
 ### Added
 
 - **`stockpiles` sensor** ([#79](https://github.com/alexanderolvera/dfhack-mcp/issues/79))

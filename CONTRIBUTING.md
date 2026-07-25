@@ -2,7 +2,7 @@
 
 This server exposes a live Dwarf Fortress fort to an AI agent as curated,
 semantic tools — **read-only by default**, with a small set of mutation
-_actuators_ (`work_order_*`, `blueprint_*`, `assign_work_detail`) gated behind
+_actuators_ (`work_order_*`, `blueprint_*`, `assign_work_detail`, `squad_orders`) gated behind
 `DFHACK_MCP_ACTUATORS` and absent from the tool list unless it is set. The DFHack
 RPC transport,
 [`dfhack-remote-node`](https://www.npmjs.com/package/dfhack-remote-node), is a
@@ -192,7 +192,7 @@ Follow the existing split:
 
 `defineActuator` encodes the preview/confirm/apply/undo loop (issue #8 §A0) once,
 so the actuator tools (`work_order_*`, `blueprint_*`, `assign_work_detail`,
-`game_save`) only supply their version-fragile `plan()`/`apply()` bodies — see
+`squad_orders`, `game_save`) only supply their version-fragile `plan()`/`apply()` bodies — see
 [Taking action](README.md#taking-action-actuators) in the README for the
 user-facing contract this implements. Spike #11 (issue #11) proved the loop is
 drivable over RPC for manager orders, quickfort, and work details.
@@ -244,6 +244,15 @@ page), so their behavior is documented here instead:
 
 **Writing a tool that reads terrain or enumerates units? `reqscript` the
 relevant module above — don't re-implement the hidden-tile check.**
+
+This applies to **writes**, not just reads. An actuator that takes a unit as a
+*target* must gate it the same way: `squad_orders` blocks a kill order against a
+unit standing on an undiscovered tile, because issuing it would act on knowledge
+the fort does not have — the write-side twin of the X-ray leak the sensors fixed.
+The distinction to preserve is target-vs-area: naming a specific unseen creature
+is refused, while ordering movement (or a dig) into unexplored space is a
+legitimate command and is only *reported* as a fact (`squad_orders`'
+`target_undiscovered`, `blueprint_apply`'s `fog_of_war_tiles`), never blocked.
 
 Both modules use the standard DFHack `--@ module = true` idiom: a leading
 `if dfhack_flags and dfhack_flags.module then return end` guard so a
