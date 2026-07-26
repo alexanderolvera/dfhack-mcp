@@ -2,8 +2,8 @@
   "adults": 77,
   "alerts": [],
   "assigned_positions": 13,
-  "great_danger_on_map": 5,
-  "hostiles_on_map": 5,
+  "great_danger_on_map": 0,
+  "hostiles_on_map": 0,
   "soldiers": 13,
   "squad_count": 3,
   "squads": [

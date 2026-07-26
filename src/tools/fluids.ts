@@ -19,6 +19,13 @@ export interface WaterLayer {
   max_depth: number;
 }
 
+export interface IceLayer {
+  z: number;
+  tiles: number;
+  walkable_tiles: number;
+  solid_tiles: number;
+}
+
 export interface MagmaSea {
   top_z: number;
   revealed_tile_count: number;
@@ -49,6 +56,9 @@ export interface Fluids {
   water_layers: WaterLayer[];
   water_layers_total: number;
   water_layers_truncated: boolean;
+  ice_layers: IceLayer[];
+  ice_layers_total: number;
+  ice_layers_truncated: boolean;
   magma_sea?: MagmaSea;
   flood_risk_tiles: FloodRiskTile[];
   flood_risk_total: number;
@@ -56,7 +66,7 @@ export interface Fluids {
   wells: FluidsWell[];
   wells_total: number;
   wells_truncated: boolean;
-  legend: Record<string, string>;
+  legend?: Record<string, string>;
   scan: { complete: boolean; tiles_scanned: number; last_z_scanned: number | null };
 }
 
@@ -64,6 +74,7 @@ export function fluids(): Promise<Fluids | { error: string }> {
   return runJsonScript<Fluids>('fluids', [], [
     'aquifer_layers',
     'water_layers',
+    'ice_layers',
     'flood_risk_tiles',
     'wells',
   ]);
@@ -84,7 +95,15 @@ export const fluidsDef: ToolDef = {
     '(tiles, salt_tiles/fresh_tiles, stagnant_tiles/flowing_tiles, max_depth 1..7) — NOT ' +
     'flood-filled into discrete named bodies (no connectivity analysis is attempted; a ' +
     'single lake spanning two z-levels appears as two rows) — capped at 200 z-levels. ' +
-    'magma_sea is the highest revealed z-level with at least 20 revealed magma tiles ' +
+    'ice_layers[] is the frozen peer of water_layers[]: a per-z-level count of revealed ' +
+    'ICE tiles (walkable_tiles = ice you can stand on, e.g. a frozen river surface; ' +
+    'solid_tiles = ice wall you would have to mine; the two always sum to tiles), capped ' +
+    'at 200 z-levels. Frozen water is NOT water as far as the engine is concerned — it ' +
+    'has no flow and becomes a solid tile — so a river or brook that freezes over ' +
+    'DISAPPEARS from water_layers[] entirely and shows up here instead. A fort reading ' +
+    'water_layers: [] alongside a populated ice_layers[] has surface water that exists ' +
+    'but is frozen, which is also when wells report source "frozen" and jobs cancel for ' +
+    '"No water source". magma_sea is the highest revealed z-level with at least 20 revealed magma tiles ' +
     '(a size floor meant to separate a real magma sea from a small pool/volcano pipe), ' +
     'omitted (not a null field) if no such level is revealed. flood_risk_tiles[] lists ' +
     'revealed FULL-depth (max_depth 7/7) water tiles chebyshev-adjacent to a tile in the ' +

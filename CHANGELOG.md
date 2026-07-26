@@ -10,6 +10,43 @@ backwards-compatible fixes only.
 
 ## [Unreleased]
 
+### Fixed
+
+- `mandates_and_justice` crashed in any fort with a built cage.
+- `threats`, `military`, and `defenses` disagreed on how many hostiles were on
+  the map, and the latter two counted creatures the player had never
+  discovered — `defenses` gave away their names and coordinates too. Undiscovered
+  threats are now never listed at all, so `defenses.threats[].footing` no longer
+  carries a `discovered` flag.
+- `defenses` could pick a bridge many z-levels away as the nearest one.
+- `injuries_and_health` reported long-healed dwarves as wounded and sleeping
+  dwarves as unconscious, which could raise a false mass-casualty alert. Healed
+  dwarves are now counted as `old_wounds_only`, sleepers as `asleep`.
+- `artifacts_and_engravings` listed every artifact in the world rather than the
+  fort's own. It is now site-scoped by default; `scope: "world"` returns the old
+  list.
+- `fluids` reported no water at all when the fort's water was frozen; it now
+  reports ice in `ice_layers[]`.
+- `fluids` and `defenses` returned map legends for symbols they never used.
+- `map_overview` and `geology` both called their surface height `surface_z` while
+  measuring different things — the fort-core column versus the whole embark, tens
+  of levels apart on a sloped map. They are now `surface_z_at_core` and
+  `surface_z_max`.
+- `mandates_and_justice` counted restraints that were only placed, not built,
+  toward the capacity to hold a convict; those are now reported separately.
+- `unmet_needs.worst_focus` looked clamped at `-32640`, but the value was always
+  right: the floor is `-16320 x` the dwarf's need level, so the same value across
+  different needs is expected. Documented in the tool description — no values
+  changed.
+
+### Added
+
+- `fort_status` reports recent citizen deaths and their causes, including when
+  a dwarf was killed by another dwarf.
+- `artifacts_and_engravings` reports whether engraving subjects can be resolved
+  at all — DF does not load the art-image table in fortress mode, so usually
+  they cannot.
+
 ## [1.4.0] - 2026-07-25
 
 ### Added

@@ -129,38 +129,54 @@ local function artifact_record(ar)
   return rec
 end
 
-local function build_artifacts(cursor, limit)
+local fort_site_id = df.global.plotinfo.site_id
+
+local function in_scope(ar, scope)
+  if scope == 'world' then return true end
+  return sget(ar, 'site') == fort_site_id
+end
+
+local function build_artifacts(cursor, limit, scope)
   local all = df.global.world.artifacts.all
-  local total = #all
+  local world_total = #all
+  local indices = {}
+  for i = 0, world_total - 1 do
+    if in_scope(all[i], scope) then indices[#indices + 1] = i end
+  end
+  local total = #indices
   local list = {}
-  local i = cursor
-  while i < total and #list < limit do
-    local ok, rec = pcall(artifact_record, all[i])
-    if ok then
-      list[#list + 1] = rec
-    else
-      list[#list + 1] = { id = (all[i] and all[i].id) or nil, error = 'unreadable artifact record' }
+  local n = cursor
+  while n < total and #list < limit do
+    local ar = all[indices[n + 1]]
+    local ok, rec = pcall(artifact_record, ar)
+    if not ok then
+      rec = { id = (ar and ar.id) or nil, error = 'unreadable artifact record' }
     end
-    i = i + 1
+    if scope == 'world' then rec.site_local = sget(ar, 'site') == fort_site_id end
+    list[#list + 1] = rec
+    n = n + 1
   end
   local next_cursor
-  if i < total then next_cursor = tostring(i) end
-  return list, total, next_cursor
+  if n < total then next_cursor = tostring(n) end
+  return list, total, world_total, next_cursor
+end
+
+local chunk_by_id = {}
+local art_images_loaded = false
+do
+  local ok = pcall(function()
+    local chunks = df.global.world.art_image_chunks.all
+    for i = 0, #chunks - 1 do chunk_by_id[chunks[i].id] = chunks[i] end
+  end)
+  art_images_loaded = ok and next(chunk_by_id) ~= nil
 end
 
 local function resolve_subject(art_id, art_subid)
+  local chunk = chunk_by_id[art_id]
+  if not chunk then return nil end
   local ok, subj = pcall(function()
-    local chunks = df.global.world.art_image_chunks.all
-    for i = 0, #chunks - 1 do
-      if chunks[i].id == art_id then
-        local imgs = chunks[i].images
-        if art_subid >= 0 and art_subid < #imgs then
-          local nm = tname(imgs[art_subid].name, true)
-          if nm then return nm end
-        end
-        return nil
-      end
-    end
+    local imgs = chunk.images
+    if art_subid >= 0 and art_subid < #imgs then return tname(imgs[art_subid].name, true) end
     return nil
   end)
   return ok and subj or nil
@@ -235,6 +251,7 @@ local function build_engravings()
     scanned = scanned,
     scan_truncated = total > scanned,
     distinct_subjects = distinct,
+    art_images_loaded = art_images_loaded,
     subjects_resolvable = any_resolved,
     quality = quality,
     by_subject = by_subject,
@@ -252,11 +269,15 @@ local cursor = tonumber(args[2] or '')
 if not cursor or cursor < 0 then cursor = 0 end
 cursor = math.floor(cursor)
 
-local artifacts, total, next_cursor = build_artifacts(cursor, limit)
+local scope = (args[3] == 'world') and 'world' or 'site'
+
+local artifacts, total, world_total, next_cursor = build_artifacts(cursor, limit, scope)
 
 emit({
+  scope = scope,
   artifacts = artifacts,
   artifact_count = total,
+  artifact_count_world = world_total,
   returned = #artifacts,
   cursor = cursor,
   next_cursor = next_cursor,

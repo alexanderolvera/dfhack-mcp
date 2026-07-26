@@ -11,6 +11,13 @@
     "unhappy": 4
   },
   "population": 78,
+  "recent_deaths": {
+    "citizen_causes": [],
+    "citizens": 0,
+    "citizens_slain_by_citizen": 0,
+    "outsiders_at_site": 5,
+    "since_year": 6
+  },
   "season": "Winter",
   "wealth": 678023
 }

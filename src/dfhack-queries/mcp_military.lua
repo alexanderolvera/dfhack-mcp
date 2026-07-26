@@ -6,6 +6,8 @@ if df.global.gamemode ~= df.game_mode.DWARF then
   return
 end
 
+local visibility = reqscript('mcp_unitVisibility')
+
 local WORN_MODES = {
   [df.inv_item_role_type.Worn] = true,
   [df.inv_item_role_type.Weapon] = true,
@@ -186,7 +188,8 @@ local hostiles, great_danger = 0, 0
 for _, u in ipairs(df.global.world.units.active) do
   if dfhack.units.isActive(u) and not dfhack.units.isDead(u)
      and dfhack.units.isDanger(u) and not dfhack.units.isCitizen(u)
-     and not (u.flags1.caged or u.flags1.chained) then
+     and not (u.flags1.caged or u.flags1.chained)
+     and not visibility.is_hidden(u) then
     hostiles = hostiles + 1
     if dfhack.units.isGreatDanger(u) then great_danger = great_danger + 1 end
   end

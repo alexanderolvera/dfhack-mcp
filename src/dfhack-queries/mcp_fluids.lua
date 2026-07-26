@@ -11,6 +11,7 @@ local terrain = reqscript('mcp_readTerrain')
 local TILE_BUDGET = 20000000
 local AQUIFER_LAYERS_CAP = 50
 local WATER_LAYERS_CAP = 200
+local ICE_LAYERS_CAP = 200
 local FLOOD_RISK_CAP = 50
 local WELLS_CAP = 20
 local WELL_SCAN_DEPTH = 40
@@ -58,8 +59,17 @@ local function near_interior(x, y, z)
   return false
 end
 
+local ICE_WALKABLE = {}
+for tt in ipairs(df.tiletype) do
+  local a = df.tiletype.attrs[tt]
+  if a.material == df.tiletype_material.FROZEN_LIQUID then
+    ICE_WALKABLE[tt] = df.tiletype_shape.attrs[a.shape].walkable and true or false
+  end
+end
+
 local aquifer_by_z = {}
 local water_by_z = {}
+local ice_by_z = {}
 local magma_by_z = {}
 
 -- Per-z-level top-N batching -- see docs/tools/fluids.md Implementation notes.
@@ -90,6 +100,14 @@ for z = z_count - 1, 0, -1 do
                 scanned_tiles = scanned_tiles + 1
                 local des = blk.designation[lx][ly]
                 if not terrain.is_hidden(x, y, z, blk) then
+                  local walkable_ice = ICE_WALKABLE[blk.tiletype[lx][ly]]
+                  if walkable_ice ~= nil then
+                    local ib = ice_by_z[z]
+                    if not ib then ib = { tiles = 0, walkable = 0, solid = 0 }; ice_by_z[z] = ib end
+                    ib.tiles = ib.tiles + 1
+                    if walkable_ice then ib.walkable = ib.walkable + 1
+                    else ib.solid = ib.solid + 1 end
+                  end
                   if des.water_table then
                     local occ = blk.occupancy[lx][ly]
                     local bucket = aquifer_by_z[z]
@@ -209,6 +227,25 @@ if #water_layers > WATER_LAYERS_CAP then
   water_layers_truncated = true
 end
 
+local ice_zs = {}
+for z in pairs(ice_by_z) do ice_zs[#ice_zs + 1] = z end
+table.sort(ice_zs, function(a, b) return a > b end)
+
+local ice_layers = {}
+for _, z in ipairs(ice_zs) do
+  local ib = ice_by_z[z]
+  ice_layers[#ice_layers + 1] =
+    { z = z, tiles = ib.tiles, walkable_tiles = ib.walkable, solid_tiles = ib.solid }
+end
+local ice_layers_total = #ice_layers
+local ice_layers_truncated = false
+if #ice_layers > ICE_LAYERS_CAP then
+  local capped = {}
+  for i = 1, ICE_LAYERS_CAP do capped[i] = ice_layers[i] end
+  ice_layers = capped
+  ice_layers_truncated = true
+end
+
 local magma_sea = nil
 do
   local zs = {}
@@ -265,6 +302,9 @@ if #wells > WELLS_CAP then
   wells_truncated = true
 end
 
+local footing_glyphs = {}
+for _, t in ipairs(flood_risk) do footing_glyphs[t.footing] = true end
+
 emit({
   aquifer_layers = aquifer_layers,
   aquifer_layers_total = aquifer_layers_total,
@@ -272,6 +312,9 @@ emit({
   water_layers = water_layers,
   water_layers_total = water_layers_total,
   water_layers_truncated = water_layers_truncated,
+  ice_layers = ice_layers,
+  ice_layers_total = ice_layers_total,
+  ice_layers_truncated = ice_layers_truncated,
   magma_sea = magma_sea,
   flood_risk_tiles = flood_risk,
   flood_risk_total = flood_risk_total,
@@ -279,6 +322,6 @@ emit({
   wells = wells,
   wells_total = wells_total,
   wells_truncated = wells_truncated,
-  legend = terrain.TERRAIN_LEGEND,
+  legend = next(footing_glyphs) and terrain.legend_for(footing_glyphs) or nil,
   scan = { complete = scan_complete, tiles_scanned = scanned_tiles, last_z_scanned = last_z_scanned },
 })

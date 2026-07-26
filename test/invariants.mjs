@@ -36,19 +36,6 @@ export const INVARIANTS = [
     },
   },
   {
-    name: 'health_counts_within_population',
-    tools: ['injuries_and_health'],
-    desc: 'no medical bucket exceeds the population or goes negative',
-    check(p) {
-      const d = p.injuries_and_health;
-      const out = [];
-      for (const k of ['wounded', 'patients', 'bedridden', 'unconscious']) {
-        if (!inRange(d[k], 0, d.population)) out.push(`${k}=${d[k]} outside [0, ${d.population}]`);
-      }
-      return out;
-    },
-  },
-  {
     name: 'stocks_nonnegative',
     tools: ['stocks'],
     desc: 'raw counts are >= 0 and days-of-supply is >= 0 or the -1 no-population sentinel',
@@ -327,8 +314,8 @@ export const INVARIANTS = [
           out.push(`fort_core.y=${c.y} outside [0, ${e.y})`);
         if (!zOk(c.z)) out.push(`fort_core.z=${c.z} outside [0, ${zc})`);
       }
-      if (d.surface_z !== null && !zOk(d.surface_z))
-        out.push(`surface_z=${d.surface_z} outside [0, ${zc})`);
+      if (d.surface_z_at_core !== null && !zOk(d.surface_z_at_core))
+        out.push(`surface_z_at_core=${d.surface_z_at_core} outside [0, ${zc})`);
       // every activity z-level is a real z-level, and the union covers both parts.
       const a = d.activity ?? {};
       const uni = new Set(a.z_levels ?? []);
@@ -667,8 +654,8 @@ export const INVARIANTS = [
     check(p) {
       const d = p.geology;
       const out = [];
-      // surface_z is an integer z-level.
-      if (!isInt(d.surface_z)) out.push(`surface_z=${d.surface_z} is not an integer`);
+      // surface_z_max is an integer z-level.
+      if (!isInt(d.surface_z_max)) out.push(`surface_z_max=${d.surface_z_max} is not an integer`);
       // Every geological band is ordered top-at-or-above-bottom with real materials.
       if (!Array.isArray(d.layers)) {
         out.push('layers is not an array');
@@ -874,6 +861,192 @@ export const INVARIANTS = [
         out.push(
           `units.active=${units.active} is less than fort_status.population=${p.fort_status.population}`
         );
+      return out;
+    },
+  },
+  {
+    name: 'recent_deaths_wellformed_and_alerted',
+    tools: ['fort_status'],
+    desc: 'recent_deaths counts are non-negative, citizen_causes sums to the citizen count, slain-by-citizen never exceeds citizen deaths, and any citizen death raises an alert',
+    check(p) {
+      const d = p.fort_status.recent_deaths;
+      const out = [];
+      if (!d) return ['fort_status.recent_deaths is missing'];
+      for (const k of ['citizens', 'citizens_slain_by_citizen', 'outsiders_at_site']) {
+        if (!(isInt(d[k]) && d[k] >= 0)) out.push(`recent_deaths.${k}=${d[k]} is not a non-negative integer`);
+      }
+      if (!isInt(d.since_year)) out.push(`recent_deaths.since_year=${d.since_year} is not an integer`);
+      // A citizen slain by a citizen is a citizen death, so it is a subset.
+      if (isInt(d.citizens) && isInt(d.citizens_slain_by_citizen) && d.citizens_slain_by_citizen > d.citizens)
+        out.push(
+          `citizens_slain_by_citizen=${d.citizens_slain_by_citizen} exceeds citizens=${d.citizens}`
+        );
+      // Every citizen death is attributed to exactly one cause bucket.
+      const causes = d.citizen_causes ?? [];
+      if (!Array.isArray(causes)) return [...out, 'recent_deaths.citizen_causes is not an array'];
+      let summed = 0;
+      for (const [i, r] of causes.entries()) {
+        if (!(isInt(r.count) && r.count > 0))
+          out.push(`citizen_causes[${i}].count=${r.count} is not a positive integer`);
+        else summed += r.count;
+        if (typeof r.cause !== 'string' || r.cause === '')
+          out.push(`citizen_causes[${i}].cause is not a non-empty string`);
+      }
+      if (isInt(d.citizens) && summed !== d.citizens)
+        out.push(`citizen_causes sum ${summed} !== citizens ${d.citizens}`);
+      // The whole point of the field: a citizen death must reach the alert list.
+      const alerts = p.fort_status.alerts ?? [];
+      const mentionsDeath = alerts.some((a) => /citizen death/i.test(a));
+      if (isInt(d.citizens) && d.citizens > 0 && !mentionsDeath)
+        out.push(`${d.citizens} citizen death(s) recorded but no alert mentions them`);
+      if (isInt(d.citizens) && d.citizens === 0 && mentionsDeath)
+        out.push('an alert mentions citizen deaths but recent_deaths.citizens is 0');
+      return out;
+    },
+  },
+  {
+    name: 'health_counts_are_current_condition_and_bounded_by_population',
+    tools: ['injuries_and_health', 'fort_status'],
+    desc: 'every health count is a non-negative subset of population, wounded/old_wounds_only are disjoint, patients never exceeds the injured, and sleepers are not counted as unconscious',
+    check(p) {
+      const d = p.injuries_and_health;
+      const out = [];
+      const pop = d.population;
+      for (const k of ['wounded', 'old_wounds_only', 'patients', 'bedridden', 'unconscious', 'asleep']) {
+        if (!(isInt(d[k]) && d[k] >= 0)) {
+          out.push(`${k}=${d[k]} is not a non-negative integer`);
+          continue;
+        }
+        if (isInt(pop) && d[k] > pop) out.push(`${k}=${d[k]} exceeds population ${pop}`);
+      }
+      // A dwarf is counted in at most one of the two wound buckets, so together
+      // they can never exceed the fort. See docs/tools/injuries_and_health.md.
+      if (isInt(d.wounded) && isInt(d.old_wounds_only) && isInt(pop) && d.wounded + d.old_wounds_only > pop)
+        out.push(`wounded+old_wounds_only=${d.wounded + d.old_wounds_only} exceeds population ${pop}`);
+      // Needing healthcare implies live damage, so patients can never outnumber the wounded.
+      if (isInt(d.patients) && isInt(d.wounded) && d.patients > d.wounded)
+        out.push(`patients=${d.patients} exceeds wounded=${d.wounded} (a patient must have a live wound)`);
+      // care_needs is the per-flag breakdown of the care queue; no row can outnumber it.
+      for (const [i, row] of (d.care_needs ?? []).entries()) {
+        if (!(isInt(row.count) && row.count > 0))
+          out.push(`care_needs[${i}].count=${row.count} is not a positive integer`);
+        else if (isInt(d.patients) && row.count > d.patients)
+          out.push(`care_needs[${i}] "${row.care}" count ${row.count} exceeds patients ${d.patients}`);
+      }
+      if (isInt(pop) && isInt(p.fort_status.population) && pop !== p.fort_status.population)
+        out.push(`population=${pop} disagrees with fort_status.population=${p.fort_status.population}`);
+      return out;
+    },
+  },
+  {
+    name: 'artifacts_default_to_site_scope_within_the_world_total',
+    tools: ['artifacts_and_engravings'],
+    desc: 'the default call is site-scoped, its artifact_count never exceeds artifact_count_world, page size honors the cap, and site scope emits no per-row site_local (every row is site-local by construction)',
+    check(p) {
+      const d = p.artifacts_and_engravings;
+      const out = [];
+      if (d.scope !== 'site') out.push(`default scope="${d.scope}", expected "site"`);
+      if (!(isInt(d.artifact_count) && d.artifact_count >= 0))
+        out.push(`artifact_count=${d.artifact_count} is not a non-negative integer`);
+      if (!(isInt(d.artifact_count_world) && d.artifact_count_world >= 0))
+        out.push(`artifact_count_world=${d.artifact_count_world} is not a non-negative integer`);
+      if (isInt(d.artifact_count) && isInt(d.artifact_count_world) && d.artifact_count > d.artifact_count_world)
+        out.push(`site artifact_count=${d.artifact_count} exceeds world total ${d.artifact_count_world}`);
+      if (!Array.isArray(d.artifacts)) return [...out, 'artifacts is not an array'];
+      if (d.artifacts.length !== d.returned)
+        out.push(`returned=${d.returned} disagrees with ${d.artifacts.length} listed artifacts`);
+      if (d.artifacts.length > (d.caps?.max_limit ?? 100))
+        out.push(`page of ${d.artifacts.length} exceeds max_limit ${d.caps?.max_limit}`);
+      if (d.artifacts.length > d.artifact_count)
+        out.push(`page of ${d.artifacts.length} exceeds the scoped total ${d.artifact_count}`);
+      for (const [i, a] of d.artifacts.entries()) {
+        if ('site_local' in a)
+          out.push(`artifacts[${i}] carries site_local in site scope, where it is always true`);
+      }
+      // next_cursor exists exactly when the scoped list has more rows past this page.
+      const more = d.cursor + d.artifacts.length < d.artifact_count;
+      if (more !== (d.next_cursor !== undefined))
+        out.push(`next_cursor presence (${d.next_cursor !== undefined}) disagrees with more-rows-remaining (${more})`);
+      // Engraving subject resolution is honestly reported, never silently faked.
+      const e = d.engravings ?? {};
+      if (e.art_images_loaded === false && e.subjects_resolvable === true)
+        out.push('subjects_resolvable is true while art_images_loaded is false');
+      for (const [i, b] of (e.by_subject ?? []).entries()) {
+        if (!b.subject_resolved && !String(b.subject).startsWith('image #'))
+          out.push(`by_subject[${i}] is unresolved but does not fall back to an image reference`);
+      }
+      return out;
+    },
+  },
+  {
+    name: 'legends_describe_only_glyphs_actually_emitted',
+    tools: ['defenses', 'fluids', 'tile_region'],
+    desc: 'every legend is pruned to the glyphs its own payload actually renders — no legend key without a glyph to describe, and no glyph without a legend entry',
+    check(p) {
+      const out = [];
+      const pt = p.defenses.perimeter_terrain;
+      if (pt) {
+        const inGrid = new Set((pt.grid ?? []).flatMap((row) => [...row]));
+        for (const ch of Object.keys(pt.legend ?? {}))
+          if (!inGrid.has(ch)) out.push(`defenses.perimeter_terrain.legend has "${ch}", absent from grid`);
+        for (const ch of inGrid)
+          if (!(ch in (pt.legend ?? {})))
+            out.push(`defenses.perimeter_terrain.grid uses "${ch}" with no legend entry`);
+        for (const ch of Object.keys(pt.distinct ?? {}))
+          if (!(ch in (pt.legend ?? {})))
+            out.push(`defenses.perimeter_terrain.distinct has "${ch}" with no legend entry`);
+      }
+      const risk = p.fluids.flood_risk_tiles ?? [];
+      const footings = new Set(risk.map((t) => t.footing));
+      const fluidLegend = p.fluids.legend;
+      if (footings.size === 0) {
+        if (fluidLegend !== undefined)
+          out.push('fluids.legend is present with no flood_risk_tiles for it to describe');
+      } else {
+        for (const ch of Object.keys(fluidLegend ?? {}))
+          if (!footings.has(ch)) out.push(`fluids.legend has "${ch}", used by no flood_risk_tile`);
+        for (const ch of footings)
+          if (!(ch in (fluidLegend ?? {})))
+            out.push(`fluids flood_risk footing "${ch}" has no legend entry`);
+      }
+      const tr = p.tile_region;
+      if (Array.isArray(tr.grid)) {
+        const inGrid = new Set(tr.grid.flatMap((row) => [...row]));
+        for (const ch of Object.keys(tr.legend ?? {}))
+          if (!inGrid.has(ch)) out.push(`tile_region.legend has "${ch}", absent from grid`);
+      }
+      return out;
+    },
+  },
+  {
+    name: 'hostile_count_agrees_across_tools_and_leaks_no_undiscovered_unit',
+    tools: ['threats', 'military', 'defenses'],
+    desc: 'threats.active_hostiles, military.hostiles_on_map and defenses.threats[] report one fog-of-war-gated population, and every listed threat stands on a discovered tile',
+    check(p) {
+      const out = [];
+      const active = p.threats.active_hostiles;
+      const onMap = p.military.hostiles_on_map;
+      const listed = Array.isArray(p.defenses.threats) ? p.defenses.threats.length : null;
+      if (!isInt(active) || active < 0)
+        out.push(`threats.active_hostiles=${active} is not a non-negative integer`);
+      if (!isInt(onMap) || onMap < 0)
+        out.push(`military.hostiles_on_map=${onMap} is not a non-negative integer`);
+      if (listed === null) out.push('defenses.threats is not an array');
+      if (isInt(active) && isInt(onMap) && active !== onMap)
+        out.push(
+          `threats.active_hostiles=${active} disagrees with military.hostiles_on_map=${onMap}`
+        );
+      if (isInt(active) && listed !== null && active !== listed)
+        out.push(`threats.active_hostiles=${active} disagrees with defenses.threats length ${listed}`);
+      // A listed threat is a discovered threat by construction: footing carries a real
+      // tile shape, never a fog-of-war placeholder. See docs/tools/defenses.md.
+      for (const [i, t] of (p.defenses.threats ?? []).entries()) {
+        if (t.footing?.discovered === false)
+          out.push(`defenses.threats[${i}] is on an undiscovered tile but was still emitted`);
+        if (!t.footing?.symbol) out.push(`defenses.threats[${i}].footing has no tile symbol`);
+        if (t.footing?.symbol === '?')
+          out.push(`defenses.threats[${i}] leaked a fog-of-war tile as its footing`);
+      }
       return out;
     },
   },
@@ -1308,7 +1481,7 @@ export const INVARIANTS = [
   {
     name: 'fluids_wellformed_and_wells_agree_with_rooms',
     tools: ['fluids', 'rooms_and_zones'],
-    desc: 'aquifer/water layer z-ranges are ordered with non-negative tile counts, all four capped lists honor their _total/_truncated pairs, magma_sea (when present) clears its own size floor, and fluids.wells agrees with rooms_and_zones.wells on count/z/source',
+    desc: 'aquifer/water/ice layer z-ranges are ordered with non-negative tile counts that sum to their row totals, all five capped lists honor their _total/_truncated pairs, magma_sea (when present) clears its own size floor, and fluids.wells agrees with rooms_and_zones.wells on count/z/source',
     check(p) {
       const d = p.fluids;
       const out = [];
@@ -1334,6 +1507,23 @@ export const INVARIANTS = [
         if (!inRange(w.max_depth, 1, 7))
           out.push(`water_layers[${i}].max_depth=${w.max_depth} outside 1..7`);
       });
+      // ice_layers: the walkable/solid split is exhaustive -- every ice tile is one or
+      // the other (DF's own tiletype_shape walkable flag), so the buckets sum exactly.
+      (d.ice_layers ?? []).forEach((ice, i) => {
+        if (!isInt(ice.z)) out.push(`ice_layers[${i}].z=${ice.z} is not an integer`);
+        if (!(isInt(ice.tiles) && ice.tiles > 0))
+          out.push(`ice_layers[${i}].tiles=${ice.tiles} is not a positive integer`);
+        if (!(isInt(ice.walkable_tiles) && ice.walkable_tiles >= 0))
+          out.push(`ice_layers[${i}].walkable_tiles=${ice.walkable_tiles} is not a non-negative integer`);
+        if (!(isInt(ice.solid_tiles) && ice.solid_tiles >= 0))
+          out.push(`ice_layers[${i}].solid_tiles=${ice.solid_tiles} is not a non-negative integer`);
+        if (ice.walkable_tiles + ice.solid_tiles !== ice.tiles)
+          out.push(`ice_layers[${i}] walkable_tiles+solid_tiles != tiles (${ice.walkable_tiles}+${ice.solid_tiles} != ${ice.tiles})`);
+      });
+      for (let i = 1; i < (d.ice_layers ?? []).length; i++) {
+        if (!(d.ice_layers[i].z < d.ice_layers[i - 1].z))
+          out.push(`ice_layers not strictly z-descending at index ${i}`);
+      }
       // magma_sea, when present, genuinely clears its own documented 20-tile floor.
       if (d.magma_sea !== undefined) {
         if (!(isInt(d.magma_sea.revealed_tile_count) && d.magma_sea.revealed_tile_count >= 20))
@@ -1344,6 +1534,7 @@ export const INVARIANTS = [
       for (const [listKey, totalKey, truncKey, cap] of [
         ['aquifer_layers', 'aquifer_layers_total', 'aquifer_layers_truncated', 50],
         ['water_layers', 'water_layers_total', 'water_layers_truncated', 200],
+        ['ice_layers', 'ice_layers_total', 'ice_layers_truncated', 200],
         ['flood_risk_tiles', 'flood_risk_total', 'flood_risk_truncated', 50],
         ['wells', 'wells_total', 'wells_truncated', 20],
       ]) {

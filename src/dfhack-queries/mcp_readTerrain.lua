@@ -18,6 +18,12 @@ TERRAIN_LEGEND = {
   [' '] = 'open space / empty',
 }
 
+function legend_for(glyphs)
+  local out = {}
+  for ch in pairs(glyphs) do out[ch] = TERRAIN_LEGEND[ch] or 'unknown glyph' end
+  return out
+end
+
 local SHAPE = df.tiletype_shape
 
 function sym(tt, hidden)
@@ -93,7 +99,7 @@ function read_window(x0, y0, z, w, h)
     visible_tiles = visible_n, hidden_tiles = hidden_n,
     exposure = { open_to_sky = open_to_sky, covered = covered, undiscovered = hidden_n },
     fortifications = fortifications,
-    legend = TERRAIN_LEGEND, distinct = distinct, grid = rows,
+    legend = legend_for(distinct), distinct = distinct, grid = rows,
   }
 end
 

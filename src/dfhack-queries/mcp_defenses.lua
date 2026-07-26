@@ -7,15 +7,13 @@ if df.global.gamemode ~= df.game_mode.DWARF then
 end
 
 local terrain = reqscript('mcp_readTerrain')
+local visibility = reqscript('mcp_unitVisibility')
 
 local function footing(p)
   local blk = dfhack.maps.getTileBlock(p.x, p.y, p.z)
-  if not blk then return { discovered = false } end
   local des = blk.designation[p.x % 16][p.y % 16]
-  if des.hidden then return { discovered = false } end
   local ch = terrain.sym(blk.tiletype[p.x % 16][p.y % 16], false)
-  return { discovered = true, symbol = ch, terrain = terrain.TERRAIN_LEGEND[ch],
-           open_to_sky = des.outside }
+  return { symbol = ch, terrain = terrain.TERRAIN_LEGEND[ch], open_to_sky = des.outside }
 end
 
 local function cheb(ax, ay, bx, by) return math.max(math.abs(ax-bx), math.abs(ay-by)) end
@@ -86,7 +84,8 @@ local threats = {}
 for _, u in ipairs(df.global.world.units.active) do
   if dfhack.units.isActive(u) and not dfhack.units.isDead(u)
      and dfhack.units.isDanger(u) and not dfhack.units.isCitizen(u)
-     and not (u.flags1.caged or u.flags1.chained) then
+     and not (u.flags1.caged or u.flags1.chained)
+     and not visibility.is_hidden(u) then
     local p = u.pos
     local token = nil
     pcall(function() token = df.global.world.raws.creatures.all[u.race].creature_id end)
@@ -102,11 +101,12 @@ for _, u in ipairs(df.global.world.units.active) do
     end
     local best, bi = nil, nil
     for _, br in ipairs(bridges) do
-      local d = cheb(p.x, p.y, br.x, br.y)
+      local d = math.max(cheb(p.x, p.y, br.x, br.y), math.abs(br.z - p.z))
       if not best or d < best then best = d; bi = br end
     end
     if bi then
-      th.nearest_bridge = { x = bi.x, y = bi.y, z = bi.z, dist = best,
+      th.nearest_bridge = { x = bi.x, y = bi.y, z = bi.z,
+                            dist = cheb(p.x, p.y, bi.x, bi.y),
                             dz = bi.z - p.z, dir = bearing(p.x, p.y, bi.x, bi.y) }
     end
     threats[#threats+1] = th

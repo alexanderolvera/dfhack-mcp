@@ -39,6 +39,7 @@ export interface Justice {
   scheduled_hammerstrikes: number;
   restraints_built: number;
   restraints_free: number;
+  restraints_unbuilt: number;
 }
 
 export interface MandatesAndJustice {
@@ -73,8 +74,10 @@ export const mandatesAndJusticeDef: ToolDef = {
     'holds no room zone of a type their position requires: office, bedroom, ' +
     'dining, tomb). Justice state: open criminal cases, convictions awaiting ' +
     'punishment (prison sentences, scheduled beatings and hammerstrikes), and ' +
-    'restraint capacity (chains + cages built vs. how many are free) so you can ' +
-    'see whether a sentence can be served. Reports what the nobles demand and ' +
+    'restraint capacity (chains + cages actually CONSTRUCTED vs. how many are ' +
+    'free, with placed-but-not-yet-built ones counted separately in ' +
+    'restraints_unbuilt) so you can see whether a sentence can be served. ' +
+    'Reports what the nobles demand and ' +
     'the justice backlog, not what to build about it; threshold restatements are ' +
     'in alerts. Lists are capped (see the *_truncated flags). Returns ' +
     '{"error":"no fort loaded"} if no fort is active.',

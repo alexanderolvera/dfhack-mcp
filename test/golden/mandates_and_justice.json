@@ -12,6 +12,7 @@
     "prison_sentences": 0,
     "restraints_built": 21,
     "restraints_free": 21,
+    "restraints_unbuilt": 0,
     "scheduled_beatings": 0,
     "scheduled_hammerstrikes": 0
   },

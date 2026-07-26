@@ -196,5 +196,5 @@
     "permanent_freeze": false,
     "river": false
   },
-  "surface_z": 140
+  "surface_z_max": 140
 }

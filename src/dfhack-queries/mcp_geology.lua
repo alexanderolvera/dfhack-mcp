@@ -285,7 +285,7 @@ local surface_water = {
 }
 
 local out = {
-  surface_z = surface_z,
+  surface_z_max = surface_z,
   layers = layers,
   aquifer = aquifer,
   caverns_discovered = caverns_discovered,

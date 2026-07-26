@@ -13,20 +13,9 @@
   "flood_risk_tiles": [],
   "flood_risk_total": 0,
   "flood_risk_truncated": false,
-  "legend": {
-    " ": "open space / empty",
-    "#": "wall / solid rock",
-    ".": "floor / walkable ground",
-    "<": "up stair",
-    ">": "down stair",
-    "?": "undiscovered (fog of war)",
-    "F": "fortification",
-    "T": "tree / trunk / branch",
-    "r": "ramp",
-    "v": "ramp top",
-    "x": "up/down stair",
-    "~": "brook bed"
-  },
+  "ice_layers": [],
+  "ice_layers_total": 0,
+  "ice_layers_truncated": false,
   "scan": {
     "complete": true,
     "last_z_scanned": 0,

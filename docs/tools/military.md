@@ -72,6 +72,7 @@ A roster row with a gap (illustrative, not a live capture — the fixture's sold
 ## Caveats & limits
 - Returns `{"error":"no fort loaded"}` when no fort is active.
 - Caged/chained hostiles are excluded from `hostiles_on_map` (same predicate as `threats`), so a full zoo of caged goblins reads as zero threat.
+- `hostiles_on_map` is fog-of-war gated through `mcp_unitVisibility`, so it equals `threats()`' `active_hostiles` and the length of `defenses()`' `threats[]`. Before 1.4.1 it was not gated, and an undiscovered cavern/underworld population inflated it — a fort that had never breached a cavern could read `hostiles_on_map: 2` while `threats` correctly reported zero.
 - `assigned_positions` can overstate strength (dead/off-map members still fill slots); lead with `soldiers`.
 - No caps: squad/position/uniform-slot counts are small in practice (DF's own squad-size limit bounds `roster[]`); `uniform[]` is additionally kept empty for any fully-equipped soldier, so payload size tracks actual gaps, not fort size.
 - `squad_position.occupant` is a **historical figure id**, resolved to a live unit via `historical_figure.unit_id` — a position holder currently off-map or dead still counts toward `filled` but is excluded from `roster[]` (a dead soldier's gear sitting on their corpse would otherwise read as a false "incomplete uniform" alert).

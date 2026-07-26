@@ -1,27 +1,7 @@
 {
-  "artifact_count": 6,
+  "artifact_count": 5,
+  "artifact_count_world": 6,
   "artifacts": [
-    {
-      "decorations": [],
-      "id": 0,
-      "inscription": "I am Pamnot Kamcabekor, Pamnot Dreamedtwilight, once of the Underworld.  By Thocit, I bind myself to this place.",
-      "item_label": "microcline slab",
-      "item_type": "SLAB",
-      "maker": {
-        "histfig_id": 53,
-        "name": "Kun the Hood of Spiders"
-      },
-      "material": {
-        "name": "microcline",
-        "token": "INORGANIC:MICROCLINE"
-      },
-      "name": {
-        "dwarven": "Uxendof",
-        "english": "Searchdents"
-      },
-      "quality": "Masterful",
-      "value": 500
-    },
     {
       "decorations": [
         {
@@ -307,6 +287,7 @@
   },
   "cursor": 0,
   "engravings": {
+    "art_images_loaded": false,
     "by_subject": [
       {
         "count": 13,
@@ -577,5 +558,6 @@
     ],
     "total_present": 119
   },
-  "returned": 6
+  "returned": 5,
+  "scope": "site"
 }

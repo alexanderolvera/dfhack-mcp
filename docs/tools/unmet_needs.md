@@ -24,7 +24,7 @@ None.
 | `dwarves_with_unmet_need` | dwarves with at least one distracted need |
 | `top_needs[]` | up to 8 rows `{need, dwarves, worst_focus}`, sorted by dwarves distracted (desc), then severity |
 | `top_needs[].need` | `df.need_type` token, e.g. `PrayOrMeditate`, `DrinkAlcohol`, `Socialize` |
-| `top_needs[].worst_focus` | most negative focus_level seen for that need (magnitude = how starved) |
+| `top_needs[].worst_focus` | most negative `focus_level` seen for that need. **Not on a fixed scale** — see the scale note in Caveats before comparing two rows |
 | `alerts[]` | at most one line, only when the top need distracts ≥ 25% of the fort |
 
 ```json
@@ -42,7 +42,12 @@ None.
 *(top_needs trimmed; a real response carries up to 8 rows.)*
 
 ## Caveats & limits
-- "Distracted" is a heuristic cut: `focus_level < -1000` (tunable in the Lua). Slightly-unfulfilled needs don't count.
+- **`worst_focus` has a per-need floor, not a global one — do not read it as a fixed scale.** `focus_level` runs from +400 (just satisfied) down to a minimum of **-16320 x that dwarf's `need_level` for that need**. Measured live on Torchbristled across 1,237 need rows from 57 citizens: level-1 needs bottom out at exactly -16320 (8 rows sitting there), level-2 needs at exactly -32640 (11 rows), while level-5 and level-10 needs ranged to -70060 and -38340 without reaching their much deeper floors (-81600 and -163200). Consequences for a caller:
+  - An identical `worst_focus` repeating across several needs is **normal and expected**, not a clamp or a quantization artifact: those needs share a `need_level` and are all completely starved. Four needs all reading -32640 means four level-2 needs at rock bottom.
+  - A larger magnitude does **not** by itself mean a need is more starved. -70060 on a level-5 need (86% of the way to its floor) is less starved than -32640 on a level-2 need (100%). Compare each value against its own floor, not against zero or against each other.
+  - Values well outside int16 range are correct, not overflow. The Dreamfort golden's `PrayOrMeditate: -134860` is a high-`need_level` need behaving normally.
+  - `need_level` is per-dwarf-per-need and is not exposed in this aggregate (the row is a minimum across many dwarves who may hold different levels), so the floor for a given row cannot be recovered from the payload alone.
+- "Distracted" is a heuristic cut: `focus_level < -1000` (tunable in the Lua), applied as an ABSOLUTE threshold regardless of `need_level`. Because floors scale with `need_level`, -1000 is a much smaller fraction of a level-10 need's range than of a level-1 need's, so the cut is slightly more eager for low-level needs. Slightly-unfulfilled needs don't count.
 - `top_needs` is capped at 8 — the long tail of 1-2-dwarf needs is dropped as non-actionable.
 - Almost every dwarf always carries at least one distracted need, so `dwarves_with_unmet_need` being high is baseline, not news; the alert fires only on REACH (top need distracting ≥ 25% of citizens).
 - A dwarf holding several needs of one type (e.g. PrayOrMeditate per deity) counts once for that type, at their worst focus.

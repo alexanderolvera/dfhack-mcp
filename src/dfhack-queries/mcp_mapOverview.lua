@@ -138,13 +138,13 @@ end
 
 local alerts = {}
 if core and surface_z == nil then
-  alerts[#alerts + 1] = 'fort core column is not open to sky (surface_z unknown)'
+  alerts[#alerts + 1] = 'fort core column is not open to sky (surface_z_at_core unknown)'
 end
 
 emit({
   extents = { x = m.x_count, y = m.y_count, z = m.z_count },
   fort_core = core,
-  surface_z = surface_z,
+  surface_z_at_core = surface_z,
   activity = {
     z_levels = activity_z,
     construction_z = construction_z,
