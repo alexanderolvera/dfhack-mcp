@@ -1245,12 +1245,22 @@ export const INVARIANTS = [
   {
     name: 'military_roster_wellformed',
     tools: ['military'],
-    desc: "each squad's roster uniform rows have non-negative assigned/missing counts (missing <= assigned) agreeing with uniform_complete, filled never exceeds positions, and training.month is a valid 0-11 index",
+    desc: "each squad carries a unique integer squad_id, its roster uniform rows have non-negative assigned/missing counts (missing <= assigned) agreeing with uniform_complete, filled never exceeds positions, and training.month is a valid 0-11 index",
     check(p) {
       const d = p.military;
       const out = [];
       if (!Array.isArray(d.squads)) return ['squads is not an array'];
+      // squad_id is what squad-targeting actuators address a squad by, so a
+      // missing or duplicated one is a correctness bug, not cosmetic.
+      const seenSquadIds = new Set();
       d.squads.forEach((sq, si) => {
+        if (!isInt(sq.squad_id)) {
+          out.push(`squads[${si}].squad_id=${sq.squad_id} is not an integer`);
+        } else if (seenSquadIds.has(sq.squad_id)) {
+          out.push(`squads[${si}].squad_id=${sq.squad_id} is duplicated`);
+        } else {
+          seenSquadIds.add(sq.squad_id);
+        }
         if (!(isInt(sq.filled) && isInt(sq.positions) && inRange(sq.filled, 0, sq.positions)))
           out.push(`squads[${si}] filled=${sq.filled} outside [0, positions=${sq.positions}]`);
         (sq.roster ?? []).forEach((row, ri) => {
