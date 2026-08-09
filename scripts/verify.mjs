@@ -104,6 +104,12 @@ const TOOL_ARGS = {
   // resolveLiveArgs fills a real lever building id from mechanisms(); the
   // static placeholder keeps T0 well-formed and reaches the no-fort guard.
   pull_lever: { lever_id: 0 },
+  // squad_orders dry-run (NO confirm_token -> preview only, never mutates).
+  // 'cancel' is deliberately the probe order: it needs no target and, as a
+  // dry-run, only reports how many orders a cancel WOULD clear. resolveLiveArgs
+  // fills a real squad id from military(); the static placeholder keeps T0
+  // well-formed and reaches the no-fort guard.
+  squad_orders: { squad_id: 0, order: 'cancel' },
 };
 
 // Tools whose committed golden is captured with NO args even though they carry a
@@ -147,6 +153,7 @@ const NO_GOLDEN = new Set([
   'assign_work_detail',
   'civilian_alert',
   'pull_lever',
+  'squad_orders',
 ]);
 
 // --- helpers ----------------------------------------------------------------
@@ -297,6 +304,13 @@ async function resolveLiveArgs(client) {
   const mech = await callJson(client, 'mechanisms');
   const firstLever = mech.data?.levers?.[0]?.building_id;
   if (firstLever != null) TOOL_ARGS.pull_lever = { lever_id: firstLever };
+  // squad_orders(squad_id) <- military()'s first squad, so the DRY-RUN previews a
+  // real squad (still never applied — no confirm_token). Stays order:'cancel':
+  // it is the one order needing no target, and its dry-run only counts what a
+  // cancel would clear, so the probe can never be mistaken for a combat command.
+  const mil = await callJson(client, 'military');
+  const firstSquad = mil.data?.squads?.[0]?.squad_id;
+  if (firstSquad != null) TOOL_ARGS.squad_orders = { squad_id: firstSquad, order: 'cancel' };
 }
 
 async function tier1(client) {

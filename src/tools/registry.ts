@@ -29,6 +29,7 @@ import { petitionsDef } from './petitions.ts';
 import { roomsAndZonesDef } from './roomsAndZones.ts';
 import { runLuaDef } from './runLua.ts';
 import { siteHistoryDef } from './siteHistory.ts';
+import { squadOrdersDef } from './squadOrders.ts';
 import { stockpilesDef } from './stockpiles.ts';
 import { stocksDef } from './stocks.ts';
 import { threatsDef } from './threats.ts';
@@ -75,6 +76,7 @@ export const ALL_TOOLS: ToolDef[] = [
   roomsAndZonesDef,
   runLuaDef,
   siteHistoryDef,
+  squadOrdersDef,
   stockpilesDef,
   stocksDef,
   threatsDef,
