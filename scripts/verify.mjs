@@ -651,6 +651,104 @@ async function blueprintActuatorChecks(client) {
   else fail(`build mode not blocked cleanly: ${JSON.stringify(build).slice(0, 200)}`);
 }
 
+// --- blueprint library-reference surface (LIVE, dry-run only) ---------------
+// blueprint_apply's second source: a path/label from blueprint_library() instead
+// of an inline CSV (#88). Every check here is a no-token dry-run, so unlike
+// blueprintActuatorChecks this routine never mutates and has nothing to restore.
+// The anchor is deliberately deep, undug rock — what matters is that the
+// blueprint RESOLVES and its footprint agrees with quickfort, not that the site
+// is diggable, so a blocked preview is still a valid subject.
+async function blueprintLibraryRefChecks(client) {
+  console.log('\nblueprint library-reference surface (sensor->actuator, scope + source gates)');
+  const lib = (await callJson(client, 'blueprint_library', {})).data;
+  if (isNoFort(lib) || lib.error) {
+    console.log('  ○ skipped (no fort loaded)');
+    return;
+  }
+  const entries = lib.entries ?? [];
+  const digEntry = entries.find((e) => e.mode === 'dig');
+  const otherEntry = entries.find((e) => e.mode !== 'dig' && e.mode !== 'zone');
+  if (!digEntry) {
+    console.log('  ○ skipped (no dig blueprint on disk to reference)');
+    return;
+  }
+  const anchor = { anchor_x: 40, anchor_y: 40, anchor_z: 90 };
+  const ref = {
+    blueprint_path: digEntry.path,
+    ...(digEntry.label ? { blueprint_label: digEntry.label } : {}),
+    ...anchor,
+    mode: 'dig',
+  };
+
+  // (a) every path blueprint_library() lists must resolve in blueprint_apply —
+  //     the sensor and the actuator have to agree on what exists on disk.
+  const p = (await callJson(client, 'blueprint_apply', ref)).data;
+  const pv = p.preview ?? {};
+  const unresolved = (p.blocked ?? []).some((b) => /no blueprint file|cannot read blueprint/.test(b));
+  if (!unresolved && pv.source === 'library' && pv.blueprint_path === digEntry.path)
+    ok(`library entry "${digEntry.path}"${digEntry.label ?? ''} resolves through blueprint_apply`);
+  else
+    fail(
+      `listed library entry did not resolve: ${JSON.stringify({ blocked: p.blocked, source: pv.source }).slice(0, 200)}`
+    );
+
+  // (b) the footprint the tool derives can never be smaller than the tile count
+  //     quickfort itself reports designating from the same blueprint — quickfort
+  //     designates a subset of the blueprint's cells, never more.
+  if (
+    Number.isInteger(pv.footprint_cells) &&
+    Number.isInteger(pv.tiles_affected) &&
+    pv.footprint_cells >= pv.tiles_affected
+  )
+    ok(
+      `derived footprint (${pv.footprint_cells}) covers quickfort's designated tiles (${pv.tiles_affected})`
+    );
+  else
+    fail(
+      `footprint/quickfort disagreement: footprint_cells=${pv.footprint_cells} tiles_affected=${pv.tiles_affected}`
+    );
+
+  // (c) z_levels is the distinct z-set of the footprint, ascending — a library
+  //     blueprint may span levels the anchor alone does not name.
+  const zs = pv.z_levels;
+  if (
+    Array.isArray(zs) &&
+    zs.length === pv.z_levels_spanned &&
+    zs.length > 0 &&
+    zs.every((v, i) => i === 0 || zs[i - 1] < v)
+  )
+    ok(`z_levels ascending and consistent with z_levels_spanned (${zs.length})`);
+  else fail(`z_levels malformed: ${JSON.stringify(zs)} spanned=${pv.z_levels_spanned}`);
+
+  // (d) a listed entry outside the dig/zone scope blocks with no token, so the v1
+  //     scope gate covers the library source exactly as it covers inline CSVs.
+  if (otherEntry) {
+    const outOfScope = (
+      await callJson(client, 'blueprint_apply', {
+        blueprint_path: otherEntry.path,
+        ...(otherEntry.label ? { blueprint_label: otherEntry.label } : {}),
+        ...anchor,
+        mode: 'dig',
+      })
+    ).data;
+    if (Array.isArray(outOfScope.blocked) && outOfScope.confirm_token === undefined)
+      ok(`out-of-scope library mode "${otherEntry.mode}" -> blocked with no confirm_token`);
+    else fail(`out-of-scope mode not blocked: ${JSON.stringify(outOfScope).slice(0, 200)}`);
+  }
+
+  // (e) the two sources are mutually exclusive: supplying both, or neither, blocks
+  //     with no token rather than silently preferring one.
+  for (const [label, extra] of [
+    ['both csv and blueprint_path', { csv: '#dig\nd\n', blueprint_path: digEntry.path }],
+    ['neither csv nor blueprint_path', {}],
+  ]) {
+    const r = (await callJson(client, 'blueprint_apply', { ...anchor, mode: 'dig', ...extra })).data;
+    if (Array.isArray(r.blocked) && r.blocked.length > 0 && r.confirm_token === undefined)
+      ok(`${label} -> blocked with no confirm_token`);
+    else fail(`${label} not blocked cleanly: ${JSON.stringify(r).slice(0, 200)}`);
+  }
+}
+
 // --- invariants-only mode ---------------------------------------------------
 async function invariantsMode(client) {
   console.log('\nInvariants mode — relational specs against the live fort (no golden needed)');
@@ -659,6 +757,7 @@ async function invariantsMode(client) {
   await tileRegionParamChecks(client);
   await workDetailsParamChecks(client);
   await blueprintActuatorChecks(client);
+  await blueprintLibraryRefChecks(client);
 }
 
 // --- run --------------------------------------------------------------------
