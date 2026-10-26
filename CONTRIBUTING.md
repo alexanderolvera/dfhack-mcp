@@ -17,8 +17,7 @@ don't clone it to work on the server.
   stripping (`node src/index.ts`); no ts-node. (`engines` in `package.json` is the
   looser `>=20` — that governs the _published_ bundle's runtime, not this
   from-source dev workflow.)
-- **Windows-native by default.** DF + DFHack run on the Windows host; there is no
-  headless mode yet (that's [#27](https://github.com/alexanderolvera/dfhack-mcp/issues/27)).
+- **Windows-native by default.** DF + DFHack run on the Windows host; headless mode is available via Docker (see [docker/README.md](docker/README.md)) ([#27](https://github.com/alexanderolvera/dfhack-mcp/issues/27)).
 - **Don't expose the fort.** Never enable `allow_remote` in `remote-server.json`.
   DFHack's RPC only accepts connections that _originate_ from `127.0.0.1`, so the
   server talks to `localhost:5000` by default. `DFHACK_HOST` / `DFHACK_PORT` can
