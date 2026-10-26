@@ -4,6 +4,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
@@ -21,7 +22,7 @@ try {
   run(`npm install "${tgz}"`, room);
   const bin = join(room, 'node_modules', 'dfhack-mcp', 'dist', 'index.js');
   const { SURFACE_ACTUATORS_ON } = await import(
-    join(room, 'node_modules', 'dfhack-mcp', 'dist', 'surface.js')
+    pathToFileURL(join(room, 'node_modules', 'dfhack-mcp', 'dist', 'surface.js')).href
   );
 
   const childEnv = { ...process.env, DFHACK_MCP_ACTUATORS: '1' };
