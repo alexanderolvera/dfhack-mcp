@@ -10,6 +10,13 @@ backwards-compatible fixes only.
 
 ## [Unreleased]
 
+### Fixed
+
+- The registry is alphabetical again (`mandates_and_justice` sorts before
+  `map_overview`), and a unit test now fails if that order drifts.
+- The release smoke check derives its expected tool count from `ALL_TOOLS`
+  instead of pinning a literal, so adding a tool no longer breaks it.
+
 ## [1.4.1] - 2026-07-26
 
 ### Fixed
