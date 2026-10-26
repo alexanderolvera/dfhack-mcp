@@ -18,6 +18,12 @@ TERRAIN_LEGEND = {
   [' '] = 'open space / empty',
 }
 
+function legend_for(glyphs)
+  local out = {}
+  for ch in pairs(glyphs) do out[ch] = TERRAIN_LEGEND[ch] or 'unknown glyph' end
+  return out
+end
+
 local SHAPE = df.tiletype_shape
 
 function sym(tt, hidden)
@@ -36,6 +42,15 @@ function sym(tt, hidden)
   elseif s == 'BROOK_BED' or s == 'BROOK_TOP' then return '~'
   elseif s == 'EMPTY' or s == 'NONE' then return ' '
   else return '.' end
+end
+
+-- Fail-closed single-tile fog-of-war check, sharable across every reader that
+-- needs a per-tile (not per-window) test. Pass an already-fetched block (blk)
+-- to skip the re-fetch when the caller has one in hand; omit it otherwise.
+function is_hidden(x, y, z, blk)
+  blk = blk or dfhack.maps.getTileBlock(x, y, z)
+  if not blk then return true end
+  return blk.designation[x % 16][y % 16].hidden
 end
 
 function read_window(x0, y0, z, w, h)
@@ -84,7 +99,7 @@ function read_window(x0, y0, z, w, h)
     visible_tiles = visible_n, hidden_tiles = hidden_n,
     exposure = { open_to_sky = open_to_sky, covered = covered, undiscovered = hidden_n },
     fortifications = fortifications,
-    legend = TERRAIN_LEGEND, distinct = distinct, grid = rows,
+    legend = legend_for(distinct), distinct = distinct, grid = rows,
   }
 end
 
@@ -92,8 +107,10 @@ if dfhack_flags and dfhack_flags.module then
   return
 end
 
+local emit = reqscript('mcp_jsonOut').emit
+
 if df.global.gamemode ~= df.game_mode.DWARF then
-  print(json.encode({ error = 'no fort loaded' }))
+  emit({ error = 'no fort loaded' })
   return
 end
 
@@ -104,8 +121,8 @@ local z = tonumber(a[3])
 local w = tonumber(a[4]) or 100
 local h = tonumber(a[5]) or 100
 if not (x0 and y0 and z) then
-  print(json.encode({ error = 'usage: mcp_readTerrain X0 Y0 Z [W] [H]' }))
+  emit({ error = 'usage: mcp_readTerrain X0 Y0 Z [W] [H]' })
   return
 end
 
-print(json.encode(read_window(x0, y0, z, w, h)))
+emit(read_window(x0, y0, z, w, h))

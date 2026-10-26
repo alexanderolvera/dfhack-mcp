@@ -22,6 +22,7 @@ export interface Decoration {
 
 export interface Artifact {
   id: number;
+  site_local?: boolean;
   name: { dwarven?: string; english?: string };
   item_type?: string;
   item_label?: string;
@@ -55,6 +56,7 @@ export interface EngravingsSummary {
   scanned: number;
   scan_truncated: boolean;
   distinct_subjects: number;
+  art_images_loaded: boolean;
   subjects_resolvable: boolean;
   quality: Record<string, number>;
   by_subject: EngravingSubject[];
@@ -63,8 +65,10 @@ export interface EngravingsSummary {
 }
 
 export interface ArtifactsAndEngravings {
+  scope: 'site' | 'world';
   artifacts: Artifact[];
   artifact_count: number;
+  artifact_count_world: number;
   returned: number;
   cursor: number;
   next_cursor?: string;
@@ -81,11 +85,12 @@ export interface ArtifactsAndEngravings {
 
 export async function artifactsAndEngravings(
   limit?: number,
-  cursor?: string
+  cursor?: string,
+  scope?: 'site' | 'world'
 ): Promise<ArtifactsAndEngravings | { error: string }> {
   const data = await runJsonScript<ArtifactsAndEngravings>(
     'artifacts',
-    [limit != null ? String(limit) : '', cursor ?? ''],
+    [limit != null ? String(limit) : '', cursor ?? '', scope ?? ''],
     ['artifacts']
   );
   if ('error' in data) return data;
@@ -107,17 +112,28 @@ export const artifactsAndEngravingsDef: ToolDef = {
   name: 'artifacts_and_engravings',
   title: 'Artifacts and engravings',
   description:
-    "The fort's art, as labeled facts. Returns the named ARTIFACTS (paginated): " +
-    'each with its name (dwarven + translated), item type and base material, ' +
+    "The fort's art, as labeled facts. Returns the named ARTIFACTS (paginated), " +
+    'SITE-SCOPED BY DEFAULT — only artifacts belonging to the loaded fort, which ' +
+    'is almost always what is meant by "our artifacts". Pass scope="world" for ' +
+    "every artifact in the world (an old world holds hundreds that have nothing " +
+    'to do with your fort; in world scope each row carries site_local so the two ' +
+    'are still distinguishable). artifact_count always reflects the scope actually ' +
+    'applied, and artifact_count_world always gives the unfiltered world total. ' +
+    'Each artifact carries its name (dwarven + translated), item type and base material, ' +
     'created value, quality, maker (with a live unit_id ONLY when the maker is a ' +
     'living current citizen, else just the historical-figure name), the ' +
     'decorations on it (bands/covered/rings/images with their materials), and any ' +
     'engraved inscription text (e.g. a slab\'s secret). Plus an aggregated ' +
     'ENGRAVINGS summary for the map: engravings grouped BY SUBJECT with counts ' +
-    '(never itemized per tile), a quality histogram, and the top engravers. Note: ' +
-    'when the world\'s art images are not loaded, the human scene text is ' +
-    'unavailable (subjects_resolvable=false) and subjects are keyed by their ' +
-    'stable image reference instead — this is reported, never fabricated. Use ' +
+    '(never itemized per tile), a quality histogram, and the top engravers. ' +
+    'IMPORTANT precondition on engraving subjects: DF does not populate the ' +
+    "world's art-image table in fortress mode (art_images_loaded is false on " +
+    'every fort observed so far), so the human-readable scene an engraving depicts ' +
+    'is NOT available — subjects_resolvable=false and each subject is keyed by its ' +
+    'stable image reference ("image #2:158") instead. This is reported, never ' +
+    'fabricated, but do not plan on describing what the fort\'s art depicts: the ' +
+    'engraving read is reliable for counts, quality distribution, and which ' +
+    'dwarves did the engraving, not for iconography. Use ' +
     'limit + next_cursor to page through artifacts; see `caps` for all documented ' +
     'limits. Returns {"error":"no fort loaded"} if no fort is active.',
   shape: {
@@ -132,6 +148,13 @@ export const artifactsAndEngravingsDef: ToolDef = {
       .string()
       .optional()
       .describe('Opaque pagination cursor from a previous call\'s next_cursor; omit for the first page.'),
+    scope: z
+      .enum(['site', 'world'])
+      .optional()
+      .describe(
+        'Which artifacts to return. "site" (default) = only this fort\'s artifacts. ' +
+          '"world" = every artifact in the world, each tagged with site_local.'
+      ),
   },
-  run: ({ limit, cursor }) => artifactsAndEngravings(limit, cursor),
+  run: ({ limit, cursor, scope }) => artifactsAndEngravings(limit, cursor, scope),
 };

@@ -1,5 +1,5 @@
 local json = require('json')
-local function emit(t) print(json.encode(t)) end
+local emit = reqscript('mcp_jsonOut').emit
 
 if df.global.gamemode ~= df.game_mode.DWARF then
   emit({ error = 'no fort loaded' })
@@ -9,19 +9,9 @@ end
 local BATTLE_CAP = 20
 local DEATH_CAP = 25
 
-local function u(s)
-  if s == nil then return nil end
-  s = tostring(s)
-  if dfhack.df2utf then
-    local ok, v = pcall(dfhack.df2utf, s)
-    if ok then return v end
-  end
-  return s
-end
-
 local function name_str(name, english)
   local ok, s = pcall(dfhack.translation.translateName, name, english)
-  if ok and s and s ~= '' then return u(s) end
+  if ok and s and s ~= '' then return s end
   return nil
 end
 

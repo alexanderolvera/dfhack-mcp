@@ -1,0 +1,221 @@
+{
+  "bridge_count": 8,
+  "lever_count": 9,
+  "levers": [
+    {
+      "building_id": 359,
+      "linked_targets": [
+        {
+          "building_id": 360,
+          "pos": {
+            "x": 65,
+            "y": 39,
+            "z": 121
+          },
+          "state": "closed",
+          "type": "Floodgate"
+        }
+      ],
+      "name": "Cistern drain",
+      "pending_pull_jobs": [],
+      "pos": {
+        "x": 82,
+        "y": 52,
+        "z": 121
+      },
+      "state": 0
+    },
+    {
+      "building_id": 468,
+      "linked_targets": [
+        {
+          "building_id": 516,
+          "pos": {
+            "x": 81,
+            "y": 60,
+            "z": 131
+          },
+          "state": "lowered",
+          "type": "Bridge"
+        }
+      ],
+      "name": "Barracks gate",
+      "pending_pull_jobs": [],
+      "pos": {
+        "x": 82,
+        "y": 52,
+        "z": 131
+      },
+      "state": 0
+    },
+    {
+      "building_id": 469,
+      "linked_targets": [
+        {
+          "building_id": 512,
+          "pos": {
+            "x": 84,
+            "y": 59,
+            "z": 131
+          },
+          "state": "lowered",
+          "type": "Bridge"
+        }
+      ],
+      "name": "Inner main gate",
+      "pending_pull_jobs": [],
+      "pos": {
+        "x": 84,
+        "y": 52,
+        "z": 131
+      },
+      "state": 0
+    },
+    {
+      "building_id": 470,
+      "linked_targets": [
+        {
+          "building_id": 517,
+          "pos": {
+            "x": 88,
+            "y": 60,
+            "z": 131
+          },
+          "state": "lowered",
+          "type": "Bridge"
+        }
+      ],
+      "name": "Trade depot gate",
+      "pending_pull_jobs": [],
+      "pos": {
+        "x": 86,
+        "y": 52,
+        "z": 131
+      },
+      "state": 0
+    },
+    {
+      "building_id": 504,
+      "linked_targets": [
+        {
+          "building_id": 464,
+          "pos": {
+            "x": 71,
+            "y": 64,
+            "z": 131
+          },
+          "state": "lowered",
+          "type": "Bridge"
+        }
+      ],
+      "name": "Left outer gate",
+      "pending_pull_jobs": [],
+      "pos": {
+        "x": 82,
+        "y": 56,
+        "z": 131
+      },
+      "state": 0
+    },
+    {
+      "building_id": 505,
+      "linked_targets": [
+        {
+          "building_id": 461,
+          "pos": {
+            "x": 80,
+            "y": 64,
+            "z": 131
+          },
+          "state": "lowered",
+          "type": "Bridge"
+        }
+      ],
+      "name": "Left inner gate",
+      "pending_pull_jobs": [],
+      "pos": {
+        "x": 83,
+        "y": 56,
+        "z": 131
+      },
+      "state": 0
+    },
+    {
+      "building_id": 506,
+      "linked_targets": [
+        {
+          "building_id": 466,
+          "pos": {
+            "x": 84,
+            "y": 66,
+            "z": 131
+          },
+          "state": "lowered",
+          "type": "Bridge"
+        }
+      ],
+      "name": "Outer main gate",
+      "pending_pull_jobs": [],
+      "pos": {
+        "x": 84,
+        "y": 56,
+        "z": 131
+      },
+      "state": 0
+    },
+    {
+      "building_id": 507,
+      "linked_targets": [
+        {
+          "building_id": 462,
+          "pos": {
+            "x": 89,
+            "y": 64,
+            "z": 131
+          },
+          "state": "lowered",
+          "type": "Bridge"
+        }
+      ],
+      "name": "Right inner gate",
+      "pending_pull_jobs": [],
+      "pos": {
+        "x": 85,
+        "y": 56,
+        "z": 131
+      },
+      "state": 0
+    },
+    {
+      "building_id": 508,
+      "linked_targets": [
+        {
+          "building_id": 463,
+          "pos": {
+            "x": 98,
+            "y": 64,
+            "z": 131
+          },
+          "state": "lowered",
+          "type": "Bridge"
+        }
+      ],
+      "name": "Right outer gate",
+      "pending_pull_jobs": [],
+      "pos": {
+        "x": 86,
+        "y": 56,
+        "z": 131
+      },
+      "state": 0
+    }
+  ],
+  "levers_truncated": false,
+  "plate_count": 0,
+  "pressure_plates": [],
+  "pressure_plates_truncated": false,
+  "unlinked_bridges": [],
+  "unlinked_bridges_truncated": false,
+  "unlinked_levers": [],
+  "unlinked_levers_truncated": false
+}

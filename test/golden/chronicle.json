@@ -13,7 +13,7 @@
         "y": 60,
         "z": 131
       },
-      "text": "The militia commander hacks the axedwarf in the left lower arm with his �steel battle axe�, lightly tapping the target!",
+      "text": "The militia commander hacks the axedwarf in the left lower arm with his ≡steel battle axe≡, lightly tapping the target!",
       "time": 365133,
       "type": "COMBAT_STRIKE_DETAILS",
       "year": 7
@@ -28,7 +28,7 @@
         "y": 61,
         "z": 131
       },
-      "text": "The axedwarf strikes at the militia commander but the shot is deftly parried by the �steel battle axe�!",
+      "text": "The axedwarf strikes at the militia commander but the shot is deftly parried by the ≡steel battle axe≡!",
       "time": 365140,
       "type": "COMBAT_PARRY",
       "year": 7
@@ -78,7 +78,7 @@
         "y": 61,
         "z": 131
       },
-      "text": "The militia commander hacks the axedwarf in the left foot with his �steel battle axe�, lightly tapping the target!",
+      "text": "The militia commander hacks the axedwarf in the left foot with his ≡steel battle axe≡, lightly tapping the target!",
       "time": 365535,
       "type": "COMBAT_STRIKE_DETAILS",
       "year": 7
@@ -108,7 +108,7 @@
         "y": 61,
         "z": 131
       },
-      "text": "The militia commander hacks the axedwarf in the neck with his �steel battle axe�, lightly tapping the target!",
+      "text": "The militia commander hacks the axedwarf in the neck with his ≡steel battle axe≡, lightly tapping the target!",
       "time": 365540,
       "type": "COMBAT_STRIKE_DETAILS",
       "year": 7
@@ -138,7 +138,7 @@
         "y": 61,
         "z": 131
       },
-      "text": "The militia commander hacks the axedwarf in the right hand with his �steel battle axe�, lightly tapping the target!",
+      "text": "The militia commander hacks the axedwarf in the right hand with his ≡steel battle axe≡, lightly tapping the target!",
       "time": 365547,
       "type": "COMBAT_STRIKE_DETAILS",
       "year": 7
@@ -172,7 +172,7 @@
         "y": 58,
         "z": 131
       },
-      "text": "The militia commander hacks the axedwarf in the right upper arm with his �steel battle axe�, lightly tapping the target!",
+      "text": "The militia commander hacks the axedwarf in the right upper arm with his ≡steel battle axe≡, lightly tapping the target!",
       "time": 365925,
       "type": "COMBAT_STRIKE_DETAILS",
       "year": 7
@@ -202,7 +202,7 @@
         "y": 58,
         "z": 131
       },
-      "text": "The militia commander hacks the axedwarf in the left upper leg with his �steel battle axe�, lightly tapping the target!",
+      "text": "The militia commander hacks the axedwarf in the left upper leg with his ≡steel battle axe≡, lightly tapping the target!",
       "time": 365958,
       "type": "COMBAT_STRIKE_DETAILS",
       "year": 7
@@ -232,7 +232,7 @@
         "y": 58,
         "z": 131
       },
-      "text": "The militia commander hacks the axedwarf in the right upper leg with his �steel battle axe�, lightly tapping the target!",
+      "text": "The militia commander hacks the axedwarf in the right upper leg with his ≡steel battle axe≡, lightly tapping the target!",
       "time": 365966,
       "type": "COMBAT_STRIKE_DETAILS",
       "year": 7
@@ -272,7 +272,7 @@
         "z": 125
       },
       "repeat_count": 2,
-      "text": "Goden Aranlogem has created a masterpiece \u000fpig tail cloth\u000f!",
+      "text": "Goden Aranlogem has created a masterpiece ☼pig tail cloth☼!",
       "time": 373848,
       "type": "MASTERPIECE_CRAFTED",
       "year": 7
@@ -288,7 +288,7 @@
         "z": 125
       },
       "repeat_count": 1,
-      "text": "Dumed K�t�klikot has created a masterpiece \u000fgander skull totem\u000f!",
+      "text": "Dumed Kåtâklikot has created a masterpiece ☼gander skull totem☼!",
       "time": 374427,
       "type": "MASTERPIECE_CRAFTED",
       "year": 7
@@ -303,7 +303,7 @@
         "y": 51,
         "z": 130
       },
-      "text": "Inod Ustuthvuthil has created a masterpiece \u000ffoxtail millet roast [6]\u000f!",
+      "text": "Inod Ustuthvuthil has created a masterpiece ☼foxtail millet roast [6]☼!",
       "time": 374516,
       "type": "MASTERPIECE_CRAFTED",
       "year": 7
@@ -334,7 +334,7 @@
         "z": 130
       },
       "repeat_count": 1,
-      "text": "Inod Ustuthvuthil has created a masterpiece \u000ffoxtail millet roast [4]\u000f!",
+      "text": "Inod Ustuthvuthil has created a masterpiece ☼foxtail millet roast [4]☼!",
       "time": 376591,
       "type": "MASTERPIECE_CRAFTED",
       "year": 7
@@ -349,7 +349,7 @@
         "y": 50,
         "z": 125
       },
-      "text": "Goden Aranlogem has created a masterpiece \u000falpaca wool cloth\u000f!",
+      "text": "Goden Aranlogem has created a masterpiece ☼alpaca wool cloth☼!",
       "time": 377843,
       "type": "MASTERPIECE_CRAFTED",
       "year": 7
@@ -434,7 +434,7 @@
         "y": 59,
         "z": 131
       },
-      "text": "The wrestler strikes at the axedwarf but the shot is deflected by the \u000fsteel battle axe\u000f!",
+      "text": "The wrestler strikes at the axedwarf but the shot is deflected by the ☼steel battle axe☼!",
       "time": 382096,
       "type": "COMBAT_PARRY",
       "year": 7
@@ -449,7 +449,7 @@
         "y": 58,
         "z": 131
       },
-      "text": "The axedwarf strikes at the wrestler but the shot is parried by the �steel battle axe�!",
+      "text": "The axedwarf strikes at the wrestler but the shot is parried by the ≡steel battle axe≡!",
       "time": 382102,
       "type": "COMBAT_PARRY",
       "year": 7
@@ -473,7 +473,7 @@
         "y": 67,
         "z": 125
       },
-      "text": "Zon Nimak�teb has created a masterpiece \u000fsteel right gauntlet\u000f!",
+      "text": "Zon Nimakïteb has created a masterpiece ☼steel right gauntlet☼!",
       "time": 382867,
       "type": "MASTERPIECE_CRAFTED",
       "year": 7
@@ -488,7 +488,7 @@
         "y": 62,
         "z": 131
       },
-      "text": "The wrestler hacks the axedwarf in the left lower arm with his �steel battle axe�, lightly tapping the target!",
+      "text": "The wrestler hacks the axedwarf in the left lower arm with his ≡steel battle axe≡, lightly tapping the target!",
       "time": 382870,
       "type": "COMBAT_STRIKE_DETAILS",
       "year": 7
@@ -548,7 +548,7 @@
         "y": 62,
         "z": 131
       },
-      "text": "The axedwarf strikes at the wrestler but the shot is just barely parried by the �steel battle axe�!",
+      "text": "The axedwarf strikes at the wrestler but the shot is just barely parried by the ≡steel battle axe≡!",
       "time": 382885,
       "type": "COMBAT_PARRY",
       "year": 7
@@ -563,7 +563,7 @@
         "y": 62,
         "z": 131
       },
-      "text": "The wrestler hacks the axedwarf in the left upper arm with his �steel battle axe�, lightly tapping the target!",
+      "text": "The wrestler hacks the axedwarf in the left upper arm with his ≡steel battle axe≡, lightly tapping the target!",
       "time": 382887,
       "type": "COMBAT_STRIKE_DETAILS",
       "year": 7
@@ -612,7 +612,7 @@
         "y": 61,
         "z": 131
       },
-      "text": "�ton Sob�robok, Wrestler has grown attached to a steel battle axe!",
+      "text": "îton Sobìrobok, Wrestler has grown attached to a steel battle axe!",
       "time": 386118,
       "type": "ITEM_ATTACHMENT",
       "year": 7
@@ -627,7 +627,7 @@
         "y": 62,
         "z": 131
       },
-      "text": "�shrir Amemdod�k, Axedwarf has grown attached to a steel battle axe!",
+      "text": "ùshrir Amemdodók, Axedwarf has grown attached to a steel battle axe!",
       "time": 386123,
       "type": "ITEM_ATTACHMENT",
       "year": 7

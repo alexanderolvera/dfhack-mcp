@@ -1,7 +1,8 @@
 {
   "name": "dfhack-mcp",
-  "version": "1.2.0",
+  "version": "1.4.1",
   "description": "MCP server exposing a live Dwarf Fortress fort to an AI agent as curated, semantic tools",
+  "mcpName": "io.github.alexanderolvera/dfhack-mcp",
   "type": "module",
   "bin": {
     "dfhack-mcp": "./dist/index.js"
@@ -54,7 +55,8 @@
   "license": "ISC",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.0",
-    "dfhack-remote-node": "^2.0.0"
+    "dfhack-remote-node": "^2.0.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
@@ -67,6 +69,7 @@
     "typescript-eslint": "^8.0.0"
   },
   "overrides": {
-    "esbuild": "^0.28.1"
+    "esbuild": "^0.28.1",
+    "@hono/node-server": "^2.0.5"
   }
 }

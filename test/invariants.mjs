@@ -36,19 +36,6 @@ export const INVARIANTS = [
     },
   },
   {
-    name: 'health_counts_within_population',
-    tools: ['injuries_and_health'],
-    desc: 'no medical bucket exceeds the population or goes negative',
-    check(p) {
-      const d = p.injuries_and_health;
-      const out = [];
-      for (const k of ['wounded', 'patients', 'bedridden', 'unconscious']) {
-        if (!inRange(d[k], 0, d.population)) out.push(`${k}=${d[k]} outside [0, ${d.population}]`);
-      }
-      return out;
-    },
-  },
-  {
     name: 'stocks_nonnegative',
     tools: ['stocks'],
     desc: 'raw counts are >= 0 and days-of-supply is >= 0 or the -1 no-population sentinel',
@@ -327,8 +314,8 @@ export const INVARIANTS = [
           out.push(`fort_core.y=${c.y} outside [0, ${e.y})`);
         if (!zOk(c.z)) out.push(`fort_core.z=${c.z} outside [0, ${zc})`);
       }
-      if (d.surface_z !== null && !zOk(d.surface_z))
-        out.push(`surface_z=${d.surface_z} outside [0, ${zc})`);
+      if (d.surface_z_at_core !== null && !zOk(d.surface_z_at_core))
+        out.push(`surface_z_at_core=${d.surface_z_at_core} outside [0, ${zc})`);
       // every activity z-level is a real z-level, and the union covers both parts.
       const a = d.activity ?? {};
       const uni = new Set(a.z_levels ?? []);
@@ -667,8 +654,8 @@ export const INVARIANTS = [
     check(p) {
       const d = p.geology;
       const out = [];
-      // surface_z is an integer z-level.
-      if (!isInt(d.surface_z)) out.push(`surface_z=${d.surface_z} is not an integer`);
+      // surface_z_max is an integer z-level.
+      if (!isInt(d.surface_z_max)) out.push(`surface_z_max=${d.surface_z_max} is not an integer`);
       // Every geological band is ordered top-at-or-above-bottom with real materials.
       if (!Array.isArray(d.layers)) {
         out.push('layers is not an array');
@@ -846,6 +833,224 @@ export const INVARIANTS = [
     },
   },
   {
+    name: 'fort_health_wellformed_and_bounds_population',
+    tools: ['fort_health', 'fort_status'],
+    desc: 'fps/gfps and every item/unit count are non-negative, and units.active (fog-of-war filtered like fort_status/threats) is never less than fort_status.population (citizens are a subset of active units)',
+    check(p) {
+      const d = p.fort_health;
+      const out = [];
+      for (const k of ['fps', 'gfps']) {
+        if (!(isInt(d[k]) && d[k] >= 0)) out.push(`${k}=${d[k]} is not a non-negative integer`);
+      }
+      const items = d.items ?? {};
+      for (const k of ['total', 'stone', 'corpses', 'clothes']) {
+        if (!(isInt(items[k]) && items[k] >= 0))
+          out.push(`items.${k}=${items[k]} is not a non-negative integer`);
+      }
+      for (const k of ['stone', 'corpses', 'clothes']) {
+        if (isInt(items[k]) && isInt(items.total) && items[k] > items.total)
+          out.push(`items.${k}=${items[k]} exceeds items.total=${items.total}`);
+      }
+      const units = d.units ?? {};
+      for (const k of ['active', 'dead_on_map']) {
+        if (!(isInt(units[k]) && units[k] >= 0))
+          out.push(`units.${k}=${units[k]} is not a non-negative integer`);
+      }
+      // units.active >= fort_status.population -- see docs/tools/fort_health.md Implementation notes.
+      if (isInt(units.active) && isInt(p.fort_status.population) && units.active < p.fort_status.population)
+        out.push(
+          `units.active=${units.active} is less than fort_status.population=${p.fort_status.population}`
+        );
+      return out;
+    },
+  },
+  {
+    name: 'recent_deaths_wellformed_and_alerted',
+    tools: ['fort_status'],
+    desc: 'recent_deaths counts are non-negative, citizen_causes sums to the citizen count, slain-by-citizen never exceeds citizen deaths, and any citizen death raises an alert',
+    check(p) {
+      const d = p.fort_status.recent_deaths;
+      const out = [];
+      if (!d) return ['fort_status.recent_deaths is missing'];
+      for (const k of ['citizens', 'citizens_slain_by_citizen', 'outsiders_at_site']) {
+        if (!(isInt(d[k]) && d[k] >= 0)) out.push(`recent_deaths.${k}=${d[k]} is not a non-negative integer`);
+      }
+      if (!isInt(d.since_year)) out.push(`recent_deaths.since_year=${d.since_year} is not an integer`);
+      // A citizen slain by a citizen is a citizen death, so it is a subset.
+      if (isInt(d.citizens) && isInt(d.citizens_slain_by_citizen) && d.citizens_slain_by_citizen > d.citizens)
+        out.push(
+          `citizens_slain_by_citizen=${d.citizens_slain_by_citizen} exceeds citizens=${d.citizens}`
+        );
+      // Every citizen death is attributed to exactly one cause bucket.
+      const causes = d.citizen_causes ?? [];
+      if (!Array.isArray(causes)) return [...out, 'recent_deaths.citizen_causes is not an array'];
+      let summed = 0;
+      for (const [i, r] of causes.entries()) {
+        if (!(isInt(r.count) && r.count > 0))
+          out.push(`citizen_causes[${i}].count=${r.count} is not a positive integer`);
+        else summed += r.count;
+        if (typeof r.cause !== 'string' || r.cause === '')
+          out.push(`citizen_causes[${i}].cause is not a non-empty string`);
+      }
+      if (isInt(d.citizens) && summed !== d.citizens)
+        out.push(`citizen_causes sum ${summed} !== citizens ${d.citizens}`);
+      // The whole point of the field: a citizen death must reach the alert list.
+      const alerts = p.fort_status.alerts ?? [];
+      const mentionsDeath = alerts.some((a) => /citizen death/i.test(a));
+      if (isInt(d.citizens) && d.citizens > 0 && !mentionsDeath)
+        out.push(`${d.citizens} citizen death(s) recorded but no alert mentions them`);
+      if (isInt(d.citizens) && d.citizens === 0 && mentionsDeath)
+        out.push('an alert mentions citizen deaths but recent_deaths.citizens is 0');
+      return out;
+    },
+  },
+  {
+    name: 'health_counts_are_current_condition_and_bounded_by_population',
+    tools: ['injuries_and_health', 'fort_status'],
+    desc: 'every health count is a non-negative subset of population, wounded/old_wounds_only are disjoint, patients never exceeds the injured, and sleepers are not counted as unconscious',
+    check(p) {
+      const d = p.injuries_and_health;
+      const out = [];
+      const pop = d.population;
+      for (const k of ['wounded', 'old_wounds_only', 'patients', 'bedridden', 'unconscious', 'asleep']) {
+        if (!(isInt(d[k]) && d[k] >= 0)) {
+          out.push(`${k}=${d[k]} is not a non-negative integer`);
+          continue;
+        }
+        if (isInt(pop) && d[k] > pop) out.push(`${k}=${d[k]} exceeds population ${pop}`);
+      }
+      // A dwarf is counted in at most one of the two wound buckets, so together
+      // they can never exceed the fort. See docs/tools/injuries_and_health.md.
+      if (isInt(d.wounded) && isInt(d.old_wounds_only) && isInt(pop) && d.wounded + d.old_wounds_only > pop)
+        out.push(`wounded+old_wounds_only=${d.wounded + d.old_wounds_only} exceeds population ${pop}`);
+      // Needing healthcare implies live damage, so patients can never outnumber the wounded.
+      if (isInt(d.patients) && isInt(d.wounded) && d.patients > d.wounded)
+        out.push(`patients=${d.patients} exceeds wounded=${d.wounded} (a patient must have a live wound)`);
+      // care_needs is the per-flag breakdown of the care queue; no row can outnumber it.
+      for (const [i, row] of (d.care_needs ?? []).entries()) {
+        if (!(isInt(row.count) && row.count > 0))
+          out.push(`care_needs[${i}].count=${row.count} is not a positive integer`);
+        else if (isInt(d.patients) && row.count > d.patients)
+          out.push(`care_needs[${i}] "${row.care}" count ${row.count} exceeds patients ${d.patients}`);
+      }
+      if (isInt(pop) && isInt(p.fort_status.population) && pop !== p.fort_status.population)
+        out.push(`population=${pop} disagrees with fort_status.population=${p.fort_status.population}`);
+      return out;
+    },
+  },
+  {
+    name: 'artifacts_default_to_site_scope_within_the_world_total',
+    tools: ['artifacts_and_engravings'],
+    desc: 'the default call is site-scoped, its artifact_count never exceeds artifact_count_world, page size honors the cap, and site scope emits no per-row site_local (every row is site-local by construction)',
+    check(p) {
+      const d = p.artifacts_and_engravings;
+      const out = [];
+      if (d.scope !== 'site') out.push(`default scope="${d.scope}", expected "site"`);
+      if (!(isInt(d.artifact_count) && d.artifact_count >= 0))
+        out.push(`artifact_count=${d.artifact_count} is not a non-negative integer`);
+      if (!(isInt(d.artifact_count_world) && d.artifact_count_world >= 0))
+        out.push(`artifact_count_world=${d.artifact_count_world} is not a non-negative integer`);
+      if (isInt(d.artifact_count) && isInt(d.artifact_count_world) && d.artifact_count > d.artifact_count_world)
+        out.push(`site artifact_count=${d.artifact_count} exceeds world total ${d.artifact_count_world}`);
+      if (!Array.isArray(d.artifacts)) return [...out, 'artifacts is not an array'];
+      if (d.artifacts.length !== d.returned)
+        out.push(`returned=${d.returned} disagrees with ${d.artifacts.length} listed artifacts`);
+      if (d.artifacts.length > (d.caps?.max_limit ?? 100))
+        out.push(`page of ${d.artifacts.length} exceeds max_limit ${d.caps?.max_limit}`);
+      if (d.artifacts.length > d.artifact_count)
+        out.push(`page of ${d.artifacts.length} exceeds the scoped total ${d.artifact_count}`);
+      for (const [i, a] of d.artifacts.entries()) {
+        if ('site_local' in a)
+          out.push(`artifacts[${i}] carries site_local in site scope, where it is always true`);
+      }
+      // next_cursor exists exactly when the scoped list has more rows past this page.
+      const more = d.cursor + d.artifacts.length < d.artifact_count;
+      if (more !== (d.next_cursor !== undefined))
+        out.push(`next_cursor presence (${d.next_cursor !== undefined}) disagrees with more-rows-remaining (${more})`);
+      // Engraving subject resolution is honestly reported, never silently faked.
+      const e = d.engravings ?? {};
+      if (e.art_images_loaded === false && e.subjects_resolvable === true)
+        out.push('subjects_resolvable is true while art_images_loaded is false');
+      for (const [i, b] of (e.by_subject ?? []).entries()) {
+        if (!b.subject_resolved && !String(b.subject).startsWith('image #'))
+          out.push(`by_subject[${i}] is unresolved but does not fall back to an image reference`);
+      }
+      return out;
+    },
+  },
+  {
+    name: 'legends_describe_only_glyphs_actually_emitted',
+    tools: ['defenses', 'fluids', 'tile_region'],
+    desc: 'every legend is pruned to the glyphs its own payload actually renders — no legend key without a glyph to describe, and no glyph without a legend entry',
+    check(p) {
+      const out = [];
+      const pt = p.defenses.perimeter_terrain;
+      if (pt) {
+        const inGrid = new Set((pt.grid ?? []).flatMap((row) => [...row]));
+        for (const ch of Object.keys(pt.legend ?? {}))
+          if (!inGrid.has(ch)) out.push(`defenses.perimeter_terrain.legend has "${ch}", absent from grid`);
+        for (const ch of inGrid)
+          if (!(ch in (pt.legend ?? {})))
+            out.push(`defenses.perimeter_terrain.grid uses "${ch}" with no legend entry`);
+        for (const ch of Object.keys(pt.distinct ?? {}))
+          if (!(ch in (pt.legend ?? {})))
+            out.push(`defenses.perimeter_terrain.distinct has "${ch}" with no legend entry`);
+      }
+      const risk = p.fluids.flood_risk_tiles ?? [];
+      const footings = new Set(risk.map((t) => t.footing));
+      const fluidLegend = p.fluids.legend;
+      if (footings.size === 0) {
+        if (fluidLegend !== undefined)
+          out.push('fluids.legend is present with no flood_risk_tiles for it to describe');
+      } else {
+        for (const ch of Object.keys(fluidLegend ?? {}))
+          if (!footings.has(ch)) out.push(`fluids.legend has "${ch}", used by no flood_risk_tile`);
+        for (const ch of footings)
+          if (!(ch in (fluidLegend ?? {})))
+            out.push(`fluids flood_risk footing "${ch}" has no legend entry`);
+      }
+      const tr = p.tile_region;
+      if (Array.isArray(tr.grid)) {
+        const inGrid = new Set(tr.grid.flatMap((row) => [...row]));
+        for (const ch of Object.keys(tr.legend ?? {}))
+          if (!inGrid.has(ch)) out.push(`tile_region.legend has "${ch}", absent from grid`);
+      }
+      return out;
+    },
+  },
+  {
+    name: 'hostile_count_agrees_across_tools_and_leaks_no_undiscovered_unit',
+    tools: ['threats', 'military', 'defenses'],
+    desc: 'threats.active_hostiles, military.hostiles_on_map and defenses.threats[] report one fog-of-war-gated population, and every listed threat stands on a discovered tile',
+    check(p) {
+      const out = [];
+      const active = p.threats.active_hostiles;
+      const onMap = p.military.hostiles_on_map;
+      const listed = Array.isArray(p.defenses.threats) ? p.defenses.threats.length : null;
+      if (!isInt(active) || active < 0)
+        out.push(`threats.active_hostiles=${active} is not a non-negative integer`);
+      if (!isInt(onMap) || onMap < 0)
+        out.push(`military.hostiles_on_map=${onMap} is not a non-negative integer`);
+      if (listed === null) out.push('defenses.threats is not an array');
+      if (isInt(active) && isInt(onMap) && active !== onMap)
+        out.push(
+          `threats.active_hostiles=${active} disagrees with military.hostiles_on_map=${onMap}`
+        );
+      if (isInt(active) && listed !== null && active !== listed)
+        out.push(`threats.active_hostiles=${active} disagrees with defenses.threats length ${listed}`);
+      // A listed threat is a discovered threat by construction: footing carries a real
+      // tile shape, never a fog-of-war placeholder. See docs/tools/defenses.md.
+      for (const [i, t] of (p.defenses.threats ?? []).entries()) {
+        if (t.footing?.discovered === false)
+          out.push(`defenses.threats[${i}] is on an undiscovered tile but was still emitted`);
+        if (!t.footing?.symbol) out.push(`defenses.threats[${i}].footing has no tile symbol`);
+        if (t.footing?.symbol === '?')
+          out.push(`defenses.threats[${i}] leaked a fog-of-war tile as its footing`);
+      }
+      return out;
+    },
+  },
+  {
     name: 'work_details_wellformed',
     tools: ['work_details'],
     desc: 'each detail has a non-empty name, a known mode, string labor tokens, ascending integer members agreeing with member_count + the 200 cap/truncation flag (cursor-aware), members_cursor present iff truncated, and parallel member_names',
@@ -937,6 +1142,479 @@ export const INVARIANTS = [
         if (!Array.isArray(wd.member_names) || wd.member_names.length !== wd.members.length)
           out.push(`details[${i}].member_names is not parallel to members`);
       });
+      return out;
+    },
+  },
+  {
+    name: 'burrows_wellformed',
+    tools: ['burrows'],
+    desc: 'each burrow has a non-negative tile_count and ascending assigned_units honoring its 200 cap/truncation flag, and civilian_alert.burrows/active only ever name real, configured burrows',
+    check(p) {
+      const d = p.burrows;
+      const out = [];
+      if (!isInt(d.count) || d.count < 0) out.push(`count=${d.count} is not a non-negative integer`);
+      if (!Array.isArray(d.burrows)) return [...out, 'burrows is not an array'];
+      if (d.burrows.length !== d.count)
+        out.push(`burrows.length=${d.burrows.length} != count=${d.count}`);
+      const ids = new Set();
+      d.burrows.forEach((b, i) => {
+        if (!isInt(b.id)) out.push(`burrows[${i}].id=${b.id} is not an integer`);
+        ids.add(b.id);
+        if (!(isInt(b.tile_count) && b.tile_count >= 0))
+          out.push(`burrows[${i}].tile_count=${b.tile_count} is not a non-negative integer`);
+        if (!Array.isArray(b.assigned_units)) {
+          out.push(`burrows[${i}].assigned_units is not an array`);
+          return;
+        }
+        if (b.assigned_units.length > 200)
+          out.push(`burrows[${i}].assigned_units length ${b.assigned_units.length} exceeds cap 200`);
+        for (let j = 1; j < b.assigned_units.length; j++) {
+          if (!(b.assigned_units[j] > b.assigned_units[j - 1]))
+            out.push(`burrows[${i}].assigned_units not strictly ascending at index ${j}`);
+        }
+        const shouldTrunc = isInt(b.assigned_units_total) && b.assigned_units_total > b.assigned_units.length;
+        if (Boolean(b.assigned_units_truncated) !== shouldTrunc)
+          out.push(
+            `burrows[${i}].assigned_units_truncated disagrees with total ${b.assigned_units_total} vs listed ${b.assigned_units.length}`
+          );
+      });
+      const ca = d.civilian_alert ?? {};
+      if (typeof ca.configured !== 'boolean') out.push(`civilian_alert.configured=${ca.configured} is not a boolean`);
+      if (typeof ca.active !== 'boolean') out.push(`civilian_alert.active=${ca.active} is not a boolean`);
+      if (ca.active && !ca.configured) out.push('civilian_alert.active is true but configured is false');
+      (ca.burrows ?? []).forEach((id) => {
+        if (!ids.has(id)) out.push(`civilian_alert.burrows names unknown burrow id ${id}`);
+      });
+      d.burrows.forEach((b) => {
+        const linked = (ca.burrows ?? []).includes(b.id);
+        if (b.civilian_alert_linked !== linked)
+          out.push(`burrows[${b.id}].civilian_alert_linked=${b.civilian_alert_linked} disagrees with civilian_alert.burrows`);
+      });
+      return out;
+    },
+  },
+  {
+    name: 'mechanisms_wellformed',
+    tools: ['mechanisms'],
+    desc: 'lever state is 0/1, unlinked_levers is exactly the levers with no linked_targets, unlinked_bridges never appears as any lever OR plate linked_target building_id, and the four capped lists honor their 200 cap + truncation flag',
+    check(p) {
+      const d = p.mechanisms;
+      const out = [];
+      if (!Array.isArray(d.levers)) return ['levers is not an array'];
+      const linkedTargetIds = new Set();
+      const emptyLeverIds = new Set();
+      d.levers.forEach((lv, i) => {
+        if (lv.state !== 0 && lv.state !== 1) out.push(`levers[${i}].state=${lv.state} is not 0 or 1`);
+        if (!Array.isArray(lv.linked_targets)) {
+          out.push(`levers[${i}].linked_targets is not an array`);
+          return;
+        }
+        if (lv.linked_targets.length === 0) emptyLeverIds.add(lv.building_id);
+        lv.linked_targets.forEach((t) => linkedTargetIds.add(t.building_id));
+      });
+      (d.pressure_plates ?? []).forEach((pl) => {
+        (pl.linked_targets ?? []).forEach((t) => linkedTargetIds.add(t.building_id));
+      });
+      const unlinkedSet = new Set(d.unlinked_levers ?? []);
+      if (unlinkedSet.size !== emptyLeverIds.size || [...unlinkedSet].some((id) => !emptyLeverIds.has(id)))
+        out.push(
+          `unlinked_levers ${JSON.stringify(d.unlinked_levers)} disagrees with the levers actually carrying 0 linked_targets`
+        );
+      (d.unlinked_bridges ?? []).forEach((id) => {
+        if (linkedTargetIds.has(id)) out.push(`unlinked_bridges lists ${id}, but a lever/plate targets it`);
+      });
+      const capChecks = [
+        ['levers', d.levers, d.lever_count, d.levers_truncated],
+        ['pressure_plates', d.pressure_plates, d.plate_count, d.pressure_plates_truncated],
+        ['unlinked_levers', d.unlinked_levers, d.unlinked_levers?.length, d.unlinked_levers_truncated],
+        ['unlinked_bridges', d.unlinked_bridges, d.unlinked_bridges?.length, d.unlinked_bridges_truncated],
+      ];
+      for (const [name, list, total, truncated] of capChecks) {
+        if (!Array.isArray(list)) {
+          out.push(`${name} is not an array`);
+          continue;
+        }
+        if (list.length > 200) out.push(`${name} length ${list.length} exceeds the cap of 200`);
+        const shouldTrunc = isInt(total) && total > list.length;
+        if (Boolean(truncated) !== shouldTrunc)
+          out.push(`${name}_truncated=${truncated} disagrees with total ${total} vs listed ${list.length}`);
+      }
+      return out;
+    },
+  },
+  {
+    name: 'military_roster_wellformed',
+    tools: ['military'],
+    desc: "each squad's roster uniform rows have non-negative assigned/missing counts (missing <= assigned) agreeing with uniform_complete, filled never exceeds positions, and training.month is a valid 0-11 index",
+    check(p) {
+      const d = p.military;
+      const out = [];
+      if (!Array.isArray(d.squads)) return ['squads is not an array'];
+      d.squads.forEach((sq, si) => {
+        if (!(isInt(sq.filled) && isInt(sq.positions) && inRange(sq.filled, 0, sq.positions)))
+          out.push(`squads[${si}] filled=${sq.filled} outside [0, positions=${sq.positions}]`);
+        (sq.roster ?? []).forEach((row, ri) => {
+          if (!isInt(row.unit_id)) out.push(`squads[${si}].roster[${ri}].unit_id=${row.unit_id} is not an integer`);
+          let missingTotal = 0;
+          (row.uniform ?? []).forEach((u, ui) => {
+            if (!(isInt(u.assigned_count) && u.assigned_count >= 0))
+              out.push(`squads[${si}].roster[${ri}].uniform[${ui}].assigned_count=${u.assigned_count} is not a non-negative integer`);
+            if (!(isInt(u.missing_count) && inRange(u.missing_count, 0, u.assigned_count)))
+              out.push(
+                `squads[${si}].roster[${ri}].uniform[${ui}].missing_count=${u.missing_count} outside [0, assigned_count=${u.assigned_count}]`
+              );
+            missingTotal += u.missing_count || 0;
+          });
+          if (row.uniform_complete !== (missingTotal === 0))
+            out.push(`squads[${si}].roster[${ri}].uniform_complete=${row.uniform_complete} disagrees with summed missing_count=${missingTotal}`);
+        });
+        const t = sq.training ?? {};
+        if (!(isInt(t.month) && inRange(t.month, 0, 11)))
+          out.push(`squads[${si}].training.month=${t.month} outside 0..11`);
+        if (!isInt(t.cur_routine_idx) || t.cur_routine_idx < 0)
+          out.push(`squads[${si}].training.cur_routine_idx=${t.cur_routine_idx} is not a non-negative integer`);
+      });
+      return out;
+    },
+  },
+  {
+    name: 'stockpiles_wellformed',
+    tools: ['stockpiles'],
+    desc:
+      'pile counts stay non-negative, occupied_tiles never exceeds size, categories[] only names real bitfield flags, ' +
+      'give_to/take_from links are internally reciprocal, piles are id-sorted, and cap/' +
+      'truncation pairs (piles, links, backlog) are self-consistent',
+    check(p) {
+      const d = p.stockpiles;
+      const out = [];
+      const KNOWN_CATEGORIES = new Set([
+        'animals', 'food', 'furniture', 'corpses', 'refuse', 'stone', 'ammo', 'coins',
+        'bars_blocks', 'gems', 'finished_goods', 'leather', 'cloth', 'wood', 'weapons',
+        'armor', 'sheet',
+      ]);
+      const PILES_CAP = 200;
+      const LINKS_CAP = 50;
+
+      if (!Array.isArray(d.piles)) {
+        out.push('piles is not an array');
+        return out;
+      }
+      if (d.piles.length > PILES_CAP)
+        out.push(`piles length ${d.piles.length} exceeds cap ${PILES_CAP}`);
+      if (!(isInt(d.piles_total) && d.piles_total >= 0))
+        out.push(`piles_total=${d.piles_total} is not a non-negative integer`);
+      if (Boolean(d.piles_truncated) !== (d.piles_total > d.piles.length))
+        out.push(
+          `piles_truncated=${d.piles_truncated} disagrees with piles_total ${d.piles_total} vs listed ${d.piles.length}`
+        );
+
+      const byId = new Map();
+      let lastId = -Infinity;
+      d.piles.forEach((pl, i) => {
+        if (!isInt(pl.id)) out.push(`piles[${i}].id=${pl.id} is not an integer`);
+        if (!(pl.id > lastId)) out.push(`piles is not strictly ascending by id at index ${i}`);
+        lastId = pl.id;
+        byId.set(pl.id, pl);
+        if (!(isInt(pl.size) && pl.size >= 1)) out.push(`piles[${i}].size=${pl.size} is not >= 1`);
+        if (!(isInt(pl.item_count) && pl.item_count >= 0))
+          out.push(`piles[${i}].item_count=${pl.item_count} is negative`);
+        if (!(isInt(pl.occupied_tiles) && pl.occupied_tiles >= 0 && pl.occupied_tiles <= pl.size))
+          out.push(`piles[${i}].occupied_tiles=${pl.occupied_tiles} outside [0, size=${pl.size}]`);
+        if (
+          !Array.isArray(pl.categories) ||
+          pl.categories.some((c) => !KNOWN_CATEGORIES.has(c))
+        )
+          out.push(`piles[${i}].categories has an unknown token: ${JSON.stringify(pl.categories)}`);
+        for (const key of ['give_to', 'take_from']) {
+          const arr = pl[key];
+          if (!Array.isArray(arr)) {
+            out.push(`piles[${i}].${key} is not an array`);
+            continue;
+          }
+          if (arr.length > LINKS_CAP)
+            out.push(`piles[${i}].${key} length ${arr.length} exceeds cap ${LINKS_CAP}`);
+          for (let j = 1; j < arr.length; j++) {
+            if (!(arr[j] > arr[j - 1])) {
+              out.push(`piles[${i}].${key} is not strictly ascending at index ${j}`);
+              break;
+            }
+          }
+        }
+      });
+
+      // give_to/take_from are the same relation read from both ends — when neither side's
+      // link list was truncated, a link on one pile must show up as the reciprocal on the other.
+      for (const pl of d.piles) {
+        if (!pl.give_to_truncated) {
+          for (const g of pl.give_to ?? []) {
+            const other = byId.get(g);
+            if (other && !other.take_from_truncated && !(other.take_from ?? []).includes(pl.id))
+              out.push(`pile ${pl.id} give_to ${g}, but pile ${g} has no reciprocal take_from`);
+          }
+        }
+        if (!pl.take_from_truncated) {
+          for (const t of pl.take_from ?? []) {
+            const other = byId.get(t);
+            if (other && !other.give_to_truncated && !(other.give_to ?? []).includes(pl.id))
+              out.push(`pile ${pl.id} take_from ${t}, but pile ${t} has no reciprocal give_to`);
+          }
+        }
+      }
+
+      const sumBacklog = (d.unstored_backlog ?? []).reduce((a, b) => a + (b.count ?? 0), 0);
+      if (!d.unstored_backlog_truncated && sumBacklog !== d.unstored_backlog_item_count)
+        out.push(
+          `unstored_backlog sums to ${sumBacklog} but unstored_backlog_item_count=${d.unstored_backlog_item_count}`
+        );
+      if (!(isInt(d.dump_flagged_count) && d.dump_flagged_count >= 0))
+        out.push(`dump_flagged_count=${d.dump_flagged_count} is not a non-negative integer`);
+      const r = d.rotting_outside_stockpiles ?? {};
+      if (!(isInt(r.count) && r.count >= 0))
+        out.push(`rotting_outside_stockpiles.count=${r.count} is not a non-negative integer`);
+
+      return out;
+    },
+  },
+  {
+    name: 'petitions_wellformed',
+    tools: ['petitions'],
+    desc: 'location/residency petition rows carry a known status and only the deity/guild_profession field their building kind allows, active rows sort before resolved ones, the 50-row caps and awaiting_decision_count are honored, and alerts are non-empty strings',
+    check(p) {
+      const d = p.petitions;
+      const out = [];
+      const STATUSES = new Set(['outstanding', 'satisfied', 'denied', 'expired']);
+      const CAP = 50;
+
+      if (!Array.isArray(d.location_petitions)) {
+        out.push('location_petitions is not an array');
+      } else {
+        if (d.location_petitions.length > CAP)
+          out.push(`location_petitions length ${d.location_petitions.length} exceeds cap ${CAP}`);
+        if (typeof d.location_petitions_truncated !== 'boolean')
+          out.push(`location_petitions_truncated=${d.location_petitions_truncated} is not a boolean`);
+        let lastRank = 0;
+        d.location_petitions.forEach((row, i) => {
+          const rank = row.status === 'outstanding' || row.awaiting_decision ? 0 : 1;
+          if (rank < lastRank) out.push(`location_petitions[${i}] is active but sorts after a resolved row`);
+          lastRank = rank;
+          if (!isInt(row.agreement_id))
+            out.push(`location_petitions[${i}].agreement_id=${row.agreement_id} is not an integer`);
+          if (!['TEMPLE', 'GUILDHALL'].includes(row.building))
+            out.push(`location_petitions[${i}].building="${row.building}" is not TEMPLE/GUILDHALL`);
+          if (![1, 2].includes(row.tier))
+            out.push(`location_petitions[${i}].tier=${row.tier} is not 1 or 2`);
+          if (!(isInt(row.age_days) && row.age_days >= 0))
+            out.push(`location_petitions[${i}].age_days=${row.age_days} is not a non-negative integer`);
+          if (typeof row.warned_ready !== 'boolean')
+            out.push(`location_petitions[${i}].warned_ready=${row.warned_ready} is not a boolean`);
+          if (typeof row.awaiting_decision !== 'boolean')
+            out.push(`location_petitions[${i}].awaiting_decision=${row.awaiting_decision} is not a boolean`);
+          if (!STATUSES.has(row.status))
+            out.push(`location_petitions[${i}].status="${row.status}" is not a known status`);
+          if (row.building === 'TEMPLE' && 'guild_profession' in row)
+            out.push(`location_petitions[${i}] is TEMPLE but carries guild_profession`);
+          if (row.building === 'GUILDHALL' && 'deity' in row)
+            out.push(`location_petitions[${i}] is GUILDHALL but carries deity`);
+        });
+      }
+
+      if (!Array.isArray(d.residency_petitions)) {
+        out.push('residency_petitions is not an array');
+      } else {
+        if (d.residency_petitions.length > CAP)
+          out.push(`residency_petitions length ${d.residency_petitions.length} exceeds cap ${CAP}`);
+        if (typeof d.residency_petitions_truncated !== 'boolean')
+          out.push(
+            `residency_petitions_truncated=${d.residency_petitions_truncated} is not a boolean`
+          );
+        let lastRank = 0;
+        d.residency_petitions.forEach((row, i) => {
+          const rank = row.status === 'outstanding' || row.awaiting_decision ? 0 : 1;
+          if (rank < lastRank) out.push(`residency_petitions[${i}] is active but sorts after a resolved row`);
+          lastRank = rank;
+          if (!isInt(row.agreement_id))
+            out.push(`residency_petitions[${i}].agreement_id=${row.agreement_id} is not an integer`);
+          if (!['Residency', 'Citizenship'].includes(row.kind))
+            out.push(`residency_petitions[${i}].kind="${row.kind}" is not Residency/Citizenship`);
+          if (!(isInt(row.age_days) && row.age_days >= 0))
+            out.push(`residency_petitions[${i}].age_days=${row.age_days} is not a non-negative integer`);
+          if (row.deadline_days !== null && !(isInt(row.deadline_days) && row.deadline_days >= 0))
+            out.push(
+              `residency_petitions[${i}].deadline_days=${row.deadline_days} is not null or a non-negative integer`
+            );
+          if (typeof row.awaiting_decision !== 'boolean')
+            out.push(`residency_petitions[${i}].awaiting_decision=${row.awaiting_decision} is not a boolean`);
+          if (!STATUSES.has(row.status))
+            out.push(`residency_petitions[${i}].status="${row.status}" is not a known status`);
+        });
+      }
+
+      if (!(isInt(d.awaiting_decision_count) && d.awaiting_decision_count >= 0)) {
+        out.push(`awaiting_decision_count=${d.awaiting_decision_count} is not a non-negative integer`);
+      } else if (Array.isArray(d.location_petitions) && Array.isArray(d.residency_petitions)) {
+        const visible =
+          d.location_petitions.filter((r) => r.awaiting_decision).length +
+          d.residency_petitions.filter((r) => r.awaiting_decision).length;
+        const anyTruncated = d.location_petitions_truncated || d.residency_petitions_truncated;
+        if (!anyTruncated && d.awaiting_decision_count !== visible)
+          out.push(
+            `awaiting_decision_count=${d.awaiting_decision_count} != visible awaiting rows ${visible} (untruncated)`
+          );
+        if (d.awaiting_decision_count < visible)
+          out.push(
+            `awaiting_decision_count=${d.awaiting_decision_count} is less than visible awaiting rows ${visible}`
+          );
+      }
+
+      if (!Array.isArray(d.alerts)) {
+        out.push('alerts is not an array');
+      } else {
+        d.alerts.forEach((s, i) => {
+          if (typeof s !== 'string' || !s.trim())
+            out.push(`alerts[${i}] is not a non-empty string`);
+        });
+      }
+
+      return out;
+    },
+  },
+  {
+    name: 'fluids_wellformed_and_wells_agree_with_rooms',
+    tools: ['fluids', 'rooms_and_zones'],
+    desc: 'aquifer/water/ice layer z-ranges are ordered with non-negative tile counts that sum to their row totals, all five capped lists honor their _total/_truncated pairs, magma_sea (when present) clears its own size floor, and fluids.wells agrees with rooms_and_zones.wells on count/z/source',
+    check(p) {
+      const d = p.fluids;
+      const out = [];
+      // aquifer_layers: z_top >= z_bottom, non-negative tile counts, known classification.
+      (d.aquifer_layers ?? []).forEach((a, i) => {
+        if (!(isInt(a.z_top) && isInt(a.z_bottom) && a.z_top >= a.z_bottom))
+          out.push(`aquifer_layers[${i}] z_top=${a.z_top} < z_bottom=${a.z_bottom}`);
+        if (!(isInt(a.light_tiles) && a.light_tiles >= 0))
+          out.push(`aquifer_layers[${i}].light_tiles=${a.light_tiles} is not a non-negative integer`);
+        if (!(isInt(a.heavy_tiles) && a.heavy_tiles >= 0))
+          out.push(`aquifer_layers[${i}].heavy_tiles=${a.heavy_tiles} is not a non-negative integer`);
+        if (!['light', 'heavy', 'mixed'].includes(a.classification))
+          out.push(`aquifer_layers[${i}].classification="${a.classification}" is not light|heavy|mixed`);
+      });
+      // water_layers: non-negative counts, sub-buckets never exceed the row total, depth 1..7.
+      (d.water_layers ?? []).forEach((w, i) => {
+        if (!(isInt(w.tiles) && w.tiles >= 0))
+          out.push(`water_layers[${i}].tiles=${w.tiles} is not a non-negative integer`);
+        if (w.salt_tiles + w.fresh_tiles !== w.tiles)
+          out.push(`water_layers[${i}] salt_tiles+fresh_tiles != tiles (${w.salt_tiles}+${w.fresh_tiles} != ${w.tiles})`);
+        if (w.stagnant_tiles + w.flowing_tiles !== w.tiles)
+          out.push(`water_layers[${i}] stagnant_tiles+flowing_tiles != tiles (${w.stagnant_tiles}+${w.flowing_tiles} != ${w.tiles})`);
+        if (!inRange(w.max_depth, 1, 7))
+          out.push(`water_layers[${i}].max_depth=${w.max_depth} outside 1..7`);
+      });
+      // ice_layers: the walkable/solid split is exhaustive -- every ice tile is one or
+      // the other (DF's own tiletype_shape walkable flag), so the buckets sum exactly.
+      (d.ice_layers ?? []).forEach((ice, i) => {
+        if (!isInt(ice.z)) out.push(`ice_layers[${i}].z=${ice.z} is not an integer`);
+        if (!(isInt(ice.tiles) && ice.tiles > 0))
+          out.push(`ice_layers[${i}].tiles=${ice.tiles} is not a positive integer`);
+        if (!(isInt(ice.walkable_tiles) && ice.walkable_tiles >= 0))
+          out.push(`ice_layers[${i}].walkable_tiles=${ice.walkable_tiles} is not a non-negative integer`);
+        if (!(isInt(ice.solid_tiles) && ice.solid_tiles >= 0))
+          out.push(`ice_layers[${i}].solid_tiles=${ice.solid_tiles} is not a non-negative integer`);
+        if (ice.walkable_tiles + ice.solid_tiles !== ice.tiles)
+          out.push(`ice_layers[${i}] walkable_tiles+solid_tiles != tiles (${ice.walkable_tiles}+${ice.solid_tiles} != ${ice.tiles})`);
+      });
+      for (let i = 1; i < (d.ice_layers ?? []).length; i++) {
+        if (!(d.ice_layers[i].z < d.ice_layers[i - 1].z))
+          out.push(`ice_layers not strictly z-descending at index ${i}`);
+      }
+      // magma_sea, when present, genuinely clears its own documented 20-tile floor.
+      if (d.magma_sea !== undefined) {
+        if (!(isInt(d.magma_sea.revealed_tile_count) && d.magma_sea.revealed_tile_count >= 20))
+          out.push(`magma_sea.revealed_tile_count=${d.magma_sea.revealed_tile_count} is below the documented 20-tile floor`);
+        if (!isInt(d.magma_sea.top_z)) out.push(`magma_sea.top_z=${d.magma_sea.top_z} is not an integer`);
+      }
+      // Every capped list agrees with its own _total/_truncated pair.
+      for (const [listKey, totalKey, truncKey, cap] of [
+        ['aquifer_layers', 'aquifer_layers_total', 'aquifer_layers_truncated', 50],
+        ['water_layers', 'water_layers_total', 'water_layers_truncated', 200],
+        ['ice_layers', 'ice_layers_total', 'ice_layers_truncated', 200],
+        ['flood_risk_tiles', 'flood_risk_total', 'flood_risk_truncated', 50],
+        ['wells', 'wells_total', 'wells_truncated', 20],
+      ]) {
+        const list = d[listKey];
+        if (!Array.isArray(list)) {
+          out.push(`${listKey} is not an array`);
+          continue;
+        }
+        if (list.length > cap) out.push(`${listKey} length ${list.length} exceeds the cap of ${cap}`);
+        const shouldTrunc = isInt(d[totalKey]) && d[totalKey] > list.length;
+        if (Boolean(d[truncKey]) !== shouldTrunc)
+          out.push(`${truncKey}=${d[truncKey]} disagrees with ${totalKey}=${d[totalKey]} vs listed ${list.length}`);
+        if (!d[truncKey] && isInt(d[totalKey]) && d[totalKey] !== list.length)
+          out.push(`untruncated ${totalKey}=${d[totalKey]} !== listed ${list.length}`);
+      }
+      // wells cross-reference: fluids extends rooms_and_zones' well read with x/y/depth,
+      // so — deliberately mirroring the same scan — they must agree on count, and (when
+      // neither list is truncated) each fluids well's z/source has a matching counterpart.
+      const rz = p.rooms_and_zones;
+      if (isInt(d.wells_total) && isInt(rz.wells_total) && d.wells_total !== rz.wells_total)
+        out.push(`fluids.wells_total=${d.wells_total} != rooms_and_zones.wells_total=${rz.wells_total}`);
+      if (!d.wells_truncated && !rz.wells_truncated && Array.isArray(d.wells) && Array.isArray(rz.wells)) {
+        const rzRemaining = [...rz.wells];
+        for (const w of d.wells) {
+          const idx = rzRemaining.findIndex((r) => r.z === w.z && r.source === w.source);
+          if (idx === -1)
+            out.push(`fluids well at (${w.x},${w.y},${w.z}) source=${w.source} has no matching rooms_and_zones well`);
+          else rzRemaining.splice(idx, 1);
+        }
+      }
+      return out;
+    },
+  },
+  {
+    name: 'hauling_routes_cross_references_resolve',
+    tools: ['hauling_routes'],
+    desc:
+      'route/stop ids are unique, every route-level vehicle_id and every ' +
+      "stop's parked_vehicle_id resolves to a real entry in the top-level " +
+      "vehicles[], and a resolved vehicle's own route_id agrees with the " +
+      'route that claims it',
+    check(p) {
+      const d = p.hauling_routes;
+      const out = [];
+      const vehicleIds = new Set((d.vehicles ?? []).map((v) => v.vehicle_id));
+      const vehicleById = new Map((d.vehicles ?? []).map((v) => [v.vehicle_id, v]));
+      const seenRouteIds = new Set();
+      for (const r of d.routes ?? []) {
+        if (seenRouteIds.has(r.id)) out.push(`duplicate route id ${r.id}`);
+        seenRouteIds.add(r.id);
+
+        const seenStopIds = new Set();
+        for (const s of r.stops ?? []) {
+          if (seenStopIds.has(s.id)) out.push(`route ${r.id}: duplicate stop id ${s.id}`);
+          seenStopIds.add(s.id);
+          if (s.parked_vehicle_id !== undefined && !vehicleIds.has(s.parked_vehicle_id)) {
+            out.push(
+              `route ${r.id} stop ${s.id}: parked_vehicle_id ${s.parked_vehicle_id} not in top-level vehicles[]`
+            );
+          }
+        }
+
+        for (const rv of r.vehicles ?? []) {
+          if (!vehicleIds.has(rv.vehicle_id)) {
+            out.push(`route ${r.id}: vehicle_id ${rv.vehicle_id} not in top-level vehicles[]`);
+            continue;
+          }
+          const v = vehicleById.get(rv.vehicle_id);
+          if (v.route_id !== r.id) {
+            out.push(
+              `route ${r.id} claims vehicle ${rv.vehicle_id}, but that vehicle's route_id is ${v.route_id}`
+            );
+          }
+          if (rv.current_stop_id !== undefined && !seenStopIds.has(rv.current_stop_id)) {
+            out.push(
+              `route ${r.id}: vehicle ${rv.vehicle_id}'s current_stop_id ${rv.current_stop_id} is not one of this route's own stops`
+            );
+          }
+        }
+      }
       return out;
     },
   },

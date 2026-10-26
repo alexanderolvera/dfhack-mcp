@@ -8,10 +8,9 @@ export interface Geo {
 }
 
 export interface Footing {
-  discovered: boolean;
-  symbol?: string;
-  terrain?: string;
-  open_to_sky?: boolean;
+  symbol: string;
+  terrain: string;
+  open_to_sky: boolean;
 }
 
 export interface DefenseThreat {
@@ -86,9 +85,14 @@ export const defensesDef: ToolDef = {
   title: 'Defenses',
   description:
     'Where the threats are versus what you have to fight them with. Returns active ' +
-    'hostiles with map positions and their geometry to the fort core and to the ' +
-    'nearest drawbridge (dist = 8-directional tile count (Chebyshev), dz = ' +
-    'z-levels with + meaning above the threat, dir = compass bearing), plus an ' +
+    'hostiles the fort has DISCOVERED (same fog-of-war gate and same count as ' +
+    "threats()' active_hostiles and military()'s hostiles_on_map — a unit standing " +
+    'on an undiscovered tile is never listed and never leaks its position or ' +
+    'creature token) with map positions and their geometry to the fort core and to ' +
+    'the nearest drawbridge (dist = 8-directional tile count (Chebyshev), dz = ' +
+    'z-levels with + meaning above the threat, dir = compass bearing; the nearest ' +
+    'bridge is chosen on 3D distance, so a bridge many z-levels away never wins on ' +
+    'horizontal proximity alone), plus an ' +
     'inventory of controllable defensive structures (drawbridges with positions, ' +
     'levers, floodgates, hatches, cage traps, locked doors). Terrain-aware: each ' +
     'threat is classified inside/outside the fort\'s walled perimeter — "inside" ' +

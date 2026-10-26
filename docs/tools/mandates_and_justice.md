@@ -27,7 +27,7 @@ None.
 - `guild_demands[]` — `{ noble, item }` (mandate mode Guild).
 - `demands[]` — unmet room demands: `{ noble, position, demand: office|bedroom|dining|tomb, required_value, met: false }`.
 - `demands_truncated` (boolean).
-- `justice` — `{ active, open_cases, pending_punishments, prison_sentences, scheduled_beatings, scheduled_hammerstrikes, restraints_built, restraints_free }`.
+- `justice` — `{ active, open_cases, pending_punishments, prison_sentences, scheduled_beatings, scheduled_hammerstrikes, restraints_built, restraints_free, restraints_unbuilt }`.
 - `alerts[]` — mandate deadlines within 7 days, unmet demand count, prison sentences exceeding free restraints.
 
 ```json
@@ -67,14 +67,16 @@ None.
 - Caps: mandates 50, export bans 50, unmet demands 50 (each with a `*_truncated` flag). Justice is scalar counts only, never an itemized case list, so an old fort's payload stays flat.
 - A room demand is "unmet" on room-TYPE ownership (does the mayor own an office zone?), not on the room-VALUE threshold; `required_value` is emitted as a fact but not compared.
 - `scheduled_hammerstrikes` sums total strikes across punishments, while `prison_sentences` and `scheduled_beatings` count convicts — mixed units by design of the underlying fields.
-- Restraint capacity counts ALL built chains + cages (a chain/cage is "free" when it has no assigned or chained unit), not only justice-designated ones.
+- Restraint capacity counts ALL constructed chains + cages (a chain/cage is "free" when the game reports nothing assigned to it), not only justice-designated ones. A restraint the player has placed but no dwarf has built yet cannot hold a convict, so it is excluded from `restraints_built`/`restraints_free` and counted in `restraints_unbuilt` instead.
 - `open_cases` = crimes discovered but not yet sentenced.
 - `deadline_days` alert threshold: unmet mandate with <= 7 days remaining. Verified on 53.15-r2: mandate_type {0=Export, 1=Make, 2=Guild}.
 
 ## Implementation notes
+Restraint occupancy goes through the building's own `isAssigned()` vmethod rather than reading assignment fields directly, because chains and cages do not share a field name: `building_chainst` exposes `assigned` (a single unit ref) and `chained`, while `building_cagest` exposes `assigned_units`/`assigned_items` (vectors). Reading `.assigned` off a cage is a hard error in DFHack Lua (`Cannot read field building_cagest.assigned: not found`), which took the whole tool down until 1.4.1. `isAssigned()` dispatches per type and was cross-checked live against beds and coffins, where its answer matches `rooms_and_zones`' independently-derived assigned/free split. "Constructed" is `getBuildStage() >= getMaxBuildStage()`, which agrees with `flags.exists` on every building type checked.
+
 Justice data is read from `df.global.world.crimes.all` (open cases) and `df.global.plotinfo.punishments` (convictions awaiting punishment, each entry carrying `prison_counter`/`hammer_strikes`/`beating`). Noble room ownership is read from the noble's `unit.owned_buildings`, keeping only entries whose building type is `Civzone`, then mapping `civzone_type` to office/bedroom/dining/tomb.
 
 `mandates`/`export_bans`/`demands` are capped at 50 even though a fort's noble overhead is normally small — an old or heavily-modded fort can't be trusted to stay small, so the caps (with their `*_truncated` flags) are a payload-size backstop, not an expected ceiling.
 
 ## Related
-[rooms_and_zones](rooms_and_zones.md) · [stocks](stocks.md) · [work_order_create](work_order_create.md) · [citizen](citizen.md) · [unmet_needs](unmet_needs.md) · [nobles_and_administrators](nobles_and_administrators.md)
+[rooms_and_zones](rooms_and_zones.md) · [stocks](stocks.md) · [work_order_create](work_order_create.md) · [citizen](citizen.md) · [unmet_needs](unmet_needs.md) · [nobles_and_administrators](nobles_and_administrators.md) · [petitions](petitions.md) (another `df.global.world.agreements`-adjacent facts tool, covering location/residency/citizenship petitions rather than mandates)

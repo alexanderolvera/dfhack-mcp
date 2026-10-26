@@ -96,6 +96,14 @@ const TOOL_ARGS = {
   // resolveLiveArgs fills a real citizen unit_id + detail name from work_details;
   // the static placeholder keeps T0 well-formed and reaches the no-fort guard.
   assign_work_detail: { unit_id: 0, detail: 'Miners', enabled: true },
+  // civilian_alert dry-run (NO confirm_token -> preview only, never mutates).
+  // resolveLiveArgs fills a real burrow name from burrows(); the static
+  // placeholder keeps T0 well-formed and reaches the no-fort guard.
+  civilian_alert: { burrow: 'placeholder', enabled: true },
+  // pull_lever dry-run (NO confirm_token -> preview only, never mutates).
+  // resolveLiveArgs fills a real lever building id from mechanisms(); the
+  // static placeholder keeps T0 well-formed and reaches the no-fort guard.
+  pull_lever: { lever_id: 0 },
 };
 
 // Tools whose committed golden is captured with NO args even though they carry a
@@ -108,6 +116,19 @@ const GOLDEN_NO_ARG = new Set(['tile_region', 'work_details']);
 // fort. Reachable in every tier, but excluded from T2 goldens (not deterministic
 // against a committed save). game_data/identify fuse world raws — kept in T2.
 const NETWORK_TOOLS = new Set(['wiki_search', 'wiki_lookup']);
+
+// Fields that are a live instantaneous reading, not frozen game state, even
+// against a paused fixture — masked to null before the golden snapshot/compare
+// so T2 doesn't flap on wall-clock timing. See docs/VERIFY.md's Special cases.
+const VOLATILE_FIELDS = { fort_health: ['fps', 'gfps'] };
+
+function maskVolatile(name, data) {
+  const fields = VOLATILE_FIELDS[name];
+  if (!fields || !data || typeof data !== 'object') return data;
+  const masked = { ...data };
+  for (const f of fields) if (f in masked) masked[f] = null;
+  return masked;
+}
 
 // Tools reached in every tier but NOT captured as T2 goldens. The actuators
 // return a fresh random confirm_token in their dry-run preview (non-deterministic);
@@ -124,6 +145,8 @@ const NO_GOLDEN = new Set([
   'work_order_cancel',
   'work_order_list',
   'assign_work_detail',
+  'civilian_alert',
+  'pull_lever',
 ]);
 
 // --- helpers ----------------------------------------------------------------
@@ -263,6 +286,17 @@ async function resolveLiveArgs(client) {
     const target = details.find((d) => !(d.members ?? []).includes(uid));
     if (target) TOOL_ARGS.assign_work_detail = { unit_id: uid, detail: target.name, enabled: true };
   }
+  // civilian_alert(burrow_id) <- burrows()'s first burrow, so the DRY-RUN previews a
+  // real toggle (still never applied — no confirm_token). Resolved by id, not name:
+  // an unnamed burrow has name === '', which fails the actuator's min-length schema.
+  const br = await callJson(client, 'burrows');
+  const firstBurrowId = br.data?.burrows?.[0]?.id;
+  if (firstBurrowId != null) TOOL_ARGS.civilian_alert = { burrow_id: firstBurrowId, enabled: true };
+  // pull_lever(lever_id) <- mechanisms()'s first lever, so the DRY-RUN previews a
+  // real lever (still never applied — no confirm_token).
+  const mech = await callJson(client, 'mechanisms');
+  const firstLever = mech.data?.levers?.[0]?.building_id;
+  if (firstLever != null) TOOL_ARGS.pull_lever = { lever_id: firstLever };
 }
 
 async function tier1(client) {
@@ -347,7 +381,7 @@ async function tier2(client) {
       console.log(`  ○ ${name}: not goldened (covered by invariant + reachability)`);
       continue;
     }
-    const snapshot = JSON.stringify(canonicalize(data), null, 2) + '\n';
+    const snapshot = JSON.stringify(canonicalize(maskVolatile(name, data)), null, 2) + '\n';
     const file = join(GOLDEN_DIR, `${name}.json`);
     if (update || !existsSync(file)) {
       writeFileSync(file, snapshot);

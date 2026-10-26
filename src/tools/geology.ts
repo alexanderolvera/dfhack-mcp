@@ -31,7 +31,7 @@ export interface SurfaceWater {
 }
 
 export interface Geology {
-  surface_z: number;
+  surface_z_max: number;
   layers: GeoLayer[];
   aquifer: Aquifer;
   caverns_discovered: Cavern[];
@@ -61,7 +61,10 @@ export const geologyDef: ToolDef = {
   title: 'Geology',
   description:
     'A one-call geological survey of the embark, REVEALED-INFO ONLY by default. ' +
-    'Returns the surface z-level; the layer stack the fort has exposed (each band ' +
+    'Returns surface_z_max — the highest open-to-sky ground z-level found ANYWHERE ' +
+    "on the embark (NOT map_overview()'s surface_z_at_core, which is the surface " +
+    'directly above the fort centre only; on a sloped map the two legitimately ' +
+    'differ by many z-levels); the layer stack the fort has exposed (each band ' +
     'z_top..z_bottom with a kind — soil/sedimentary/metamorphic/igneous — and the ' +
     'in-game material names, e.g. "limestone", that game_data/wiki_lookup resolve); ' +
     'the aquifer (presence, light vs. heavy type, and z-range, enough to fuse with ' +

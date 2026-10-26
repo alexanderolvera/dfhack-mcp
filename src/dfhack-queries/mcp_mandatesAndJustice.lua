@@ -1,5 +1,5 @@
 local json = require('json')
-local function emit(t) print(json.encode(t)) end
+local emit = reqscript('mcp_jsonOut').emit
 
 if df.global.gamemode ~= df.game_mode.DWARF then
   emit({ error = 'no fort loaded' })
@@ -199,18 +199,24 @@ for _, p in ipairs(punishments) do
 end
 
 local bo = df.global.world.buildings.other
-local function restraint_free(r)
-  if r.assigned ~= nil or r.chained ~= nil then return false end
-  return true
+local function is_constructed(b)
+  local ok, done = pcall(function() return b:getBuildStage() >= b:getMaxBuildStage() end)
+  return not ok or done
 end
-local restraints_built, restraints_free = 0, 0
-for _, r in ipairs(bo.CHAIN or {}) do
-  restraints_built = restraints_built + 1
-  if restraint_free(r) then restraints_free = restraints_free + 1 end
+local function is_assigned(b)
+  local ok, assigned = pcall(function() return b:isAssigned() end)
+  return not ok or assigned
 end
-for _, r in ipairs(bo.CAGE or {}) do
-  restraints_built = restraints_built + 1
-  if restraint_free(r) then restraints_free = restraints_free + 1 end
+local restraints_built, restraints_free, restraints_unbuilt = 0, 0, 0
+for _, vec in ipairs({ bo.CHAIN or {}, bo.CAGE or {} }) do
+  for _, r in ipairs(vec) do
+    if is_constructed(r) then
+      restraints_built = restraints_built + 1
+      if not is_assigned(r) then restraints_free = restraints_free + 1 end
+    else
+      restraints_unbuilt = restraints_unbuilt + 1
+    end
+  end
 end
 
 local justice = {
@@ -222,6 +228,7 @@ local justice = {
   scheduled_hammerstrikes = scheduled_hammerstrikes,
   restraints_built = restraints_built,
   restraints_free = restraints_free,
+  restraints_unbuilt = restraints_unbuilt,
 }
 
 local alerts = {}

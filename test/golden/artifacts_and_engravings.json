@@ -1,27 +1,7 @@
 {
-  "artifact_count": 6,
+  "artifact_count": 5,
+  "artifact_count_world": 6,
   "artifacts": [
-    {
-      "decorations": [],
-      "id": 0,
-      "inscription": "I am Pamnot Kamcabekor, Pamnot Dreamedtwilight, once of the Underworld.  By Thocit, I bind myself to this place.",
-      "item_label": "microcline slab",
-      "item_type": "SLAB",
-      "maker": {
-        "histfig_id": 53,
-        "name": "Kun the Hood of Spiders"
-      },
-      "material": {
-        "name": "microcline",
-        "token": "INORGANIC:MICROCLINE"
-      },
-      "name": {
-        "dwarven": "Uxendof",
-        "english": "Searchdents"
-      },
-      "quality": "Masterful",
-      "value": 500
-    },
     {
       "decorations": [
         {
@@ -118,7 +98,7 @@
         "token": "CREATURE:MULE:LEATHER"
       },
       "name": {
-        "dwarven": "Al�th M�thkat",
+        "dwarven": "Alåth Mûthkat",
         "english": "The Bolt of Mansions"
       },
       "quality": "Masterful",
@@ -164,7 +144,7 @@
         "token": "PLANT:CHERRY:WOOD"
       },
       "name": {
-        "dwarven": "Z�leramas",
+        "dwarven": "Zèleramas",
         "english": "Primedepth"
       },
       "quality": "Masterful",
@@ -202,7 +182,7 @@
       "item_type": "BOX",
       "maker": {
         "histfig_id": 230,
-        "name": "Al�th Booktrades",
+        "name": "Alåth Booktrades",
         "unit_id": 357
       },
       "material": {
@@ -307,6 +287,7 @@
   },
   "cursor": 0,
   "engravings": {
+    "art_images_loaded": false,
     "by_subject": [
       {
         "count": 13,
@@ -565,7 +546,7 @@
       {
         "count": 64,
         "histfig_id": 172,
-        "name": "At�r Coalgulfs",
+        "name": "Atír Coalgulfs",
         "unit_id": 112
       },
       {
@@ -577,5 +558,6 @@
     ],
     "total_present": 119
   },
-  "returned": 6
+  "returned": 5,
+  "scope": "site"
 }

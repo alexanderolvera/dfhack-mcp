@@ -1,0 +1,49 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.alexanderolvera/dfhack-mcp",
+  "title": "Dwarf Fortress (DFHack)",
+  "description": "MCP server exposing a live Dwarf Fortress fort to an AI agent as curated, semantic tools",
+  "version": "1.4.1",
+  "repository": {
+    "url": "https://github.com/alexanderolvera/dfhack-mcp",
+    "source": "github"
+  },
+  "websiteUrl": "https://github.com/alexanderolvera/dfhack-mcp#readme",
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "dfhack-mcp",
+      "version": "1.4.1",
+      "runtimeHint": "npx",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "DFHACK_HOST",
+          "description": "Host running DFHack's remote RPC server. Defaults to 127.0.0.1.",
+          "format": "string",
+          "isRequired": false,
+          "isSecret": false,
+          "default": "127.0.0.1"
+        },
+        {
+          "name": "DFHACK_PORT",
+          "description": "Port for DFHack's remote RPC server. Defaults to 5000.",
+          "format": "number",
+          "isRequired": false,
+          "isSecret": false,
+          "default": "5000"
+        },
+        {
+          "name": "DFHACK_MCP_ACTUATORS",
+          "description": "Set to any value to expose the write tools. Unset, the server is read-only.",
+          "format": "string",
+          "isRequired": false,
+          "isSecret": false
+        }
+      ]
+    }
+  ]
+}

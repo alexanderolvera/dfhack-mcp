@@ -30,7 +30,7 @@ export interface StairColumn {
 export interface MapOverview {
   extents: MapExtents;
   fort_core: FortCore | null;
-  surface_z: number | null;
+  surface_z_at_core: number | null;
   activity: MapActivity;
   stair_columns: StairColumn[];
   stair_columns_total: number;
@@ -46,7 +46,7 @@ export async function mapOverview(): Promise<MapOverview | { error: string }> {
       if (!Array.isArray(data.activity[k])) data.activity[k] = [];
     }
   }
-  if (data.surface_z === undefined) data.surface_z = null;
+  if (data.surface_z_at_core === undefined) data.surface_z_at_core = null;
   if (data.fort_core === undefined) data.fort_core = null;
   return data;
 }
@@ -57,9 +57,12 @@ export const mapOverviewDef: ToolDef = {
   description:
     'Cheap spatial orientation to run BEFORE any per-tile terrain read: map ' +
     'extents (x/y/z tile counts), the fort-core coordinate (the same 3D citizen ' +
-    'centroid defenses() reports), the surface z-level directly above the fort ' +
-    'center (highest open-to-sky ground tile there, or null if the core is not ' +
-    'under open sky), the z-levels that carry player activity (construction and ' +
+    'centroid defenses() reports), surface_z_at_core — the surface z-level ' +
+    'directly above the fort center, i.e. the highest open-to-sky ground tile in ' +
+    "THAT ONE COLUMN, or null if the core is not under open sky (this is NOT " +
+    "geology()'s surface_z_max, which is the highest open-to-sky ground tile " +
+    'anywhere on the embark; on a sloped map the two legitimately differ by many ' +
+    'z-levels, so pick the one you mean) — the z-levels that carry player activity (construction and ' +
     'pending digging, listed separately and as a union), and stairways collapsed ' +
     'to traversable single-column vertical runs (x, y, z_top, z_bottom); a run ' +
     'only spans levels that actually connect by DF stair rules, so a helical ' +
