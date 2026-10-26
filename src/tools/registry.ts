@@ -19,8 +19,8 @@ import { identifyDef } from './identify/index.ts';
 import { injuriesAndHealthDef } from './injuriesAndHealth.ts';
 import { jobsAndLaborDef } from './jobsAndLabor.ts';
 import { livestockAndPasturesDef } from './livestockAndPastures.ts';
-import { mapOverviewDef } from './mapOverview.ts';
 import { mandatesAndJusticeDef } from './mandatesAndJustice.ts';
+import { mapOverviewDef } from './mapOverview.ts';
 import { mechanismsDef, pullLeverDef } from './mechanisms.ts';
 import { militaryDef } from './military.ts';
 import { moodsDef } from './moods.ts';
@@ -64,8 +64,8 @@ export const ALL_TOOLS: ToolDef[] = [
   injuriesAndHealthDef,
   jobsAndLaborDef,
   livestockAndPasturesDef,
-  mapOverviewDef,
   mandatesAndJusticeDef,
+  mapOverviewDef,
   mechanismsDef,
   militaryDef,
   moodsDef,

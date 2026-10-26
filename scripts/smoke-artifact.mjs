@@ -4,6 +4,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
@@ -20,6 +21,9 @@ try {
   writeFileSync(join(room, 'package.json'), JSON.stringify({ name: 'smoke', private: true }));
   run(`npm install "${tgz}"`, room);
   const bin = join(room, 'node_modules', 'dfhack-mcp', 'dist', 'index.js');
+  const { SURFACE_ACTUATORS_ON } = await import(
+    pathToFileURL(join(room, 'node_modules', 'dfhack-mcp', 'dist', 'surface.js')).href
+  );
 
   const childEnv = { ...process.env, DFHACK_MCP_ACTUATORS: '1' };
   delete childEnv.DFHACK_MCP_DEV;
@@ -47,7 +51,8 @@ try {
   const problems = [];
   if (handshakeVersion !== version)
     problems.push(`handshake version ${handshakeVersion} != package ${version}`);
-  if (tools.length !== 45) problems.push(`expected 45 tools (actuators on), got ${tools.length}`);
+  if (tools.length !== SURFACE_ACTUATORS_ON)
+    problems.push(`expected ${SURFACE_ACTUATORS_ON} tools (actuators on), got ${tools.length}`);
   if (missing.length) problems.push(`missing tools: ${missing.join(', ')}`);
 
   if (problems.length) {
