@@ -1,5 +1,5 @@
 import { cleanHtml } from './clean.ts';
-import pkg from '../../package.json';
+import pkg from '../../package.json' with { type: 'json' };
 
 const API = 'https://dwarffortresswiki.org/api.php';
 const USER_AGENT = `${pkg.name}/${pkg.version} (personal DF co-pilot)`;
