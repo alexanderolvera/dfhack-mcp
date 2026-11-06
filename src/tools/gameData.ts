@@ -223,8 +223,10 @@ export const gameDataDef: ToolDef = {
     '"INORGANIC:IRON", "MAKE_SOAP_FROM_TALLOW"), a name (case-insensitive ' +
     'substring, e.g. "flame phantom", "plump helmet"), or — for creature — a ' +
     'live unit_id (all digits). A single strong hit returns a full dossier for ' +
-    'that kind; several return a disambiguation list; none returns ' +
-    '{"match_count":0,"matches":[]}. Returns {"error":"no game loaded"} if no ' +
+    'that kind; several return a disambiguation list (at most 8 stubs, exact ' +
+    'matches first; match_count is the full total and truncated flags the cap); ' +
+    'none returns {"query":...,"match_count":0,"matches":[]}. Returns ' +
+    '{"error":"no game loaded"} if no ' +
     'game is active.',
   shape: {
     query: z
