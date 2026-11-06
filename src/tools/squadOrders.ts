@@ -64,18 +64,18 @@ export const squadOrdersDef = defineActuator<SquadOrdersArgs>({
     "current_orders rather than lingering. Verify with military().",
   tokenPrefix: 'so',
   shape: {
-    squad_id: z.number().int().describe('squad id from military().squads[].squad_id'),
+    squad_id: z.coerce.number().int().describe('squad id from military().squads[].squad_id'),
     order: z
       .enum(['move', 'kill', 'cancel'])
       .describe(
         'move = go to x,y,z and hold; kill = attack the named target_unit_ids; ' +
           'cancel = clear this squad\'s orders and release it'
       ),
-    x: z.number().int().optional().describe('move target x (required for order="move")'),
-    y: z.number().int().optional().describe('move target y (required for order="move")'),
-    z: z.number().int().optional().describe('move target z-level (required for order="move")'),
+    x: z.coerce.number().int().optional().describe('move target x (required for order="move")'),
+    y: z.coerce.number().int().optional().describe('move target y (required for order="move")'),
+    z: z.coerce.number().int().optional().describe('move target z-level (required for order="move")'),
     target_unit_ids: z
-      .array(z.number().int())
+      .array(z.coerce.number().int())
       .max(32)
       .optional()
       .describe(

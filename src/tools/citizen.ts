@@ -110,8 +110,8 @@ function coerceList(root: Record<string, unknown>, path: string): void {
   if (obj && key in obj && !Array.isArray(obj[key])) obj[key] = [];
 }
 
-export async function citizen(unitId: string): Promise<Citizen | { error: string }> {
-  const data = await runJsonScript<Citizen>('citizen', [unitId], []);
+export async function citizen(unitId: number): Promise<Citizen | { error: string }> {
+  const data = await runJsonScript<Citizen>('citizen', [String(unitId)], []);
   if ('error' in data) return data;
   const root = data as unknown as Record<string, unknown>;
   for (const p of LIST_PATHS) coerceList(root, p);
@@ -138,10 +138,11 @@ export const citizenDef: ToolDef = {
     'only — it senses, it does not advise. Returns {"error":...} for a missing ' +
     'unit_id or {"error":"no fort loaded"} if no fort is active.',
   shape: {
-    unit_id: z
-      .string()
-      .regex(/^\d+$/)
-      .describe('A live unit_id (all digits), e.g. from a find_unit match'),
+    unit_id: z.coerce
+      .number()
+      .int()
+      .nonnegative()
+      .describe('A live unit_id, e.g. from a find_unit match'),
   },
   run: ({ unit_id }) => citizen(unit_id),
 };

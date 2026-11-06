@@ -22,9 +22,9 @@ Exactly one of `csv` or `blueprint_path` must be supplied; both, or neither, is 
 | csv | string | One of | — | A complete quickfort blueprint CSV whose FIRST non-blank line is the #dig or #zone modeline (e.g. `#dig\nd,d\nd,d`); the top-left data cell maps to the anchor. |
 | blueprint_path | string | One of | — | An on-disk blueprint from `blueprint_library().entries[].path` (e.g. `library/dreamfort.csv`), applied instead of an inline CSV. |
 | blueprint_label | string | No | first blueprint in the file | Which section of that file to apply — `blueprint_library().entries[].label` (e.g. `/dig_all`, `surface1`, or `sheet/label` for an `.xlsx`). |
-| anchor_x | number (int) | Yes | — | World x the blueprint starts at. |
-| anchor_y | number (int) | Yes | — | World y the blueprint starts at. |
-| anchor_z | number (int) | Yes | — | World z-level the blueprint starts at. |
+| anchor_x | integer (coerced) | Yes | — | World x the blueprint starts at. |
+| anchor_y | integer (coerced) | Yes | — | World y the blueprint starts at. |
+| anchor_z | integer (coerced) | Yes | — | World z-level the blueprint starts at. |
 | mode | string | Yes | — | Blueprint mode — only "dig" and "zone" are supported in v1 (build/place are rejected with no token). Must match the blueprint's own modeline. |
 | confirm_token | string | No | — | Omit to DRY-RUN; pass the returned token to APPLY. |
 

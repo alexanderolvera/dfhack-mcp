@@ -17,9 +17,9 @@ Reads DF's rolling, front-pruned report window and returns it as id-addressable 
 ## Parameters
 | Name | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
-| since | number (int) | No | — | Cursor: return only events with id greater than this (from a prior `cursor`). |
+| since | integer (coerced) | No | — | Cursor: return only events with id greater than this (from a prior `cursor`). |
 | categories | array of category enums (or comma-joined string) | No | all | Subset to return: death, birth, marriage, battle, siege, mood, artifact, migrants, diplomacy, cave-in, megabeast, other. |
-| limit | number (int) | No | 50 | Max events to return (capped at 200); newest are kept. |
+| limit | integer (coerced) | No | 50 | Max events to return (capped at 200); newest are kept. |
 
 ## Returns
 Top-level fields:

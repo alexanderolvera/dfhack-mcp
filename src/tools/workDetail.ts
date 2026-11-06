@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { runJsonScript } from '../query.ts';
-import { defineActuator, type PlanResult, type ApplyResult } from '../actuator.ts';
+import { defineActuator, isQueryError, type PlanResult, type ApplyResult } from '../actuator.ts';
 import type { ToolDef } from '../register.ts';
 
 export interface DetailFacts {
@@ -70,6 +70,24 @@ interface AssignArgs {
   confirm_token?: string;
 }
 
+function normalizeMapField(obj: unknown, key: string): void {
+  if (obj && typeof obj === 'object' && Array.isArray((obj as Record<string, unknown>)[key])) {
+    (obj as Record<string, unknown>)[key] = {};
+  }
+}
+
+/**
+ * Restores the object shape of the labor maps in an assign_work_detail apply payload,
+ * which Lua emits as `[]` when the detail enables zero labors.
+ * @param r The apply payload from mcp_workDetail.lua.
+ * @returns The same payload, with `undo.prior_labors` and `readback.unit_labors_now` as objects.
+ */
+export function normalizeAssignApply(r: ApplyResult): ApplyResult {
+  normalizeMapField(r.undo, 'prior_labors');
+  normalizeMapField(r.readback, 'unit_labors_now');
+  return r;
+}
+
 function assignArgv(kind: 'plan_assign' | 'apply_assign', a: AssignArgs): string[] {
   return [kind, s(a.unit_id), s(a.detail), a.enabled ? 'true' : 'false'];
 }
@@ -92,7 +110,7 @@ export const assignWorkDetailDef = defineActuator<AssignArgs>({
     'call with enabled inverted. Verify with work_details.',
   tokenPrefix: 'wd',
   shape: {
-    unit_id: z.number().int().describe('id of the fort citizen (from find_unit / work_details)'),
+    unit_id: z.coerce.number().int().describe('id of the fort citizen (from find_unit / work_details)'),
     detail: z.string().min(1).describe('exact work detail name (from work_details), e.g. "Miners"'),
     enabled: z.boolean().describe('true = add the unit to the detail, false = remove it'),
   },
@@ -102,6 +120,6 @@ export const assignWorkDetailDef = defineActuator<AssignArgs>({
   },
   apply: async (a): Promise<ApplyResult | { error: string }> => {
     const r = await runJsonScript<ApplyResult>('workDetail', assignArgv('apply_assign', a));
-    return r as ApplyResult | { error: string };
+    return isQueryError(r) ? r : normalizeAssignApply(r);
   },
 });
