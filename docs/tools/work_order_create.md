@@ -12,7 +12,7 @@ tags: [dfhack-mcp/tool]
 > Queue a new manager (work) order.
 
 ## Purpose
-Creates a manager order in `df.global.world.manager_orders` — the same structure the in-game manager screen reads, so the order appears in-game immediately. EXECUTE-NEVER-DECIDE: the caller specifies every field (job type, count, frequency, optional output material and/or item type); the tool queues exactly that, with no strategy in defaults. Follows the shared §A0 two-call actuator protocol: a call WITHOUT `confirm_token` is a dry-run returning a preview and a single-use token; a second call WITH the token applies.
+Creates a manager order in `df.global.world.manager_orders` — the same structure the in-game manager screen reads, so the order appears in-game immediately. EXECUTE-NEVER-DECIDE: the caller specifies every field (job type, count, frequency, optional output material and/or item type, optional conditions); the tool queues exactly that, with no strategy in defaults. Follows the shared §A0 two-call actuator protocol: a call WITHOUT `confirm_token` is a dry-run returning a preview and a single-use token; a second call WITH the token applies.
 
 ## Parameters
 | Name | Type | Required | Default | Description |
@@ -22,11 +22,13 @@ Creates a manager order in `df.global.world.manager_orders` — the same structu
 | `frequency` | enum `OneTime\|Daily\|Monthly\|Seasonally\|Yearly` | no | `OneTime` | repeat frequency |
 | `material` | string | no | unconstrained | material token, e.g. "INORGANIC:IRON" |
 | `item_type` | string | no | unconstrained | `df.item_type` name to constrain the output item |
-| `conditions` | array | no | — | advanced prerequisite conditions — REJECTED in v1 (use material/item_type) |
+| `item_conditions` | array | no | none | stock-threshold triggers; the order activates only when every one holds. Same shape [work_order_list](work_order_list.md) reports, minus its list-only keys: `{condition, value, item_type?, item_subtype?, material?, flags?, reaction_class?, reaction_product?, bearing?, tool?, min_dimension?, reaction?, contains?}` |
+| `order_conditions` | array | no | none | `{order_id, condition: "Activated"\|"Completed"}`: wait on another existing order |
+| `conditions` | array | no | — | replaced by `item_conditions` / `order_conditions`; a non-empty array is blocked |
 | `confirm_token` | string | no | — | omit to DRY-RUN; pass the returned token to APPLY |
 
 ## Returns
-**Dry-run** (no `confirm_token`): `{mode: "preview", applied: false, preview, confirm_token}` where `preview` carries `{job_type, amount, frequency, material, item_type, would_duplicate, duplicate_of, manager_present}` — `would_duplicate: true` when an active order with the identical output spec already exists (its id in `duplicate_of`). Invalid input (unknown job_type/material/item_type/frequency, non-positive amount, any conditions) returns `blocked: [...]` instead and mints no token.
+**Dry-run** (no `confirm_token`): `{mode: "preview", applied: false, preview, confirm_token}` where `preview` carries `{job_type, amount, frequency, material, item_type, item_conditions, order_conditions, would_duplicate, duplicate_of, manager_present}` (the condition keys only when given) — `would_duplicate: true` when an active order with the identical output spec already exists (its id in `duplicate_of`). Invalid input returns `blocked: [...]` instead and mints no token: an unknown job_type/material/item_type/frequency, a non-positive amount, a non-empty legacy `conditions`, or any condition that doesn't resolve. Condition reasons are prefixed with their position, e.g. `item_conditions[1]: unknown flag nope` or `order_conditions[0]: no manager order with id 999`. A condition with an unknown key is rejected by the input schema before it reaches the game.
 
 **Apply** (valid `confirm_token`): `{mode: "apply", applied: true, changes, undo, readback}`:
 
@@ -46,7 +48,8 @@ Creates a manager order in `df.global.world.manager_orders` — the same structu
   },
   "readback": {
     "id": 227, "job_type": "ConstructBed", "amount_total": 5, "amount_left": 5,
-    "frequency": "OneTime", "conditions": 0, "active": false, "validated": false
+    "frequency": "OneTime", "conditions": 0, "item_conditions": [], "order_conditions": [],
+    "active": false, "validated": false
   }
 }
 ```
@@ -56,12 +59,16 @@ Creates a manager order in `df.global.world.manager_orders` — the same structu
 - Gated: registered only when the `DFHACK_MCP_ACTUATORS` env var is set; absent from the default read-only surface.
 - Confirm tokens are single-use and void if the operation's own targets change between preview and apply (the signature covers the output identity, amount, frequency, and whether a duplicate exists) or if the apply args differ from the previewed args.
 - `would_duplicate` is a fact, not a block — an identical order can still be applied.
-- Orders are created unbound (`workshop_id: -1`, `max_workshops: 0`); v1 rejects prerequisite `conditions` outright.
+- Orders are created unbound (`workshop_id: -1`, `max_workshops: 0`).
+- `would_duplicate` compares the output spec only (job type, item type/subtype, material), not conditions.
+- `flags4`, `flags5` and `dye_color` can't be set. They have no documented meaning, and DFHack's own `orders import` doesn't set them either.
+- The token's signature doesn't cover the orders an `order_conditions` entry names. If one is cancelled between preview and apply, the apply re-resolves it and returns `blocked`.
 - A missing manager noble doesn't block creation, but the order won't be validated/processed until one is assigned (`manager_present` is surfaced in the preview).
 - Returns `{"error":"no fort loaded"}` if no fort is active.
 - See [work_order_list](work_order_list.md)'s Implementation notes for the confirmed `manager_orders` field paths and a live-verified create/cancel id example.
 
 ## Implementation notes
+- Conditions are built the way DFHack's `orders import` (`plugins/orders.cpp`, 53.15-r2) builds them: `df.manager_order_condition_item:new()` / `df.manager_order_condition_order:new()`, setting only the fields the caller gave and leaving every other field at the struct's constructed default, then `insert('#', …)` into the order's `item_conditions` / `order_conditions`. Flag names resolve against `df.job_item_flags1/2/3` in that order; a reaction resolves by code in `world.raws.reactions.reactions` and `contains` reagent codes by index within it; `bearing` resolves via `dfhack.matinfo.find('INORGANIC:<id>')`. The field mapping is in [work_order_list](work_order_list.md)'s Implementation notes.
 - Both `work_order_create` and `work_order_cancel` are thin TS actuators: `plan()`/`apply()` just forward to `mcp_workOrder.lua`'s subcommands; the shared dry-run/confirm/apply/undo protocol lives in `src/actuator.ts` (`defineActuator`). Version-fragile DF struct access stays in the Lua query, not the TS wrapper.
 
 ## Related
