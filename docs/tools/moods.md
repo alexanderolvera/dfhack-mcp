@@ -38,7 +38,7 @@ None.
 }
 ```
 
-(The golden fixture has no active mood — `{"active":[]}` is the common case. A populated row looks like: `{ "unit_id": 123, "name": "Urist ...", "mood": "fey", "skill": "Bone Carving", "workshop": null, "workshop_status": "unclaimed", "mood_timeout": 49000, "demands": [{ "material": "bone", "needed": 1, "gathered": 0, "have": 0 }], "demands_truncated": false }`.)
+(The golden fixture has no active mood — the empty payload above is the common case. A populated row looks like: `{ "unit_id": 123, "name": "Urist ...", "mood": "fey", "skill": "Bone Carving", "workshop": null, "workshop_status": "unclaimed", "mood_timeout": 49000, "demands": [{ "material": "bone", "needed": 1, "gathered": 0, "have": 0 }], "demands_truncated": false }`.)
 
 ## Caveats & limits
 - Returns `{"error":"no fort loaded"}` when no fort is active.

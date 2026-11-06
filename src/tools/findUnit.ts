@@ -36,7 +36,9 @@ export const findUnitDef: ToolDef = {
     'unconscious). Useful for questions like "how is the chief medical dwarf" ' +
     'or "find Urist". Each match carries a unit_id — pass it to citizen() for a ' +
     'deep dossier (personality, the walkable social graph, worship, skills, ' +
-    'preferences, recent thoughts). Returns {"error":"no fort loaded"} if no ' +
+    'preferences, recent thoughts). Lists at most 8 matches; match_count is ' +
+    'always the full total and truncated flags when capped, so narrow the ' +
+    'query to see the rest. Returns {"error":"no fort loaded"} if no ' +
     'fort is active.',
   shape: { query: z.string().min(1).describe('Name fragment or profession to search for') },
   run: ({ query }) => findUnit(query),
