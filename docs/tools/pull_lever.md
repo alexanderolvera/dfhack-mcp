@@ -17,7 +17,7 @@ Execute-never-decide: the caller names the lever; the tool queues exactly one pu
 ## Parameters
 | Name | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
-| lever_id | number (int) | Yes | — | Building id of the lever (from `mechanisms()`). |
+| lever_id | integer (coerced) | Yes | — | Building id of the lever (from `mechanisms()`). |
 | urgent | boolean | No | `true` | Sets the job's do-now priority, jumping the work queue. `false` queues it normally. |
 | confirm_token | string | No | — | Omit to DRY-RUN (returns a preview + single-use token); pass the token to APPLY. |
 

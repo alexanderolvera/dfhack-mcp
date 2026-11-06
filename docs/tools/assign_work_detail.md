@@ -17,7 +17,7 @@ Toggles one citizen's membership in one work detail. Execute-never-decide: the c
 ## Parameters
 | Name | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
-| unit_id | number (int) | Yes | — | Id of the fort citizen (from find_unit / work_details). |
+| unit_id | integer (coerced) | Yes | — | Id of the fort citizen (from find_unit / work_details). |
 | detail | string | Yes | — | Exact work detail name (from work_details), e.g. "Miners". |
 | enabled | boolean | Yes | — | true = add the unit to the detail, false = remove it. |
 | confirm_token | string | No | — | Omit to DRY-RUN (returns a preview + single-use token); pass the token to APPLY. |
@@ -34,6 +34,7 @@ Two-call protocol (shared actuator envelope from `src/actuator.ts`):
 - `resulting_details` — every detail the unit would belong to AFTER the change (capped at 50, `resulting_details_truncated` when over)
 
 **Apply** (valid token): `{ mode: "apply", applied: true, changes, undo, readback }` — changes made, the reversal handle, and a post-apply readback from the work_details sensor. A noop apply short-circuits as `{ mode: "apply", applied: false, noop: true, preview }`.
+- `undo.prior_labors` and `readback.unit_labors_now` are maps of labor token → bool covering the detail's enabled labors. Both are always JSON objects — `{}` when the detail enables zero labors, never `[]`.
 
 No golden fixture exists for this tool (actuators are not golden-tested).
 
@@ -48,6 +49,8 @@ No golden fixture exists for this tool (actuators are not golden-tested).
 
 ## Implementation notes
 - The TS actuator is thin: `plan()`/`apply()` just forward to `mcp_workDetail.lua`'s `plan_assign`/`apply_assign` subcommands; the shared dry-run/confirm/apply/undo protocol lives in `src/actuator.ts` (`defineActuator`). Version-fragile DF struct access stays in the Lua query, not the TS wrapper.
+- The Lua builds `prior_labors` and `unit_labors_now` as `labors[name] = value` inside a loop over the detail's enabled labors, so a zero-labor detail leaves them as an empty Lua table, which DFHack's `json.encode` cannot tell apart from an empty array. The TS wrapper (`normalizeAssignApply`) turns an array in either field back into `{}` — the same guard `artifacts_and_engravings` applies to its `quality` map.
+- `unit_id` is `z.coerce.number().int()`, so the integer `unit_id` from `find_unit`/`citizen` and its string form are both accepted; the value reaches the Lua as a string argv and is `tonumber`ed there.
 
 ## Related
 - [work_details](work_details.md) — the read-only listing and the readback sensor for this actuator.
