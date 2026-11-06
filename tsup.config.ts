@@ -2,7 +2,7 @@ import { defineConfig } from 'tsup';
 import { cp } from 'node:fs/promises';
 
 export default defineConfig({
-  entry: ['src/index.ts'],
+  entry: ['src/index.ts', 'src/surface.ts'],
   outDir: 'dist',
   format: ['esm'],
   target: 'node20',

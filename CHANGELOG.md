@@ -35,8 +35,10 @@ backwards-compatible fixes only.
 
 ### Fixed
 
-- The published bundle's smoke check expected a tool count two tools out of
-  date, so it would have failed on any artifact built from this release.
+- The registry is alphabetical again (`mandates_and_justice` sorts before
+  `map_overview`), and a unit test now fails if that order drifts.
+- The release smoke check derives its expected tool count from `ALL_TOOLS`
+  instead of pinning a literal, so adding a tool no longer breaks it.
 
 ## [1.4.1] - 2026-07-26
 
