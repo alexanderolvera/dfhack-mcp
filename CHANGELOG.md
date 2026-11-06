@@ -10,7 +10,7 @@ backwards-compatible fixes only.
 
 ## [Unreleased]
 
-## [1.5.0] - 2026-08-09
+## [1.5.0] - 2026-11-05
 
 ### Added
 
@@ -39,6 +39,8 @@ backwards-compatible fixes only.
   `map_overview`), and a unit test now fails if that order drifts.
 - The release smoke check derives its expected tool count from `ALL_TOOLS`
   instead of pinning a literal, so adding a tool no longer breaks it.
+- Dependencies are updated past every open security advisory, including
+  `@modelcontextprotocol/sdk` 1.32.2 and `zod` 4.6.7.
 
 ## [1.4.1] - 2026-07-26
 
