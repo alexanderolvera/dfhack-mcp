@@ -41,6 +41,7 @@
           "unit_id": 353
         }
       ],
+      "squad_id": 1,
       "training": {
         "active_orders": [
           "TRAIN"
@@ -97,6 +98,7 @@
           "unit_id": 377
         }
       ],
+      "squad_id": 2,
       "training": {
         "active_orders": [
           "TRAIN"
@@ -141,6 +143,7 @@
           "unit_id": 426
         }
       ],
+      "squad_id": 3,
       "training": {
         "active_orders": [
           "TRAIN"

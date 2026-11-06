@@ -10,6 +10,34 @@ backwards-compatible fixes only.
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-08-09
+
+### Added
+
+- `squad_orders` commands a military squad: `move` to a tile, `kill` named
+  units, or `cancel` its standing orders. Orders **replace** rather than stack,
+  so applying one clears whatever the squad was already doing — the preview says
+  how many, and the undo handle is flagged unfaithful when anything was cleared.
+  A kill order against a unit standing on an undiscovered tile is refused;
+  moving into unexplored space is allowed and only reported.
+- `military` reports each squad's `squad_id`. Squad names are display strings
+  that DF does not keep unique, so they could never address a squad safely.
+- `blueprint_library` lists the quickfort blueprints on disk — DFHack's shipped
+  library (dreamfort, aquifer_tap, pump_stack, the bedroom and tomb collections)
+  and your own `dfhack-config/blueprints/` — one entry per selectable phase,
+  with its mode, help text, and suggested cursor start.
+- `blueprint_apply` and `blueprint_undo` accept `blueprint_path` and
+  `blueprint_label` from `blueprint_library` as an alternative to a pasted `csv`,
+  so a shipped blueprint can be applied without sourcing its text by hand.
+  Library blueprints may span several z-levels; the preview reports which.
+  Still dig and zone only, so a multi-phase file's dig phases apply and its
+  build/place phases do not.
+
+### Fixed
+
+- The published bundle's smoke check expected a tool count two tools out of
+  date, so it would have failed on any artifact built from this release.
+
 ## [1.4.1] - 2026-07-26
 
 ### Fixed
@@ -321,7 +349,8 @@ server stays strictly read-only). First release published to npm — install wit
   by name with argv (`src/dfhack-queries/`), so a DF/DFHack version bump is a
   localized fix.
 
-[Unreleased]: https://github.com/alexanderolvera/dfhack-mcp/compare/v1.4.1...HEAD
+[Unreleased]: https://github.com/alexanderolvera/dfhack-mcp/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/alexanderolvera/dfhack-mcp/compare/v1.4.1...v1.5.0
 [1.4.1]: https://github.com/alexanderolvera/dfhack-mcp/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/alexanderolvera/dfhack-mcp/compare/v1.2.0...v1.4.0
 [1.3.0]: https://github.com/alexanderolvera/dfhack-mcp/compare/v1.2.0...v1.3.0
