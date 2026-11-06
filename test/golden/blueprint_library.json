@@ -1,0 +1,576 @@
+{
+  "entries": [
+    {
+      "id": 1,
+      "label": "/help",
+      "library": true,
+      "mode": "notes",
+      "path": "library/aquifer_tap.csv"
+    },
+    {
+      "comment": "light aquifer water collector",
+      "cursor_start_hint": "center of tap",
+      "id": 2,
+      "label": "/dig",
+      "library": true,
+      "mode": "dig",
+      "path": "library/aquifer_tap.csv"
+    },
+    {
+      "comment": "28 bedrooms, 3 tiles each",
+      "id": 3,
+      "label": "/dig",
+      "library": true,
+      "mode": "dig",
+      "path": "library/bedrooms/28-3-Modified_Windmill_Villas.csv"
+    },
+    {
+      "id": 4,
+      "label": "/rooms",
+      "library": true,
+      "mode": "meta",
+      "path": "library/bedrooms/28-3-Modified_Windmill_Villas.csv"
+    },
+    {
+      "comment": "48 rooms, 4 tiles each",
+      "id": 7,
+      "label": "/dig",
+      "library": true,
+      "mode": "dig",
+      "path": "library/bedrooms/48-4-Raynard_Whirlpool_Housing.csv"
+    },
+    {
+      "id": 8,
+      "label": "/rooms",
+      "library": true,
+      "mode": "meta",
+      "path": "library/bedrooms/48-4-Raynard_Whirlpool_Housing.csv"
+    },
+    {
+      "comment": "95 bedrooms (including 14 suites), 190 tombs",
+      "id": 14,
+      "label": "/dig",
+      "library": true,
+      "mode": "dig",
+      "path": "library/bedrooms/95-9-Hactar1_3_Branch_Tree.csv"
+    },
+    {
+      "id": 15,
+      "label": "/rooms",
+      "library": true,
+      "mode": "meta",
+      "path": "library/bedrooms/95-9-Hactar1_3_Branch_Tree.csv"
+    },
+    {
+      "comment": "run me for the dreamfort walkthrough",
+      "id": 18,
+      "label": "/help",
+      "library": true,
+      "mode": "notes",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "command checklist",
+      "id": 19,
+      "label": "/checklist",
+      "library": true,
+      "mode": "notes",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "pre- and post-embark tasks",
+      "id": 20,
+      "label": "/setup_help",
+      "library": true,
+      "mode": "notes",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "dig industry, services, guildhall, suites, apartments, and crypt levels. does not include farming.",
+      "cursor_start_hint": "central stairs on industry level",
+      "id": 21,
+      "label": "/dig_all",
+      "library": true,
+      "mode": "meta",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "surface level walkthrough",
+      "id": 22,
+      "label": "/surface_help",
+      "library": true,
+      "mode": "notes",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "two levels of carved spiral stairs (repeat down as needed)",
+      "id": 25,
+      "label": "/central_stairs",
+      "library": true,
+      "mode": "meta",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "two levels of constructed spiral stairs (repeat down as needed)",
+      "id": 28,
+      "label": "/central_stairs_constructed",
+      "library": true,
+      "mode": "meta",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "show the eventual perimeter of the surface fort; useful for location scouting. DO NOT APPLY.",
+      "cursor_start_hint": "central stairs",
+      "id": 29,
+      "label": "/perimeter",
+      "library": true,
+      "mode": "meta",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "clear trees and set up pastures",
+      "cursor_start_hint": "central stairs",
+      "id": 30,
+      "label": "/surface1",
+      "library": true,
+      "mode": "meta",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "set up starting workshops/stockpiles, channel miasma vents, and clear more trees",
+      "cursor_start_hint": "central stairs",
+      "id": 31,
+      "label": "/surface2",
+      "library": true,
+      "mode": "meta",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "Cover vents and protect the central stairs.",
+      "cursor_start_hint": "central stairs",
+      "id": 32,
+      "label": "/surface3",
+      "library": true,
+      "mode": "meta",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "build walls and flooring to support upcoming buildings and furniture",
+      "cursor_start_hint": "central stairs",
+      "id": 33,
+      "label": "/surface4",
+      "library": true,
+      "mode": "meta",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "build gates, furniture, and trade stockpile/depot",
+      "cursor_start_hint": "central stairs",
+      "id": 34,
+      "label": "/surface5",
+      "library": true,
+      "mode": "meta",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "build traps and remaining walls/floors",
+      "cursor_start_hint": "central stairs",
+      "id": 35,
+      "label": "/surface6",
+      "library": true,
+      "mode": "meta",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "expand Inside+ burrow to safe surface areas and build roof",
+      "cursor_start_hint": "central stairs (on ground level)",
+      "id": 36,
+      "label": "/surface7",
+      "library": true,
+      "mode": "meta",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "build extended trap corridors",
+      "cursor_start_hint": "central stairs",
+      "id": 37,
+      "label": "/surface8",
+      "library": true,
+      "mode": "meta",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "farming level walkthrough",
+      "id": 64,
+      "label": "/farming_help",
+      "library": true,
+      "mode": "notes",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "cursor_start_hint": "central stairs",
+      "id": 65,
+      "label": "/farming1",
+      "library": true,
+      "mode": "dig",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "workshops, stockpiles, and important furniture",
+      "cursor_start_hint": "central stairs",
+      "id": 66,
+      "label": "/farming2",
+      "library": true,
+      "mode": "meta",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "build remaining doors",
+      "cursor_start_hint": "central stairs",
+      "id": 67,
+      "label": "/farming3",
+      "library": true,
+      "mode": "meta",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "industry level walkthrough",
+      "id": 74,
+      "label": "/industry_help",
+      "library": true,
+      "mode": "notes",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "cursor_start_hint": "central stairs",
+      "id": 75,
+      "label": "/industry1",
+      "library": true,
+      "mode": "dig",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "stockpiles and high-priority workshops",
+      "cursor_start_hint": "central stairs",
+      "id": 76,
+      "label": "/industry2",
+      "library": true,
+      "mode": "meta",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "remaining workshops",
+      "cursor_start_hint": "central stairs",
+      "id": 77,
+      "label": "/industry3",
+      "library": true,
+      "mode": "meta",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "services level walkthrough",
+      "id": 82,
+      "label": "/services_help",
+      "library": true,
+      "mode": "notes",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "cursor_start_hint": "central stairs",
+      "id": 83,
+      "label": "/services1",
+      "library": true,
+      "mode": "dig",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "zones and minimally functional hospital and dining hall",
+      "cursor_start_hint": "central stairs",
+      "id": 84,
+      "label": "/services2",
+      "library": true,
+      "mode": "meta",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "expand furnishings",
+      "cursor_start_hint": "central stairs",
+      "id": 85,
+      "label": "/services3",
+      "library": true,
+      "mode": "meta",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "complete furnishings",
+      "cursor_start_hint": "central stairs",
+      "id": 86,
+      "label": "/services4",
+      "library": true,
+      "mode": "meta",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "guildhall level walkthrough",
+      "id": 97,
+      "label": "/guildhall_help",
+      "library": true,
+      "mode": "notes",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "cursor_start_hint": "central stairs",
+      "id": 98,
+      "label": "/guildhall1",
+      "library": true,
+      "mode": "dig",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "furnished with default temple and library",
+      "id": 99,
+      "label": "/guildhall2_default",
+      "library": true,
+      "mode": "meta",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "fully furnished and zoned but no locations",
+      "id": 100,
+      "label": "/guildhall2_no_locations",
+      "library": true,
+      "mode": "meta",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "only zones and doors",
+      "id": 101,
+      "label": "/guildhall2_custom",
+      "library": true,
+      "mode": "meta",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "walkthrough for the suites and apartments levels",
+      "id": 107,
+      "label": "/beds_help",
+      "library": true,
+      "mode": "notes",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "noble suites",
+      "cursor_start_hint": "central stairs",
+      "id": 108,
+      "label": "/suites1",
+      "library": true,
+      "mode": "dig",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "build furniture, set traffic patterns, create zones, and assign them to nobles and administrators",
+      "cursor_start_hint": "central stairs",
+      "id": 109,
+      "label": "/suites2_default",
+      "library": true,
+      "mode": "meta",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "build furniture and set traffic patterns",
+      "cursor_start_hint": "central stairs",
+      "id": 110,
+      "label": "/suites2_no_zones",
+      "library": true,
+      "mode": "meta",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "apartment complex",
+      "cursor_start_hint": "central stairs",
+      "id": 115,
+      "label": "/apartments1",
+      "library": true,
+      "mode": "dig",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "zone rooms and build furniture",
+      "cursor_start_hint": "central stairs",
+      "id": 116,
+      "label": "/apartments2",
+      "library": true,
+      "mode": "meta",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "crypt level walkthrough",
+      "id": 119,
+      "label": "/crypt_help",
+      "library": true,
+      "mode": "notes",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "crypt complex",
+      "cursor_start_hint": "central stairs",
+      "id": 120,
+      "label": "/crypt1",
+      "library": true,
+      "mode": "dig",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "small crypt that can be extended later",
+      "cursor_start_hint": "central stairs",
+      "id": 121,
+      "label": "/crypt2",
+      "library": true,
+      "mode": "meta",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "crypt extension",
+      "cursor_start_hint": "central stairs",
+      "id": 122,
+      "label": "/crypt3",
+      "library": true,
+      "mode": "meta",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "basic post embark workshops",
+      "cursor_start_hint": "center of wagon",
+      "id": 127,
+      "label": "/workshops",
+      "library": true,
+      "mode": "build",
+      "path": "library/embark.csv"
+    },
+    {
+      "comment": "basic post embark stockpiles",
+      "id": 128,
+      "label": "/stockpiles",
+      "library": true,
+      "mode": "place",
+      "path": "library/embark.csv"
+    },
+    {
+      "comment": "diagonal interconnecting tunnels with stairs at intersections",
+      "id": 129,
+      "library": true,
+      "mode": "dig",
+      "path": "library/exploratory-mining/connected-mineshafts.csv"
+    },
+    {
+      "comment": "paths every 10 units",
+      "id": 130,
+      "library": true,
+      "mode": "dig",
+      "path": "library/exploratory-mining/tunnels.csv"
+    },
+    {
+      "comment": "mineshafts as stairs every 3rd tile",
+      "id": 131,
+      "library": true,
+      "mode": "dig",
+      "path": "library/exploratory-mining/vertical-mineshafts.csv"
+    },
+    {
+      "comment": "marks a diagonal line down and left starting at the cursor",
+      "id": 132,
+      "library": true,
+      "mode": "dig",
+      "path": "library/layout-helpers/mark_down_left.csv"
+    },
+    {
+      "comment": "marks a diagonal line down and right starting at the cursor",
+      "id": 133,
+      "library": true,
+      "mode": "dig",
+      "path": "library/layout-helpers/mark_down_right.csv"
+    },
+    {
+      "comment": "marks a diagonal line up and left starting at the cursor",
+      "id": 134,
+      "library": true,
+      "mode": "dig",
+      "path": "library/layout-helpers/mark_up_left.csv"
+    },
+    {
+      "comment": "marks a diagonal line up and right starting at the cursor",
+      "id": 135,
+      "library": true,
+      "mode": "dig",
+      "path": "library/layout-helpers/mark_up_right.csv"
+    },
+    {
+      "id": 136,
+      "label": "/help",
+      "library": true,
+      "mode": "notes",
+      "path": "library/pump_stack.csv"
+    },
+    {
+      "comment": "2 levels of pump stack - bottom level pumps from the south",
+      "cursor_start_hint": "at the bottom level on the access stairs",
+      "id": 139,
+      "label": "/dig",
+      "library": true,
+      "mode": "meta",
+      "path": "library/pump_stack.csv"
+    },
+    {
+      "comment": "2 levels of pump stack - bottom level pumps from the south",
+      "cursor_start_hint": "at the bottom level on the access stairs",
+      "id": 142,
+      "label": "/channel",
+      "library": true,
+      "mode": "meta",
+      "path": "library/pump_stack.csv"
+    },
+    {
+      "comment": "2 levels of pump stack - bottom level pumps from the south",
+      "cursor_start_hint": "at the bottom level on the access stairs",
+      "id": 145,
+      "label": "/build",
+      "library": true,
+      "mode": "meta",
+      "path": "library/pump_stack.csv"
+    },
+    {
+      "comment": "room for 24 corpses",
+      "id": 146,
+      "library": true,
+      "mode": "dig",
+      "path": "library/tombs/Mini_Saracen.csv"
+    },
+    {
+      "comment": "24 urns",
+      "id": 147,
+      "label": "/urns",
+      "library": true,
+      "mode": "build",
+      "path": "library/tombs/Mini_Saracen.csv"
+    },
+    {
+      "comment": "room for 513 corpses",
+      "id": 148,
+      "library": true,
+      "mode": "dig",
+      "path": "library/tombs/The_Saracen_Crypts.csv"
+    },
+    {
+      "comment": "513 urns",
+      "id": 149,
+      "label": "/urns",
+      "library": true,
+      "mode": "build",
+      "path": "library/tombs/The_Saracen_Crypts.csv"
+    }
+  ],
+  "entries_total": 69,
+  "entries_truncated": false,
+  "library_count": 69,
+  "user_count": 0
+}

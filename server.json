@@ -3,7 +3,7 @@
   "name": "io.github.alexanderolvera/dfhack-mcp",
   "title": "Dwarf Fortress (DFHack)",
   "description": "MCP server exposing a live Dwarf Fortress fort to an AI agent as curated, semantic tools",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "repository": {
     "url": "https://github.com/alexanderolvera/dfhack-mcp",
     "source": "github"
@@ -14,7 +14,7 @@
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "dfhack-mcp",
-      "version": "1.4.1",
+      "version": "1.5.0",
       "runtimeHint": "npx",
       "transport": {
         "type": "stdio"

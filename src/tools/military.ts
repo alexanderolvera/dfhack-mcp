@@ -34,6 +34,7 @@ export interface SquadTraining {
 }
 
 export interface SquadRow {
+  squad_id: number;
   name: string;
   filled: number;
   positions: number;
@@ -74,7 +75,9 @@ export const militaryDef: ToolDef = {
     "The fort's military: number of squads, how many living present dwarves are " +
     'actually enlisted (soldiers), filled squad positions, and readiness read ' +
     'against hostiles currently on the map (great-danger split out). Each squad also ' +
-    'reports: roster[] — one row per FILLED position whose occupant is a LIVING, ' +
+    "reports: squad_id — the squad's stable game id, the only unambiguous way to " +
+    'name a squad (name is a display string that falls back to "Squad <id>" for an ' +
+    'unnamed squad and is not guaranteed unique); roster[] — one row per FILLED position whose occupant is a LIVING, ' +
     'PRESENT unit (a dead or off-map holder still counts toward filled but is omitted ' +
     "here, so gear sitting on a corpse never generates a false alert) — that soldier's " +
     'uniform_complete flag, and (only when incomplete) uniform[], aggregated by item ' +
