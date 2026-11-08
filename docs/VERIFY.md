@@ -26,7 +26,23 @@ neither):
 ```sh
 npm run verify:game-data   # game_data across all 6 kinds + two regression guards
 npm run verify:wiki        # wiki_search/wiki_lookup: redirect, cache hit, not-found
+npm run verify:trade-caravan   # trade with a caravan on-site (starts its own container)
 ```
+
+`verify:trade-caravan` covers what the fixture save can't. The fixture has no
+caravan, so the `trade` golden only ever sees `caravan_count: 0`. The script
+starts a scratch `df-headless:53.15` container with this checkout's
+`src/dfhack-queries` mounted, runs DFHack's `force Caravan`, and follows the
+caravan through Approaching, AtDepot and Leaving. It shortens the departure
+countdown to reach Leaving. In each state it pauses the game, calls `trade`, and
+runs the `trade` invariants (`trade_caravan_rows_wellformed`,
+`trade_state_consistency`). It also checks the numbers against DF's own
+`caravan_state`: `leaving_in_days` matches `time_remaining / 120`, and
+`manifest.approx_value` equals `import_value`. It never touches the shared
+fixture save. It needs Docker and the built image, not a running game.
+Defaults are `--name=df-trade-caravan --port=5011`. Pass `--keep` to leave the
+container up for poking at, and `--timeout-min=N` to change the 15-minute limit.
+It removes the container when it finishes.
 
 ## Artifact smoke test
 
