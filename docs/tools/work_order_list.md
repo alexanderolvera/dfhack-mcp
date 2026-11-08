@@ -58,7 +58,7 @@ Each `item_conditions[]` entry counts the fort's items matching a filter and com
 
 Every key except `satisfied`, `flags4`, `flags5` and `dye_color` is accepted back by [work_order_create](work_order_create.md), so a listed condition can be passed straight back in.
 
-No golden exists for this tool yet: the harness excludes it from T2 (`NO_GOLDEN` in `scripts/verify.mjs`).
+Golden: [`test/golden/work_order_list.json`](../../test/golden/work_order_list.json), the no-arg call against the fixture fort.
 
 ## Caveats & limits
 - Page capped at 256 orders, sorted by id; `count` stays the fort total, `next_cursor` continues the walk.

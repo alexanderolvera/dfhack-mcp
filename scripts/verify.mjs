@@ -138,10 +138,7 @@ function maskVolatile(name, data) {
 
 // Tools reached in every tier but NOT captured as T2 goldens. The actuators
 // return a fresh random confirm_token in their dry-run preview (non-deterministic);
-// work_order_list is a large, fort-specific order set better checked by a
-// structural invariant than a brittle 200+-line snapshot. All are still
-// exercised for reachability (T1) and, for list, feed the work_order invariant.
-// game_save's dry-run only reads facts + mints a token — its apply (the actual
+// all are still exercised for reachability (T1). game_save's dry-run only reads facts + mints a token — its apply (the actual
 // save) is async/irreversible, so it's verified live by hand, not in the harness.
 const NO_GOLDEN = new Set([
   'blueprint_apply',
@@ -149,7 +146,6 @@ const NO_GOLDEN = new Set([
   'game_save',
   'work_order_create',
   'work_order_cancel',
-  'work_order_list',
   'assign_work_detail',
   'civilian_alert',
   'pull_lever',
