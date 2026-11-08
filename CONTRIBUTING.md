@@ -78,6 +78,12 @@ the no-fort guard ([#6](https://github.com/alexanderolvera/dfhack-mcp/issues/6))
 rather than trusting it's coded, and is the no-fort reachability path for
 [#28](https://github.com/alexanderolvera/dfhack-mcp/issues/28).
 
+Some states the frozen fixture never reaches get an opt-in script that drives
+a scratch container into them instead of changing the shared save. `npm run
+verify:trade-caravan` forces a caravan and checks `trade` in each caravan state;
+run it after touching `mcp_trade.lua` or the `trade` invariants. Details are in
+[`docs/VERIFY.md`](docs/VERIFY.md#ad-hoc-live-verification-scripts).
+
 **Every tool is verified against a real running fort before it ships — no mocks.**
 Lua runs *inside* DF, so "test infra" is provisioned frozen-save fixtures, not
 unit tests. Keep `npm run typecheck` and `npm run lint` clean.

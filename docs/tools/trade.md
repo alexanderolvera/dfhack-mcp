@@ -24,7 +24,8 @@ None.
 | `depot.trader_requested` | the "bring goods to depot" request flag |
 | `goods_at_depot` | `{count, approx_value}` of items staged in the depot footprint (fort goods AND, during a visit, unloaded merchant goods — not split) |
 | `caravans[]` | `{state, civ?: {name?, race?}, leaving_in_days?, manifest?, agreements?}`; state is None / Approaching / AtDepot / Leaving / Stuck |
-| `caravans[].manifest` | `{count, approx_value, by_category[]: {category, count}, by_category_truncated}` — goods the caravan itself is carrying (before unloading to the depot), grouped by DF's `item_type`; distinct from `goods_at_depot` |
+| `caravans[].leaving_in_days` | whole days until the merchants depart; present only while Approaching or AtDepot with time left |
+| `caravans[].manifest` | `{count, approx_value, by_category[]: {category, count}, by_category_truncated}` — the caravan's own trade goods wherever they are (still carried, or unloaded into the depot), grouped by DF's `item_type`; `approx_value` is the merchants' appraisal. During a visit these overlap `goods_at_depot` |
 | `caravans[].agreements` | `{export[], export_truncated, import[], import_truncated}` — active liaison price agreements, each row `{category, entries, price_pct_min, price_pct_max}` (100 = no markup, 200 = double price) |
 | `caravan_count` | total caravans before the cap |
 | `caravans_truncated` | list capped (cap = 8) |
@@ -33,7 +34,10 @@ None.
 
 ```json
 {
-  "alerts": ["trade depot is not wagon-accessible"],
+  "alerts": [
+    "trade depot is not wagon-accessible",
+    "caravan at depot, broker not at the depot"
+  ],
   "broker": {
     "assigned": true,
     "at_depot": false,
@@ -45,25 +49,29 @@ None.
   "caravans": [
     {
       "state": "AtDepot",
-      "civ": { "name": "The Copper Coasts", "race": "DWARF" },
-      "leaving_in_days": 6,
+      "civ": { "name": "The Oily Vestibule", "race": "DWARF" },
+      "leaving_in_days": 23,
       "manifest": {
-        "count": 42,
-        "approx_value": 8150,
+        "count": 200,
+        "approx_value": 28948,
         "by_category": [
-          { "category": "ARMOR", "count": 6 },
-          { "category": "DRINK", "count": 12 },
-          { "category": "WEAPON", "count": 4 }
+          { "category": "CHEESE", "count": 40 },
+          { "category": "FISH", "count": 41 },
+          { "category": "MEAT", "count": 32 },
+          { "category": "PLANT", "count": 36 },
+          { "category": "PLANT_GROWTH", "count": 35 },
+          { "category": "SMALLGEM", "count": 16 }
         ],
         "by_category_truncated": false
       },
       "agreements": {
         "export": [
-          { "category": "WEAPON", "entries": 2, "price_pct_min": 150, "price_pct_max": 200 }
+          { "category": "GOBLET", "entries": 1, "price_pct_min": 204, "price_pct_max": 204 }
         ],
         "export_truncated": false,
         "import": [
-          { "category": "Leather", "entries": 3, "price_pct_min": 120, "price_pct_max": 140 }
+          { "category": "Ammo", "entries": 1, "price_pct_min": 100, "price_pct_max": 100 },
+          { "category": "SmallCutGems", "entries": 110, "price_pct_min": 100, "price_pct_max": 197 }
         ],
         "import_truncated": false
       }
@@ -76,40 +84,39 @@ None.
     "exists": true,
     "trader_requested": false
   },
-  "goods_at_depot": { "approx_value": 15, "count": 3 }
+  "goods_at_depot": { "approx_value": 17195, "count": 203 }
 }
 ```
 
-## Caveats & limits
-> **Status: the no-caravan-present path is live-verified; the populated manifest/agreements path is not.** Run against the Dreamfort fixture container (DFHack 53.15), which — like the fixture this code was originally drafted against — has no caravan currently at the depot: `verify:t1 --require-fort`, a direct `trade` call, `verify:invariants`, and `verify:t2 --update` all pass clean, the depot/broker/goods fields match the pre-existing golden exactly, and `caravans: []` means the new `manifest`/`agreements` code paths (and their `pcall` guards) simply never ran — there was nothing for them to run on. This confirms the extension doesn't crash or corrupt existing `trade` output when there's nothing to report. It does **not** confirm the manifest/agreement field paths themselves: those still follow DFHack 53.15-r2's documented structures unconfirmed against a live struct. Getting a fixture with a caravan actually on-site is the top priority for the next live check.
+Captured from the fixture container with a forced dwarven caravan; `agreements.import` is trimmed to two of its 61 rows.
 
+## Caveats & limits
 - With multiple depots, a complete + accessible one is preferred so the summary reflects the depot actually usable for trade.
-- `leaving_in_days` appears only in states AtDepot/Leaving with a positive countdown (`time_remaining / 1200` ticks-per-day).
+- `leaving_in_days` is `floor(time_remaining / 120)`, the departure countdown. It is already running while the caravan is Approaching and carries on unbroken into AtDepot. It is omitted in Leaving (the countdown is 0 by then), None and Stuck.
 - Caravans are sorted (state, then civ race) for deterministic output, and capped at 8 with `caravans_truncated`.
-- `goods_at_depot.approx_value` is a rough sum of `dfhack.items.getValue` over staged items; goods are aggregated, never itemized.
-- `caravans[].manifest.approx_value` uses `dfhack.items.getValue(item, caravan_state)` (the two-argument form, per DFHack's own Lua API docs), which DFHack itself says adjusts for civ properties and any active trade agreements — so this number is not directly comparable to `goods_at_depot.approx_value`, which uses the plain one-argument form.
-- `manifest.by_category` and `agreements.export` both group by DF's raw `item_type` enum (`WEAPON`, `ARMOR`, ~112 values, all-caps); `agreements.import` groups by DF's separate `entity_sell_category` enum (the liaison's own "request tab" categories — `Leather`, `Weapons`, `Meat`, ~60 values, title-case). These are two different taxonomies over the same items and will not line up 1:1 — a caravan can show a `WEAPON` export agreement and a `Weapons` import agreement with unrelated markups.
-- `agreements.export` (from `caravan_state.buy_prices`) is the higher-confidence side: its struct path and the `price * 100 / 128` percent formula are both confirmed against DFHack's own `internal/caravan/tradeagreement.lua` (which labels this data "Merchant export agreements" — items the fort earns a bonus selling to this caravan).
-- `agreements.import` (from `caravan_state.sell_prices`) was previously the lower-confidence side — the struct path was confirmed in df-structures and reused the same 128-fixed-point encoding by analogy, but no shipped DFHack script was found reading it live. **Now confirmed against a real dwarven liaison agreement**: 61 populated categories, price percentages resolving to sane values (most at the 100 baseline, with genuine markups up to 219%), and the min/max range folding correctly across multi-entry categories (e.g. `ClothSilk` 100-210). The encoding and struct path both hold.
-- Both agreement lists are aggregated per category (`entries` + a `price_pct` range), not itemized per material/subtype — deliberately, per "facts not itemized junk," and because per-entry material/subtype names aren't reliably decodable from the struct alone.
-- Both agreement lists cap at 150 rows (`export_truncated`/`import_truncated`). That ceiling sits deliberately **above** both source enums — `item_type` (~112) for `export`, `entity_sell_category` for `import` — so in practice neither list truncates; the flags remain as a safety net for a modded or future DF with more categories. An earlier 30-row cap was raised after a live check: a real dwarven caravan produced **61** import categories, so the old cap silently dropped half of them. Because `capped_sorted` sorts alphabetically *before* capping, the dropped tail was always the same (everything past `Headwear`) and it hid precisely the rows worth reading — the fort's only above-par markups were `Meat` 219%, `Seeds` 208%, `ThreadPlant` 203%, `Powders` 201%, and `ThreadSilk` 200%, every one of them beyond the old cutoff. Capping a list below its own natural enum ceiling buys no payload safety and costs real data.
-- `manifest`/`agreements` are computed per caravan inside a `pcall`; if the live struct shape doesn't match what's coded here, the whole caravan row still emits (state/civ/leaving_in_days), and the failing field is replaced by `manifest_error`/`agreements_error` (the raw Lua error string) rather than the tool crashing or the gap looking identical to "nothing to report." A no-caravan fixture can never exercise this path either way (there's no row to fail on) — the error fields exist so the *next* live check, once a real caravan is on-site, can tell a genuine field-path bug apart from an empty result at a glance, instead of both looking like silence.
+- `goods_at_depot` counts everything in the depot footprint, fort goods and unloaded merchant goods alike, and sums the one-argument `dfhack.items.getValue(item)` over them. It is never itemized.
+- `caravans[].manifest` counts the caravan's goods wherever they are: carried in while Approaching, mostly unloaded into the depot at AtDepot, partly packed up again while Leaving. During a visit it therefore overlaps `goods_at_depot`.
+- `caravans[].manifest.approx_value` sums the two-argument `dfhack.items.getValue(item, caravan_state)`, which folds in the visiting civ's appraisal and any active agreements. For an untouched caravan it equals DF's own `caravan_state.import_value`. It is not directly comparable to `goods_at_depot.approx_value`.
+- `manifest.by_category` and `agreements.export` both group by DF's raw `item_type` enum (`WEAPON`, `ARMOR`, ~112 values, all-caps); `agreements.import` groups by DF's separate `entity_sell_category` enum (the liaison's "request tab" categories — `Leather`, `Weapons`, `Meat`, ~60 values, title-case). These are two different taxonomies over the same items and will not line up 1:1.
+- Both agreement lists are aggregated per category (`entries` + a `price_pct` range), not itemized per material/subtype, because per-entry material/subtype names aren't reliably decodable from the struct alone.
+- Both agreement lists cap at 150 rows (`export_truncated`/`import_truncated`), above both source enums, so in practice neither truncates. An earlier 30-row cap silently dropped half of a real dwarven caravan's 61 import categories. Because rows are sorted before capping, it always dropped the same alphabetical tail, which held every above-par markup.
+- `manifest`/`agreements` are computed per caravan inside a `pcall`. If one fails, the row still emits (state/civ/leaving_in_days) and carries `manifest_error`/`agreements_error` (the raw Lua error) instead, so a field-path bug can't pass for "nothing to report". The `trade_caravan_rows_wellformed` invariant fails on either error field.
 - `broker.present: false` with `assigned: true` means a noble on paper with no live unit on the map (dead/absent).
-- **The active-caravan path is now verified live** against a real dwarven caravan (`state: AtDepot`), closing the gap the Dreamfort fixture structurally could not: `manifest` returned 582 items across 15 `by_category` rows summing exactly to `count`, `agreements` populated on both sides, `leaving_in_days` resolved, and the `caravan at depot, broker not at the depot` alert fired correctly. Neither `manifest_error` nor `agreements_error` appeared — which also exercises the review fix that removed the inner `pcall` around `dfhack.items.getValue(it, c)` so a valuation failure would surface rather than silently undercount. The quiet path (state none, depot + broker) remains verified separately.
+- The committed golden is the no-caravan fixture. The caravan path is covered by `npm run verify:trade-caravan`, which forces a caravan in a scratch container and checks Approaching, AtDepot and Leaving (see [VERIFY.md](../VERIFY.md#ad-hoc-live-verification-scripts)).
 - Returns `{"error":"no fort loaded"}` if no fort is active.
 
 ## Implementation notes
-Data model, verified live on DFHack 53.15:
-- Depot: `world.buildings.other.TRADE_DEPOT` (`building_tradedepotst`). `accessible` is DF's own wagon-pathable flag — the exact thing the game checks before routing a wagon, not merely "is it built." Completeness is `construction_stage >= d:getMaxBuildStage()`. `contained_items` are the items physically staged in the depot footprint.
-- Caravans: `df.global.plotinfo.caravans` is a vector of `caravan_state`; empty means no caravan. `trade_state` is `df.caravan_state.T_trade_state` (0 None, 1 Approaching, 2 AtDepot, 3 Leaving, 4 Stuck); `time_remaining` is a tick countdown (÷1200 = days), meaningful only in AtDepot/Leaving; `entity` resolves to the visiting civ.
+Field paths confirmed live on DFHack 53.15-r2 against the fixture container, with a caravan forced through Approaching, AtDepot and Leaving (`scripts/verify-trade-caravan.mjs`):
+- Depot: `world.buildings.other.TRADE_DEPOT` (`building_tradedepotst`). `accessible` is DF's own wagon-pathable flag, not merely "is it built". Completeness is `construction_stage >= d:getMaxBuildStage()`. `contained_items` are the items physically in the depot footprint. A caravan still reaches AtDepot and unloads when `accessible` is false: the fixture's depot is not wagon-accessible, and the merchants walk in with pack animals.
+- Caravans: `df.global.plotinfo.caravans` is a vector of `caravan_state`; empty means no caravan. `trade_state` is `df.caravan_state.T_trade_state` (0 None, 1 Approaching, 2 AtDepot, 3 Leaving, 4 Stuck). `entity` is the visiting civ's `historical_entity` id.
+- `caravan_state.time_remaining` drops by 1 every 10 game ticks, so 120 units make one 1200-tick day; DFHack's own `caravan.lua` divides by 120 too. Measured live: a drop of 67 over 673 ticks. The countdown starts on arrival (3218 in one run, about 26 days), runs across Approaching → AtDepot with no reset, and DF moves the caravan to Leaving when it reaches 0. Setting it to a small value is how the verify script reaches Leaving without waiting out the visit.
+- Merchant goods are the `world.items.other.IN_PLAY` items with `flags.trader` set. Each has an `ENTITY_ITEMOWNER` general ref whose `entity_id` is the caravan's `entity`; `manifest` attributes goods to a caravan through that ref. All 200 goods of a forced dwarven caravan carried it, in every state. Scanning `IN_PLAY` (about 12,400 items in the fixture) takes about 35 ms.
+- `caravan_state.goods` is **not** the manifest. It stayed empty in all three states while the caravan carried 200 goods; the earlier manifest built on it always reported 0.
+- `caravan_state.import_value` is DF's total for the goods the caravan brought. It equals the sum of `dfhack.items.getValue(item, caravan_state)` over the `trader` items the caravan owns (28948 and 28458 in two runs).
+- `caravan_state.buy_prices` (`entity_buy_prices`) holds parallel vectors `items.item_type[]` and `price[]`. It feeds `agreements.export` with the formula from DFHack's `internal/caravan/tradeagreement.lua`, `(price * 100) // 128`. Live, it held a single `GOBLET` entry at 204%.
+- `caravan_state.sell_prices` (`entity_sell_prices`) holds `price`, an array of per-category price vectors indexed by `entity_sell_category`, in the same 128 fixed point. It feeds `agreements.import`. Live, it had 61 populated categories, mostly at 100%, with `SmallCutGems` ranging 100–197%.
+- Both price structs can be null pointers (no active agreement with this caravan's civ); the agreement lists are then empty, not omitted.
 - Broker: the fort entity's `BROKER` position (responsibility TRADE). Its `assignment.histfig` resolves to a live unit for name + `current_job`; "at depot" means the unit's position falls within the depot footprint.
-
-Data model, **not** live-verified (draft — see the status callout above), sourced from df-structures tag `53.15-r2` and DFHack's `internal/caravan/` scripts:
-- `caravan_state.goods` (df field `already_appraised_item_id`) is the vector of item ids the caravan itself is carrying, resolved via `df.item.find`; this is what `manifest` summarizes, and it is a different set of items than `depot_bld.contained_items` (goods already unloaded/staged at the depot).
-- `caravan_state.buy_prices` (df field `requestagreement`, struct `entity_buy_prices`) holds parallel vectors `items.item_type[]` and `price[]` (one row per requested item/subtype); DFHack's `internal/caravan/tradeagreement.lua` reads this exact struct, labels it "Merchant export agreements," and converts price via `(price * 100) // 128` — the formula this tool replicates for `agreements.export`.
-- `caravan_state.sell_prices` (df field `tradeagreement`, struct `entity_sell_prices`) holds `price`, a fixed-size array indexed by `entity_sell_category` (DF's liaison "request tab" categories) of per-category price vectors; `agreements.import` reads this by analogy to the same 128-fixed-point encoding, but no confirmed live reader of this specific field was found in DFHack's own scripts.
-- Both price structs can be null pointers (no active agreement with this caravan's civ); `agreements.export`/`agreements.import` are simply empty in that case, not omitted.
-- `dfhack.items.getValue(item, caravan_state)` (the two-argument form used for `manifest.approx_value`) is documented by DFHack itself to fold in civ properties and active trade agreements, unlike the one-argument form `goods_at_depot.approx_value` uses.
 
 ## Related
 [stocks](stocks.md) (what the fort could offer), [fort_status](fort_status.md) (overall dashboard), [chronicle](chronicle.md) (caravan arrivals as events), [rooms_and_zones](rooms_and_zones.md) (where the depot sits).

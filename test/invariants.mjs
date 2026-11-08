@@ -234,6 +234,67 @@ export const INVARIANTS = [
     },
   },
   {
+    name: 'trade_caravan_rows_wellformed',
+    tools: ['trade'],
+    desc: 'caravan_count/truncation agree with the list; each caravan row has a countdown only while Approaching/AtDepot, no manifest/agreements error, a manifest whose categories sum to its count, and agreement rows with min <= max',
+    check(p) {
+      const d = p.trade;
+      if (!Array.isArray(d.caravans)) return ['caravans is not an array'];
+      const out = [];
+      if (!(isInt(d.caravan_count) && d.caravan_count >= d.caravans.length))
+        out.push(`caravan_count=${d.caravan_count} is below the ${d.caravans.length} rows listed`);
+      if (d.caravans_truncated !== d.caravan_count > d.caravans.length)
+        out.push(
+          `caravans_truncated=${d.caravans_truncated} disagrees with caravan_count=${d.caravan_count} vs ${d.caravans.length} rows`
+        );
+      const COUNTDOWN = new Set(['Approaching', 'AtDepot']);
+      const checkRows = (rows, where) => {
+        if (!Array.isArray(rows)) return out.push(`${where} is not an array`);
+        rows.forEach((r, k) => {
+          if (typeof r?.category !== 'string' || !r.category)
+            out.push(`${where}[${k}].category is not a non-empty string`);
+          if (!(isInt(r?.entries) && r.entries > 0))
+            out.push(`${where}[${k}].entries=${r?.entries} is not a positive integer`);
+          if (!(isInt(r?.price_pct_min) && isInt(r?.price_pct_max) && r.price_pct_min >= 0))
+            out.push(`${where}[${k}] price_pct_min/max are not non-negative integers`);
+          else if (r.price_pct_min > r.price_pct_max)
+            out.push(`${where}[${k}] price_pct_min ${r.price_pct_min} > max ${r.price_pct_max}`);
+        });
+      };
+      d.caravans.forEach((c, i) => {
+        const at = `caravans[${i}]`;
+        if (c.manifest_error) out.push(`${at}.manifest_error: ${c.manifest_error}`);
+        if (c.agreements_error) out.push(`${at}.agreements_error: ${c.agreements_error}`);
+        if (c.civ !== undefined && typeof c.civ?.race !== 'string')
+          out.push(`${at}.civ.race is not a string`);
+        if (c.leaving_in_days !== undefined) {
+          if (!COUNTDOWN.has(c.state))
+            out.push(`${at}.leaving_in_days present in state ${c.state}`);
+          if (!(isInt(c.leaving_in_days) && c.leaving_in_days >= 0))
+            out.push(`${at}.leaving_in_days=${c.leaving_in_days} is not a non-negative integer`);
+        }
+        const m = c.manifest;
+        if (m) {
+          if (!(isInt(m.count) && m.count >= 0))
+            out.push(`${at}.manifest.count=${m.count} is not a non-negative integer`);
+          if (!(typeof m.approx_value === 'number' && m.approx_value >= 0))
+            out.push(`${at}.manifest.approx_value=${m.approx_value} is negative`);
+          if (!Array.isArray(m.by_category)) out.push(`${at}.manifest.by_category is not an array`);
+          else if (!m.by_category_truncated) {
+            const sum = m.by_category.reduce((s, b) => s + (b?.count ?? 0), 0);
+            if (sum !== m.count)
+              out.push(`${at}.manifest.by_category sums to ${sum}, not count ${m.count}`);
+          }
+        }
+        if (c.agreements) {
+          checkRows(c.agreements.export, `${at}.agreements.export`);
+          checkRows(c.agreements.import, `${at}.agreements.import`);
+        }
+      });
+      return out;
+    },
+  },
+  {
     name: 'moods_wellformed',
     tools: ['moods'],
     desc: 'each active strange mood has an integer unit_id, a known mood/status, and demands whose counts are sane (needed/gathered >= 0, have >= -1 sentinel)',

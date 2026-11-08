@@ -87,20 +87,22 @@ export const tradeDef: ToolDef = {
     'The trade picture right now: whether a trade depot exists, is complete, and ' +
     "is wagon-accessible (DF's own pathability check, not merely built); which " +
     'caravans are present and their lifecycle state (none / approaching / at ' +
-    'depot / leaving, with days remaining where knowable) and civ; whether a ' +
+    'depot / leaving / stuck) and civ, with leaving_in_days (whole days until ' +
+    'the merchants depart) while approaching or at the depot; whether a ' +
     'broker is assigned, present, at the depot, and their current job; and the ' +
-    'count and approximate value of goods staged in the depot. Each caravan also ' +
-    'reports manifest (count, approximate value, and a by-category breakdown of ' +
-    "goods the caravan itself is carrying, before anything is unloaded to the " +
-    'depot — distinct from goods_at_depot) and agreements (active liaison price ' +
+    'count and approximate value of all goods staged in the depot. Each caravan also ' +
+    'reports manifest (count, approximate value as the merchants appraise it, and ' +
+    "a by-category breakdown of the caravan's own trade goods wherever they are — " +
+    'still carried, or unloaded into the depot, so during a visit they overlap ' +
+    'goods_at_depot) and agreements (active liaison price ' +
     'agreements as price_pct_min/max, 100 = no markup, e.g. 200 = double price: ' +
     'export rows are items this fort earns a bonus selling to the caravan, by ' +
     "DF's item type; import rows are items this fort pays a premium buying from " +
     "the caravan, by DF's own request-tab category — a different, coarser " +
     'taxonomy than item type, so the two lists will not line up 1:1). If ' +
-    "reading either one fails against a real caravan (a field-path or " +
+    'reading either one fails against a real caravan (a field-path or ' +
     'calculation error, not simply "nothing to report"), that caravan\'s row ' +
-    "carries manifest_error/agreements_error (the raw error string) instead of " +
+    'carries manifest_error/agreements_error (the raw error string) instead of ' +
     'the field, so a live check can tell a genuine bug apart from an empty ' +
     'result. Reports the state and the numbers, not what to trade. Returns ' +
     '{"error":"no fort loaded"} if no fort is active.',

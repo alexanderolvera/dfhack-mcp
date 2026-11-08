@@ -6,7 +6,7 @@ if df.global.gamemode ~= df.game_mode.DWARF then
   return
 end
 
-local TICKS_PER_DAY = 1200
+local TIME_REMAINING_PER_DAY = 120
 local CARAVANS_CAP = 8
 local MANIFEST_CATEGORY_CAP = 30
 local AGREEMENT_CAP = 150
@@ -63,19 +63,29 @@ local function capped_sorted(list, cap, less)
   return list, truncated
 end
 
-local function manifest_of(c)
+local function trader_goods_by_owner()
+  local by_owner = {}
+  for _, it in ipairs(df.global.world.items.other.IN_PLAY) do
+    if it.flags.trader then
+      local ref = dfhack.items.getGeneralRef(it, df.general_ref_type.ENTITY_ITEMOWNER)
+      if ref then
+        local list = by_owner[ref.entity_id]
+        if not list then list = {}; by_owner[ref.entity_id] = list end
+        list[#list + 1] = it
+      end
+    end
+  end
+  return by_owner
+end
+
+local function manifest_of(c, items)
   local m = { count = 0, approx_value = 0 }
   local cat_counts = {}
-  for _, item_id in ipairs(c.goods) do
-    local it = df.item.find(item_id)
-    if it then
-      m.count = m.count + 1
-      -- No pcall: a valuation failure must reach manifest_error, not silently undercount.
-      m.approx_value = m.approx_value + dfhack.items.getValue(it, c)
-      local ok2, ty = pcall(function() return df.item_type[it:getType()] end)
-      local cat = (ok2 and ty) or 'UNKNOWN'
-      cat_counts[cat] = (cat_counts[cat] or 0) + 1
-    end
+  for _, it in ipairs(items) do
+    m.count = m.count + 1
+    m.approx_value = m.approx_value + dfhack.items.getValue(it, c)
+    local cat = df.item_type[it:getType()] or 'UNKNOWN'
+    cat_counts[cat] = (cat_counts[cat] or 0) + 1
   end
   local cats = {}
   for cat, n in pairs(cat_counts) do cats[#cats + 1] = { category = cat, count = n } end
@@ -144,16 +154,21 @@ local function agreements_of(c)
 end
 
 local caravans = {}
+local ok_g, goods_by_owner = pcall(trader_goods_by_owner)
 for _, c in ipairs(df.global.plotinfo.caravans) do
   local state = TS[c.trade_state] or tostring(c.trade_state)
   local row = { state = state }
   local civ = civ_of(c.entity)
   if civ then row.civ = civ end
-  if (state == 'AtDepot' or state == 'Leaving') and c.time_remaining and c.time_remaining > 0 then
-    row.leaving_in_days = math.floor(c.time_remaining / TICKS_PER_DAY)
+  if (state == 'Approaching' or state == 'AtDepot') and c.time_remaining > 0 then
+    row.leaving_in_days = math.floor(c.time_remaining / TIME_REMAINING_PER_DAY)
   end
-  -- manifest_error/agreements_error on failure -- see docs/tools/trade.md.
-  local ok_m, m = pcall(manifest_of, c)
+  local ok_m, m
+  if ok_g then
+    ok_m, m = pcall(manifest_of, c, goods_by_owner[c.entity] or {})
+  else
+    ok_m, m = false, goods_by_owner
+  end
   if ok_m then row.manifest = m else row.manifest_error = tostring(m) end
   local ok_a, a = pcall(agreements_of, c)
   if ok_a then row.agreements = a else row.agreements_error = tostring(a) end

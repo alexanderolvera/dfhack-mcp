@@ -37,6 +37,7 @@
     "verify:update": "node scripts/verify.mjs --tier=2 --update",
     "verify:game-data": "node scripts/verify-game-data.mjs",
     "verify:wiki": "node scripts/verify-wiki.mjs",
+    "verify:trade-caravan": "node scripts/verify-trade-caravan.mjs",
     "bootstrap": "node scripts/bootstrap.mjs",
     "worktree": "node scripts/new-worktree.mjs",
     "prepare": "npm run build",
