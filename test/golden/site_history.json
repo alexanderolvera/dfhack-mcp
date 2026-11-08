@@ -22,9 +22,11 @@
   "notable_deaths": [
     {
       "cause": "BLEED",
+      "hf_id": 179,
       "name": "Stukos Merchantage",
       "race": "DWARF",
       "slain_by": "Melbil Drillgorge",
+      "slain_by_hf_id": 177,
       "year": 6
     }
   ],

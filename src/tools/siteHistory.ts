@@ -12,16 +12,20 @@ export interface SiteBattle {
   attacker?: string;
   defender?: string;
   attacker_general?: string;
+  attacker_general_hf_id?: number;
   defender_general?: string;
+  defender_general_hf_id?: number;
   outcome?: string;
 }
 
 export interface SiteDeath {
   name: string;
+  hf_id: number;
   year?: number;
   race?: string;
   cause?: string;
   slain_by?: string;
+  slain_by_hf_id?: number;
 }
 
 export interface Founding {
@@ -31,6 +35,7 @@ export interface Founding {
   civ?: string;
   civ_english?: string;
   builder?: string;
+  builder_hf_id?: number;
 }
 
 export interface SiteHistory {
@@ -69,7 +74,10 @@ export const siteHistoryDef: ToolDef = {
     'and English with a word-by-word etymology, prior sieges/battles fought AT this ' +
     'site (attacker/defender civ and general, capped at 20, most-recent-first), and ' +
     'the notable historical figures who died here (name, race, cause, slayer, capped ' +
-    'at 25). Scoped strictly to the loaded site. A young fort with no war history ' +
+    'at 25). Every named figure carries its historical-figure id (deaths: hf_id and ' +
+    'slain_by_hf_id; battles: attacker_general_hf_id/defender_general_hf_id; ' +
+    'founding.builder_hf_id) to chain into historical_figure(hf_id). Scoped ' +
+    'strictly to the loaded site. A young fort with no war history ' +
     'degrades to empty battle/death lists (not an error). Returns ' +
     '{"error":"no fort loaded"} if no fort is active.',
   run: siteHistory,

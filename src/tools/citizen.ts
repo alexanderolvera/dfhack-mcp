@@ -4,6 +4,7 @@ import type { ToolDef } from '../register.ts';
 
 export interface Relation {
   name: string;
+  hf_id?: number;
   unit_id?: number;
 }
 
@@ -45,6 +46,7 @@ export interface FacetExtreme {
 
 export interface Deity {
   deity: string;
+  hf_id?: number;
   strength?: number;
 }
 
@@ -70,6 +72,7 @@ export interface Physical {
 
 export interface Citizen {
   unit_id: number;
+  hf_id?: number;
   name: string;
   profession?: string;
   sex?: string;
@@ -123,10 +126,12 @@ export const citizenDef: ToolDef = {
   title: 'Citizen',
   description:
     'A deep dossier on ONE citizen, chained by unit_id from find_unit (or ' +
-    'chronicle). Where find_unit stays compact, this is the depth: the walkable ' +
-    'social graph (spouse, parents, children, friends, grudges — each with a ' +
-    'unit_id you can pass back into citizen() to walk the graph), worshipped ' +
-    'deities with worship strength, NOTABLE personality extremes (only the top/' +
+    'chronicle), including the citizen hf_id. Where find_unit stays compact, ' +
+    'this is the depth: the walkable social graph (spouse, parents, children, ' +
+    'friends, grudges — each with an hf_id for historical_figure(), plus a ' +
+    'unit_id you can pass back into citizen() while the figure is a live unit; ' +
+    'a dead relation keeps its hf_id but has no unit_id), worshipped deities ' +
+    'with worship strength and hf_id, NOTABLE personality extremes (only the top/' +
     'bottom facets, not the full 50-facet dump), skills of note, likes/detests, ' +
     'physical highlights, and recent thoughts as the game phrases them (raw ' +
     'caption templates that may contain unfilled [quality]/[deity]/[relation] ' +

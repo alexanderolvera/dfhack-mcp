@@ -29,7 +29,7 @@ Top-level fields:
 - `limit`, `count`, `more?` (older matching events exist beyond `limit`), `omitted_by_limit?`
 - `battle_collapsed` — combat reports folded into collapse markers
 - `filtered_categories?`, `order` (always "ascending"), `note?`
-- `events[]` — each: `id` (monotonic, save/load-stable), `category`, `type` (announcement_type token), `text?` (continuation lines folded in), `color?`, `date`, `year?`, `time?` (tick-of-year), `repeat_count?` (only when > 0), `continuation_lines?`, `collapsed?`/`collapsed_count?` (a battle-run collapse marker, not a single report), `pos?` `{x,y,z}` tile anchor, `speaker?` `{id, name?}` (only when the report names a speaker)
+- `events[]` — each: `id` (monotonic, save/load-stable), `category`, `type` (announcement_type token), `text?` (continuation lines folded in), `color?`, `date`, `year?`, `time?` (tick-of-year), `repeat_count?` (only when > 0), `continuation_lines?`, `collapsed?`/`collapsed_count?` (a battle-run collapse marker, not a single report), `pos?` `{x,y,z}` tile anchor, `speaker?` `{id, hf_id?, name?}` (only when the report names a speaker; `id` is the unit_id, `hf_id` the speaker's historical-figure id for `historical_figure()`)
 
 ```json
 {
@@ -66,6 +66,7 @@ Top-level fields:
 - The report window is rolling and front-pruned by DF: if `since` predates it, `pruned: true` — the earlier events are unrecoverable.
 - Consecutive battle runs collapse after 6 kept events; the overflow becomes ONE marker event (`collapsed: true` with `collapsed_count`) so a siege cannot flood the window.
 - Unit references appear only when a report names a speaker (`speaker_id != -1`); combat reports carry no reliable unit id in DF 53.x (spike #9 finding: per-report `unit_id` does not exist), so they get a `pos` tile anchor instead.
+- A speaker's `hf_id` is absent when the speaking unit has no historical figure (`unit.hist_figure_id == -1`) or the unit is no longer loaded; `name` is absent in the second case too.
 - Event `id` is monotonic and save/load-stable — safe to persist as a long-lived cursor.
 - Returns `{"error":"no fort loaded"}` if no fort is active.
 

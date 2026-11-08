@@ -21,11 +21,11 @@ None.
 - `site_id` (number), `site_name` (Dwarven, e.g. "Geshud Nåzom"), `site_name_english`, `site_type` (df.world_site_type token, e.g. "PlayerFortress").
 - `pos` — `{ x, y }` world coordinates.
 - `current_year` (number), `age_years` (number, absent if founding year unknown).
-- `founding` — `{ year?, date?, civ_id, civ?, civ_english?, builder? }`; `date` like "15th Granite, Year 5"; `builder` present only when the saga records a founder.
+- `founding` — `{ year?, date?, civ_id, civ?, civ_english?, builder?, builder_hf_id? }`; `date` like "15th Granite, Year 5"; `builder`/`builder_hf_id` present only when the saga records a founder.
 - `name_etymology[]` — `{ word, part? }` per name word (English root + part of speech).
-- `battles[]` — site-scoped war events: `{ year?, type, attacker?, defender?, attacker_general?, defender_general?, outcome? }`; `type` is `WAR_ATTACKED_SITE | WAR_DESTROYED_SITE | WAR_SITE_NEW_LEADER`; `outcome` set when recorded (e.g. "site destroyed"). Most-recent-first.
+- `battles[]` — site-scoped war events: `{ year?, type, attacker?, defender?, attacker_general?, attacker_general_hf_id?, defender_general?, defender_general_hf_id?, outcome? }`; `type` is `WAR_ATTACKED_SITE | WAR_DESTROYED_SITE | WAR_SITE_NEW_LEADER`; `outcome` set when recorded (e.g. "site destroyed"). Most-recent-first.
 - `battles_truncated?`, `battles_total?` — present only when the 20-row cap dropped entries.
-- `notable_deaths[]` — `{ name, year?, race?, cause?, slain_by? }`; `race` is a creature token ("DWARF"), `cause` a df.death_type token ("BLEED"). Most-recent-first.
+- `notable_deaths[]` — `{ name, hf_id, year?, race?, cause?, slain_by?, slain_by_hf_id? }`; `hf_id` is the victim's historical-figure id, `slain_by_hf_id` the slayer's; `race` is a creature token ("DWARF"), `cause` a df.death_type token ("BLEED"). Most-recent-first.
 - `notable_deaths_truncated?`, `notable_deaths_total?` — present only when the 25-row cap dropped entries.
 
 ```json
@@ -52,9 +52,11 @@ None.
   "notable_deaths": [
     {
       "cause": "BLEED",
+      "hf_id": 179,
       "name": "Stukos Merchantage",
       "race": "DWARF",
       "slain_by": "Melbil Drillgorge",
+      "slain_by_hf_id": 177,
       "year": 6
     }
   ]
@@ -66,6 +68,7 @@ None.
 - Caps: battles 20, notable deaths 25, each most-recent-first; `*_truncated`/`*_total` appear ONLY when the cap actually dropped entries (optional keys, not always-false booleans).
 - "Battles" means sieges fought AT this site; region-scoped `WAR_FIELD_BATTLE` events (no `.site` field) are intentionally excluded.
 - "Notable" deaths require a NAMED historical figure — unnamed butchered livestock is skipped.
+- Every `*_hf_id` (and a death's `hf_id`) is a historical-figure id to pass to `historical_figure(hf_id)`. It is emitted whenever the saga's figure id resolves to a real figure, so a figure whose name does not translate still carries its id. Battle generals and the slayer carry an id only when the event records one.
 - A young fort with no war history degrades to empty battle/death lists (not an error).
 - Names pass through CP437-to-UTF-8 conversion so accented proper nouns are valid JSON.
 - Same-year events are tie-broken by saga insertion order for deterministic output (Lua table.sort is not stable).
@@ -76,7 +79,7 @@ None.
 - The loaded site is `df.global.plotinfo.site_id`, matched against the entry with the same `.id` in `df.global.world.world_data.sites`. Per-site fields used: `.name` (a `language_name`), `.type` (`df.world_site_type`; a player fort is `PlayerFortress`), `.created_year`, `.created_tick`, `.pos.{x,y}`. A player fort's own `.civ_id` is always `-1`, so the owning civ instead comes from `df.global.plotinfo.civ_id`, matched by `.id` in `df.global.world.entities.all`.
 - Names: `dfhack.translation.translateName(name)` gives the Dwarven form; `translateName(name, true)` gives English. Both are wrapped in `dfhack.df2utf` so CP437-encoded accents in proper nouns (e.g. o-umlaut, a-umlaut) decode to valid UTF-8 before hitting the JSON encoder.
 - Etymology walks `name.words[0..n]`, indexing `df.global.world.raws.language.words` for the English root word and `name.parts_of_speech[i]` (a `df.part_of_speech`) for its grammatical role.
-- Battles match history events whose `.site` equals the loaded site id and whose type is `WAR_ATTACKED_SITE`, `WAR_DESTROYED_SITE`, or `WAR_SITE_NEW_LEADER`; `.attacker_civ`/`.defender_civ`/`.attacker_general_hf`/`.defender_general_hf` resolve to display names. Notable deaths match `HIST_FIGURE_DIED` events with the same site scoping; `.victim_hf` resolves through `df.historical_figure.find`, `.death_cause` indexes `df.death_type`, and `.slayer_hf` resolves the killer's name when present.
+- Battles match history events whose `.site` equals the loaded site id and whose type is `WAR_ATTACKED_SITE`, `WAR_DESTROYED_SITE`, or `WAR_SITE_NEW_LEADER`; `.attacker_civ`/`.defender_civ`/`.attacker_general_hf`/`.defender_general_hf` resolve to display names and are re-emitted as `*_hf_id` once `df.historical_figure.find` confirms the figure exists. Notable deaths match `HIST_FIGURE_DIED` events with the same site scoping; `.victim_hf` resolves through `df.historical_figure.find`, `.death_cause` indexes `df.death_type`, and `.slayer_hf` resolves the killer's name when present. The victim's `.victim_hf` is emitted as `hf_id` and the slayer's as `slain_by_hf_id`; `CREATED_SITE`'s `.builder_hf` becomes `founding.builder_hf_id`.
 - The founding year is corroborated (and the builder captured) from the site's `CREATED_SITE` saga event when one exists, falling back to the site record's own `.created_year`/`.created_tick`.
 - In-game dates are computed from fixed DF calendar constants (33600 ticks/month, 1200 ticks/day) rather than a DFHack-provided formatter.
 - Because Lua's `table.sort` is not a stable sort, same-year battles/deaths carry an internal ascending insertion-order field through the sort as an explicit tie-break, then drop it before the response is emitted — without it, same-year ordering would not reliably match saga order.

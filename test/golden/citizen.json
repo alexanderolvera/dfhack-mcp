@@ -1,5 +1,6 @@
 {
   "age": 57,
+  "hf_id": 173,
   "name": "Tun Lolumavuz \"Woodenmines\", militia commander",
   "personality": {
     "extremes": [
@@ -40,6 +41,7 @@
     "friends": [
       {
         "affection": 95,
+        "hf_id": 169,
         "meet_count": 39,
         "name": "Cog Notchanvils",
         "respect": 0,
@@ -47,6 +49,7 @@
       },
       {
         "affection": 91,
+        "hf_id": 168,
         "meet_count": 44,
         "name": "Olin Bronzequakes",
         "respect": 0,
@@ -54,6 +57,7 @@
       },
       {
         "affection": 70,
+        "hf_id": 171,
         "meet_count": 30,
         "name": "Sigun Princessshoots",
         "respect": 0,
@@ -61,6 +65,7 @@
       },
       {
         "affection": 68,
+        "hf_id": 167,
         "meet_count": 31,
         "name": "Urist Inkleaves",
         "respect": 0,
@@ -68,6 +73,7 @@
       },
       {
         "affection": 64,
+        "hf_id": 170,
         "meet_count": 30,
         "name": "Obok Dothalls",
         "respect": 0,
@@ -75,6 +81,7 @@
       },
       {
         "affection": 30,
+        "hf_id": 172,
         "meet_count": 30,
         "name": "Atír Coalgulfs",
         "respect": 0,
@@ -82,6 +89,7 @@
       },
       {
         "affection": 10,
+        "hf_id": 176,
         "meet_count": 2,
         "name": "Zon Quillposts",
         "respect": 0,
@@ -89,10 +97,11 @@
       },
       {
         "affection": 10,
-        "meet_count": 1,
-        "name": "Etur Tombcobras",
+        "hf_id": 190,
+        "meet_count": 2,
+        "name": "Id Monkurn",
         "respect": 0,
-        "unit_id": 341
+        "unit_id": 309
       }
     ],
     "friends_total": 12,
@@ -227,6 +236,7 @@
   "worship": [
     {
       "deity": "Thabost Diamondflames",
+      "hf_id": 22,
       "strength": 44
     }
   ]
