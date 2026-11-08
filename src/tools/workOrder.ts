@@ -183,7 +183,7 @@ export const workOrderCreateDef = defineActuator<CreateArgs>({
       .string()
       .optional()
       .describe('material token, e.g. "INORGANIC:IRON", "PLANT_MAT:..."; not for PrepareMeal'),
-    meal_ingredients: z
+    meal_ingredients: z.coerce
       .number()
       .int()
       .optional()
