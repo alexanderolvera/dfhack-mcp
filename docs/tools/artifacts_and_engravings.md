@@ -17,7 +17,7 @@ Reports the fort's named artifacts (paginated) plus an aggregated summary of the
 ## Parameters
 | Name | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
-| limit | number (int, 1-100) | No | 25 | Artifacts per page (max 100). Engravings are always fully aggregated. |
+| limit | integer (coerced, 1-100) | No | 25 | Artifacts per page (max 100). Engravings are always fully aggregated. |
 | cursor | string | No | — | Opaque pagination cursor from a previous call's `next_cursor`; omit for the first page. |
 | scope | `"site"` \| `"world"` | No | `"site"` | Which artifacts to return. `site` = only the loaded fort's. `world` = every artifact in the world, each row tagged `site_local`. |
 

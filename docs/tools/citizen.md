@@ -17,7 +17,7 @@ Where find_unit stays compact, this is the depth: one citizen's walkable social 
 ## Parameters
 | Name | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
-| unit_id | string (all digits) | Yes | — | A live unit_id, e.g. from a find_unit match. |
+| unit_id | integer (coerced, ≥ 0) | Yes | — | A live unit_id, e.g. from a find_unit match. |
 
 ## Returns
 Top-level fields:

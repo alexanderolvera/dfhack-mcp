@@ -22,9 +22,9 @@ Exactly one of `csv` or `blueprint_path` must be supplied, matching whichever so
 | csv | string | One of | — | The SAME quickfort CSV that was applied (first non-blank line is the #dig or #zone modeline). |
 | blueprint_path | string | One of | — | The SAME on-disk blueprint path that was applied (e.g. `library/dreamfort.csv`). |
 | blueprint_label | string | No | first blueprint in the file | The SAME phase label that was applied. |
-| anchor_x | number (int) | Yes | — | World x the blueprint started at. |
-| anchor_y | number (int) | Yes | — | World y the blueprint started at. |
-| anchor_z | number (int) | Yes | — | World z-level the blueprint started at. |
+| anchor_x | integer (coerced) | Yes | — | World x the blueprint started at. |
+| anchor_y | integer (coerced) | Yes | — | World y the blueprint started at. |
+| anchor_z | integer (coerced) | Yes | — | World z-level the blueprint started at. |
 | mode | string | Yes | — | Blueprint mode — only "dig" and "zone" are supported in v1. |
 | confirm_token | string | No | — | Omit to DRY-RUN; pass the returned token to APPLY. |
 

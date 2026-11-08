@@ -83,9 +83,9 @@ export const blueprintApplyDef = defineActuator<BlueprintArgs>({
   tokenPrefix: 'bp',
   shape: {
     ...SOURCE_SHAPE,
-    anchor_x: z.number().int().describe('world x the blueprint starts at'),
-    anchor_y: z.number().int().describe('world y the blueprint starts at'),
-    anchor_z: z.number().int().describe('world z-level the blueprint starts at'),
+    anchor_x: z.coerce.number().int().describe('world x the blueprint starts at'),
+    anchor_y: z.coerce.number().int().describe('world y the blueprint starts at'),
+    anchor_z: z.coerce.number().int().describe('world z-level the blueprint starts at'),
     mode: z.string().describe(MODE_DESC),
   },
   plan: async (a): Promise<PlanResult | { error: string }> => {
@@ -116,9 +116,9 @@ export const blueprintUndoDef = defineActuator<BlueprintArgs>({
   tokenPrefix: 'bp',
   shape: {
     ...SOURCE_SHAPE,
-    anchor_x: z.number().int().describe('world x the blueprint starts at'),
-    anchor_y: z.number().int().describe('world y the blueprint starts at'),
-    anchor_z: z.number().int().describe('world z-level the blueprint starts at'),
+    anchor_x: z.coerce.number().int().describe('world x the blueprint starts at'),
+    anchor_y: z.coerce.number().int().describe('world y the blueprint starts at'),
+    anchor_z: z.coerce.number().int().describe('world z-level the blueprint starts at'),
     mode: z.string().describe(MODE_DESC),
   },
   plan: async (a): Promise<PlanResult | { error: string }> => {

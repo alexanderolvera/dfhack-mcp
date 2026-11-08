@@ -103,7 +103,7 @@ export const civilianAlertDef = defineActuator<CivilianAlertArgs>({
       .describe(
         'exact burrow name (from burrows()), e.g. "Inside+" — ignored when burrow_id is given'
       ),
-    burrow_id: z
+    burrow_id: z.coerce
       .number()
       .int()
       .optional()

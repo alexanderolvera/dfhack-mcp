@@ -19,10 +19,10 @@ This is the highest-stakes actuator in the server. It sends real dwarves into re
 ## Parameters
 | Name | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
-| squad_id | number (int) | Yes | — | Squad id from `military().squads[].squad_id`. |
+| squad_id | integer (coerced) | Yes | — | Squad id from `military().squads[].squad_id`. |
 | order | `"move"` \| `"kill"` \| `"cancel"` | Yes | — | `move` = go to x,y,z and hold; `kill` = attack `target_unit_ids`; `cancel` = clear this squad's orders and release it. |
-| x, y, z | number (int) | For `move` | — | Move target tile. |
-| target_unit_ids | number[] (int) | For `kill` | — | Unit ids to kill (e.g. from `threats()`), max 32. |
+| x, y, z | integer (coerced) | For `move` | — | Move target tile. |
+| target_unit_ids | integer[] (coerced) | For `kill` | — | Unit ids to kill (e.g. from `threats()`), max 32. |
 | confirm_token | string | No | — | Omit to DRY-RUN; pass the returned token to APPLY. |
 
 ## Returns

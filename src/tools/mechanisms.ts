@@ -157,7 +157,7 @@ export const pullLeverDef = defineActuator<PullLeverArgs>({
     'Verify with mechanisms.',
   tokenPrefix: 'pl',
   shape: {
-    lever_id: z.number().int().describe('building id of the lever (from mechanisms())'),
+    lever_id: z.coerce.number().int().describe('building id of the lever (from mechanisms())'),
     urgent: z
       .boolean()
       .optional()
