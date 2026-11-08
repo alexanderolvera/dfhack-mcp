@@ -287,247 +287,961 @@
   },
   "cursor": 0,
   "engravings": {
-    "art_images_loaded": false,
+    "art_images_loaded": true,
     "by_subject": [
       {
         "count": 13,
+        "image": {
+          "elements": [
+            {
+              "count": 2,
+              "item_type": "GLOVES",
+              "name": "two jagged gauntlets",
+              "type": "ITEM"
+            }
+          ],
+          "properties": [],
+          "year": 5
+        },
         "ref": "0:70",
-        "subject": "image #0:70",
-        "subject_resolved": false
+        "subject": "The Brass Shin",
+        "subject_resolved": true
       },
       {
         "count": 12,
+        "image": {
+          "elements": [
+            {
+              "count": 1,
+              "item_type": "CRUTCH",
+              "name": "a crutch",
+              "type": "ITEM"
+            }
+          ],
+          "properties": [],
+          "year": 5
+        },
         "ref": "0:83",
-        "subject": "image #0:83",
-        "subject_resolved": false
+        "subject": "The Rope of Rapidity",
+        "subject_resolved": true
       },
       {
         "count": 1,
+        "image": {
+          "elements": [
+            {
+              "name": "diamonds",
+              "shape": "DIAMOND",
+              "type": "SHAPE"
+            }
+          ],
+          "properties": [],
+          "year": 7
+        },
         "ref": "0:139",
-        "subject": "image #0:139",
-        "subject_resolved": false
+        "subject": "The Boil of Birds",
+        "subject_resolved": true
       },
       {
         "count": 1,
+        "image": {
+          "elements": [
+            {
+              "item_type": "SKIN_TANNED",
+              "name": "tanned hides",
+              "type": "ITEM"
+            }
+          ],
+          "properties": [],
+          "year": 7
+        },
         "ref": "0:140",
-        "subject": "image #0:140",
-        "subject_resolved": false
+        "subject": "The Contest of Haunts",
+        "subject_resolved": true
       },
       {
         "count": 1,
+        "image": {
+          "elements": [
+            {
+              "name": "square brilliant cut gems",
+              "shape": "SQUARE_BRILLIANT_CUT_GEM",
+              "type": "SHAPE"
+            }
+          ],
+          "properties": [],
+          "year": 7
+        },
         "ref": "0:142",
-        "subject": "image #0:142",
-        "subject_resolved": false
+        "subject": "The Livid Past",
+        "subject_resolved": true
       },
       {
         "count": 1,
+        "image": {
+          "elements": [
+            {
+              "count": 1,
+              "item_type": "THREAD",
+              "name": "a thread",
+              "type": "ITEM"
+            }
+          ],
+          "properties": [],
+          "year": 7
+        },
         "ref": "0:143",
-        "subject": "image #0:143",
-        "subject_resolved": false
+        "subject": "The Sacrificial Cremation",
+        "subject_resolved": true
       },
       {
         "count": 1,
+        "image": {
+          "elements": [
+            {
+              "count": 1,
+              "item_type": "PANTS",
+              "name": "a trousers",
+              "type": "ITEM"
+            }
+          ],
+          "properties": [],
+          "year": 7
+        },
         "ref": "0:144",
-        "subject": "image #0:144",
-        "subject_resolved": false
+        "subject": "The Tip of Luxuries",
+        "subject_resolved": true
       },
       {
         "count": 1,
+        "image": {
+          "elements": [
+            {
+              "item_type": "PANTS",
+              "name": "trousers",
+              "type": "ITEM"
+            }
+          ],
+          "properties": [],
+          "year": 7
+        },
         "ref": "0:145",
-        "subject": "image #0:145",
-        "subject_resolved": false
+        "subject": "The Chunky Life",
+        "subject_resolved": true
       },
       {
         "count": 1,
+        "image": {
+          "elements": [
+            {
+              "count": 1,
+              "histfig_id": 87,
+              "name": "Ñabsiz Menwills the human",
+              "race": "HUMAN",
+              "type": "CREATURE"
+            }
+          ],
+          "event": {
+            "id": 181,
+            "type": "CHANGE_HF_STATE",
+            "year": 3
+          },
+          "properties": [
+            {
+              "subject": 0,
+              "text": "Ñabsiz Menwills is traveling.",
+              "type": "intransitive_verb",
+              "verb": "Traveling"
+            }
+          ],
+          "year": 7
+        },
         "ref": "0:146",
-        "subject": "image #0:146",
-        "subject_resolved": false
+        "subject": "The South Arena",
+        "subject_resolved": true
       },
       {
         "count": 1,
+        "image": {
+          "elements": [
+            {
+              "count": 1,
+              "item_type": "BIN",
+              "material": {
+                "name": "cherry wood",
+                "token": "PLANT:CHERRY:WOOD"
+              },
+              "name": "Primedepth the cherry wood bin",
+              "type": "ITEM"
+            }
+          ],
+          "properties": [],
+          "year": 7
+        },
         "ref": "0:148",
-        "subject": "image #0:148",
-        "subject_resolved": false
+        "subject": "The Unspeakable Proliferations of Stretching",
+        "subject_resolved": true
       },
       {
         "count": 1,
+        "image": {
+          "elements": [
+            {
+              "count": 1,
+              "item_type": "BIN",
+              "material": {
+                "name": "cherry wood",
+                "token": "PLANT:CHERRY:WOOD"
+              },
+              "name": "Primedepth the cherry wood bin",
+              "type": "ITEM"
+            }
+          ],
+          "properties": [],
+          "year": 7
+        },
         "ref": "0:150",
-        "subject": "image #0:150",
-        "subject_resolved": false
+        "subject": "The Pleat of Skulls",
+        "subject_resolved": true
       },
       {
         "count": 1,
+        "image": {
+          "elements": [
+            {
+              "item_type": "CROWN",
+              "name": "crowns",
+              "type": "ITEM"
+            }
+          ],
+          "properties": [],
+          "year": 7
+        },
         "ref": "0:151",
-        "subject": "image #0:151",
-        "subject_resolved": false
+        "subject": "The Bolt of Obscurity",
+        "subject_resolved": true
       },
       {
         "count": 1,
+        "image": {
+          "elements": [
+            {
+              "count": 1,
+              "histfig_id": 170,
+              "name": "Obok Dothalls the dwarf",
+              "race": "DWARF",
+              "type": "CREATURE",
+              "unit_id": 114
+            },
+            {
+              "count": 1,
+              "item_type": "DOOR",
+              "material": {
+                "name": "chert",
+                "token": "INORGANIC:CHERT"
+              },
+              "name": "a chert door",
+              "type": "ITEM"
+            }
+          ],
+          "event": {
+            "id": 822,
+            "type": "MASTERPIECE_CREATED_ITEM",
+            "year": 6
+          },
+          "properties": [
+            {
+              "object": 1,
+              "subject": 0,
+              "text": "Obok Dothalls is raising the chert door.",
+              "type": "transitive_verb",
+              "verb": "Raising"
+            }
+          ],
+          "year": 7
+        },
         "ref": "0:152",
-        "subject": "image #0:152",
-        "subject_resolved": false
+        "subject": "The Tender Morsel",
+        "subject_resolved": true
       },
       {
         "count": 1,
+        "image": {
+          "elements": [
+            {
+              "name": "dwarves",
+              "race": "DWARF",
+              "type": "CREATURE"
+            }
+          ],
+          "event": {
+            "id": 291,
+            "type": "CREATED_SITE",
+            "year": 5
+          },
+          "properties": [
+            {
+              "subject": 0,
+              "text": "The dwarves are laboring.",
+              "type": "intransitive_verb",
+              "verb": "Laboring"
+            }
+          ],
+          "year": 7
+        },
         "ref": "0:154",
-        "subject": "image #0:154",
-        "subject_resolved": false
+        "subject": "The Tribe of Newts",
+        "subject_resolved": true
       },
       {
         "count": 1,
+        "image": {
+          "elements": [
+            {
+              "count": 1,
+              "item_type": "SHIELD",
+              "material": {
+                "name": "leather",
+                "token": "CREATURE:MULE:LEATHER"
+              },
+              "name": "The Bolt of Mansions the mule leather buckler",
+              "type": "ITEM"
+            }
+          ],
+          "properties": [],
+          "year": 7
+        },
         "ref": "0:155",
-        "subject": "image #0:155",
-        "subject_resolved": false
+        "subject": "The Hell of Crawling",
+        "subject_resolved": true
       },
       {
         "count": 1,
+        "image": {
+          "elements": [
+            {
+              "name": "dwarves",
+              "race": "DWARF",
+              "type": "CREATURE"
+            }
+          ],
+          "event": {
+            "id": 291,
+            "type": "CREATED_SITE",
+            "year": 5
+          },
+          "properties": [
+            {
+              "subject": 0,
+              "text": "The dwarves are traveling.",
+              "type": "intransitive_verb",
+              "verb": "Traveling"
+            }
+          ],
+          "year": 7
+        },
         "ref": "0:156",
-        "subject": "image #0:156",
-        "subject_resolved": false
+        "subject": "The Pumpkin of Buttons",
+        "subject_resolved": true
       },
       {
         "count": 1,
+        "image": {
+          "elements": [
+            {
+              "count": 1,
+              "name": "a gizzard stone",
+              "shape": "GIZZARD_STONE",
+              "type": "SHAPE"
+            }
+          ],
+          "properties": [],
+          "year": 7
+        },
         "ref": "0:157",
-        "subject": "image #0:157",
-        "subject_resolved": false
+        "subject": "The Shriveled Creation",
+        "subject_resolved": true
       },
       {
         "count": 1,
+        "image": {
+          "elements": [
+            {
+              "count": 1,
+              "histfig_id": 187,
+              "name": "Goden Sculptedpainted the dwarf",
+              "race": "DWARF",
+              "type": "CREATURE",
+              "unit_id": 306
+            }
+          ],
+          "event": {
+            "id": 657,
+            "type": "CHANGE_HF_MOOD",
+            "year": 6
+          },
+          "properties": [
+            {
+              "subject": 0,
+              "text": "Goden Sculptedpainted is contemplating.",
+              "type": "intransitive_verb",
+              "verb": "Contemplating"
+            }
+          ],
+          "year": 7
+        },
         "ref": "0:158",
-        "subject": "image #0:158",
-        "subject_resolved": false
+        "subject": "The Tangled Shin",
+        "subject_resolved": true
       },
       {
         "count": 1,
+        "image": {
+          "elements": [
+            {
+              "count": 1,
+              "histfig_id": 87,
+              "name": "Ñabsiz Menwills the human",
+              "race": "HUMAN",
+              "type": "CREATURE"
+            }
+          ],
+          "event": {
+            "id": 181,
+            "type": "CHANGE_HF_STATE",
+            "year": 3
+          },
+          "properties": [
+            {
+              "subject": 0,
+              "text": "Ñabsiz Menwills is traveling.",
+              "type": "intransitive_verb",
+              "verb": "Traveling"
+            }
+          ],
+          "year": 7
+        },
         "ref": "0:159",
-        "subject": "image #0:159",
-        "subject_resolved": false
+        "subject": "The Speechless Ruthlessness",
+        "subject_resolved": true
       },
       {
         "count": 1,
+        "image": {
+          "elements": [
+            {
+              "count": 1,
+              "item_type": "SHIELD",
+              "material": {
+                "name": "leather",
+                "token": "CREATURE:MULE:LEATHER"
+              },
+              "name": "The Bolt of Mansions the mule leather buckler",
+              "type": "ITEM"
+            }
+          ],
+          "properties": [],
+          "year": 7
+        },
         "ref": "0:160",
-        "subject": "image #0:160",
-        "subject_resolved": false
+        "subject": "The Smith of Rasps",
+        "subject_resolved": true
       },
       {
         "count": 1,
+        "image": {
+          "elements": [
+            {
+              "count": 1,
+              "name": "a dwarf",
+              "race": "DWARF",
+              "type": "CREATURE"
+            }
+          ],
+          "properties": [],
+          "year": 7
+        },
         "ref": "0:161",
-        "subject": "image #0:161",
-        "subject_resolved": false
+        "subject": "The Trough of Responsibility",
+        "subject_resolved": true
       },
       {
         "count": 1,
+        "image": {
+          "elements": [
+            {
+              "name": "square brilliant cut gems",
+              "shape": "SQUARE_BRILLIANT_CUT_GEM",
+              "type": "SHAPE"
+            }
+          ],
+          "properties": [],
+          "year": 7
+        },
         "ref": "0:162",
-        "subject": "image #0:162",
-        "subject_resolved": false
+        "subject": "The Equity of Chance",
+        "subject_resolved": true
       },
       {
         "count": 1,
+        "image": {
+          "elements": [
+            {
+              "count": 1,
+              "histfig_id": 87,
+              "name": "Ñabsiz Menwills the human",
+              "race": "HUMAN",
+              "type": "CREATURE"
+            }
+          ],
+          "event": {
+            "id": 181,
+            "type": "CHANGE_HF_STATE",
+            "year": 3
+          },
+          "properties": [
+            {
+              "subject": 0,
+              "text": "Ñabsiz Menwills is traveling.",
+              "type": "intransitive_verb",
+              "verb": "Traveling"
+            }
+          ],
+          "year": 7
+        },
         "ref": "0:163",
-        "subject": "image #0:163",
-        "subject_resolved": false
+        "subject": "The Test of Camping",
+        "subject_resolved": true
       },
       {
         "count": 1,
+        "image": {
+          "elements": [
+            {
+              "count": 2,
+              "item_type": "TABLE",
+              "name": "two tables",
+              "type": "ITEM"
+            }
+          ],
+          "properties": [],
+          "year": 7
+        },
         "ref": "0:164",
-        "subject": "image #0:164",
-        "subject_resolved": false
+        "subject": "The Shingles of Infection",
+        "subject_resolved": true
       },
       {
         "count": 1,
+        "image": {
+          "elements": [
+            {
+              "name": "dwarves",
+              "race": "DWARF",
+              "type": "CREATURE"
+            }
+          ],
+          "event": {
+            "id": 291,
+            "type": "CREATED_SITE",
+            "year": 5
+          },
+          "properties": [
+            {
+              "subject": 0,
+              "text": "The dwarves are laboring.",
+              "type": "intransitive_verb",
+              "verb": "Laboring"
+            }
+          ],
+          "year": 7
+        },
         "ref": "0:165",
-        "subject": "image #0:165",
-        "subject_resolved": false
+        "subject": "The Butcher of Brushing",
+        "subject_resolved": true
       },
       {
         "count": 1,
+        "image": {
+          "elements": [
+            {
+              "count": 1,
+              "item_type": "BIN",
+              "material": {
+                "name": "cherry wood",
+                "token": "PLANT:CHERRY:WOOD"
+              },
+              "name": "Primedepth the cherry wood bin",
+              "type": "ITEM"
+            }
+          ],
+          "properties": [],
+          "year": 7
+        },
         "ref": "0:167",
-        "subject": "image #0:167",
-        "subject_resolved": false
+        "subject": "The Spotted Bunches",
+        "subject_resolved": true
       },
       {
         "count": 1,
+        "image": {
+          "elements": [
+            {
+              "name": "olive trees",
+              "plant": "OLIVE",
+              "type": "TREE"
+            }
+          ],
+          "properties": [],
+          "year": 7
+        },
         "ref": "0:168",
-        "subject": "image #0:168",
-        "subject_resolved": false
+        "subject": "The Lace of Cankers",
+        "subject_resolved": true
       },
       {
         "count": 1,
+        "image": {
+          "elements": [
+            {
+              "count": 1,
+              "histfig_id": 87,
+              "name": "Ñabsiz Menwills the human",
+              "race": "HUMAN",
+              "type": "CREATURE"
+            }
+          ],
+          "event": {
+            "id": 182,
+            "type": "CHANGE_HF_JOB",
+            "year": 3
+          },
+          "properties": [
+            {
+              "subject": 0,
+              "text": "Ñabsiz Menwills is laboring.",
+              "type": "intransitive_verb",
+              "verb": "Laboring"
+            }
+          ],
+          "year": 7
+        },
         "ref": "0:169",
-        "subject": "image #0:169",
-        "subject_resolved": false
+        "subject": "The Gorge of Peaks",
+        "subject_resolved": true
       },
       {
         "count": 1,
+        "image": {
+          "elements": [
+            {
+              "name": "grizzly bear men",
+              "race": "BEAR_GRIZZLY_MAN",
+              "type": "CREATURE"
+            }
+          ],
+          "properties": [],
+          "year": 7
+        },
         "ref": "0:171",
-        "subject": "image #0:171",
-        "subject_resolved": false
+        "subject": "The Tame Portents",
+        "subject_resolved": true
       },
       {
         "count": 1,
+        "image": {
+          "elements": [
+            {
+              "name": "dwarves",
+              "race": "DWARF",
+              "type": "CREATURE"
+            }
+          ],
+          "event": {
+            "id": 291,
+            "type": "CREATED_SITE",
+            "year": 5
+          },
+          "properties": [
+            {
+              "subject": 0,
+              "text": "The dwarves are laboring.",
+              "type": "intransitive_verb",
+              "verb": "Laboring"
+            }
+          ],
+          "year": 7
+        },
         "ref": "0:173",
-        "subject": "image #0:173",
-        "subject_resolved": false
+        "subject": "The Vulgarities of Bone",
+        "subject_resolved": true
       },
       {
         "count": 1,
+        "image": {
+          "elements": [
+            {
+              "count": 1,
+              "name": "a grizzly bear man",
+              "race": "BEAR_GRIZZLY_MAN",
+              "type": "CREATURE"
+            }
+          ],
+          "properties": [],
+          "year": 7
+        },
         "ref": "0:174",
-        "subject": "image #0:174",
-        "subject_resolved": false
+        "subject": "The Armor of Tips",
+        "subject_resolved": true
       },
       {
         "count": 1,
+        "image": {
+          "elements": [
+            {
+              "count": 1,
+              "item_type": "ARMORSTAND",
+              "name": "a armor stand",
+              "type": "ITEM"
+            }
+          ],
+          "properties": [],
+          "year": 7
+        },
         "ref": "0:175",
-        "subject": "image #0:175",
-        "subject_resolved": false
+        "subject": "The Disembowelment of Torments",
+        "subject_resolved": true
       },
       {
         "count": 1,
+        "image": {
+          "elements": [
+            {
+              "count": 1,
+              "item_type": "BIN",
+              "material": {
+                "name": "cherry wood",
+                "token": "PLANT:CHERRY:WOOD"
+              },
+              "name": "Primedepth the cherry wood bin",
+              "type": "ITEM"
+            }
+          ],
+          "properties": [],
+          "year": 7
+        },
         "ref": "0:176",
-        "subject": "image #0:176",
-        "subject_resolved": false
+        "subject": "The Taupe Whisky",
+        "subject_resolved": true
       },
       {
         "count": 1,
+        "image": {
+          "elements": [
+            {
+              "count": 1,
+              "histfig_id": 173,
+              "name": "Tun Woodenmines the dwarf",
+              "race": "DWARF",
+              "type": "CREATURE",
+              "unit_id": 111
+            },
+            {
+              "name": "dwarves",
+              "race": "DWARF",
+              "type": "CREATURE"
+            }
+          ],
+          "event": {
+            "id": 307,
+            "type": "ADD_HF_ENTITY_LINK",
+            "year": 5
+          },
+          "properties": [
+            {
+              "object": 1,
+              "subject": 0,
+              "text": "Tun Woodenmines is surrounded by the dwarves.",
+              "type": "transitive_verb",
+              "verb": "SurroundedBy"
+            }
+          ],
+          "year": 7
+        },
         "ref": "0:177",
-        "subject": "image #0:177",
-        "subject_resolved": false
+        "subject": "The Blowing Ruler",
+        "subject_resolved": true
       },
       {
         "count": 1,
+        "image": {
+          "elements": [
+            {
+              "count": 1,
+              "histfig_id": 173,
+              "name": "Tun Woodenmines the dwarf",
+              "race": "DWARF",
+              "type": "CREATURE",
+              "unit_id": 111
+            },
+            {
+              "name": "dwarves",
+              "race": "DWARF",
+              "type": "CREATURE"
+            }
+          ],
+          "event": {
+            "id": 307,
+            "type": "ADD_HF_ENTITY_LINK",
+            "year": 5
+          },
+          "properties": [
+            {
+              "object": 1,
+              "subject": 0,
+              "text": "Tun Woodenmines is surrounded by the dwarves.",
+              "type": "transitive_verb",
+              "verb": "SurroundedBy"
+            }
+          ],
+          "year": 7
+        },
         "ref": "0:178",
-        "subject": "image #0:178",
-        "subject_resolved": false
+        "subject": "The Held Ears",
+        "subject_resolved": true
       },
       {
         "count": 1,
+        "image": {
+          "elements": [
+            {
+              "name": "dwarves",
+              "race": "DWARF",
+              "type": "CREATURE"
+            }
+          ],
+          "event": {
+            "id": 291,
+            "type": "CREATED_SITE",
+            "year": 5
+          },
+          "properties": [
+            {
+              "subject": 0,
+              "text": "The dwarves are traveling.",
+              "type": "intransitive_verb",
+              "verb": "Traveling"
+            }
+          ],
+          "year": 7
+        },
         "ref": "0:179",
-        "subject": "image #0:179",
-        "subject_resolved": false
+        "subject": "The Stoker of Plotting",
+        "subject_resolved": true
       },
       {
         "count": 1,
+        "image": {
+          "elements": [
+            {
+              "count": 1,
+              "histfig_id": 87,
+              "name": "Ñabsiz Menwills the human",
+              "race": "HUMAN",
+              "type": "CREATURE"
+            }
+          ],
+          "event": {
+            "id": 181,
+            "type": "CHANGE_HF_STATE",
+            "year": 3
+          },
+          "properties": [
+            {
+              "subject": 0,
+              "text": "Ñabsiz Menwills is traveling.",
+              "type": "intransitive_verb",
+              "verb": "Traveling"
+            }
+          ],
+          "year": 7
+        },
         "ref": "0:180",
-        "subject": "image #0:180",
-        "subject_resolved": false
+        "subject": "The Kindness of Voids",
+        "subject_resolved": true
       },
       {
         "count": 1,
+        "image": {
+          "elements": [
+            {
+              "count": 1,
+              "histfig_id": 168,
+              "name": "Olin Bronzequakes the dwarf",
+              "race": "DWARF",
+              "type": "CREATURE",
+              "unit_id": 116
+            },
+            {
+              "name": "dwarves",
+              "race": "DWARF",
+              "type": "CREATURE"
+            }
+          ],
+          "event": {
+            "id": 306,
+            "type": "ADD_HF_ENTITY_LINK",
+            "year": 5
+          },
+          "properties": [
+            {
+              "object": 1,
+              "subject": 0,
+              "text": "Olin Bronzequakes is surrounded by the dwarves.",
+              "type": "transitive_verb",
+              "verb": "SurroundedBy"
+            }
+          ],
+          "year": 7
+        },
         "ref": "0:181",
-        "subject": "image #0:181",
-        "subject_resolved": false
+        "subject": "The Fangs of Emancipation",
+        "subject_resolved": true
       },
       {
         "count": 1,
+        "image": {
+          "elements": [
+            {
+              "name": "cushion cut gems",
+              "shape": "CUSHION_CUT_GEM",
+              "type": "SHAPE"
+            }
+          ],
+          "properties": [],
+          "year": 7
+        },
         "ref": "0:182",
-        "subject": "image #0:182",
-        "subject_resolved": false
+        "subject": "The Wails of Soaking",
+        "subject_resolved": true
       },
       {
         "count": 1,
+        "image": {
+          "elements": [
+            {
+              "count": 2,
+              "name": "two grizzly bear men",
+              "race": "BEAR_GRIZZLY_MAN",
+              "type": "CREATURE"
+            }
+          ],
+          "properties": [],
+          "year": 7
+        },
         "ref": "0:183",
-        "subject": "image #0:183",
-        "subject_resolved": false
+        "subject": "The Rumored Leeches",
+        "subject_resolved": true
       }
     ],
     "by_subject_truncated": true,
@@ -541,7 +1255,7 @@
     },
     "scan_truncated": false,
     "scanned": 119,
-    "subjects_resolvable": false,
+    "subjects_resolvable": true,
     "top_engravers": [
       {
         "count": 64,

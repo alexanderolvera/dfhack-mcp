@@ -161,56 +161,167 @@ local function build_artifacts(cursor, limit, scope)
   return list, total, world_total, next_cursor
 end
 
-local chunk_by_id = {}
-local art_images_loaded = false
-do
-  local ok = pcall(function()
+local function chunk_index()
+  local idx = {}
+  pcall(function()
     local chunks = df.global.world.art_image_chunks.all
-    for i = 0, #chunks - 1 do chunk_by_id[chunks[i].id] = chunks[i] end
+    for i = 0, #chunks - 1 do idx[chunks[i].id] = chunks[i] end
   end)
-  art_images_loaded = ok and next(chunk_by_id) ~= nil
+  return idx
 end
 
-local function resolve_subject(art_id, art_subid)
-  local chunk = chunk_by_id[art_id]
-  if not chunk then return nil end
-  local ok, subj = pcall(function()
-    local imgs = chunk.images
-    if art_subid >= 0 and art_subid < #imgs then return tname(imgs[art_subid].name, true) end
-    return nil
-  end)
-  return ok and subj or nil
+local SHEET_FIELDS = {
+  'open', 'active_sheet', 'active_id', 'viewing_x', 'viewing_y', 'viewing_z',
+  'engraving_title', 'raw_description',
+}
+
+local function load_chunks_via_engraving_sheet(pos_by_chunk)
+  local scr = dfhack.gui.getDFViewscreen(true)
+  if not df.viewscreen_dwarfmodest:is_instance(scr) then return end
+  local vs = df.global.game.main_interface.view_sheets
+  if vs.open then return end
+  local saved = {}
+  for _, f in ipairs(SHEET_FIELDS) do saved[f] = vs[f] end
+  local paused = df.global.pause_state
+  df.global.pause_state = true
+  for _, pos in pairs(pos_by_chunk) do
+    vs.open = true
+    vs.active_sheet = df.view_sheet_type.ENGRAVING
+    vs.viewing_x, vs.viewing_y, vs.viewing_z = pos.x, pos.y, pos.z
+    pcall(scr.logic, scr)
+  end
+  for _, f in ipairs(SHEET_FIELDS) do vs[f] = saved[f] end
+  df.global.pause_state = paused
+end
+
+local function ensure_chunks(engs, scanned)
+  local idx = chunk_index()
+  local missing, any = {}, false
+  for i = 0, scanned - 1 do
+    local g = engs[i]
+    local art_id = sget(g, 'art_id')
+    if art_id and art_id >= 0 and not idx[art_id] and not missing[art_id] then
+      missing[art_id] = g.pos
+      any = true
+    end
+  end
+  if any then
+    pcall(load_chunks_via_engraving_sheet, missing)
+    idx = chunk_index()
+  end
+  return idx
+end
+
+local function find_image(idx, art_id, art_subid)
+  local chunk = idx[art_id]
+  if not chunk or not art_subid or art_subid < 0 then return nil end
+  local ok, img = pcall(function() return chunk.images[art_subid].art_image end)
+  return ok and img or nil
+end
+
+local function df_text(fn)
+  local s = df.new('string')
+  local ok = pcall(fn, s)
+  local v = ok and clean(s.value) or nil
+  df.delete(s)
+  return v
+end
+
+local function enum_label(enum, v)
+  local ok, label = pcall(function() return enum[v] end)
+  return (ok and label) and tostring(label) or nil
+end
+
+local function element_fact(el)
+  local ty = enum_label(df.art_image_element_type, el:getType())
+  local f = {
+    type = ty or 'unknown',
+    name = df_text(function(s) el:getName(s, false, true, false) end),
+  }
+  local count = sget(el, 'count')
+  if count and count > 0 then f.count = count end
+  if ty == 'CREATURE' then
+    local cr = df.creature_raw.find(el.race)
+    f.race = cr and cr.creature_id or nil
+    if el.histfig >= 0 then
+      f.histfig_id = el.histfig
+      f.unit_id = citizen_by_hf[el.histfig]
+    end
+  elseif ty == 'PLANT' or ty == 'TREE' then
+    local ok, pl = pcall(function() return df.global.world.raws.plants.all[el.plant_id] end)
+    f.plant = (ok and pl) and pl.id or nil
+  elseif ty == 'SHAPE' then
+    local ok, sh = pcall(function() return df.global.world.raws.descriptors.shapes[el.shape_id] end)
+    f.shape = (ok and sh) and sh.id or nil
+  elseif ty == 'ITEM' then
+    f.item_type = enum_label(df.item_type, el.item_type)
+    if el.mat_type >= 0 then f.material = mat_of(el.mat_type, el.mat_index) end
+  end
+  return f
+end
+
+local function property_fact(img, p)
+  local ty = enum_label(df.art_image_property_type, p:getType())
+  local f = {
+    type = ty or 'unknown',
+    verb = enum_label(df.art_image_property_verb, sget(p, 'verb')),
+    subject = sget(p, 'subject'),
+    object = sget(p, 'object'),
+    text = df_text(function(s) p:getName(s, img, true, false) end),
+  }
+  return f
+end
+
+local function event_fact(event_id)
+  if not event_id or event_id < 0 then return nil end
+  local ev = df.history_event.find(event_id)
+  if not ev then return { id = event_id } end
+  return {
+    id = event_id,
+    type = enum_label(df.history_event_type, ev:getType()),
+    year = sget(ev, 'year'),
+  }
+end
+
+local function image_fact(img)
+  local elements, properties = {}, {}
+  for _, el in ipairs(img.elements) do
+    local ok, f = pcall(element_fact, el)
+    elements[#elements + 1] = ok and f or { type = 'unknown' }
+  end
+  for _, p in ipairs(img.properties) do
+    local ok, f = pcall(property_fact, img, p)
+    properties[#properties + 1] = ok and f or { type = 'unknown' }
+  end
+  return {
+    elements = elements,
+    properties = properties,
+    event = event_fact(sget(img, 'event')),
+    year = sget(img, 'year'),
+  }
 end
 
 local function build_engravings()
   local engs = df.global.world.event.engravings
   local total = #engs
   local scanned = math.min(total, ENGRAVING_SCAN_CAP)
+  local idx = ensure_chunks(engs, scanned)
 
   local buckets = {}
   local order = {}
   local quality = {}
   local artists = {}
-  local any_resolved = false
 
   for i = 0, scanned - 1 do
     local g = engs[i]
     local art_id = sget(g, 'art_id') or 0
     local art_subid = sget(g, 'art_subid') or 0
-    local subject = resolve_subject(art_id, art_subid)
-    local resolved = subject ~= nil
-    if resolved then any_resolved = true end
-    local key = resolved and ('S:' .. subject) or ('R:' .. art_id .. ':' .. art_subid)
-    local b = buckets[key]
+    local ref = art_id .. ':' .. art_subid
+    local b = buckets[ref]
     if not b then
-      b = {
-        subject = subject or ('image #' .. art_id .. ':' .. art_subid),
-        subject_resolved = resolved,
-        ref = art_id .. ':' .. art_subid,
-        count = 0,
-      }
-      buckets[key] = b
-      order[#order + 1] = key
+      b = { ref = ref, art_id = art_id, art_subid = art_subid, count = 0 }
+      buckets[ref] = b
+      order[#order + 1] = ref
     end
     b.count = b.count + 1
 
@@ -222,14 +333,29 @@ local function build_engravings()
   end
 
   local list = {}
-  for _, k in ipairs(order) do list[#list + 1] = buckets[k] end
+  local any_resolved = false
+  for _, k in ipairs(order) do
+    local b = buckets[k]
+    b.img = find_image(idx, b.art_id, b.art_subid)
+    if b.img then any_resolved = true end
+    list[#list + 1] = b
+  end
   table.sort(list, function(a, b)
     if a.count ~= b.count then return a.count > b.count end
     return a.ref < b.ref
   end)
   local distinct = #list
   local by_subject = {}
-  for i = 1, math.min(distinct, SUBJECT_CAP) do by_subject[#by_subject + 1] = list[i] end
+  for i = 1, math.min(distinct, SUBJECT_CAP) do
+    local b = list[i]
+    local entry = { ref = b.ref, count = b.count, subject_resolved = b.img ~= nil }
+    if b.img then
+      entry.subject = tname(b.img.name, true) or tname(b.img.name, false)
+      entry.image = image_fact(b.img)
+    end
+    entry.subject = entry.subject or ('image #' .. b.ref)
+    by_subject[#by_subject + 1] = entry
+  end
 
   local eng_list = {}
   for hf, n in pairs(artists) do eng_list[#eng_list + 1] = { histfig_id = hf, count = n } end
@@ -251,7 +377,7 @@ local function build_engravings()
     scanned = scanned,
     scan_truncated = total > scanned,
     distinct_subjects = distinct,
-    art_images_loaded = art_images_loaded,
+    art_images_loaded = next(idx) ~= nil,
     subjects_resolvable = any_resolved,
     quality = quality,
     by_subject = by_subject,
