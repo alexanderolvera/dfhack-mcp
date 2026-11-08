@@ -1,0 +1,204 @@
+{
+  "alive": false,
+  "birth": {
+    "year": -169
+  },
+  "caste": "DEFAULT",
+  "death": {
+    "cause": "STRUCK_DOWN",
+    "event_id": 254,
+    "site": "Blackboards",
+    "site_id": 4,
+    "slayer": {
+      "caste": "MALE",
+      "race": "BLIND_CAVE_OGRE"
+    },
+    "year": 4
+  },
+  "entities": [],
+  "events": [
+    {
+      "event_id": 254,
+      "site_id": 4,
+      "type": "HIST_FIGURE_DIED",
+      "year": 4
+    },
+    {
+      "event_id": 253,
+      "site_id": 4,
+      "type": "HIST_FIGURE_DIED",
+      "year": 4
+    },
+    {
+      "event_id": 252,
+      "site_id": 4,
+      "type": "HIST_FIGURE_DIED",
+      "year": 4
+    },
+    {
+      "event_id": 251,
+      "site_id": 4,
+      "type": "HIST_FIGURE_WOUNDED",
+      "year": 4
+    },
+    {
+      "event_id": 250,
+      "site_id": 4,
+      "type": "HIST_FIGURE_WOUNDED",
+      "year": 4
+    },
+    {
+      "event_id": 249,
+      "site_id": 4,
+      "type": "HIST_FIGURE_WOUNDED",
+      "year": 4
+    },
+    {
+      "event_id": 248,
+      "site_id": 4,
+      "type": "HIST_FIGURE_DIED",
+      "year": 4
+    },
+    {
+      "event_id": 247,
+      "site_id": 4,
+      "type": "HIST_FIGURE_DIED",
+      "year": 4
+    },
+    {
+      "event_id": 246,
+      "site_id": 4,
+      "type": "HIST_FIGURE_DIED",
+      "year": 4
+    },
+    {
+      "event_id": 245,
+      "site_id": 4,
+      "type": "HIST_FIGURE_DIED",
+      "year": 4
+    },
+    {
+      "event_id": 244,
+      "site_id": 4,
+      "type": "HIST_FIGURE_WOUNDED",
+      "year": 4
+    },
+    {
+      "event_id": 243,
+      "site_id": 4,
+      "type": "HIST_FIGURE_DIED",
+      "year": 4
+    },
+    {
+      "event_id": 242,
+      "site_id": 4,
+      "type": "HIST_FIGURE_SIMPLE_BATTLE_EVENT",
+      "year": 4
+    },
+    {
+      "event_id": 241,
+      "site_id": 4,
+      "type": "HF_ATTACKED_SITE",
+      "year": 4
+    },
+    {
+      "event_id": 4,
+      "type": "CHANGE_HF_STATE",
+      "year": 1
+    }
+  ],
+  "hf_id": 4,
+  "kills": [
+    {
+      "cause": "STRUCK_DOWN",
+      "event_id": 253,
+      "hf_id": 54,
+      "name": "Nguslu Horrorarch",
+      "race": "GOBLIN",
+      "site": "Blackboards",
+      "site_id": 4,
+      "year": 4
+    },
+    {
+      "cause": "STRUCK_DOWN",
+      "event_id": 252,
+      "hf_id": 57,
+      "name": "Utes Rootcruelty",
+      "race": "GOBLIN",
+      "site": "Blackboards",
+      "site_id": 4,
+      "year": 4
+    },
+    {
+      "cause": "STRUCK_DOWN",
+      "event_id": 248,
+      "hf_id": 61,
+      "name": "Nguslu Crowddoom",
+      "race": "GOBLIN",
+      "site": "Blackboards",
+      "site_id": 4,
+      "year": 4
+    },
+    {
+      "cause": "STRUCK_DOWN",
+      "event_id": 247,
+      "hf_id": 62,
+      "name": "Ngokang Plungedghouls",
+      "race": "GOBLIN",
+      "site": "Blackboards",
+      "site_id": 4,
+      "year": 4
+    },
+    {
+      "cause": "STRUCK_DOWN",
+      "event_id": 246,
+      "hf_id": 60,
+      "name": "Ngebzo Tramplebad",
+      "race": "GOBLIN",
+      "site": "Blackboards",
+      "site_id": 4,
+      "year": 4
+    },
+    {
+      "cause": "STRUCK_DOWN",
+      "event_id": 245,
+      "hf_id": 56,
+      "name": "Zolak Fightdemon",
+      "race": "GOBLIN",
+      "site": "Blackboards",
+      "site_id": 4,
+      "year": 4
+    },
+    {
+      "cause": "STRUCK_DOWN",
+      "event_id": 243,
+      "hf_id": 59,
+      "name": "Amxu Muckwraith",
+      "race": "GOBLIN",
+      "site": "Blackboards",
+      "site_id": 4,
+      "year": 4
+    }
+  ],
+  "name": "èna Otogaefacì Afífiva",
+  "name_english": "èna Badhated the Scraped Juice",
+  "profession": "STANDARD",
+  "race": "FORGOTTEN_BEAST_5",
+  "relationships": [],
+  "sites": [],
+  "spheres": [
+    "CAVERNS",
+    "NIGHTMARES"
+  ],
+  "unnamed_kills": [
+    {
+      "count": 4,
+      "race": "MANERA"
+    },
+    {
+      "count": 2,
+      "race": "BLIND_CAVE_OGRE"
+    }
+  ],
+  "worship": []
+}

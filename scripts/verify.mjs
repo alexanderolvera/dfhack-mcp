@@ -75,6 +75,7 @@ const TOOL_ARGS = {
   unit_appearance: { unit_id: '1' },
   find_unit: { query: 'a' },
   game_data: { query: 'cat' },
+  historical_figure: { hf_id: '179' },
   identify: { query: 'cat' },
   wiki_search: { query: 'cage trap' },
   wiki_lookup: { title: 'Cage trap' },
@@ -118,6 +119,9 @@ const TOOL_ARGS = {
 // tile_region the no-arg default window is the reproducible documented snapshot;
 // for work_details it is the full unfiltered detail list.
 const GOLDEN_NO_ARG = new Set(['tile_region', 'work_details']);
+
+// Extra fixture figures goldened as test/golden/historical_figure.<hf_id>.json; see docs/tools/historical_figure.md.
+const HISTORICAL_FIGURE_GOLDEN_IDS = [4, 22, 30, 177];
 
 // Tools whose output depends on the network / external wiki, not the frozen
 // fort. Reachable in every tier, but excluded from T2 goldens (not deterministic
@@ -410,6 +414,7 @@ async function tier2(client) {
   }
   await runInvariants(client, payloads); // reuse the payloads T2 already captured — no double-call
   await tileRegionParamChecks(client); // param surface the no-arg golden can't reach
+  await historicalFigureGoldens(client);
   await workDetailsParamChecks(client); // ditto for the work_details narrowing args
   await blueprintActuatorChecks(client); // live confirm+apply+undo; restores the fixture
   await workOrderActuatorChecks(client); // live create+cancel round trip; restores the fixture
@@ -464,6 +469,31 @@ async function runInvariants(client, payloads) {
     else ok(`${inv.name}: ${inv.desc}`);
   }
   if (!evaluated) console.log('  ○ no invariants evaluable (no fort loaded)');
+}
+
+async function historicalFigureGoldens(client) {
+  console.log(`\nhistorical_figure extra goldens${update ? ' (UPDATE mode)' : ''}`);
+  for (const id of HISTORICAL_FIGURE_GOLDEN_IDS) {
+    const label = `historical_figure.${id}`;
+    const { data } = await callJson(client, 'historical_figure', { hf_id: id });
+    if (isNoFort(data)) {
+      fail(`${label}: no fort loaded — T2 needs the fixture save loaded`);
+      continue;
+    }
+    const snapshot = JSON.stringify(canonicalize(data), null, 2) + '\n';
+    const file = join(GOLDEN_DIR, `${label}.json`);
+    if (update) {
+      const existed = existsSync(file);
+      writeFileSync(file, snapshot);
+      ok(`${label}: golden ${existed ? 'rewritten' : 'created'}`);
+    } else if (!existsSync(file)) {
+      fail(`${label}: no golden at test/golden/${label}.json (author it with npm run verify:update)`);
+    } else if (readFileSync(file, 'utf8') === snapshot) {
+      ok(`${label}: golden matches`);
+    } else {
+      fail(`${label}: golden DIFF (run with --update if the change is intended)`);
+    }
+  }
 }
 
 // --- tile_region param surface ----------------------------------------------

@@ -44,6 +44,7 @@ Doctrine reminder: every tool is **facts-only** — it senses and reports; judgm
 - [artifacts_and_engravings](artifacts_and_engravings.md) — artifacts and engraving coverage
 - [chronicle](chronicle.md) — recent events via the report stream (cursor-paginated)
 - [site_history](site_history.md) — this site's world-gen and post-embark history
+- [historical_figure](historical_figure.md) — one figure's legends entry by hf_id, dead or alive
 
 *Earthworks (spatial)*
 - [map_overview](map_overview.md) — cheap spatial orientation

@@ -1,0 +1,22 @@
+{
+  "alive": true,
+  "caste": "FEMALE",
+  "deity": true,
+  "entities": [],
+  "events": [],
+  "hf_id": 22,
+  "kills": [],
+  "name": "Thabost Dorenkeshan",
+  "name_english": "Thabost Diamondflames",
+  "race": "DWARF",
+  "relationships": [],
+  "sex": "female",
+  "sites": [],
+  "spheres": [
+    "FIRE",
+    "METALS",
+    "MINERALS"
+  ],
+  "unnamed_kills": [],
+  "worship": []
+}

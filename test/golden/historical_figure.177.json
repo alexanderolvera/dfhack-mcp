@@ -1,0 +1,95 @@
+{
+  "alive": true,
+  "birth": {
+    "year": -65
+  },
+  "caste": "MALE",
+  "entities": [
+    {
+      "entity_id": 10,
+      "links": [
+        "MEMBER"
+      ],
+      "name": "Uzoledzul",
+      "name_english": "The Oily Vestibule",
+      "positions": [],
+      "type": "Civilization"
+    },
+    {
+      "entity_id": 23,
+      "links": [
+        "MEMBER",
+        "POSITION"
+      ],
+      "name": "Uloliden",
+      "name_english": "The Last Paddles",
+      "positions": [
+        {
+          "current": true,
+          "position": "manager",
+          "start_year": 5
+        }
+      ],
+      "type": "SiteGovernment"
+    }
+  ],
+  "events": [
+    {
+      "event_id": 664,
+      "site_id": 25,
+      "type": "CHANGE_HF_JOB",
+      "year": 6
+    },
+    {
+      "event_id": 618,
+      "site_id": 25,
+      "type": "HIST_FIGURE_DIED",
+      "year": 6
+    },
+    {
+      "event_id": 344,
+      "type": "ADD_HF_ENTITY_LINK",
+      "year": 5
+    },
+    {
+      "event_id": 335,
+      "type": "ADD_HF_ENTITY_LINK",
+      "year": 5
+    },
+    {
+      "event_id": 334,
+      "site_id": 25,
+      "type": "CHANGE_HF_STATE",
+      "year": 5
+    }
+  ],
+  "hf_id": 177,
+  "kills": [
+    {
+      "cause": "BLEED",
+      "event_id": 618,
+      "hf_id": 179,
+      "name": "Stukos Merchantage",
+      "race": "DWARF",
+      "site": "Fortress of Dreams",
+      "site_id": 25,
+      "year": 6
+    }
+  ],
+  "name": "Melbil Monangerib",
+  "name_english": "Melbil Drillgorge",
+  "profession": "BOWYER",
+  "race": "DWARF",
+  "relationships": [],
+  "sex": "male",
+  "sites": [],
+  "unit_id": 260,
+  "unnamed_kills": [],
+  "worship": [
+    {
+      "hf_id": 26,
+      "name": "Thocit",
+      "strength": 6
+    }
+  ]
+}
