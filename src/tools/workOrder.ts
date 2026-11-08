@@ -56,6 +56,7 @@ export interface OrderFacts {
   job_type: string;
   item_type?: string;
   material?: string;
+  meal_ingredients?: number;
   amount_total: number;
   amount_left: number;
   frequency: string;
@@ -102,7 +103,8 @@ export const workOrderListDef: ToolDef = {
   title: 'Work order list',
   description:
     'List every manager (work) order in the fort as facts: id, job type, output ' +
-    'item/material tokens, amount total/left, repeat frequency, bound workshop, ' +
+    'item/material tokens (meal_ingredients in place of material for PrepareMeal), ' +
+    'amount total/left, repeat frequency, bound workshop, ' +
     'per-order validation state (active + validated; validated:false means the ' +
     'order cannot currently be fulfilled), and its conditions: item_conditions ' +
     '(stock-threshold triggers — comparator, value, and the item filter counted) ' +
@@ -132,6 +134,7 @@ interface CreateArgs {
   amount: number;
   frequency?: string;
   material?: string;
+  meal_ingredients?: number;
   item_type?: string;
   item_conditions?: ItemCondition[];
   order_conditions?: OrderCondition[];
@@ -150,6 +153,7 @@ export function createArgv(kind: 'plan_create' | 'apply_create', a: CreateArgs):
     jsonArg(a.conditions),
     jsonArg(a.item_conditions),
     jsonArg(a.order_conditions),
+    s(a.meal_ingredients),
   ];
 }
 
@@ -159,7 +163,8 @@ export const workOrderCreateDef = defineActuator<CreateArgs>({
   description:
     'Queue a new manager (work) order. EXECUTE-NEVER-DECIDE: you specify the job ' +
     'type, count, repeat frequency, optionally an output material and/or item ' +
-    'type, and optionally its conditions — item_conditions (stock-threshold ' +
+    'type (for PrepareMeal, meal_ingredients in place of material), and ' +
+    'optionally its conditions — item_conditions (stock-threshold ' +
     'triggers, e.g. activate only when BAR stock is AtMost 10) and order_conditions (wait ' +
     'for another order to be Activated/Completed). The tool queues exactly that, ' +
     'with the same condition shape work_order_list reports. Dry-run (no ' +
@@ -177,7 +182,12 @@ export const workOrderCreateDef = defineActuator<CreateArgs>({
     material: z
       .string()
       .optional()
-      .describe('material token, e.g. "INORGANIC:IRON", "PLANT_MAT:..."'),
+      .describe('material token, e.g. "INORGANIC:IRON", "PLANT_MAT:..."; not for PrepareMeal'),
+    meal_ingredients: z
+      .number()
+      .int()
+      .optional()
+      .describe('PrepareMeal only: ingredient count, 2 (easy), 3 (fine) or 4 (lavish)'),
     item_type: z.string().optional().describe('df.item_type name to constrain the output item'),
     item_conditions: z
       .array(itemConditionSchema)
@@ -218,7 +228,8 @@ export const workOrderCancelDef = defineActuator<CancelArgs>({
     'to apply. The token is void if that order changed or completed in the ' +
     'meantime. Reversal: the apply response returns undo.recreate, a ' +
     'work_order_create spec for the REMAINING amount (amount_left, not the ' +
-    'original total) carrying the order’s output spec, frequency, and item/order ' +
+    'original total) carrying the order’s output spec (meal_ingredients included), ' +
+    'frequency, and item/order ' +
     'conditions. It cannot restore a workshop binding, an output item_subtype, or ' +
     'other orders’ conditions on this id (a recreated order gets a new id): ' +
     'undo.faithful is false and undo.not_reproduced names each loss. Verify with ' +

@@ -28,6 +28,15 @@ local FLAG_GROUPS = {
   { field = 'flags3', type = df.job_item_flags3 },
 }
 local LIST_ONLY_ITEM_KEYS = { 'flags4', 'flags5', 'dye_color' }
+local MEAL_INGREDIENTS_MIN, MEAL_INGREDIENTS_MAX = 2, 4
+
+local function is_meal(job_type)
+  return job_type == df.job_type.PrepareMeal
+end
+
+local function creatable_meal_ingredients(n)
+  return n >= MEAL_INGREDIENTS_MIN and n <= MEAL_INGREDIENTS_MAX
+end
 
 local function manager_present()
   local ent = df.historical_entity.find(df.global.plotinfo.group_id)
@@ -166,11 +175,13 @@ end
 local function order_facts(o)
   local item
   if o.item_type ~= -1 then item = df.item_type[o.item_type] end
+  local meal = is_meal(o.job_type)
   local f = {
     id = o.id,
     job_type = df.job_type[o.job_type],
     item_type = item,
-    material = mat_token(o.mat_type, o.mat_index),
+    material = not meal and mat_token(o.mat_type, o.mat_index) or nil,
+    meal_ingredients = (meal and o.mat_type ~= -1) and o.mat_type or nil,
     amount_total = o.amount_total,
     amount_left = o.amount_left,
     frequency = FREQ_NAME[o.frequency] or o.frequency,
@@ -315,10 +326,24 @@ local function parse_create()
   local mat_token_in = (a[5] ~= '' and a[5]) or nil
   local it_name = (a[6] ~= '' and a[6]) or nil
   local legacy_json = (a[7] ~= '' and a[7]) or nil
+  local meal_in = (a[10] ~= '' and a[10]) or nil
   local blocked = {}
 
   local jt = df.job_type[jt_name]
   if jt == nil then blocked[#blocked + 1] = 'unknown job_type: ' .. tostring(jt_name) end
+  local meal_ingredients
+  if meal_in then
+    meal_ingredients = math.tointeger(tonumber(meal_in))
+    if jt ~= nil and not is_meal(jt) then
+      blocked[#blocked + 1] = 'meal_ingredients applies only to job_type PrepareMeal'
+    elseif not meal_ingredients or not creatable_meal_ingredients(meal_ingredients) then
+      blocked[#blocked + 1] = string.format('meal_ingredients must be an integer %d..%d, got %s',
+        MEAL_INGREDIENTS_MIN, MEAL_INGREDIENTS_MAX, meal_in)
+    end
+  end
+  if jt ~= nil and is_meal(jt) and mat_token_in then
+    blocked[#blocked + 1] = 'PrepareMeal takes meal_ingredients, not material'
+  end
   if not amount or amount < 1 or amount ~= math.floor(amount) then
     blocked[#blocked + 1] = 'amount must be a positive integer'
   end
@@ -336,6 +361,7 @@ local function parse_create()
       mat_type, mat_index = mi.type, mi.index
     end
   end
+  if meal_ingredients then mat_type, mat_index = meal_ingredients, -1 end
   local item_type, item_subtype = -1, -1
   if it_name then
     local it = df.item_type[it_name]
@@ -359,7 +385,7 @@ local function parse_create()
   end
   return {
     jt = jt, amount = amount, freq = freq, freq_name = freq_name,
-    mat_type = mat_type, mat_index = mat_index, mat_token = mat_token_in,
+    mat_type = mat_type, mat_index = mat_index, mat_token = mat_token_in, meal_ingredients = meal_ingredients,
     item_type = item_type, item_subtype = item_subtype, it_name = it_name,
     ic_in = ic_in, oc_in = oc_in, item_conds = item_conds, order_conds = order_conds,
     blocked = blocked,
@@ -404,6 +430,7 @@ if sub == 'plan_create' or sub == 'apply_create' then
         amount = p.amount,
         frequency = p.freq_name,
         material = p.mat_token,
+        meal_ingredients = p.meal_ingredients,
         item_type = p.it_name,
         item_conditions = (#p.ic_in > 0) and p.ic_in or nil,
         order_conditions = (#p.oc_in > 0) and p.oc_in or nil,
@@ -494,6 +521,15 @@ local function recreate_spec(o, facts)
   local dropped = {}
   if o.workshop_id ~= -1 then dropped[#dropped + 1] = 'workshop binding' end
   if o.item_subtype ~= -1 then dropped[#dropped + 1] = 'item_subtype' end
+  local ingredients = facts.meal_ingredients
+  if ingredients and creatable_meal_ingredients(ingredients) then
+    recreate.meal_ingredients = ingredients
+  elseif ingredients then
+    dropped[#dropped + 1] = 'meal_ingredients ' .. ingredients
+  end
+  if is_meal(o.job_type) and o.mat_index ~= -1 then
+    dropped[#dropped + 1] = 'mat_index ' .. o.mat_index
+  end
   if facts.item_conditions then
     for i, f in ipairs(facts.item_conditions) do
       for _, k in ipairs(LIST_ONLY_ITEM_KEYS) do

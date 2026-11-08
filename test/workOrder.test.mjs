@@ -60,10 +60,11 @@ test('createArgv puts conditions at fixed positions as JSON, empty when absent',
     item_conditions: [{ condition: 'AtMost', value: 5, item_type: 'DRINK' }],
     order_conditions: [],
   });
-  assert.equal(argv.length, 9);
+  assert.equal(argv.length, 10);
   assert.deepEqual(argv.slice(0, 7), ['plan_create', 'BrewDrink', '3', '', '', '', '']);
   assert.deepEqual(JSON.parse(argv[7]), [{ condition: 'AtMost', value: 5, item_type: 'DRINK' }]);
   assert.equal(argv[8], '');
+  assert.equal(argv[9], '');
 });
 
 test('ids and cursors coerce from digit strings', () => {
@@ -79,4 +80,17 @@ test('withConditionLists defaults omitted or Lua-empty condition lists to []', (
   const kept = withConditionLists({ id: 2, item_conditions: [LIBRARY_CONDITION] });
   assert.deepEqual(kept.item_conditions, [LIBRARY_CONDITION]);
   assert.equal(withConditionLists(undefined), undefined);
+});
+
+test('work_order_create passes meal_ingredients as an integer in the last argv slot', () => {
+  const schema = schemaOf(workOrderCreateDef);
+  const parsed = schema.parse({ job_type: 'PrepareMeal', amount: 2, meal_ingredients: 4 });
+  const argv = createArgv('apply_create', parsed);
+  assert.equal(argv.length, 10);
+  assert.equal(argv[4], '');
+  assert.equal(argv[9], '4');
+  assert.equal(
+    schema.safeParse({ job_type: 'PrepareMeal', amount: 1, meal_ingredients: 2.5 }).success,
+    false
+  );
 });

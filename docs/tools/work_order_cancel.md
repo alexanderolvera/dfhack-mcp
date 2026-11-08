@@ -48,10 +48,12 @@ Erases one order from `df.global.world.manager_orders` by id — the same struct
 ## Caveats & limits
 - Gated: registered only when the `DFHACK_MCP_ACTUATORS` env var is set; absent from the default read-only surface.
 - The confirm token is void if the previewed order changed or completed in the meantime, and after one use. The signature covers progress (amount_left), frequency, workshop binding, subtype, validation state, and every field of every condition.
-- `undo.recreate` carries `job_type`, `amount`, `frequency`, `material`, `item_type`, and the order's `item_conditions` / `order_conditions` (the keys only when present), in exactly the shape [work_order_create](work_order_create.md) takes.
+- `undo.recreate` carries `job_type`, `amount`, `frequency`, `material` (or `meal_ingredients` for `PrepareMeal`), `item_type`, and the order's `item_conditions` / `order_conditions` (the keys only when present), in exactly the shape [work_order_create](work_order_create.md) takes.
 - Its `amount` is the REMAINING work (`amount_left`), not the original total. Not reported as a loss: that's the work left to do.
 - `undo.faithful` is true only when the recreate spec loses nothing. Otherwise `not_reproduced` lists each loss as a fact, and the undo is approximate:
   - `workshop binding` and `item_subtype`: [work_order_create](work_order_create.md) can't set them.
+  - `meal_ingredients N`: a `PrepareMeal` count outside the `2`–`4` create accepts (only possible for an order made outside the tool, e.g. by `orders import`). It's left out of the spec.
+  - `mat_index N`: a `PrepareMeal` order whose `mat_index` isn't `-1`; create always writes `-1` there.
   - `item_conditions[i].flags4` / `.flags5` / `.dye_color`: raw condition fields create can't set. They're stripped from the spec.
   - `order_conditions on order(s) … that reference this order`: other orders waiting on this id. The recreated order gets a fresh id, so they'd keep pointing at the cancelled one.
 - `undo.recreate.order_conditions` name other orders by id. If one of them is gone by the time you recreate, create blocks.

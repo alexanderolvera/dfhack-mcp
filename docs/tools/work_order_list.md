@@ -27,7 +27,8 @@ Reads `df.global.world.manager_orders.all` — the same structures the in-game m
 | `orders[].id` | order id |
 | `orders[].job_type` | `df.job_type` name, e.g. `ConstructBed` |
 | `orders[].item_type` | constrained output item token — key OMITTED when unconstrained |
-| `orders[].material` | constrained material token — key OMITTED when unconstrained |
+| `orders[].material` | constrained material token — key OMITTED when unconstrained, and never present on a `PrepareMeal` order |
+| `orders[].meal_ingredients` | `PrepareMeal` orders only: the ingredient count (DF's own values are `2` easy, `3` fine, `4` lavish) — key OMITTED when unset |
 | `orders[].amount_total` / `amount_left` | ordered vs remaining |
 | `orders[].frequency` | `OneTime` \| `Daily` \| `Monthly` \| `Seasonally` \| `Yearly` |
 | `orders[].workshop_id` | present only when bound to a workshop |
@@ -61,7 +62,7 @@ No golden exists for this tool yet: the harness excludes it from T2 (`NO_GOLDEN`
 
 ## Caveats & limits
 - Page capped at 256 orders, sorted by id; `count` stays the fort total, `next_cursor` continues the walk.
-- `item_type` / `material` keys are omitted (not null) when unconstrained — the DFHack JSON encoder can't emit null. The same goes for unset item-condition filters.
+- `item_type` / `material` / `meal_ingredients` keys are omitted (not null) when unconstrained — the DFHack JSON encoder can't emit null. The same goes for unset item-condition filters.
 - A condition token that no longer resolves (a subtype, reaction, or reagent index out of range) is reported as its raw number in string form.
 - `manager_present: false` doesn't block listing or creation, but orders won't be validated/processed until a manager is assigned — reported as a fact.
 - Returns `{"error":"no fort loaded"}` if no fort is active.
@@ -75,6 +76,8 @@ Conditions are the order's two pointer vectors, read field by field against df-s
 - `order_conditions` → `manager_order_condition_order`: `order_id`; `condition` (`workquota_order_condition_type`: Activated=0, Completed=1); `flags.satisfied`.
 
 The wire names (`condition`, `value`, `bearing`, `reaction_product`, `tool`, `contains`) follow DFHack's own `orders export` JSON (`plugins/orders.cpp`), so DFHack's library order files (`hack/data/orders/*.json`) map across almost directly. Two exceptions: DFHack's `reaction_id` (which holds a reaction code) is `reaction` here, and an order condition's `order` is `order_id`. Unset filters use the same sentinels `orders export` checks: `-1` for the indices and `NONE` for the enums, `""` for the strings. `flags4`/`flags5`/`dye_color` have no exported meaning, so they're compared against a freshly constructed `manager_order_condition_item` instead of a guessed default. The three `job_item_flags` groups share no flag names at that revision, so the flat `flags` list is unambiguous.
+
+A `PrepareMeal` order has no output material: DF stores the meal's ingredient count in the order's `mat_type` (`mat_index` stays `-1`). Decoding that as a material gives a builtin material token — a lavish meal's `4` reads as `GLASS_CLEAR`. DFHack's `orders export` (`plugins/orders.cpp`, 53.15-r2) special-cases the job type the same way, writing `meal_ingredients = mat_type` and no `material`; the field name follows it. The `2`/`3`/`4` → easy/fine/lavish mapping is the one DFHack's quickfort `stockflow` uses for its Prepare Easy/Fine/Lavish Meal entries. Only the order's own output spec is special-cased: a meal order's `item_conditions` carry real materials and decode normally.
 
 The issue that introduced this (#94) called the stock-threshold triggers `order_conditions`. In the struct they're `item_conditions`; `order_conditions` are order-to-order dependencies.
 
