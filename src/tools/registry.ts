@@ -6,6 +6,7 @@ import { burrowsDef, civilianAlertDef } from './burrows.ts';
 import { chronicleDef } from './chronicle.ts';
 import { citizenDef } from './citizen.ts';
 import { defensesDef } from './defenses.ts';
+import { dfhackCommandListDef, dfhackCommandRunDef } from './dfhackCommand.ts';
 import { environmentDef } from './environment.ts';
 import { farmingDef } from './farming.ts';
 import { findUnitDef } from './findUnit.ts';
@@ -53,6 +54,8 @@ export const ALL_TOOLS: ToolDef[] = [
   citizenDef,
   civilianAlertDef,
   defensesDef,
+  dfhackCommandListDef,
+  dfhackCommandRunDef,
   environmentDef,
   farmingDef,
   findUnitDef,

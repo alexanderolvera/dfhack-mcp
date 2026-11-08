@@ -36,20 +36,14 @@ async function ensureConnected(): Promise<DwarfClient> {
 
 export class NotConnectedError extends Error {}
 
-/**
- * Runs a Lua snippet, reconnecting once if the socket dropped.
- * @param snippet Lua source to execute.
- * @returns The snippet's printed output.
- * @throws {NotConnectedError} If DFHack can't be reached after the retry.
- */
-export async function runLua(snippet: string): Promise<string> {
+async function withRetry<T>(call: (c: DwarfClient) => Promise<T>): Promise<T> {
   try {
-    return await (await ensureConnected()).runLuaSnippet(snippet);
+    return await call(await ensureConnected());
   } catch (err) {
     if (err instanceof RpcError) throw err;
     client = null;
     try {
-      return await (await ensureConnected()).runLuaSnippet(snippet);
+      return await call(await ensureConnected());
     } catch (err2) {
       if (err2 instanceof RpcError) throw err2;
       throw new NotConnectedError(
@@ -57,6 +51,16 @@ export async function runLua(snippet: string): Promise<string> {
       );
     }
   }
+}
+
+/**
+ * Runs a Lua snippet, reconnecting once if the socket dropped.
+ * @param snippet Lua source to execute.
+ * @returns The snippet's printed output.
+ * @throws {NotConnectedError} If DFHack can't be reached after the retry.
+ */
+export async function runLua(snippet: string): Promise<string> {
+  return withRetry((c) => c.runLuaSnippet(snippet));
 }
 
 /**
@@ -68,21 +72,20 @@ export async function runLua(snippet: string): Promise<string> {
  * @throws {NotConnectedError} If DFHack can't be reached after the retry.
  */
 export async function runScript(name: string, args: string[] = []): Promise<string> {
-  const command = 'mcp_' + name;
-  try {
-    return await (await ensureConnected()).runCommand(command, args);
-  } catch (err) {
-    if (err instanceof RpcError) throw err;
-    client = null;
-    try {
-      return await (await ensureConnected()).runCommand(command, args);
-    } catch (err2) {
-      if (err2 instanceof RpcError) throw err2;
-      throw new NotConnectedError(
-        `cannot reach DFHack on ${HOST}:${PORT} — is Dwarf Fortress running with DFHack? (${(err2 as Error).message})`
-      );
-    }
-  }
+  return withRetry((c) => c.runCommand('mcp_' + name, args));
+}
+
+/**
+ * Runs a DFHack command (built-in, plugin, or script) by its own name, reconnecting
+ * once if the socket dropped.
+ * @param command The DFHack command name, e.g. 'seedwatch'.
+ * @param args Unescaped argv for the command.
+ * @returns The command's console output.
+ * @throws {RpcError} If DFHack ran the command and it returned a non-OK result.
+ * @throws {NotConnectedError} If DFHack can't be reached after the retry.
+ */
+export async function runDfhackCommand(command: string, args: string[] = []): Promise<string> {
+  return withRetry((c) => c.runCommand(command, args));
 }
 
 export function closeConnection(): void {
