@@ -72,6 +72,7 @@ const TOOL_ARGS = {
   blueprint_apply: { csv: '#dig\nd,d,d\n', anchor_x: 79, anchor_y: 37, anchor_z: 122, mode: 'dig' },
   blueprint_undo: { csv: '#dig\nd,d,d\n', anchor_x: 79, anchor_y: 37, anchor_z: 122, mode: 'dig' },
   citizen: { unit_id: '1' },
+  unit_appearance: { unit_id: '1' },
   find_unit: { query: 'a' },
   game_data: { query: 'cat' },
   identify: { query: 'cat' },
@@ -267,6 +268,7 @@ async function resolveLiveArgs(client) {
   const fu = await callJson(client, 'find_unit');
   const liveId = fu.data?.matches?.[0]?.unit_id;
   if (liveId != null) TOOL_ARGS.citizen = { unit_id: String(liveId) };
+  if (liveId != null) TOOL_ARGS.unit_appearance = { unit_id: String(liveId) };
   // work_order_cancel(order_id) <- work_order_list's first active order, so the
   // cancel DRY-RUN previews a real order (still never applied — no confirm_token).
   const wol = await callJson(client, 'work_order_list');

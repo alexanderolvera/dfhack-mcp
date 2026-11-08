@@ -2024,4 +2024,49 @@ export const INVARIANTS = [
       return out;
     },
   },
+  {
+    name: 'unit_appearance_resolves_and_wellformed',
+    tools: ['find_unit', 'unit_appearance'],
+    desc: 'unit_appearance(find_unit.matches[0].unit_id) returns THAT unit; every feature has a desc_band in -3..3, every list is sorted, and each capped list honors its cap and truncation flag',
+    check(p) {
+      const want = p.find_unit.matches?.[0]?.unit_id;
+      if (!isInt(want)) return [];
+      const d = p.unit_appearance;
+      const out = [];
+      if (d.unit_id !== want) out.push(`unit_appearance returned unit_id ${d.unit_id}, expected ${want} (chain broken)`);
+      const lists = {
+        features: [80, (f) => [f.feature, f.layer ?? '', f.modifier]],
+        tissue_styles: [Infinity, (t) => [t.tissue, t.style]],
+        colors: [Infinity, (c) => [c.part]],
+        missing_parts: [20, (m) => [m]],
+        scars: [20, (s) => [s.part, s.layer ?? '']],
+        inventory: [30, (r) => [r.role, r.body_part ?? '']],
+      };
+      for (const [name, [cap, key]] of Object.entries(lists)) {
+        const list = d[name];
+        if (!Array.isArray(list)) {
+          out.push(`${name} is not an array`);
+          continue;
+        }
+        if (list.length > cap) out.push(`${name} length ${list.length} exceeds cap ${cap}`);
+        if (d[`${name}_truncated`] && list.length !== cap)
+          out.push(`${name}_truncated is set but ${name} has ${list.length} rows, not the cap ${cap}`);
+        for (let i = 1; i < list.length; i++) {
+          const a = key(list[i - 1]).join('\u0000');
+          const b = key(list[i]).join('\u0000');
+          if (a > b) out.push(`${name} not sorted at index ${i}`);
+        }
+      }
+      (d.features ?? []).forEach((f, i) => {
+        if (!(isInt(f.desc_band) && inRange(f.desc_band, -3, 3)))
+          out.push(`features[${i}].desc_band=${f.desc_band} is not an integer in -3..3`);
+        if (!isInt(f.value)) out.push(`features[${i}].value=${f.value} is not an integer`);
+      });
+      (d.inventory ?? []).forEach((r, i) => {
+        if (!isInt(r.item_id)) out.push(`inventory[${i}].item_id=${r.item_id} is not an integer`);
+        if (!r.role || !r.type) out.push(`inventory[${i}] lacks a role or type`);
+      });
+      return out;
+    },
+  },
 ];
