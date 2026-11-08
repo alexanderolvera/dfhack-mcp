@@ -229,7 +229,7 @@ page), so their behavior is documented here instead:
   real tiletype is never serialized. `read_window(x0, y0, z, w, h)`
   block-caches reads (~26x faster than per-tile `getTileType`) and is the one
   place the tile-shape-to-glyph mapping and the hidden-tile convention live.
-  Used by `defenses` and `tile_region` via `reqscript('mcp_readTerrain')`.
+  Used by `defenses`, `fluids` and `tile_region` via `reqscript('mcp_readTerrain')`.
 - **`mcp_unitVisibility.lua`** — the fog-of-war gate for UNIT enumeration, the
   companion to the module above. `is_hidden(u)` is the single source of truth
   for "has the fort discovered the tile this unit stands on"; every

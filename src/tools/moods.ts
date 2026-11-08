@@ -43,7 +43,8 @@ export const moodsDef: ToolDef = {
     'material cross-referenced against fort stock — needed, gathered so far, and ' +
     'how many the fort actually has (have). The early warning is "demands bones, ' +
     'fort has zero": it reports the demand vs. the stock, not what to go collect. ' +
-    'Returns {"active":[]} when no strange mood is in progress (the common case), ' +
-    'and {"error":"no fort loaded"} if no fort is active.',
+    'Returns {"active":[],"active_truncated":false,"alerts":[]} when no strange ' +
+    'mood is in progress (the common case), and {"error":"no fort loaded"} if no ' +
+    'fort is active.',
   run: moods,
 };
