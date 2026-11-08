@@ -1,0 +1,90 @@
+{
+  "alive": false,
+  "birth": {
+    "year": -66
+  },
+  "caste": "MALE",
+  "death": {
+    "cause": "BLEED",
+    "event_id": 618,
+    "site": "Fortress of Dreams",
+    "site_id": 25,
+    "slayer": {
+      "hf_id": 177,
+      "name": "Melbil Drillgorge",
+      "race": "DWARF"
+    },
+    "year": 6
+  },
+  "entities": [
+    {
+      "entity_id": 10,
+      "links": [
+        "FORMER_MEMBER"
+      ],
+      "name": "Uzoledzul",
+      "name_english": "The Oily Vestibule",
+      "positions": [],
+      "type": "Civilization"
+    },
+    {
+      "entity_id": 23,
+      "links": [
+        "FORMER_MEMBER"
+      ],
+      "name": "Uloliden",
+      "name_english": "The Last Paddles",
+      "positions": [],
+      "type": "SiteGovernment"
+    }
+  ],
+  "events": [
+    {
+      "event_id": 618,
+      "site_id": 25,
+      "type": "HIST_FIGURE_DIED",
+      "year": 6
+    },
+    {
+      "event_id": 617,
+      "site_id": 25,
+      "type": "CHANGE_HF_MOOD",
+      "year": 6
+    },
+    {
+      "event_id": 603,
+      "site_id": 25,
+      "type": "CHANGE_HF_MOOD",
+      "year": 6
+    },
+    {
+      "event_id": 339,
+      "type": "ADD_HF_ENTITY_LINK",
+      "year": 5
+    },
+    {
+      "event_id": 338,
+      "site_id": 25,
+      "type": "CHANGE_HF_STATE",
+      "year": 5
+    }
+  ],
+  "hf_id": 179,
+  "kills": [],
+  "name": "Stukos Asmelanam",
+  "name_english": "Stukos Merchantage",
+  "profession": "METALCRAFTER",
+  "race": "DWARF",
+  "relationships": [],
+  "sex": "male",
+  "sites": [],
+  "unit_id": 262,
+  "unnamed_kills": [],
+  "worship": [
+    {
+      "hf_id": 26,
+      "name": "Thocit",
+      "strength": 35
+    }
+  ]
+}

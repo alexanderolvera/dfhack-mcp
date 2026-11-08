@@ -2024,4 +2024,72 @@ export const INVARIANTS = [
       return out;
     },
   },
+  {
+    name: 'historical_figure_wellformed',
+    tools: ['historical_figure'],
+    desc: 'alive iff no death record; every list is an array honoring its cap/truncation contract; dated lists are most-recent-first',
+    check(p) {
+      const d = p.historical_figure;
+      const out = [];
+      if (!isInt(d.hf_id)) out.push(`hf_id=${d.hf_id} is not an integer`);
+      if (d.alive !== (d.death === undefined))
+        out.push(`alive=${d.alive} disagrees with death=${JSON.stringify(d.death)}`);
+      const caps = { entities: 50, relationships: 50, worship: 20, sites: 25, kills: 50, unnamed_kills: 25, events: 50 };
+      for (const [key, cap] of Object.entries(caps)) {
+        const list = d[key];
+        if (!Array.isArray(list)) {
+          out.push(`${key} is not an array`);
+          continue;
+        }
+        if (list.length > cap) out.push(`${key} has ${list.length} rows, over its cap of ${cap}`);
+        const truncated = d[`${key}_truncated`];
+        const total = d[`${key}_total`];
+        if (truncated !== undefined && !(truncated === true && list.length === cap && total > cap))
+          out.push(`${key}_truncated=${truncated} with ${list.length} rows and total ${total}`);
+        if (truncated === undefined && total !== undefined) out.push(`${key}_total=${total} without ${key}_truncated`);
+      }
+      for (const key of ['kills', 'events']) {
+        const rows = d[key] ?? [];
+        for (let i = 1; i < rows.length; i++) {
+          const a = rows[i - 1];
+          const b = rows[i];
+          if (a.year < b.year || (a.year === b.year && a.event_id < b.event_id))
+            out.push(`${key}[${i}] (year ${b.year}, event ${b.event_id}) is newer than ${key}[${i - 1}]`);
+        }
+      }
+      if (d.death?.event_id !== undefined && !(d.events ?? []).some((e) => e.event_id === d.death.event_id) && !d.events_truncated)
+        out.push(`death event ${d.death.event_id} missing from the figure's events`);
+      return out;
+    },
+  },
+  {
+    name: 'historical_figure_hf_id_chain',
+    tools: ['historical_figure'],
+    probes: {
+      slayer: {
+        tool: 'historical_figure',
+        args: (p) => (isInt(p.historical_figure.death?.slayer?.hf_id) ? { hf_id: p.historical_figure.death.slayer.hf_id } : null),
+      },
+      deity: {
+        tool: 'historical_figure',
+        args: (p) => (isInt(p.historical_figure.worship?.[0]?.hf_id) ? { hf_id: p.historical_figure.worship[0].hf_id } : null),
+      },
+    },
+    desc: "a slayer's and a worshipped deity's hf_id chain back into historical_figure, and the slayer's kills list the victim",
+    check(p) {
+      const d = p.historical_figure;
+      const q = p.probes;
+      const out = [];
+      if (q.slayer) {
+        const want = d.death.slayer.hf_id;
+        if (q.slayer.hf_id !== want) out.push(`slayer probe returned hf_id ${q.slayer.hf_id}, expected ${want}`);
+        const listed = (q.slayer.kills ?? []).some((k) => k.hf_id === d.hf_id && k.event_id === d.death.event_id);
+        if (!listed && !q.slayer.kills_truncated)
+          out.push(`slayer ${want}'s kills do not list victim ${d.hf_id} (event ${d.death.event_id})`);
+      }
+      if (q.deity && q.deity.hf_id !== d.worship[0].hf_id)
+        out.push(`deity probe returned hf_id ${q.deity.hf_id}, expected ${d.worship[0].hf_id}`);
+      return out;
+    },
+  },
 ];

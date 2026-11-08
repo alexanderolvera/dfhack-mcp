@@ -221,6 +221,11 @@ Never `--update` against a non-fixture fort.
   wall-clock timing; the real values are still shape/bounds-checked live by the
   `fort_health_wellformed_and_bounds_population` invariant. See
   [`docs/tools/fort_health.md`](tools/fort_health.md)'s Implementation notes.
+- **`historical_figure`** is goldened for more than one id. Its main
+  `historical_figure.json` comes from `TOOL_ARGS`, and `HISTORICAL_FIGURE_GOLDEN_IDS`
+  adds a `historical_figure.<hf_id>.json` for each extra fixture figure, so a dead
+  citizen, a living citizen, a non-fort beast and a deity are all pinned. See
+  [`docs/tools/historical_figure.md`](tools/historical_figure.md).
 - **Actuators** (write tools, Tier 2 / M3) verify as **fixture → apply → assert
   readback → restore-fixture**. Still deterministic; the committed save is the
   anchor the apply is measured against and restored to.

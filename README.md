@@ -102,6 +102,7 @@ No arguments; each reports on the loaded fort.
 - **`find_unit(query)`** — look up citizens by name fragment or profession; a compact dossier per match (profession, age, stress, job, squad, health flags). Chain into `citizen` for depth.
 - **`citizen(unit_id)`** — the full character sheet for one dwarf: social graph (spouse/parents/children/friends/grudges, each with a `unit_id` you can walk), worshipped deities, notable personality extremes, skills of note, likes/detests, and recent thoughts tied to current stress.
 - **`site_history()`** — the fort's entry in the world saga: founding, the fort name in Dwarven + English with etymology, prior sieges/battles at the site, and notable figures who died here.
+- **`historical_figure(hf_id)`** — one figure's legends entry, dead or alive, fort-dweller or not: name in its native language + English, race/caste, birth and death (cause, site, slayer with `hf_id`), entity affiliations and positions held, relationships and worshipped deities (each with an `hf_id` you can walk), site links, kills, and the saga events that involve them.
 - **`artifacts_and_engravings()`** — the fort's masterworks and notable engravings.
 - **`chronicle()`** — a scannable recent-events feed for the fort.
 

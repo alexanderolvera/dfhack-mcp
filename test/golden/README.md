@@ -1,7 +1,8 @@
 # Golden snapshots
 
 Full-payload golden snapshots for the T2 tier of `scripts/verify.mjs`, one
-`<tool>.json` per tool. Each is the canonicalized (sorted-key) output of the tool
+`<tool>.json` per tool (plus `historical_figure.<hf_id>.json` for extra fixture
+figures, see `HISTORICAL_FIGURE_GOLDEN_IDS` in `scripts/verify.mjs`). Each is the canonicalized (sorted-key) output of the tool
 called against the **fixture fort** — the paused fort baked into the versioned DF
 container image (`df-headless:53.15`, see [`docker/`](../../docker/)), *not* a
 random live fort.

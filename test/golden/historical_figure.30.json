@@ -1,0 +1,155 @@
+{
+  "alive": false,
+  "birth": {
+    "year": -61
+  },
+  "caste": "MALE",
+  "death": {
+    "cause": "STRUCK_DOWN",
+    "event_id": 429,
+    "site": "Vaultlock",
+    "site_id": 3,
+    "slayer": {
+      "caste": "FEMALE",
+      "race": "GOBLIN"
+    },
+    "year": 5
+  },
+  "entities": [
+    {
+      "entity_id": 10,
+      "links": [
+        "FORMER_POSITION",
+        "MEMBER"
+      ],
+      "name": "Uzoledzul",
+      "name_english": "The Oily Vestibule",
+      "positions": [
+        {
+          "current": false,
+          "end_year": 5,
+          "position": "general",
+          "start_year": 1
+        }
+      ],
+      "type": "Civilization"
+    },
+    {
+      "entity_id": 11,
+      "links": [
+        "MEMBER"
+      ],
+      "name": "Ethadsibrek",
+      "name_english": "The Decent Salve",
+      "positions": [],
+      "type": "SiteGovernment"
+    }
+  ],
+  "events": [
+    {
+      "event_id": 429,
+      "site_id": 3,
+      "type": "HIST_FIGURE_DIED",
+      "year": 5
+    },
+    {
+      "event_id": 427,
+      "site_id": 3,
+      "type": "SQUAD_VS_SQUAD",
+      "year": 5
+    },
+    {
+      "event_id": 423,
+      "site_id": 3,
+      "type": "TACTICAL_SITUATION",
+      "year": 5
+    },
+    {
+      "event_id": 412,
+      "site_id": 3,
+      "type": "SQUAD_VS_SQUAD",
+      "year": 5
+    },
+    {
+      "event_id": 411,
+      "site_id": 3,
+      "type": "SQUAD_VS_SQUAD",
+      "year": 5
+    },
+    {
+      "event_id": 407,
+      "site_id": 3,
+      "type": "TACTICAL_SITUATION",
+      "year": 5
+    },
+    {
+      "event_id": 406,
+      "site_id": 3,
+      "type": "WAR_ATTACKED_SITE",
+      "year": 5
+    },
+    {
+      "event_id": 316,
+      "type": "ADD_HF_HF_LINK",
+      "year": 5
+    },
+    {
+      "event_id": 22,
+      "type": "ADD_HF_ENTITY_LINK",
+      "year": 1
+    }
+  ],
+  "hf_id": 30,
+  "kills": [],
+  "name": "Sigun Ilushfikod",
+  "name_english": "Sigun Carnageglazed",
+  "profession": "ARMORER",
+  "race": "DWARF",
+  "relationships": [
+    {
+      "hf_id": 118,
+      "name": "Ducim Swordchamber",
+      "race": "DWARF",
+      "type": "CHILD"
+    },
+    {
+      "hf_id": 136,
+      "name": "Stinthäd Treatygill",
+      "race": "DWARF",
+      "type": "CHILD"
+    },
+    {
+      "hf_id": 151,
+      "name": "Tulon Dipportals",
+      "race": "DWARF",
+      "type": "CHILD"
+    },
+    {
+      "hf_id": 39,
+      "name": "Nil Trumpetruns",
+      "race": "DWARF",
+      "type": "LOVER"
+    },
+    {
+      "hf_id": 158,
+      "name": "Stukos Temptfloor",
+      "race": "DWARF",
+      "type": "SPOUSE"
+    }
+  ],
+  "sex": "male",
+  "sites": [],
+  "unnamed_kills": [
+    {
+      "count": 2,
+      "race": "GOBLIN"
+    }
+  ],
+  "worship": [
+    {
+      "hf_id": 22,
+      "name": "Thabost Diamondflames",
+      "strength": 25
+    }
+  ]
+}
