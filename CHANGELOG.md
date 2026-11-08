@@ -10,6 +10,48 @@ backwards-compatible fixes only.
 
 ## [Unreleased]
 
+### Added
+
+- `unit_appearance` is the portrait read for one unit: DF's appearance
+  modifiers with their description bands, hair and beard styling, hair, skin
+  and eye colors as DF names them, missing parts and scars, and everything worn
+  or wielded with material, quality, wear, dye and decorations.
+- `historical_figure` reads one figure's legends entry by `hf_id`, dead or
+  alive, in the fort or not: names, race and caste, birth and death (with the
+  slayer's `hf_id`), entity affiliations and positions, relationships, deities,
+  site links, kills and events. Every list is capped and flags truncation.
+- `site_history`, `citizen` relations and `chronicle` speakers now carry
+  `hf_id`, so every figure they name can be looked up with `historical_figure`.
+  `citizen` relations keep the figure's `hf_id` after they die.
+- `artifacts_and_engravings` resolves what engravings depict: the image's title,
+  the figures shown (with `hf_id` and unit id), DF's own sentences for what they
+  are doing, and the linked history events.
+- `dfhack_command_list` lists every command DFHack ships, from DFHack's own `ls`
+  and `tags`. `dfhack_command_run` runs a reviewed allowlist of them
+  (`seedwatch`, `instruments`, `prospect`) behind a new, separate
+  `DFHACK_MCP_COMMANDS` gate. Commands that change the fort go through the usual
+  preview and confirm step and return an undo.
+- `work_order_list`, `work_order_create` and `work_order_cancel` handle
+  manager-order conditions: `item_conditions` (stock-threshold triggers) and
+  `order_conditions` (wait on another order).
+
+### Changed
+
+- Every id, cursor and coordinate parameter accepts both `42` and `"42"`.
+  `citizen`'s `unit_id` was a string and is now a number.
+
+### Fixed
+
+- `PrepareMeal` work orders reported a bogus material. They now report
+  `meal_ingredients` instead, and `work_order_create` accepts it.
+- `trade` reported 0 goods for every caravan and gave `leaving_in_days` ten
+  times too low. The countdown is now reported while the caravan is approaching
+  as well as at the depot.
+- `assign_work_detail` returned `undo.prior_labors` and
+  `readback.unit_labors_now` as an empty array, not an empty object, for a
+  detail with no enabled labors.
+- Several tool descriptions no longer contradict what the tools return.
+
 ## [1.5.0] - 2026-11-05
 
 ### Added
