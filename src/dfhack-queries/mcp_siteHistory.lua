@@ -38,6 +38,12 @@ local function hf_name(id)
   return name_str(hf.name, true)
 end
 
+local function hf_id_of(id)
+  if not id or id < 0 then return nil end
+  if not df.historical_figure.find(id) then return nil end
+  return id
+end
+
 local function hf_race(id)
   if not id or id < 0 then return nil end
   local hf = df.historical_figure.find(id)
@@ -140,8 +146,14 @@ do
           pcall(function() b.year = e.year end)
           pcall(function() b.attacker = civ_name(e.attacker_civ) end)
           pcall(function() b.defender = civ_name(e.defender_civ) end)
-          pcall(function() b.attacker_general = hf_name(e.attacker_general_hf) end)
-          pcall(function() b.defender_general = hf_name(e.defender_general_hf) end)
+          pcall(function()
+            b.attacker_general = hf_name(e.attacker_general_hf)
+            b.attacker_general_hf_id = hf_id_of(e.attacker_general_hf)
+          end)
+          pcall(function()
+            b.defender_general = hf_name(e.defender_general_hf)
+            b.defender_general_hf_id = hf_id_of(e.defender_general_hf)
+          end)
           if tname == 'WAR_DESTROYED_SITE' then b.outcome = 'site destroyed' end
           b._ord = #battles + 1
           battles[#battles + 1] = b
@@ -150,13 +162,14 @@ do
           local nm = hf_name(vic)
           if nm then
             deaths_total = deaths_total + 1
-            local d = { name = nm, year = nil }
+            local d = { name = nm, hf_id = vic, year = nil }
             pcall(function() d.year = e.year end)
             d.race = hf_race(vic)
             pcall(function() d.cause = tostring(df.death_type[e.death_cause]) end)
             local slayer; pcall(function() slayer = e.slayer_hf end)
             local sn = hf_name(slayer)
             if sn then d.slain_by = sn end
+            d.slain_by_hf_id = hf_id_of(slayer)
             d._ord = #deaths + 1
             deaths[#deaths + 1] = d
           end
@@ -199,6 +212,7 @@ emit({
     civ = civ_dwarven,
     civ_english = civ_english,
     builder = hf_name(builder_hf),
+    builder_hf_id = hf_id_of(builder_hf),
   },
   name_etymology = name_etymology(site.name),
   battles = battles,

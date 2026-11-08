@@ -18,6 +18,7 @@ export type ChronicleCategory =
 
 export interface ChronicleSpeaker {
   id: number;
+  hf_id?: number;
   name?: string;
 }
 
@@ -104,8 +105,9 @@ export const chronicleDef: ToolDef = {
     'and long consecutive battle runs collapse into a single marker (collapsed:' +
     'true with collapsed_count) so one siege cannot flood the window — see ' +
     'battle_collapsed. Facts only: unit refs appear only when a report names a ' +
-    'speaker (speaker_id != -1); combat reports carry no reliable unit, so they ' +
-    'get a pos tile anchor instead. Returns {"error":"no fort loaded"} if no fort ' +
+    'speaker (speaker_id != -1), as speaker {id (unit_id), hf_id?, name?}; ' +
+    'hf_id chains into historical_figure(). Combat reports carry no reliable ' +
+    'unit, so they get a pos tile anchor instead. Returns {"error":"no fort loaded"} if no fort ' +
     'is active.',
   shape: {
     since: z.coerce

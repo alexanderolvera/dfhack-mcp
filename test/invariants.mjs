@@ -124,6 +124,62 @@ export const INVARIANTS = [
     },
   },
   {
+    name: 'narrative_figures_carry_hf_id',
+    tools: ['citizen', 'site_history', 'chronicle'],
+    probes: {
+      liveRelation: {
+        tool: 'citizen',
+        args: (p) => {
+          const r = p.citizen.relationships ?? {};
+          const edge = [r.spouse, ...(r.parents ?? []), ...(r.children ?? []), ...(r.friends ?? []), ...(r.grudges ?? [])]
+            .find((e) => isInt(e?.unit_id));
+          return edge ? { unit_id: edge.unit_id } : null;
+        },
+      },
+    },
+    desc: 'every citizen relation and deity carries an integer hf_id (unit_id optional), a live relation chained into citizen() reports that same hf_id, site_history deaths carry hf_id and every *_hf_id is an integer, and chronicle speaker hf_ids are integers',
+    check(p) {
+      const out = [];
+      const optInt = (v, label) => {
+        if (v !== undefined && !isInt(v)) out.push(`${label}=${v} is present but not an integer`);
+      };
+      const c = p.citizen;
+      optInt(c.hf_id, 'citizen.hf_id');
+      const r = c.relationships ?? {};
+      const edges = [
+        ...(r.spouse ? [['spouse', r.spouse]] : []),
+        ...['parents', 'children', 'friends', 'grudges'].flatMap((k) => (r[k] ?? []).map((e, i) => [`${k}[${i}]`, e])),
+      ];
+      for (const [label, e] of edges) {
+        if (!isInt(e.hf_id)) out.push(`relationships.${label}.hf_id=${e.hf_id} is not an integer`);
+        optInt(e.unit_id, `relationships.${label}.unit_id`);
+      }
+      (c.worship ?? []).forEach((w, i) => {
+        if (!isInt(w.hf_id)) out.push(`worship[${i}].hf_id=${w.hf_id} is not an integer`);
+      });
+      const live = p.probes.liveRelation;
+      if (live) {
+        const edge = edges.map(([, e]) => e).find((e) => e.unit_id === live.unit_id);
+        if (live.hf_id !== edge.hf_id)
+          out.push(`relation unit_id ${live.unit_id} lists hf_id ${edge.hf_id}, but citizen(${live.unit_id}).hf_id=${live.hf_id}`);
+      }
+      const s = p.site_history;
+      optInt(s.founding?.builder_hf_id, 'founding.builder_hf_id');
+      (s.notable_deaths ?? []).forEach((d, i) => {
+        if (!isInt(d.hf_id)) out.push(`notable_deaths[${i}].hf_id=${d.hf_id} is not an integer`);
+        optInt(d.slain_by_hf_id, `notable_deaths[${i}].slain_by_hf_id`);
+      });
+      (s.battles ?? []).forEach((b, i) => {
+        optInt(b.attacker_general_hf_id, `battles[${i}].attacker_general_hf_id`);
+        optInt(b.defender_general_hf_id, `battles[${i}].defender_general_hf_id`);
+      });
+      (p.chronicle.events ?? []).forEach((e, i) => {
+        if (e.speaker) optInt(e.speaker.hf_id, `events[${i}].speaker.hf_id`);
+      });
+      return out;
+    },
+  },
+  {
     name: 'rooms_counts_nonnegative_and_well_cap',
     tools: ['rooms_and_zones'],
     desc: 'every facility/demand count is a non-negative integer and the wells list honors its cap + truncation flag',

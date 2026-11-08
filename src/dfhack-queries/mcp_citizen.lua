@@ -53,7 +53,16 @@ local function hf_unit_id(hfid)
   return nil
 end
 
+local function hf_edge(hfid)
+  return { name = hf_name(hfid) or ('hf ' .. tostring(hfid)), hf_id = (hfid and hfid >= 0) and hfid or nil, unit_id = hf_unit_id(hfid) }
+end
+
+local function by_hf_id(a, b)
+  return (a.hf_id or -1) < (b.hf_id or -1)
+end
+
 local soul = u.status.current_soul
+local self_hf = safe(function() return u.hist_figure_id end, -1)
 
 local name = safe(function() return dfhack.units.getReadableName(u) end, 'unit ' .. query)
 local profession = safe(function() return dfhack.units.getProfessionName(u) end, '')
@@ -63,6 +72,7 @@ local is_child = safe(function() return dfhack.units.isChild(u) end, false)
 
 local out = {
   unit_id = u.id,
+  hf_id = (self_hf and self_hf >= 0) and self_hf or nil,
   name = name,
   profession = (profession ~= '' and profession) or nil,
   sex = safe(function() return (u.sex == 1 and 'male') or (u.sex == 0 and 'female') or nil end, nil),
@@ -113,7 +123,10 @@ if spouse_uid and spouse_uid >= 0 then
     unit_id = spouse_uid,
   }
   local shf = su and safe(function() return su.hist_figure_id end, -1)
-  if shf and shf >= 0 then family_hf[shf] = true end
+  if shf and shf >= 0 then
+    family_hf[shf] = true
+    rel.spouse.hf_id = shf
+  end
 end
 
 local worship = {}
@@ -125,22 +138,36 @@ safe(function()
     local tgt = safe(function() return l.target_hf end, -1)
     if kind == 'spouse' and not rel.spouse then
       family_hf[tgt] = true
-      rel.spouse = { name = hf_name(tgt) or ('hf ' .. tgt), unit_id = hf_unit_id(tgt) }
+      rel.spouse = hf_edge(tgt)
+    elseif kind == 'spouse' and rel.spouse.hf_id == nil then
+      family_hf[tgt] = true
+      rel.spouse.hf_id = tgt
     elseif kind == 'child' then
       family_hf[tgt] = true
-      rel.children[#rel.children+1] = { name = hf_name(tgt) or ('hf ' .. tgt), unit_id = hf_unit_id(tgt) }
+      rel.children[#rel.children+1] = hf_edge(tgt)
     elseif kind == 'mother' or kind == 'father' then
       family_hf[tgt] = true
-      rel.parents[#rel.parents+1] = { relation = kind, name = hf_name(tgt) or ('hf ' .. tgt), unit_id = hf_unit_id(tgt) }
+      local edge = hf_edge(tgt)
+      edge.relation = kind
+      rel.parents[#rel.parents+1] = edge
     elseif kind == 'deity' then
       worship[#worship+1] = {
         deity = hf_name(tgt) or ('hf ' .. tgt),
+        hf_id = (tgt and tgt >= 0) and tgt or nil,
         strength = safe(function() return l.link_strength end, nil),
       }
     end
   end
 end)
-table.sort(worship, function(a, b) return (a.strength or 0) > (b.strength or 0) end)
+table.sort(rel.children, by_hf_id)
+table.sort(rel.parents, function(a, b)
+  if a.relation ~= b.relation then return a.relation < b.relation end
+  return by_hf_id(a, b)
+end)
+table.sort(worship, function(a, b)
+  if (a.strength or 0) ~= (b.strength or 0) then return (a.strength or 0) > (b.strength or 0) end
+  return by_hf_id(a, b)
+end)
 out.worship = worship
 
 local friends_all, grudges_all = {}, {}
@@ -164,22 +191,26 @@ safe(function()
       if loyalty < 0 then neg_dims[#neg_dims+1] = 'loyalty' end
       local is_grudge = (love < 0) or (#neg_dims > 0 and love <= 0)
       if is_grudge then
-        grudges_all[#grudges_all+1] = {
-          name = hf_name(tgt) or ('hf ' .. tgt), unit_id = hf_unit_id(tgt),
-          love = love, trust = trust, respect = respect, loyalty = loyalty, fear = fear,
-          negative_dims = neg_dims, meet_count = meet,
-        }
+        local edge = hf_edge(tgt)
+        edge.love, edge.trust, edge.respect, edge.loyalty, edge.fear = love, trust, respect, loyalty, fear
+        edge.negative_dims, edge.meet_count = neg_dims, meet
+        grudges_all[#grudges_all+1] = edge
       elseif love > 0 or respect > 0 then
-        friends_all[#friends_all+1] = {
-          name = hf_name(tgt) or ('hf ' .. tgt), unit_id = hf_unit_id(tgt),
-          affection = love, respect = respect, meet_count = meet,
-        }
+        local edge = hf_edge(tgt)
+        edge.affection, edge.respect, edge.meet_count = love, respect, meet
+        friends_all[#friends_all+1] = edge
       end
     end
   end
 end)
-table.sort(friends_all, function(a, b) return a.affection > b.affection end)
-table.sort(grudges_all, function(a, b) return a.trust < b.trust end)
+table.sort(friends_all, function(a, b)
+  if a.affection ~= b.affection then return a.affection > b.affection end
+  return by_hf_id(a, b)
+end)
+table.sort(grudges_all, function(a, b)
+  if a.trust ~= b.trust then return a.trust < b.trust end
+  return by_hf_id(a, b)
+end)
 for i = 1, math.min(#friends_all, FRIEND_CAP) do rel.friends[i] = friends_all[i] end
 for i = 1, math.min(#grudges_all, GRUDGE_CAP) do rel.grudges[i] = grudges_all[i] end
 rel.friends_total = #friends_all

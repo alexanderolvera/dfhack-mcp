@@ -149,7 +149,9 @@ local function speaker_ref(r)
   local ref = { id = sid }
   pcall(function()
     local u = df.unit.find(sid)
-    if u then ref.name = dfhack.units.getReadableName(u) end
+    if not u then return end
+    if u.hist_figure_id >= 0 then ref.hf_id = u.hist_figure_id end
+    ref.name = dfhack.units.getReadableName(u)
   end)
   return ref
 end
