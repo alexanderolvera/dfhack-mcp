@@ -1813,6 +1813,45 @@ export const INVARIANTS = [
     },
   },
   {
+    name: 'engraving_images_coherent',
+    tools: ['artifacts_and_engravings'],
+    desc: 'a resolved subject carries its image and an unresolved one does not, any resolved bucket implies subjects_resolvable and loaded art images, verb properties index real elements, and depicted figures carry integer histfig_ids',
+    check(p) {
+      const e = p.artifacts_and_engravings.engravings ?? {};
+      const out = [];
+      const buckets = e.by_subject ?? [];
+      const resolved = buckets.filter((b) => b.subject_resolved);
+      if (resolved.length && !e.subjects_resolvable) out.push('a bucket is resolved but subjects_resolvable is false');
+      if (resolved.length && !e.art_images_loaded) out.push('a bucket is resolved but art_images_loaded is false');
+      for (const [i, b] of buckets.entries()) {
+        if (!b.subject_resolved) {
+          if ('image' in b) out.push(`by_subject[${i}] is unresolved but carries an image`);
+          continue;
+        }
+        const img = b.image;
+        if (!img || !Array.isArray(img.elements) || !Array.isArray(img.properties)) {
+          out.push(`by_subject[${i}] is resolved but lacks image.elements/properties arrays`);
+          continue;
+        }
+        const n = img.elements.length;
+        for (const [j, prop] of img.properties.entries()) {
+          for (const role of ['subject', 'object']) {
+            if (role in prop && !(isInt(prop[role]) && prop[role] >= 0 && prop[role] < n))
+              out.push(`by_subject[${i}].image.properties[${j}].${role}=${prop[role]} is not an index into ${n} elements`);
+          }
+        }
+        for (const [j, el] of img.elements.entries()) {
+          if ('histfig_id' in el && !isInt(el.histfig_id))
+            out.push(`by_subject[${i}].image.elements[${j}].histfig_id=${el.histfig_id} is not an integer`);
+          if ('unit_id' in el && !('histfig_id' in el))
+            out.push(`by_subject[${i}].image.elements[${j}] has unit_id without histfig_id`);
+        }
+        if (img.event && !isInt(img.event.id)) out.push(`by_subject[${i}].image.event.id=${img.event.id} is not an integer`);
+      }
+      return out;
+    },
+  },
+  {
     name: 'defenses_geometry_and_counts_coherent',
     tools: ['defenses', 'fort_status'],
     desc: 'interior groups sum to the interior citizen count within the population, the perimeter window is a w x h grid whose glyph and exposure tallies cover every tile, structure counts are non-negative, and "inside" threats share a citizen walk group',

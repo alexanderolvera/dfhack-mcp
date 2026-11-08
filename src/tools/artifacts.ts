@@ -37,11 +37,40 @@ export interface Artifact {
   error?: string;
 }
 
+export interface ArtImageElement {
+  type: string;
+  name?: string;
+  count?: number;
+  race?: string;
+  histfig_id?: number;
+  unit_id?: number;
+  plant?: string;
+  shape?: string;
+  item_type?: string;
+  material?: MaterialRef;
+}
+
+export interface ArtImageProperty {
+  type: string;
+  verb?: string;
+  subject?: number;
+  object?: number;
+  text?: string;
+}
+
+export interface ArtImage {
+  elements: ArtImageElement[];
+  properties: ArtImageProperty[];
+  event?: { id: number; type?: string; year?: number };
+  year?: number;
+}
+
 export interface EngravingSubject {
   subject: string;
   subject_resolved: boolean;
   ref: string;
   count: number;
+  image?: ArtImage;
 }
 
 export interface Engraver {
@@ -126,14 +155,16 @@ export const artifactsAndEngravingsDef: ToolDef = {
     'engraved inscription text (e.g. a slab\'s secret). Plus an aggregated ' +
     'ENGRAVINGS summary for the map: engravings grouped BY SUBJECT with counts ' +
     '(never itemized per tile), a quality histogram, and the top engravers. ' +
-    'IMPORTANT precondition on engraving subjects: DF does not populate the ' +
-    "world's art-image table in fortress mode (art_images_loaded is false on " +
-    'every fort observed so far), so the human-readable scene an engraving depicts ' +
-    'is NOT available — subjects_resolvable=false and each subject is keyed by its ' +
-    'stable image reference ("image #2:158") instead. This is reported, never ' +
-    'fabricated, but do not plan on describing what the fort\'s art depicts: the ' +
-    'engraving read is reliable for counts, quality distribution, and which ' +
-    'dwarves did the engraving, not for iconography. Use ' +
+    "Each subject bucket is one art image: subject is the image's title, and image " +
+    'carries what it depicts: elements[] (creatures with race, histfig_id and a ' +
+    'unit_id when the figure is a living citizen; items, plants, trees, shapes), ' +
+    "properties[] (verbs linking elements by 0-based index, with DF's own sentence, " +
+    'e.g. "X is raising the chert door."), and the history event the image ' +
+    'commemorates when there is one. DF keeps art images on disk until something ' +
+    'looks at them; this tool loads them the way the engraving view sheet does, ' +
+    'paused and with the UI restored, but skips that while a view sheet is open. ' +
+    'A subject whose image is still not loaded reports subject_resolved=false and ' +
+    'falls back to its image reference ("image #0:70"), never a fabricated scene. Use ' +
     'limit + next_cursor to page through artifacts; see `caps` for all documented ' +
     'limits. Returns {"error":"no fort loaded"} if no fort is active.',
   shape: {
