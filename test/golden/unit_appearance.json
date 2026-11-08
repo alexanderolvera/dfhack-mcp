@@ -1,0 +1,683 @@
+{
+  "age": 57,
+  "body_size_cm3": 6950,
+  "caste": "MALE",
+  "colors": [
+    {
+      "colors": [
+        "white",
+        "black",
+        "amethyst"
+      ],
+      "part": "eyes",
+      "pattern": "IRIS_EYE_AMETHYST",
+      "pattern_type": "IRIS_EYE"
+    },
+    {
+      "colors": [
+        "golden yellow"
+      ],
+      "part": "hair",
+      "pattern": "GOLDEN_YELLOW",
+      "pattern_type": "MONOTONE"
+    },
+    {
+      "colors": [
+        "ecru"
+      ],
+      "part": "skin",
+      "pattern": "ECRU",
+      "pattern_type": "MONOTONE"
+    }
+  ],
+  "features": [
+    {
+      "desc_band": 0,
+      "feature": "body",
+      "modifier": "BROADNESS",
+      "value": 98
+    },
+    {
+      "desc_band": 0,
+      "feature": "body",
+      "modifier": "HEIGHT",
+      "value": 101
+    },
+    {
+      "desc_band": 0,
+      "feature": "ears",
+      "modifier": "BROADNESS",
+      "parts": [
+        "left ear",
+        "right ear"
+      ],
+      "value": 99
+    },
+    {
+      "desc_band": 1,
+      "feature": "ears",
+      "modifier": "HANGING_LOBES",
+      "parts": [
+        "left ear",
+        "right ear"
+      ],
+      "value": 105
+    },
+    {
+      "desc_band": 1,
+      "feature": "ears",
+      "modifier": "HEIGHT",
+      "parts": [
+        "left ear",
+        "right ear"
+      ],
+      "value": 102
+    },
+    {
+      "desc_band": -1,
+      "feature": "ears",
+      "modifier": "SPLAYED_OUT",
+      "parts": [
+        "left ear",
+        "right ear"
+      ],
+      "value": 89
+    },
+    {
+      "desc_band": 0,
+      "feature": "eyebrows",
+      "layer": "EYEBROW",
+      "modifier": "DENSE",
+      "parts": [
+        "head"
+      ],
+      "value": 104
+    },
+    {
+      "desc_band": 0,
+      "feature": "eyebrows",
+      "layer": "EYEBROW",
+      "modifier": "HIGH_POSITION",
+      "parts": [
+        "head"
+      ],
+      "value": 99
+    },
+    {
+      "desc_band": -1,
+      "feature": "eyebrows",
+      "layer": "EYEBROW",
+      "modifier": "LENGTH",
+      "parts": [
+        "head"
+      ],
+      "value": 81
+    },
+    {
+      "desc_band": 0,
+      "feature": "eyelashes",
+      "layer": "EYELASH",
+      "modifier": "LENGTH",
+      "parts": [
+        "left eyelid",
+        "right eyelid"
+      ],
+      "value": 107
+    },
+    {
+      "desc_band": -1,
+      "feature": "eyes",
+      "modifier": "CLOSE_SET",
+      "parts": [
+        "left eye",
+        "right eye"
+      ],
+      "value": 82
+    },
+    {
+      "desc_band": 2,
+      "feature": "eyes",
+      "modifier": "DEEP_SET",
+      "parts": [
+        "left eye",
+        "right eye"
+      ],
+      "value": 154
+    },
+    {
+      "desc_band": -2,
+      "feature": "eyes",
+      "modifier": "LARGE_IRIS",
+      "parts": [
+        "left eye",
+        "right eye"
+      ],
+      "value": 40
+    },
+    {
+      "desc_band": -1,
+      "feature": "eyes",
+      "modifier": "ROUND_VS_NARROW",
+      "parts": [
+        "left eye",
+        "right eye"
+      ],
+      "value": 78
+    },
+    {
+      "desc_band": 0,
+      "feature": "hair",
+      "layer": "CHEEK_WHISKERS",
+      "modifier": "CURLY",
+      "parts": [
+        "left cheek",
+        "right cheek"
+      ],
+      "value": 102
+    },
+    {
+      "desc_band": 0,
+      "feature": "hair",
+      "layer": "CHEEK_WHISKERS",
+      "modifier": "DENSE",
+      "parts": [
+        "left cheek",
+        "right cheek"
+      ],
+      "value": 100
+    },
+    {
+      "desc_band": 1,
+      "feature": "hair",
+      "layer": "CHEEK_WHISKERS",
+      "modifier": "GREASY",
+      "parts": [
+        "left cheek",
+        "right cheek"
+      ],
+      "value": 120
+    },
+    {
+      "desc_band": 2,
+      "feature": "hair",
+      "layer": "CHEEK_WHISKERS",
+      "modifier": "LENGTH",
+      "parts": [
+        "left cheek",
+        "right cheek"
+      ],
+      "value": 268
+    },
+    {
+      "desc_band": 0,
+      "feature": "hair",
+      "layer": "CHIN_WHISKERS",
+      "modifier": "CURLY",
+      "parts": [
+        "head"
+      ],
+      "value": 102
+    },
+    {
+      "desc_band": 0,
+      "feature": "hair",
+      "layer": "CHIN_WHISKERS",
+      "modifier": "DENSE",
+      "parts": [
+        "head"
+      ],
+      "value": 100
+    },
+    {
+      "desc_band": 1,
+      "feature": "hair",
+      "layer": "CHIN_WHISKERS",
+      "modifier": "GREASY",
+      "parts": [
+        "head"
+      ],
+      "value": 120
+    },
+    {
+      "desc_band": 2,
+      "feature": "hair",
+      "layer": "CHIN_WHISKERS",
+      "modifier": "LENGTH",
+      "parts": [
+        "head"
+      ],
+      "value": 268
+    },
+    {
+      "desc_band": 0,
+      "feature": "hair",
+      "layer": "HAIR",
+      "modifier": "CURLY",
+      "parts": [
+        "head"
+      ],
+      "value": 102
+    },
+    {
+      "desc_band": 0,
+      "feature": "hair",
+      "layer": "HAIR",
+      "modifier": "DENSE",
+      "parts": [
+        "head"
+      ],
+      "value": 100
+    },
+    {
+      "desc_band": 1,
+      "feature": "hair",
+      "layer": "HAIR",
+      "modifier": "GREASY",
+      "parts": [
+        "head"
+      ],
+      "value": 120
+    },
+    {
+      "desc_band": 1,
+      "feature": "hair",
+      "layer": "HAIR",
+      "modifier": "LENGTH",
+      "parts": [
+        "head"
+      ],
+      "value": 182
+    },
+    {
+      "desc_band": 0,
+      "feature": "hair",
+      "layer": "MOUSTACHE",
+      "modifier": "CURLY",
+      "parts": [
+        "head"
+      ],
+      "value": 102
+    },
+    {
+      "desc_band": 0,
+      "feature": "hair",
+      "layer": "MOUSTACHE",
+      "modifier": "DENSE",
+      "parts": [
+        "head"
+      ],
+      "value": 100
+    },
+    {
+      "desc_band": 1,
+      "feature": "hair",
+      "layer": "MOUSTACHE",
+      "modifier": "GREASY",
+      "parts": [
+        "head"
+      ],
+      "value": 120
+    },
+    {
+      "desc_band": 2,
+      "feature": "hair",
+      "layer": "MOUSTACHE",
+      "modifier": "LENGTH",
+      "parts": [
+        "head"
+      ],
+      "value": 263
+    },
+    {
+      "desc_band": 0,
+      "feature": "hair",
+      "layer": "SIDEBURNS",
+      "modifier": "CURLY",
+      "parts": [
+        "head"
+      ],
+      "value": 102
+    },
+    {
+      "desc_band": 0,
+      "feature": "hair",
+      "layer": "SIDEBURNS",
+      "modifier": "DENSE",
+      "parts": [
+        "head"
+      ],
+      "value": 100
+    },
+    {
+      "desc_band": 1,
+      "feature": "hair",
+      "layer": "SIDEBURNS",
+      "modifier": "GREASY",
+      "parts": [
+        "head"
+      ],
+      "value": 120
+    },
+    {
+      "desc_band": -3,
+      "feature": "hair",
+      "layer": "SIDEBURNS",
+      "modifier": "LENGTH",
+      "parts": [
+        "head"
+      ],
+      "value": 0
+    },
+    {
+      "desc_band": -2,
+      "feature": "head",
+      "modifier": "BROADNESS",
+      "parts": [
+        "head"
+      ],
+      "value": 92
+    },
+    {
+      "desc_band": 1,
+      "feature": "head",
+      "modifier": "HEIGHT",
+      "parts": [
+        "head"
+      ],
+      "value": 104
+    },
+    {
+      "desc_band": 1,
+      "feature": "lips",
+      "modifier": "THICKNESS",
+      "parts": [
+        "lower lip",
+        "upper lip"
+      ],
+      "value": 120
+    },
+    {
+      "desc_band": 0,
+      "feature": "nose",
+      "modifier": "BROADNESS",
+      "parts": [
+        "nose"
+      ],
+      "value": 102
+    },
+    {
+      "desc_band": 0,
+      "feature": "nose",
+      "modifier": "LENGTH",
+      "parts": [
+        "nose"
+      ],
+      "value": 96
+    },
+    {
+      "desc_band": 0,
+      "feature": "nose",
+      "modifier": "UPTURNED",
+      "parts": [
+        "nose"
+      ],
+      "value": 98
+    },
+    {
+      "desc_band": 1,
+      "feature": "nose bridge",
+      "modifier": "CONVEX",
+      "parts": [
+        "nose"
+      ],
+      "value": 125
+    },
+    {
+      "desc_band": 0,
+      "feature": "skin",
+      "layer": "SKIN",
+      "modifier": "WRINKLY",
+      "parts": [
+        "fifth toe, left foot",
+        "fifth toe, right foot",
+        "first finger, left hand",
+        "first finger, right hand",
+        "first toe, left foot",
+        "first toe, right foot"
+      ],
+      "parts_truncated": true,
+      "value": 0
+    },
+    {
+      "desc_band": -3,
+      "feature": "skull",
+      "modifier": "BROAD_CHIN",
+      "parts": [
+        "skull"
+      ],
+      "value": 0
+    },
+    {
+      "desc_band": 1,
+      "feature": "skull",
+      "modifier": "HIGH_CHEEKBONES",
+      "parts": [
+        "skull"
+      ],
+      "value": 111
+    },
+    {
+      "desc_band": -1,
+      "feature": "skull",
+      "modifier": "JUTTING_CHIN",
+      "parts": [
+        "skull"
+      ],
+      "value": 92
+    },
+    {
+      "desc_band": -1,
+      "feature": "skull",
+      "modifier": "SQUARE_CHIN",
+      "parts": [
+        "skull"
+      ],
+      "value": 93
+    },
+    {
+      "desc_band": 2,
+      "feature": "teeth",
+      "modifier": "GAPS",
+      "parts": [
+        "lower front tooth",
+        "lower left back tooth",
+        "lower right back tooth",
+        "upper front tooth",
+        "upper left back tooth",
+        "upper right back tooth"
+      ],
+      "value": 186
+    },
+    {
+      "desc_band": 0,
+      "feature": "teeth",
+      "modifier": "LENGTH",
+      "parts": [
+        "lower front tooth",
+        "lower left back tooth",
+        "lower right back tooth",
+        "upper front tooth",
+        "upper left back tooth",
+        "upper right back tooth"
+      ],
+      "value": 100
+    },
+    {
+      "desc_band": 1,
+      "feature": "throat",
+      "modifier": "DEEP_VOICE",
+      "parts": [
+        "throat"
+      ],
+      "value": 116
+    },
+    {
+      "desc_band": 1,
+      "feature": "throat",
+      "modifier": "RASPY_VOICE",
+      "parts": [
+        "throat"
+      ],
+      "value": 123
+    }
+  ],
+  "inventory": [
+    {
+      "body_part": "upper body",
+      "decorations": [],
+      "item": "river spirits waterskin (water buffalo leather)",
+      "item_id": 3285,
+      "material": "water buffalo leather",
+      "quality": "Ordinary",
+      "role": "Flask",
+      "type": "FLASK"
+    },
+    {
+      "body_part": "left hand",
+      "decorations": [],
+      "item": "steel shield",
+      "item_id": 28136,
+      "material": "steel",
+      "quality": "Masterful",
+      "role": "Weapon",
+      "type": "SHIELD"
+    },
+    {
+      "body_part": "right hand",
+      "decorations": [],
+      "item": "steel battle axe",
+      "item_id": 22682,
+      "material": "steel",
+      "quality": "Exceptional",
+      "role": "Weapon",
+      "type": "WEAPON"
+    },
+    {
+      "body_part": "head",
+      "decorations": [],
+      "item": "steel helm",
+      "item_id": 31847,
+      "material": "steel",
+      "quality": "Masterful",
+      "role": "Worn",
+      "type": "HELM"
+    },
+    {
+      "body_part": "left foot",
+      "decorations": [],
+      "item": "steel high boot",
+      "item_id": 30352,
+      "material": "steel",
+      "quality": "Masterful",
+      "role": "Worn",
+      "type": "SHOES"
+    },
+    {
+      "body_part": "left hand",
+      "decorations": [],
+      "item": "steel left gauntlet",
+      "item_id": 30135,
+      "material": "steel",
+      "quality": "Masterful",
+      "role": "Worn",
+      "type": "GLOVES"
+    },
+    {
+      "body_part": "lower body",
+      "decorations": [],
+      "item": "steel greaves",
+      "item_id": 30584,
+      "material": "steel",
+      "quality": "Masterful",
+      "role": "Worn",
+      "type": "PANTS"
+    },
+    {
+      "body_part": "right foot",
+      "decorations": [],
+      "item": "steel high boot",
+      "item_id": 30561,
+      "material": "steel",
+      "quality": "Masterful",
+      "role": "Worn",
+      "type": "SHOES"
+    },
+    {
+      "body_part": "right hand",
+      "decorations": [],
+      "item": "steel right gauntlet",
+      "item_id": 29971,
+      "material": "steel",
+      "quality": "Masterful",
+      "role": "Worn",
+      "type": "GLOVES"
+    },
+    {
+      "body_part": "upper body",
+      "decorations": [],
+      "item": "cat leather backpack",
+      "item_id": 27203,
+      "material": "cat leather",
+      "quality": "Exceptional",
+      "role": "Worn",
+      "type": "BACKPACK"
+    },
+    {
+      "body_part": "upper body",
+      "decorations": [],
+      "item": "steel mail shirt",
+      "item_id": 27937,
+      "material": "steel",
+      "quality": "Masterful",
+      "role": "Worn",
+      "type": "ARMOR"
+    }
+  ],
+  "missing_parts": [],
+  "name": "Tun Lolumavuz \"Woodenmines\", militia commander",
+  "race": "dwarf",
+  "scars": [],
+  "sex": "male",
+  "tissue_styles": [
+    {
+      "layers": [
+        "CHEEK_WHISKERS",
+        "CHIN_WHISKERS"
+      ],
+      "style": "NEATLY_COMBED",
+      "tissue": "beard"
+    },
+    {
+      "layers": [
+        "HAIR"
+      ],
+      "style": "PONY_TAIL",
+      "tissue": "hair"
+    },
+    {
+      "layers": [
+        "MOUSTACHE"
+      ],
+      "style": "NEATLY_COMBED",
+      "tissue": "moustache"
+    },
+    {
+      "layers": [
+        "SIDEBURNS"
+      ],
+      "style": "CLEAN_SHAVEN",
+      "tissue": "sideburns"
+    }
+  ],
+  "unit_id": 111
+}

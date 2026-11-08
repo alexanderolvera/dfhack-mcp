@@ -6,7 +6,7 @@ not an autopilot. Point Claude (or any MCP client) at it and ask _"how's my fort
 doing?"_ — it reads happiness, threats, stocks, jobs, health, and defenses
 straight from the running game and answers in plain language.
 
-**Read-only by default.** The 37 sensor and reference tools only observe the
+**Read-only by default.** The 38 sensor and reference tools only observe the
 game. A handful of **actuators** that _change_ the fort — queue manager orders,
 apply quickfort blueprints, assign labor, sound the civilian alert, pull a lever —
 ship behind an explicit opt-in and stay hidden until you enable them (see
@@ -101,6 +101,7 @@ No arguments; each reports on the loaded fort.
 - **`environment()`** — ambient conditions right now: season and weather, surface temperature and whether exposed water is frozen, the embark's biome alignment (evil/good/reanimating), and — for each cavern the fort has **already breached** — whether it is open or sealed. Fog-of-war honest.
 - **`find_unit(query)`** — look up citizens by name fragment or profession; a compact dossier per match (profession, age, stress, job, squad, health flags). Chain into `citizen` for depth.
 - **`citizen(unit_id)`** — the full character sheet for one dwarf: social graph (spouse/parents/children/friends/grudges, each with a `unit_id` you can walk), worshipped deities, notable personality extremes, skills of note, likes/detests, and recent thoughts tied to current stress.
+- **`unit_appearance(unit_id)`** — the portrait read for one unit: DF's appearance modifiers (eyes, nose, hair length, build, ...) as raw values with their description band, hair/beard styling, hair/skin/eye colors as DF names them (including age graying), missing parts and scars, and everything worn or wielded with material, quality, wear, dye, and decorations.
 - **`site_history()`** — the fort's entry in the world saga: founding, the fort name in Dwarven + English with etymology, prior sieges/battles at the site, and notable figures who died here.
 - **`artifacts_and_engravings()`** — the fort's masterworks and notable engravings.
 - **`chronicle()`** — a scannable recent-events feed for the fort.

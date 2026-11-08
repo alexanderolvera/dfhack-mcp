@@ -36,6 +36,7 @@ import { stocksDef } from './stocks.ts';
 import { threatsDef } from './threats.ts';
 import { tileRegionDef } from './tileRegion.ts';
 import { tradeDef } from './trade.ts';
+import { unitAppearanceDef } from './unitAppearance.ts';
 import { unmetNeedsDef } from './unmetNeeds.ts';
 import { assignWorkDetailDef, workDetailsDef } from './workDetail.ts';
 import { wikiLookupDef } from './wikiLookup.ts';
@@ -84,6 +85,7 @@ export const ALL_TOOLS: ToolDef[] = [
   threatsDef,
   tileRegionDef,
   tradeDef,
+  unitAppearanceDef,
   unmetNeedsDef,
   wikiLookupDef,
   wikiSearchDef,
