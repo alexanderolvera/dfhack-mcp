@@ -163,6 +163,7 @@ const fail = (msg) => {
   console.error(`  ✗ ${msg}`);
 };
 const ok = (msg) => console.log(`  ✓ ${msg}`);
+const isInt = Number.isInteger;
 
 function canonicalize(value) {
   if (Array.isArray(value)) return value.map(canonicalize);
@@ -397,19 +398,24 @@ async function tier2(client) {
     }
     const snapshot = JSON.stringify(canonicalize(maskVolatile(name, data)), null, 2) + '\n';
     const file = join(GOLDEN_DIR, `${name}.json`);
-    if (update || !existsSync(file)) {
+    if (update) {
+      const existed = existsSync(file);
       writeFileSync(file, snapshot);
-      ok(`${name}: golden ${existsSync(file) ? 'written' : 'created'}`);
+      ok(`${name}: golden ${existed ? 'rewritten' : 'created'}`);
+    } else if (!existsSync(file)) {
+      fail(`${name}: no golden at test/golden/${name}.json (author it with npm run verify:update)`);
     } else {
       const prev = readFileSync(file, 'utf8');
       if (prev === snapshot) ok(`${name}: golden matches`);
       else fail(`${name}: golden DIFF (run with --update if the change is intended)`);
     }
   }
-  runInvariants(payloads); // reuse the payloads T2 already captured — no double-call
+  await runInvariants(client, payloads); // reuse the payloads T2 already captured — no double-call
   await tileRegionParamChecks(client); // param surface the no-arg golden can't reach
   await workDetailsParamChecks(client); // ditto for the work_details narrowing args
   await blueprintActuatorChecks(client); // live confirm+apply+undo; restores the fixture
+  await workOrderActuatorChecks(client); // live create+cancel round trip; restores the fixture
+  await assignWorkDetailActuatorChecks(client); // live add+remove round trip; restores the fixture
 }
 
 // Call every tool in `names` once and return a { name -> payload } map. Skips
@@ -429,7 +435,20 @@ async function capturePayloads(client, names) {
 const isEvaluable = (d) =>
   d && d.__unparsable__ === undefined && !isNoFort(d) && typeof d.error !== 'string';
 
-function runInvariants(payloads) {
+async function runProbes(client, inv, payloads) {
+  const results = {};
+  const problems = [];
+  for (const [key, probe] of Object.entries(inv.probes ?? {})) {
+    const args = probe.args({ ...payloads, probes: results });
+    if (args === null) continue;
+    const { data } = await callJson(client, probe.tool, args);
+    if (isEvaluable(data)) results[key] = data;
+    else problems.push(`probe ${key} ${probe.tool}(${JSON.stringify(args)}) failed: ${JSON.stringify(data).slice(0, 160)}`);
+  }
+  return { results, problems };
+}
+
+async function runInvariants(client, payloads) {
   console.log('\nInvariants (relational specs — must hold for any valid fort)');
   let evaluated = 0;
   for (const inv of INVARIANTS) {
@@ -439,7 +458,10 @@ function runInvariants(payloads) {
       continue;
     }
     evaluated++;
-    const problems = inv.check(payloads);
+    const { results, problems: probeProblems } = await runProbes(client, inv, payloads);
+    const problems = probeProblems.length
+      ? probeProblems
+      : inv.check({ ...payloads, probes: results });
     if (problems.length) for (const m of problems) fail(`${inv.name}: ${m}`);
     else ok(`${inv.name}: ${inv.desc}`);
   }
@@ -651,6 +673,179 @@ async function blueprintActuatorChecks(client) {
   else fail(`build mode not blocked cleanly: ${JSON.stringify(build).slice(0, 200)}`);
 }
 
+// --- work order + work detail actuator surfaces (LIVE, MUTATING then restored) ---
+const sameState = (a, b) => JSON.stringify(canonicalize(a)) === JSON.stringify(canonicalize(b));
+
+async function readAllOrders(client) {
+  const orders = [];
+  let after;
+  for (;;) {
+    const page = (await callJson(client, 'work_order_list', after === undefined ? {} : { after_id: after })).data;
+    if (!isEvaluable(page)) return null;
+    orders.push(...(page.orders ?? []));
+    if (!page.truncated) return { count: page.count, manager_present: page.manager_present, orders };
+    after = page.next_cursor;
+  }
+}
+
+async function previewThenApply(client, tool, args) {
+  const preview = (await callJson(client, tool, args)).data;
+  if (typeof preview.confirm_token !== 'string') return { preview };
+  const applied = await callJson(client, tool, { ...args, confirm_token: preview.confirm_token });
+  return { preview, applied: applied.data, appliedIsError: applied.isError, token: preview.confirm_token };
+}
+
+async function workOrderActuatorChecks(client) {
+  console.log('\nwork order actuator surface (create+cancel round trip / token gates)');
+  const before = await readAllOrders(client);
+  if (!before) {
+    console.log('  ○ skipped (no fort loaded)');
+    return;
+  }
+  const spec = { job_type: 'ConstructBed', amount: 1 };
+
+  const mismatchPreview = (await callJson(client, 'work_order_create', spec)).data;
+  const mismatch = await callJson(client, 'work_order_create', {
+    ...spec,
+    amount: 2,
+    confirm_token: mismatchPreview.confirm_token,
+  });
+  const afterMismatch = await readAllOrders(client);
+  if (mismatch.isError && sameState(afterMismatch, before))
+    ok('a token redeemed with different args is rejected and creates nothing');
+  else fail(`arg-mismatch redeem was not rejected cleanly: ${JSON.stringify(mismatch.data).slice(0, 200)}`);
+
+  const create = await previewThenApply(client, 'work_order_create', spec);
+  const createdId = create.applied?.changes?.created_order_id;
+  if (!isInt(createdId)) {
+    fail(`create did not apply: ${JSON.stringify(create).slice(0, 200)}`);
+    const now = await readAllOrders(client);
+    if (!sameState(now, before)) fail('work order list changed after a failed create; fixture is DIRTY');
+    return;
+  }
+  try {
+    const rb = create.applied.readback ?? {};
+    if (
+      create.applied.applied === true &&
+      rb.id === createdId &&
+      rb.job_type === spec.job_type &&
+      rb.amount_total === spec.amount &&
+      rb.amount_left === spec.amount &&
+      rb.frequency === 'OneTime' &&
+      create.applied.undo?.order_id === createdId
+    )
+      ok(`work_order_create applied -> order ${createdId} (readback + undo handle agree)`);
+    else fail(`create apply wrong: ${JSON.stringify(create.applied).slice(0, 200)}`);
+
+    const replay = await callJson(client, 'work_order_create', { ...spec, confirm_token: create.token });
+    const mid = await readAllOrders(client);
+    const added = mid.orders.filter((o) => !before.orders.some((b) => b.id === o.id));
+    if (replay.isError && added.length === 1 && mid.count === before.count + 1)
+      ok('a spent create token is rejected (single-use); exactly one order was added');
+    else fail(`replay/readback wrong: replayIsError=${replay.isError}, added=${JSON.stringify(added.map((o) => o.id))}`);
+    if (added.length === 1 && sameState(added[0], rb))
+      ok('work_order_list shows the new order with the same facts as the apply readback');
+    else fail(`work_order_list disagrees with readback: ${JSON.stringify(added).slice(0, 200)}`);
+
+    const dup = (await callJson(client, 'work_order_create', spec)).data.preview ?? {};
+    const wantDup = create.preview.preview?.duplicate_of ?? createdId;
+    if (dup.would_duplicate === true && dup.duplicate_of === wantDup)
+      ok(`a repeat preview flags would_duplicate (duplicate_of ${wantDup})`);
+    else fail(`repeat preview did not flag the duplicate: ${JSON.stringify(dup).slice(0, 200)}`);
+  } finally {
+    const cancel = await previewThenApply(client, 'work_order_cancel', { order_id: createdId });
+    if (cancel.preview?.preview?.id === createdId && cancel.preview.preview.job_type === spec.job_type)
+      ok(`cancel preview names order ${createdId}`);
+    else fail(`cancel preview wrong: ${JSON.stringify(cancel.preview).slice(0, 200)}`);
+    const a = cancel.applied ?? {};
+    const recreate = a.undo?.recreate ?? {};
+    if (
+      a.applied === true &&
+      a.changes?.cancelled_order_id === createdId &&
+      a.readback?.present === false &&
+      a.undo?.faithful === true &&
+      recreate.job_type === spec.job_type &&
+      recreate.amount === spec.amount
+    )
+      ok('work_order_cancel applied -> order gone, faithful recreate spec returned');
+    else fail(`cancel apply wrong: ${JSON.stringify(a).slice(0, 200)}`);
+    const replay = await callJson(client, 'work_order_cancel', { order_id: createdId, confirm_token: cancel.token });
+    if (replay.isError) ok('a spent cancel token is rejected (single-use)');
+    else fail(`cancel token replay was accepted: ${JSON.stringify(replay.data).slice(0, 200)}`);
+    const after = await readAllOrders(client);
+    if (sameState(after, before)) ok('work order list read back identical to before the round trip (fixture restored)');
+    else fail('work order list differs from before the round trip; fixture is DIRTY');
+  }
+}
+
+async function assignWorkDetailActuatorChecks(client) {
+  console.log('\nassign_work_detail actuator surface (add+remove round trip / noop / labors restored)');
+  const before = (await callJson(client, 'work_details', {})).data;
+  if (!isEvaluable(before)) {
+    console.log('  ○ skipped (no fort loaded)');
+    return;
+  }
+  const details = before.details ?? [];
+  const uid = details.find((d) => d.members?.length)?.members[0];
+  const target = uid === undefined ? undefined : details.find((d) => !d.members_truncated && !d.members.includes(uid));
+  if (!target) {
+    console.log('  ○ skipped (no citizen with a detail they are not in)');
+    return;
+  }
+  const add = { unit_id: uid, detail: target.name, enabled: true };
+  const remove = { ...add, enabled: false };
+
+  const fwd = await previewThenApply(client, 'assign_work_detail', add);
+  const pv = fwd.preview.preview ?? {};
+  if (pv.currently_member === false && pv.resulting_members_count === target.member_count + 1 && !fwd.preview.would_be_noop)
+    ok(`preview adds unit ${uid} to "${target.name}" (${target.member_count} -> ${pv.resulting_members_count})`);
+  else fail(`add preview wrong: ${JSON.stringify(fwd.preview).slice(0, 200)}`);
+  const a = fwd.applied;
+  if (!a || a.applied !== true) {
+    fail(`add did not apply: ${JSON.stringify(fwd).slice(0, 200)}`);
+    const now = (await callJson(client, 'work_details', {})).data;
+    if (!sameState(now, before)) fail('work details changed after a failed add; fixture is DIRTY');
+    return;
+  }
+  try {
+    if (
+      a.changes?.now_member === true &&
+      a.readback?.is_member === true &&
+      a.readback?.detail?.member_count === target.member_count + 1 &&
+      a.undo?.enabled === false
+    )
+      ok('assign_work_detail applied -> member added (readback + undo handle agree)');
+    else fail(`add apply wrong: ${JSON.stringify(a).slice(0, 200)}`);
+    if (a.undo?.faithful === true) ok('the unit\'s prior labor cache matched its detail grants (reversal is exact)');
+    else fail(`labor cache was stale before the add; reversal recomputes rather than restores: ${JSON.stringify(a.undo).slice(0, 200)}`);
+
+    const mid = (await callJson(client, 'work_details', { detail: target.name })).data.details?.[0];
+    if (mid?.members?.includes(uid) && mid.member_count === target.member_count + 1)
+      ok('work_details reads back the new member');
+    else fail(`work_details readback missing the member: ${JSON.stringify(mid).slice(0, 200)}`);
+
+    const again = (await callJson(client, 'assign_work_detail', add)).data;
+    if (again.would_be_noop === true && again.preview?.currently_member === true)
+      ok('re-previewing the same add reports would_be_noop');
+    else fail(`repeat add preview not a noop: ${JSON.stringify(again).slice(0, 200)}`);
+  } finally {
+    const rev = await previewThenApply(client, 'assign_work_detail', remove);
+    const r = rev.applied ?? {};
+    if (r.applied === true && r.changes?.now_member === false && r.readback?.is_member === false)
+      ok('reversal (enabled:false) applied -> member removed');
+    else fail(`reversal wrong (fixture may be DIRTY): ${JSON.stringify(rev).slice(0, 200)}`);
+    if (sameState(r.readback?.unit_labors_now, a.undo?.prior_labors))
+      ok("unit's labors for the detail read back identical to before the add");
+    else
+      fail(
+        `labors not restored: before ${JSON.stringify(a.undo?.prior_labors)} after ${JSON.stringify(r.readback?.unit_labors_now)}`
+      );
+    const after = (await callJson(client, 'work_details', {})).data;
+    if (sameState(after, before)) ok('work_details read back identical to before the round trip (fixture restored)');
+    else fail('work_details differs from before the round trip; fixture is DIRTY');
+  }
+}
+
 // --- blueprint library-reference surface (LIVE, dry-run only) ---------------
 // blueprint_apply's second source: a path/label from blueprint_library() instead
 // of an inline CSV (#88). Every check here is a no-token dry-run, so unlike
@@ -753,10 +948,12 @@ async function blueprintLibraryRefChecks(client) {
 async function invariantsMode(client) {
   console.log('\nInvariants mode — relational specs against the live fort (no golden needed)');
   await resolveLiveArgs(client);
-  runInvariants(await capturePayloads(client, INVARIANT_TOOLS));
+  await runInvariants(client, await capturePayloads(client, INVARIANT_TOOLS));
   await tileRegionParamChecks(client);
   await workDetailsParamChecks(client);
   await blueprintActuatorChecks(client);
+  await workOrderActuatorChecks(client);
+  await assignWorkDetailActuatorChecks(client);
   await blueprintLibraryRefChecks(client);
 }
 

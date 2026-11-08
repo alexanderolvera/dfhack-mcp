@@ -1628,4 +1628,400 @@ export const INVARIANTS = [
       return out;
     },
   },
+  {
+    name: 'chronicle_window_wellformed',
+    tools: ['chronicle'],
+    desc: 'the default page is id-ascending inside the retained window, cursor is the newest retained id, count/limit/more/omitted_by_limit agree, and no since means no pruning',
+    check(p) {
+      const d = p.chronicle;
+      const out = [];
+      const ev = Array.isArray(d.events) ? d.events : [];
+      if (!Array.isArray(d.events)) out.push('events is not an array');
+      if (d.order !== 'ascending') out.push(`order="${d.order}", expected "ascending"`);
+      if (d.count !== ev.length) out.push(`count=${d.count} !== ${ev.length} listed events`);
+      if (!(isInt(d.limit) && d.limit >= 1 && d.limit <= 200)) out.push(`limit=${d.limit} outside 1..200`);
+      if (ev.length > d.limit) out.push(`${ev.length} events exceed limit ${d.limit}`);
+      if (d.more !== (d.omitted_by_limit > 0))
+        out.push(`more=${d.more} disagrees with omitted_by_limit=${d.omitted_by_limit}`);
+      if (d.since !== undefined || d.pruned !== false)
+        out.push(`no-since call echoed since=${d.since} pruned=${d.pruned}`);
+      if (!(isInt(d.window_size) && d.window_size >= ev.length))
+        out.push(`window_size=${d.window_size} is smaller than the page`);
+      if (d.window_size > 0) {
+        if (d.cursor !== d.newest_retained_id)
+          out.push(`cursor=${d.cursor} !== newest_retained_id=${d.newest_retained_id}`);
+        if (!(d.oldest_retained_id <= d.newest_retained_id))
+          out.push(`oldest_retained_id=${d.oldest_retained_id} > newest_retained_id=${d.newest_retained_id}`);
+        if (isInt(d.next_report_id) && d.next_report_id <= d.newest_retained_id)
+          out.push(`next_report_id=${d.next_report_id} is not past newest_retained_id=${d.newest_retained_id}`);
+      }
+      const CATS = new Set(['death', 'birth', 'marriage', 'battle', 'siege', 'mood', 'artifact', 'migrants', 'diplomacy', 'cave-in', 'megabeast', 'other']);
+      ev.forEach((e, i) => {
+        if (!isInt(e.id)) out.push(`events[${i}].id=${e.id} is not an integer`);
+        if (i > 0 && !(e.id > ev[i - 1].id)) out.push(`events not strictly id-ascending at index ${i}`);
+        if (e.id < d.oldest_retained_id || e.id > d.newest_retained_id)
+          out.push(`events[${i}].id=${e.id} lies outside the retained window`);
+        if (!CATS.has(e.category)) out.push(`events[${i}].category="${e.category}" is not a known category`);
+        if (e.repeat_count !== undefined && !(isInt(e.repeat_count) && e.repeat_count > 0))
+          out.push(`events[${i}].repeat_count=${e.repeat_count} present but not positive`);
+        if (e.collapsed && !(e.category === 'battle' && isInt(e.collapsed_count) && e.collapsed_count > 0))
+          out.push(`events[${i}] is a collapse marker without a battle category and positive collapsed_count`);
+      });
+      return out;
+    },
+  },
+  {
+    name: 'chronicle_cursor_contract',
+    tools: ['chronicle'],
+    probes: {
+      atCursor: { tool: 'chronicle', args: (p) => ({ since: p.chronicle.cursor }) },
+      atWindowEdge: {
+        tool: 'chronicle',
+        args: (p) => (isInt(p.chronicle.oldest_retained_id) ? { since: p.chronicle.oldest_retained_id - 1, limit: 1 } : null),
+      },
+      beforeWindow: {
+        tool: 'chronicle',
+        args: (p) => (isInt(p.chronicle.oldest_retained_id) ? { since: p.chronicle.oldest_retained_id - 2, limit: 1 } : null),
+      },
+      afterFirst: {
+        tool: 'chronicle',
+        args: (p) => (p.chronicle.events?.length ? { since: p.chronicle.events[0].id } : null),
+      },
+      tail3: { tool: 'chronicle', args: () => ({ limit: 3 }) },
+      overCap: { tool: 'chronicle', args: () => ({ limit: 999 }) },
+      underFloor: { tool: 'chronicle', args: () => ({ limit: 0 }) },
+      battleOnly: { tool: 'chronicle', args: () => ({ categories: ['battle'], limit: 200 }) },
+    },
+    desc: 'since=cursor returns nothing new; pruned flips exactly when since+1 predates the window; since filters by id; limit keeps the newest events and clamps to 1..200; categories filter',
+    check(p) {
+      const base = p.chronicle;
+      const q = p.probes;
+      const out = [];
+      const ids = (d) => (d.events ?? []).map((e) => e.id);
+      const c = q.atCursor;
+      if (c.count !== 0 || c.events.length !== 0 || c.more !== false || c.pruned !== false)
+        out.push(`since=cursor returned count=${c.count} more=${c.more} pruned=${c.pruned}, expected an empty, unpruned page`);
+      if (c.since !== base.cursor) out.push(`since echo ${c.since} !== requested ${base.cursor}`);
+      if (c.cursor !== base.cursor) out.push(`cursor moved from ${base.cursor} to ${c.cursor} on a paused fort`);
+      if (q.atWindowEdge && q.atWindowEdge.pruned !== false)
+        out.push(`since=oldest_retained_id-1 reported pruned=${q.atWindowEdge.pruned}; nothing was lost`);
+      if (q.beforeWindow) {
+        if (q.beforeWindow.pruned !== true)
+          out.push(`since=oldest_retained_id-2 reported pruned=${q.beforeWindow.pruned}; report oldest-1 is gone`);
+        if (typeof q.beforeWindow.pruned_note !== 'string') out.push('pruned page carries no pruned_note');
+      }
+      if (q.afterFirst) {
+        const since = base.events[0].id;
+        if (ids(q.afterFirst).some((id) => id <= since)) out.push(`since=${since} returned an event with id <= since`);
+        if (q.afterFirst.since !== since) out.push(`since echo ${q.afterFirst.since} !== requested ${since}`);
+      }
+      const t = q.tail3;
+      const wantTail = (base.events ?? []).slice(-3);
+      if (JSON.stringify(t.events) !== JSON.stringify(wantTail))
+        out.push(`limit=3 returned ids ${JSON.stringify(ids(t))}, expected the newest three ${JSON.stringify(wantTail.map((e) => e.id))}`);
+      if (t.count + t.omitted_by_limit !== base.count + base.omitted_by_limit)
+        out.push(`limit=3 count+omitted=${t.count + t.omitted_by_limit} disagrees with the default page's ${base.count + base.omitted_by_limit}`);
+      if (q.overCap.limit !== 200 || q.overCap.count > 200)
+        out.push(`limit=999 echoed limit=${q.overCap.limit} count=${q.overCap.count}, expected a 200 clamp`);
+      if (q.underFloor.limit !== 1 || q.underFloor.count > 1)
+        out.push(`limit=0 echoed limit=${q.underFloor.limit} count=${q.underFloor.count}, expected a floor of 1`);
+      const b = q.battleOnly;
+      if ((b.events ?? []).some((e) => e.category !== 'battle')) out.push('categories=[battle] returned a non-battle event');
+      if (b.filtered_categories !== 'battle') out.push(`filtered_categories echo "${b.filtered_categories}" !== "battle"`);
+      return out;
+    },
+  },
+  {
+    name: 'artifacts_world_scope_and_paging_agree_with_site_scope',
+    tools: ['artifacts_and_engravings'],
+    probes: {
+      world: { tool: 'artifacts_and_engravings', args: () => ({ scope: 'world', limit: 100 }) },
+      firstOfOne: { tool: 'artifacts_and_engravings', args: () => ({ limit: 1 }) },
+      secondOfOne: {
+        tool: 'artifacts_and_engravings',
+        args: (p) => (p.probes.firstOfOne?.next_cursor ? { limit: 1, cursor: p.probes.firstOfOne.next_cursor } : null),
+      },
+    },
+    desc: 'world scope totals the same world count, tags every row site_local, and holds exactly the site rows as site_local; a 1-row page plus its next_cursor walk the same order as the default page',
+    check(p) {
+      const site = p.artifacts_and_engravings;
+      const { world, firstOfOne, secondOfOne } = p.probes;
+      const out = [];
+      if (world.scope !== 'world') out.push(`scope echo "${world.scope}", expected "world"`);
+      if (world.artifact_count !== site.artifact_count_world || world.artifact_count_world !== site.artifact_count_world)
+        out.push(`world scope count ${world.artifact_count}/${world.artifact_count_world} disagrees with site's artifact_count_world ${site.artifact_count_world}`);
+      const rows = world.artifacts ?? [];
+      if (rows.some((a) => typeof a.site_local !== 'boolean')) out.push('a world-scope row has no boolean site_local');
+      if (world.next_cursor === undefined) {
+        const local = new Set(rows.filter((a) => a.site_local).map((a) => a.id));
+        if (local.size !== site.artifact_count)
+          out.push(`world scope tags ${local.size} rows site_local, site scope counts ${site.artifact_count}`);
+        for (const a of site.artifacts ?? [])
+          if (!local.has(a.id)) out.push(`site artifact ${a.id} is not a site_local row in world scope`);
+      }
+      const ids = (site.artifacts ?? []).map((a) => a.id);
+      if (new Set(ids).size !== ids.length) out.push(`duplicate artifact ids on the default page: ${JSON.stringify(ids)}`);
+      if (firstOfOne.returned !== Math.min(1, site.artifact_count))
+        out.push(`limit=1 returned ${firstOfOne.returned} rows`);
+      if (firstOfOne.artifacts?.[0]?.id !== site.artifacts?.[0]?.id)
+        out.push(`limit=1 first row ${firstOfOne.artifacts?.[0]?.id} !== default first row ${site.artifacts?.[0]?.id}`);
+      if ((site.artifact_count > 1) !== (firstOfOne.next_cursor !== undefined))
+        out.push(`limit=1 next_cursor presence disagrees with artifact_count=${site.artifact_count}`);
+      if (secondOfOne && secondOfOne.artifacts?.[0]?.id !== site.artifacts?.[1]?.id)
+        out.push(`resuming from next_cursor gave row ${secondOfOne.artifacts?.[0]?.id}, default second row is ${site.artifacts?.[1]?.id}`);
+      for (const [i, a] of (site.artifacts ?? []).entries()) {
+        const n = a.decorations?.length ?? 0;
+        if (n > site.caps.decorations_per_artifact) out.push(`artifacts[${i}] lists ${n} decorations over the cap`);
+        if (a.decorations_truncated && !(a.decorations_total > n))
+          out.push(`artifacts[${i}] decorations_truncated but decorations_total=${a.decorations_total}`);
+      }
+      return out;
+    },
+  },
+  {
+    name: 'engravings_aggregate_consistent',
+    tools: ['artifacts_and_engravings'],
+    desc: 'the quality histogram sums to the scanned engravings, scanned never exceeds what is present, subject buckets are count-descending within their cap, and an untruncated bucket list accounts for every scanned engraving',
+    check(p) {
+      const d = p.artifacts_and_engravings;
+      const e = d.engravings ?? {};
+      const caps = d.caps ?? {};
+      const out = [];
+      if (!(isInt(e.scanned) && isInt(e.total_present) && e.scanned <= e.total_present))
+        out.push(`scanned=${e.scanned} vs total_present=${e.total_present}`);
+      if (e.scan_truncated !== (e.total_present > e.scanned))
+        out.push(`scan_truncated=${e.scan_truncated} disagrees with scanned ${e.scanned} of ${e.total_present}`);
+      const qSum = Object.values(e.quality ?? {}).reduce((s, n) => s + n, 0);
+      if (qSum !== e.scanned) out.push(`quality histogram sums to ${qSum}, scanned=${e.scanned}`);
+      const buckets = e.by_subject ?? [];
+      if (buckets.length > caps.subject_buckets_max) out.push(`${buckets.length} subject buckets exceed cap ${caps.subject_buckets_max}`);
+      if (e.by_subject_truncated !== (e.distinct_subjects > buckets.length))
+        out.push(`by_subject_truncated=${e.by_subject_truncated} disagrees with ${buckets.length} of ${e.distinct_subjects} subjects`);
+      buckets.forEach((b, i) => {
+        if (i > 0 && b.count > buckets[i - 1].count) out.push(`by_subject not count-descending at ${i}`);
+      });
+      const bSum = buckets.reduce((s, b) => s + b.count, 0);
+      if (!e.by_subject_truncated && bSum !== e.scanned) out.push(`untruncated by_subject sums to ${bSum}, scanned=${e.scanned}`);
+      const top = e.top_engravers ?? [];
+      if (top.length > caps.top_engravers_max) out.push(`${top.length} top_engravers exceed cap ${caps.top_engravers_max}`);
+      top.forEach((t, i) => {
+        if (!isInt(t.histfig_id)) out.push(`top_engravers[${i}].histfig_id=${t.histfig_id} is not an integer`);
+        if (i > 0 && t.count > top[i - 1].count) out.push(`top_engravers not count-descending at ${i}`);
+      });
+      if (top.reduce((s, t) => s + t.count, 0) > e.scanned) out.push('top_engravers credit more engravings than were scanned');
+      return out;
+    },
+  },
+  {
+    name: 'defenses_geometry_and_counts_coherent',
+    tools: ['defenses', 'fort_status'],
+    desc: 'interior groups sum to the interior citizen count within the population, the perimeter window is a w x h grid whose glyph and exposure tallies cover every tile, structure counts are non-negative, and "inside" threats share a citizen walk group',
+    check(p) {
+      const d = p.defenses;
+      const pop = p.fort_status.population;
+      const out = [];
+      const groups = d.interior?.groups ?? [];
+      const gSum = groups.reduce((s, g) => s + g.citizens, 0);
+      if (gSum !== d.interior?.citizens) out.push(`interior groups sum to ${gSum}, interior.citizens=${d.interior?.citizens}`);
+      if (d.interior?.citizens > pop) out.push(`interior.citizens=${d.interior.citizens} exceeds population ${pop}`);
+      if (groups.length && !groups.some((g) => g.group === d.interior.primary_group))
+        out.push(`primary_group ${d.interior.primary_group} is not one of the interior groups`);
+      if (d.fort_core && d.fort_core.citizens > pop) out.push(`fort_core.citizens=${d.fort_core.citizens} exceeds population ${pop}`);
+      const pt = d.perimeter_terrain;
+      if (pt) {
+        const tiles = pt.w * pt.h;
+        if (pt.grid?.length !== pt.h) out.push(`grid has ${pt.grid?.length} rows, h=${pt.h}`);
+        (pt.grid ?? []).forEach((row, i) => {
+          if ([...row].length !== pt.w) out.push(`grid row ${i} is ${[...row].length} wide, w=${pt.w}`);
+        });
+        const dSum = Object.values(pt.distinct ?? {}).reduce((s, n) => s + n, 0);
+        if (dSum !== tiles) out.push(`distinct glyph counts sum to ${dSum}, w*h=${tiles}`);
+        const x = pt.exposure ?? {};
+        if (x.open_to_sky + x.covered + x.undiscovered !== tiles)
+          out.push(`exposure ${JSON.stringify(x)} does not sum to w*h=${tiles}`);
+        if (x.undiscovered !== (pt.distinct?.['?'] ?? 0))
+          out.push(`exposure.undiscovered=${x.undiscovered} !== ${pt.distinct?.['?'] ?? 0} "?" tiles`);
+        if (pt.z !== pt.origin?.z) out.push(`perimeter z=${pt.z} !== origin.z=${pt.origin?.z}`);
+        if (pt.citizens_on_level > pop) out.push(`citizens_on_level=${pt.citizens_on_level} exceeds population ${pop}`);
+        for (const f of pt.fortifications ?? []) {
+          if (f.x < pt.origin.x || f.x >= pt.origin.x + pt.w || f.y < pt.origin.y || f.y >= pt.origin.y + pt.h)
+            out.push(`fortification ${JSON.stringify(f)} lies outside the window`);
+        }
+      }
+      const s = d.structures ?? {};
+      for (const k of ['levers', 'floodgates', 'hatches', 'cage_traps'])
+        if (!(isInt(s[k]) && s[k] >= 0)) out.push(`structures.${k}=${s[k]} is not a non-negative integer`);
+      if (!(isInt(s.doors?.total) && s.doors.forbidden >= 0 && s.doors.forbidden <= s.doors.total))
+        out.push(`structures.doors ${JSON.stringify(s.doors)} is not 0 <= forbidden <= total`);
+      for (const [i, b] of (s.bridges ?? []).entries())
+        if (!(isInt(b.tiles) && b.tiles > 0)) out.push(`bridges[${i}].tiles=${b.tiles} is not positive`);
+      const interiorGroups = new Set(groups.map((g) => g.group));
+      for (const [i, t] of (d.threats ?? []).entries()) {
+        if (t.location !== 'inside' && t.location !== 'outside') out.push(`threats[${i}].location="${t.location}"`);
+        if ((t.location === 'inside') !== interiorGroups.has(t.walk_group))
+          out.push(`threats[${i}] location="${t.location}" disagrees with walk_group ${t.walk_group} vs interior groups`);
+      }
+      return out;
+    },
+  },
+  {
+    name: 'threats_groups_partition_the_counts',
+    tools: ['threats'],
+    desc: 'loose groups sum to active_hostiles and contained groups to contained, each (name, containment) pair is one group, and traits are the documented set with ranged iff a ranged attack is listed',
+    check(p) {
+      const d = p.threats;
+      const out = [];
+      const groups = Array.isArray(d.groups) ? d.groups : [];
+      if (!Array.isArray(d.groups)) out.push('groups is not an array');
+      const loose = groups.filter((g) => !g.contained).reduce((s, g) => s + g.count, 0);
+      const held = groups.filter((g) => g.contained).reduce((s, g) => s + g.count, 0);
+      if (loose !== d.active_hostiles) out.push(`loose groups sum to ${loose}, active_hostiles=${d.active_hostiles}`);
+      if (held !== d.contained) out.push(`contained groups sum to ${held}, contained=${d.contained}`);
+      const TRAITS = new Set(['trapavoid', 'flier', 'fire', 'webber', 'building_destroyer', 'ranged']);
+      const seen = new Set();
+      for (const [i, g] of groups.entries()) {
+        const key = `${g.name}|${g.contained}`;
+        if (seen.has(key)) out.push(`duplicate group for (${g.name}, contained=${g.contained})`);
+        seen.add(key);
+        if (!(isInt(g.count) && g.count > 0)) out.push(`groups[${i}].count=${g.count} is not positive`);
+        for (const k of ['contained', 'invader', 'undead', 'crazed', 'great_danger'])
+          if (typeof g[k] !== 'boolean') out.push(`groups[${i}].${k}=${g[k]} is not boolean`);
+        if (!(g.token === null || typeof g.token === 'string')) out.push(`groups[${i}].token=${g.token}`);
+        if (!Array.isArray(g.traits) || !Array.isArray(g.ranged_attacks)) {
+          out.push(`groups[${i}] traits/ranged_attacks are not arrays`);
+          continue;
+        }
+        for (const t of g.traits) if (!TRAITS.has(t)) out.push(`groups[${i}] has unknown trait "${t}"`);
+        if (g.traits.includes('ranged') !== g.ranged_attacks.length > 0)
+          out.push(`groups[${i}] ranged trait disagrees with ${g.ranged_attacks.length} ranged_attacks`);
+      }
+      return out;
+    },
+  },
+  {
+    name: 'unmet_needs_bounded_and_ranked',
+    tools: ['unmet_needs', 'fort_status'],
+    desc: 'population matches fort_status, no need row counts more dwarves than are distracted, rows are unique and dwarves-descending within the cap of 8, and every worst_focus is negative',
+    check(p) {
+      const d = p.unmet_needs;
+      const out = [];
+      if (d.population !== p.fort_status.population)
+        out.push(`population=${d.population} disagrees with fort_status.population=${p.fort_status.population}`);
+      if (!(isInt(d.dwarves_with_unmet_need) && d.dwarves_with_unmet_need >= 0 && d.dwarves_with_unmet_need <= d.population))
+        out.push(`dwarves_with_unmet_need=${d.dwarves_with_unmet_need} outside 0..population`);
+      const rows = d.top_needs ?? [];
+      if (rows.length > 8) out.push(`${rows.length} top_needs exceed the cap of 8`);
+      const names = new Set();
+      rows.forEach((r, i) => {
+        if (names.has(r.need)) out.push(`need "${r.need}" listed twice`);
+        names.add(r.need);
+        if (!(isInt(r.dwarves) && r.dwarves > 0 && r.dwarves <= d.dwarves_with_unmet_need))
+          out.push(`top_needs[${i}].dwarves=${r.dwarves} outside 1..dwarves_with_unmet_need`);
+        if (i > 0 && r.dwarves > rows[i - 1].dwarves) out.push(`top_needs not dwarves-descending at ${i}`);
+        if (!(isInt(r.worst_focus) && r.worst_focus < 0)) out.push(`top_needs[${i}].worst_focus=${r.worst_focus} is not negative`);
+      });
+      return out;
+    },
+  },
+  {
+    name: 'site_history_dates_and_caps_coherent',
+    tools: ['site_history', 'chronicle'],
+    desc: 'founding precedes the current year and age_years is their difference, battles and deaths are most-recent-first within their caps with *_total present exactly when truncated, and no chronicle event is dated after the current year',
+    check(p) {
+      const d = p.site_history;
+      const out = [];
+      if (!isInt(d.site_id)) out.push(`site_id=${d.site_id} is not an integer`);
+      if (!(typeof d.site_name === 'string' && d.site_name.length)) out.push('site_name is empty');
+      const fy = d.founding?.year;
+      if (isInt(fy)) {
+        if (fy > d.current_year) out.push(`founding year ${fy} is after current_year ${d.current_year}`);
+        if (d.age_years !== d.current_year - fy)
+          out.push(`age_years=${d.age_years} !== current_year ${d.current_year} - founding ${fy}`);
+      }
+      const capped = (key, cap) => {
+        const rows = d[key] ?? [];
+        if (rows.length > cap) out.push(`${key} lists ${rows.length}, over the cap of ${cap}`);
+        const trunc = d[`${key}_truncated`];
+        const total = d[`${key}_total`];
+        if ((trunc !== undefined) !== (total !== undefined))
+          out.push(`${key}_truncated and ${key}_total must appear together`);
+        if (trunc !== undefined && !(trunc === true && total > rows.length && rows.length === cap))
+          out.push(`${key}_truncated=${trunc} with ${rows.length} of ${total} rows`);
+        rows.forEach((r, i) => {
+          if (isInt(r.year) && r.year > d.current_year) out.push(`${key}[${i}].year=${r.year} is in the future`);
+          const prev = rows[i - 1]?.year;
+          if (isInt(r.year) && isInt(prev) && r.year > prev) out.push(`${key} not most-recent-first at ${i}`);
+        });
+      };
+      capped('battles', 20);
+      capped('notable_deaths', 25);
+      const BATTLE_TYPES = new Set(['WAR_ATTACKED_SITE', 'WAR_DESTROYED_SITE', 'WAR_SITE_NEW_LEADER']);
+      for (const [i, b] of (d.battles ?? []).entries())
+        if (!BATTLE_TYPES.has(b.type)) out.push(`battles[${i}].type="${b.type}" is not a site war event`);
+      for (const [i, n] of (d.notable_deaths ?? []).entries())
+        if (!(typeof n.name === 'string' && n.name.length)) out.push(`notable_deaths[${i}] has no name`);
+      const late = (p.chronicle.events ?? []).find((e) => isInt(e.year) && e.year > d.current_year);
+      if (late) out.push(`chronicle event ${late.id} is dated year ${late.year}, after current_year ${d.current_year}`);
+      return out;
+    },
+  },
+  {
+    name: 'game_data_lookups_round_trip',
+    tools: ['game_data', 'threats', 'find_unit'],
+    probes: {
+      byToken: { tool: 'game_data', args: (p) => (p.game_data.token ? { query: p.game_data.token } : null) },
+      threatToken: {
+        tool: 'game_data',
+        args: (p) => {
+          const token = (p.threats.groups ?? []).find((g) => g.token)?.token;
+          return token ? { query: token } : null;
+        },
+      },
+      byUnit: {
+        tool: 'game_data',
+        args: (p) => (isInt(p.find_unit.matches?.[0]?.unit_id) ? { query: String(p.find_unit.matches[0].unit_id) } : null),
+      },
+      fragment: { tool: 'game_data', args: () => ({ query: 'a' }) },
+    },
+    desc: "a creature dossier is well-formed, looking up its own token returns the same dossier, a threat group's token and a live unit_id each resolve to a dossier, and a broad fragment yields a capped disambiguation list",
+    check(p) {
+      const d = p.game_data;
+      const q = p.probes;
+      const out = [];
+      const SIZES = new Set(['tiny', 'small', 'medium', 'large', 'huge', 'gigantic']);
+      const creature = (x, label) => {
+        if (x.kind !== 'creature' || typeof x.token !== 'string') {
+          out.push(`${label} is not a creature dossier: ${JSON.stringify(x).slice(0, 120)}`);
+          return;
+        }
+        if (!(isInt(x.caste_count) && x.caste_count >= 1)) out.push(`${label}.caste_count=${x.caste_count}`);
+        if (!SIZES.has(x.size_label)) out.push(`${label}.size_label="${x.size_label}" is not a known size`);
+        const names = (x.attacks ?? []).map((a) => a.name);
+        if (new Set(names).size !== names.length) out.push(`${label}.attacks are not de-duplicated: ${JSON.stringify(names)}`);
+      };
+      creature(d, 'game_data(cat)');
+      if (q.byToken && JSON.stringify(q.byToken) !== JSON.stringify(d))
+        out.push(`looking up token ${d.token} returned a different dossier than the name query`);
+      if (q.threatToken) {
+        const want = (p.threats.groups ?? []).find((g) => g.token).token;
+        creature(q.threatToken, `game_data(${want})`);
+        if (q.threatToken.token !== want) out.push(`threat token ${want} resolved to ${q.threatToken.token}`);
+      }
+      if (q.byUnit) {
+        const want = p.find_unit.matches[0].unit_id;
+        creature(q.byUnit, `game_data(unit ${want})`);
+        if (q.byUnit.unit_id !== want) out.push(`unit_id lookup ${want} echoed unit_id ${q.byUnit.unit_id}`);
+      }
+      const f = q.fragment;
+      if (!(isInt(f.match_count) && Array.isArray(f.matches))) out.push(`fragment "a" is not a disambiguation list`);
+      else {
+        if (f.matches.length > 8) out.push(`fragment list has ${f.matches.length} matches, over the cap of 8`);
+        if (Boolean(f.truncated) !== f.match_count > f.matches.length)
+          out.push(`fragment truncated=${f.truncated} with ${f.matches.length} of ${f.match_count}`);
+        for (const [i, m] of f.matches.entries())
+          if (!(m.kind && m.token && m.name)) out.push(`fragment matches[${i}] lacks kind/token/name`);
+      }
+      return out;
+    },
+  },
 ];

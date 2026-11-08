@@ -138,6 +138,15 @@ Specs live in [`test/invariants.mjs`](../test/invariants.mjs), one object each:
 { name, tools: ['fort_status', …], desc, check(payloads) => string[] }  // [] === pass
 ```
 
+A spec whose property spans several calls of one tool (a cursor contract, a
+limit clamp, a lookup that must round-trip) adds `probes`:
+`{ key: { tool, args(payloads) => args | null } }`. Each probe runs after the
+`tools` payloads are captured, in declaration order, and its `args` sees those
+payloads plus the earlier probes' results as `payloads.probes`; returning `null`
+skips it. The results reach `check` as `payloads.probes.<key>`, and a probe that
+returns an error fails the spec. `chronicle_cursor_contract` is the worked
+example.
+
 The runner captures each `tools` payload live and skips a spec as **n/a** if any
 is missing or returned the no-fort guard, so `--invariants` degrades cleanly with
 no fort. The seed set covers cross-tool consistency (`population_consistency` —
@@ -163,7 +172,17 @@ pinned to the image tag** (`df-headless:53.15`). A DF/DFHack/image bump that
 changes output churns them **on purpose** — a reviewable diff, authored with
 `npm run verify:update` against the loaded fixture, committed alongside the change.
 Never `--update` against your own live Steam fort — that fort isn't frozen and the
-goldens would flap.
+goldens would flap. A tool with no committed golden **fails** a plain T2 run; only
+`--update` writes a new golden, so a forgotten or deleted snapshot can't pass by
+silently authoring itself.
+
+T2 also drives the mutating actuators through their full preview → confirm →
+apply → undo loop (`blueprint_*`, `work_order_create`/`_cancel`,
+`assign_work_detail`), then reads the touched state back and fails if it differs
+from before. These loops run after the goldens are compared, so running T2 twice
+in a row against one container is the end-to-end proof that they leave the fixture
+as they found it. One residue no read tool can see: `work_order_create` advances
+DF's `manager_order_next_id`, so the next order created gets a higher id.
 
 ## Canonicalization
 
