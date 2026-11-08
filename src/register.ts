@@ -11,6 +11,8 @@ export interface ReadToolDef {
   devOnly?: boolean;
   /** Mutates game state; registered only under DFHACK_MCP_ACTUATORS (see index.ts). */
   actuator?: boolean;
+  /** Runs allowlisted DFHack commands; registered only under DFHACK_MCP_COMMANDS. */
+  commands?: boolean;
 }
 
 /** A read-only tool that takes arguments matching `shape`. */
@@ -23,23 +25,29 @@ export interface QueryToolDef {
   devOnly?: boolean;
   /** Mutates game state; registered only under DFHACK_MCP_ACTUATORS (see index.ts). */
   actuator?: boolean;
+  /** Runs allowlisted DFHack commands; registered only under DFHACK_MCP_COMMANDS. */
+  commands?: boolean;
 }
 
 export type ToolDef = ReadToolDef | QueryToolDef;
 
 /**
  * Whether a tool is withheld from registration under the given environment —
- * the single source of truth for the `devOnly`/`actuator` gates, shared by
- * index.ts and scripts/verify.mjs so the two can never drift.
- * @param def A tool descriptor's `devOnly`/`actuator` flags.
+ * the single source of truth for the `devOnly`/`actuator`/`commands` gates, shared
+ * by index.ts and scripts/verify.mjs so the two can never drift.
+ * @param def A tool descriptor's `devOnly`/`actuator`/`commands` flags.
  * @param env Environment to gate against; defaults to `process.env`.
  * @returns True if the tool should not be registered.
  */
 export function isGatedOff(
-  def: Pick<ToolDef, 'devOnly' | 'actuator'>,
+  def: Pick<ToolDef, 'devOnly' | 'actuator' | 'commands'>,
   env: Record<string, string | undefined> = process.env
 ): boolean {
-  return (!!def.devOnly && !env.DFHACK_MCP_DEV) || (!!def.actuator && !env.DFHACK_MCP_ACTUATORS);
+  return (
+    (!!def.devOnly && !env.DFHACK_MCP_DEV) ||
+    (!!def.actuator && !env.DFHACK_MCP_ACTUATORS) ||
+    (!!def.commands && !env.DFHACK_MCP_COMMANDS)
+  );
 }
 
 function errorPayload(name: string, err: unknown): string {
@@ -74,7 +82,7 @@ function registerQueryTool(server: McpServer, def: QueryToolDef): void {
 
 /**
  * Registers a tool from its descriptor, dispatching read vs. query on `shape`.
- * Does not apply the `devOnly`/`actuator` gates — callers filter those first.
+ * Does not apply the `devOnly`/`actuator`/`commands` gates — callers filter those first.
  * @param server The MCP server to register against.
  * @param def The tool's descriptor.
  */

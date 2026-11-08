@@ -6,7 +6,7 @@ not an autopilot. Point Claude (or any MCP client) at it and ask _"how's my fort
 doing?"_ — it reads happiness, threats, stocks, jobs, health, and defenses
 straight from the running game and answers in plain language.
 
-**Read-only by default.** The 38 sensor and reference tools only observe the
+**Read-only by default.** The 39 sensor and reference tools only observe the
 game. A handful of **actuators** that _change_ the fort — queue manager orders,
 apply quickfort blueprints, assign labor, sound the civilian alert, pull a lever —
 ship behind an explicit opt-in and stay hidden until you enable them (see
@@ -135,6 +135,7 @@ loaded world.
 - **`identify(query)`** — _"what is this creature and how do I handle it"_ in one call: fuses `game_data` (your world's raws) with `wiki_lookup` (strategy). Returns the dossier (its `flags[]`/`interactions[]` carry facts like _TRAPAVOID → mechanical traps don't work_) plus 1–2 trimmed wiki excerpts. Reach for it when a threat appears.
 - **`wiki_search(query)`** — search the DF wiki for candidate titles + cleaned snippets (biased to the `DF2014` namespace).
 - **`wiki_lookup(title, section?, refresh?)`** — fetch a wiki article as clean text, pinned to `DF2014`; follows redirects, honors section fragments, cached ~30 days.
+- **`dfhack_command_list(filter?)`** — every command DFHack itself ships (built-ins, plugins, scripts) from DFHack's own `ls`: name, one-line help, and tags, plus the tag list from `tags`. `filter` is a tag or a name substring. Reports what exists, not what to run; works without a fort.
 
 ### Taking action (actuators)
 
@@ -200,6 +201,21 @@ own reversal path.
 
 - **`game_save()`** — checkpoint the fort with a quicksave before a large or risky change, so a bad batch can be rolled back by loading the save. Takes no arguments; the dry-run previews the fort and game date being frozen. Two facts to know: the write is **asynchronous** (DF commits it over the next few frames — the readback confirms the quicksave _dispatched_, not that the file landed) and it routes through DF's **autosave**, so it lands in a rotating "autosave" folder per your DF settings rather than overwriting the loaded save. Irreversible: to roll back, load the appropriate save/autosave in DF. Fortress mode only.
 
+### Running DFHack's own commands
+
+`dfhack_command_list` shows everything DFHack can do. **`dfhack_command_run(command, args?, confirm_token?)`**
+runs a small, hand-reviewed **allowlist** of those commands, and only when
+`DFHACK_MCP_COMMANDS=1` is set. That gate is separate from `DFHACK_MCP_ACTUATORS`,
+and neither one enables the other. Any other command line returns
+`{"error":"not allowlisted"}` and never reaches DFHack.
+
+The allowlist is matched per subcommand:
+
+- **Read-only, run directly:** `seedwatch [status]`, `instruments [list]`, `prospect [-s <sections>] [-v]` (revealed map only; `all`/`hell` are refused).
+- **Mutating, preview → confirm:** `enable seedwatch`, `disable seedwatch`, `seedwatch <PLANT_ID|all> <target>`, `seedwatch clear`, `instruments order <name> [qty]`. DFHack has no dry-run for these, so the preview reports the state the command acts on. The apply result reports the undo: the prior seedwatch targets to restore, or the created manager order ids to cancel with `work_order_cancel`.
+
+The full allowlist, with each entry's safety note, is in [docs/tools/dfhack_command_run.md](docs/tools/dfhack_command_run.md).
+
 ## Configuration
 
 All optional, set in your MCP client's `env` for the server:
@@ -209,6 +225,7 @@ All optional, set in your MCP client's `env` for the server:
 | `DFHACK_HOST`          | `127.0.0.1` | Host where DFHack's Remote RPC is listening.                                                                            |
 | `DFHACK_PORT`          | `5000`      | Port for DFHack's Remote RPC.                                                                                           |
 | `DFHACK_MCP_ACTUATORS` | _(unset)_   | Set to `1` to expose the write actuators (off = strictly read-only).                                                    |
+| `DFHACK_MCP_COMMANDS`  | _(unset)_   | Set to `1` to expose `dfhack_command_run`, which runs an allowlist of DFHack's own commands (separate from the actuator gate). |
 | `DFHACK_MCP_DEV`       | _(unset)_   | Set to `1` to expose `run_lua`, a raw DFHack Lua escape hatch (reads **and writes** game state; for tool authors only). |
 | `DFHACK_MCP_QUERY_DIR` | `src/dfhack-queries/` (dev) / `dist/dfhack-queries/` (bundled) | Overrides the directory from which the MCP query scripts are loaded. |
 
@@ -223,6 +240,8 @@ All optional, set in your MCP client's `env` for the server:
   relaunches the server; a running server won't pick up a config change.
 - **The write tools are missing** — that's the default. Set
   `DFHACK_MCP_ACTUATORS=1` (see [Taking action](#taking-action-actuators)).
+- **`dfhack_command_run` is missing** — it has its own gate. Set
+  `DFHACK_MCP_COMMANDS=1` (see [Running DFHack's own commands](#running-dfhacks-own-commands)).
 - **First call after loading a fort errors once, then works** — a freshly-started
   DFHack can reject the very first tool call while it finishes registering the
   query scripts; retry once.

@@ -27,6 +27,7 @@ try {
 
   const childEnv = { ...process.env, DFHACK_MCP_ACTUATORS: '1' };
   delete childEnv.DFHACK_MCP_DEV;
+  delete childEnv.DFHACK_MCP_COMMANDS;
   const transport = new StdioClientTransport({
     command: 'node',
     args: [bin],

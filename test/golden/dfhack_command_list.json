@@ -1,0 +1,2957 @@
+{
+  "commands": [
+    {
+      "help": "Rewrites the veins to make them extend in 3D space.",
+      "name": "3dveins",
+      "tags": [
+        "fort",
+        "gameplay",
+        "map"
+      ]
+    },
+    {
+      "help": "Display help about a command or plugin.",
+      "name": "?",
+      "tags": [
+        "dfhack"
+      ]
+    },
+    {
+      "help": "Adjust a unit's cave adaptation level.",
+      "name": "adaptation",
+      "tags": [
+        "armok",
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Add crafting recipes to a civ.",
+      "name": "add-recipe",
+      "tags": [
+        "adventure",
+        "fort",
+        "gameplay"
+      ]
+    },
+    {
+      "help": "Adds a thought to the selected unit.",
+      "name": "add-thought",
+      "tags": [
+        "armok",
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Find and track historical figures and artifacts A real-time tracker for historical figures and artifacts.",
+      "name": "gui/adv-finder",
+      "tags": [
+        "adventure",
+        "armok",
+        "inspection",
+        "items",
+        "units"
+      ]
+    },
+    {
+      "help": "A collection of useful adventure mode tools.",
+      "name": "advtools",
+      "tags": [
+        "adventure",
+        "gameplay",
+        "interface",
+        "units"
+      ]
+    },
+    {
+      "help": "Make agitated wildlife and cavern invasions less persistent.",
+      "name": "agitation-rebalance",
+      "tags": [
+        "fort",
+        "gameplay"
+      ]
+    },
+    {
+      "help": "Configure helper aliases for other DFHack commands.",
+      "name": "alias",
+      "tags": [
+        "dfhack"
+      ]
+    },
+    {
+      "help": "Summarize the cumulative needs of a unit or the entire fort.",
+      "name": "allneeds",
+      "tags": [
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Set traffic designation for the entire map.",
+      "name": "alltraffic",
+      "tags": [
+        "design",
+        "fort",
+        "map",
+        "productivity"
+      ]
+    },
+    {
+      "help": "Quickly view, butcher, or geld groups of animals.",
+      "name": "animal-control",
+      "tags": [
+        "animals",
+        "fort",
+        "productivity"
+      ]
+    },
+    {
+      "help": "View, add, remove, or modify aquifers.",
+      "name": "gui/aquifer",
+      "tags": [
+        "armok",
+        "fort",
+        "map"
+      ]
+    },
+    {
+      "help": "Add, remove, or modify aquifers.",
+      "name": "aquifer",
+      "tags": [
+        "armok",
+        "fort",
+        "map"
+      ]
+    },
+    {
+      "help": "Fix quivers and training ammo items to allow archery practice to take place.",
+      "name": "fix/archery-practice",
+      "tags": [
+        "bugfix",
+        "fort",
+        "items"
+      ]
+    },
+    {
+      "help": "Bless units with superior stats and traits.",
+      "name": "armoks-blessing",
+      "tags": [
+        "armok",
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Adjust physical and mental attributes.",
+      "name": "assign-attributes",
+      "tags": [
+        "armok",
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Adjust a unit's beliefs and values.",
+      "name": "assign-beliefs",
+      "tags": [
+        "armok",
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Adjust a unit's facets and traits.",
+      "name": "assign-facets",
+      "tags": [
+        "armok",
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Adjust a unit's goals and dreams.",
+      "name": "assign-goals",
+      "tags": [
+        "armok",
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Assign minecarts to hauling routes.",
+      "name": "assign-minecarts",
+      "tags": [
+        "fort",
+        "productivity"
+      ]
+    },
+    {
+      "help": "View or adjust a unit's preferences.",
+      "name": "assign-preferences",
+      "tags": [
+        "armok",
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Adjust a unit's skills.",
+      "name": "assign-skills",
+      "tags": [
+        "armok",
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Automatically butcher excess livestock.",
+      "name": "gui/autobutcher",
+      "tags": [
+        "animals",
+        "auto",
+        "fort",
+        "fps"
+      ]
+    },
+    {
+      "help": "Automatically butcher excess livestock.",
+      "name": "autobutcher",
+      "tags": [
+        "animals",
+        "auto",
+        "fort",
+        "fps"
+      ]
+    },
+    {
+      "help": "Schedule cheese making jobs based on milk reserves.",
+      "name": "autocheese",
+      "tags": [
+        "auto",
+        "fort"
+      ]
+    },
+    {
+      "help": "Auto-harvest trees when low on stockpiled logs.",
+      "name": "gui/autochop",
+      "tags": [
+        "auto",
+        "fort",
+        "plants"
+      ]
+    },
+    {
+      "help": "Auto-harvest trees when low on stockpiled logs.",
+      "name": "autochop",
+      "tags": [
+        "auto",
+        "fort",
+        "plants"
+      ]
+    },
+    {
+      "help": "Automatically manage clothing work orders.",
+      "name": "autoclothing",
+      "tags": [
+        "auto",
+        "fort",
+        "workorders"
+      ]
+    },
+    {
+      "help": "Teleport or destroy items.",
+      "name": "gui/autodump",
+      "tags": [
+        "armok",
+        "fort",
+        "items"
+      ]
+    },
+    {
+      "help": "Teleport items marked for dumping to the keyboard cursor.",
+      "name": "autodump",
+      "tags": [
+        "armok",
+        "fort",
+        "fps",
+        "items"
+      ]
+    },
+    {
+      "help": "Destroy items marked for dumping under the keyboard cursor.",
+      "name": "autodump-destroy-here",
+      "tags": [
+        "armok",
+        "fort",
+        "fps",
+        "items"
+      ]
+    },
+    {
+      "help": "Destroy the selected item.",
+      "name": "autodump-destroy-item",
+      "tags": [
+        "armok",
+        "fort",
+        "fps",
+        "items"
+      ]
+    },
+    {
+      "help": "Automatically manage farm crop selection.",
+      "name": "autofarm",
+      "tags": [
+        "auto",
+        "fort",
+        "plants"
+      ]
+    },
+    {
+      "help": "Auto-manage fishing labors to control your stock of fish.",
+      "name": "gui/autofish",
+      "tags": [
+        "auto",
+        "fort",
+        "labors"
+      ]
+    },
+    {
+      "help": "Auto-manage fishing labors to control your stock of fish.",
+      "name": "autofish",
+      "tags": [
+        "auto",
+        "fort",
+        "labors"
+      ]
+    },
+    {
+      "help": "Automatically manage dwarf labors.",
+      "name": "autolabor",
+      "tags": [
+        "auto",
+        "fort",
+        "labors"
+      ]
+    },
+    {
+      "help": "Headless auto-load of the first fortress save (DF 50+/Premium), run IN-PROCESS.",
+      "name": "autoload",
+      "tags": []
+    },
+    {
+      "help": "Auto-assign egg-laying female pets to nestbox zones.",
+      "name": "autonestbox",
+      "tags": [
+        "animals",
+        "auto",
+        "fort"
+      ]
+    },
+    {
+      "help": "Give dwarves random unique nicknames.",
+      "name": "autonick",
+      "tags": [
+        "fort",
+        "productivity",
+        "units"
+      ]
+    },
+    {
+      "help": "GUI interface for ``autotraining`` This is an in-game configuration interface for autotraining.",
+      "name": "gui/autotraining",
+      "tags": [
+        "auto",
+        "fort",
+        "interface"
+      ]
+    },
+    {
+      "help": "Assigns citizens to a military squad until they have fulfilled their need for Martial Training This script automatically assigns citizens with the need for military training to designated training squads.",
+      "name": "autotraining",
+      "tags": [
+        "auto",
+        "bugfix",
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Protect useful items from being cooked.",
+      "name": "ban-cooking",
+      "tags": [
+        "fort",
+        "items",
+        "plants",
+        "productivity"
+      ]
+    },
+    {
+      "help": "Visualize and inspect biome regions on the map.",
+      "name": "gui/biomes",
+      "tags": [
+        "fort",
+        "inspection",
+        "map"
+      ]
+    },
+    {
+      "help": "Removes unusable liquids from caravan manifests.",
+      "name": "fix/blood-del",
+      "tags": [
+        "bugfix",
+        "fort"
+      ]
+    },
+    {
+      "help": "Record a live game map in a quickfort blueprint.",
+      "name": "gui/blueprint",
+      "tags": [
+        "buildings",
+        "design",
+        "fort",
+        "map",
+        "stockpiles"
+      ]
+    },
+    {
+      "help": "Record a live game map in a quickfort blueprint.",
+      "name": "blueprint",
+      "tags": [
+        "buildings",
+        "design",
+        "fort",
+        "map",
+        "stockpiles"
+      ]
+    },
+    {
+      "help": "Take direct control of any visible unit.",
+      "name": "bodyswap",
+      "tags": [
+        "adventure",
+        "armok",
+        "units"
+      ]
+    },
+    {
+      "help": "Display low-level properties of the selected building.",
+      "name": "bprobe",
+      "tags": [
+        "adventure",
+        "buildings",
+        "fort",
+        "inspection",
+        "map",
+        "units"
+      ]
+    },
+    {
+      "help": "Set the personality of a dwarf to an ideal.",
+      "name": "brainwash",
+      "tags": [
+        "armok",
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Instantly completes building construction jobs.",
+      "name": "build-now",
+      "tags": [
+        "armok",
+        "buildings",
+        "fort"
+      ]
+    },
+    {
+      "help": "Plan building placement before you have materials.",
+      "name": "buildingplan",
+      "tags": [
+        "buildings",
+        "design",
+        "fort",
+        "productivity"
+      ]
+    },
+    {
+      "help": "Create tomb zones for unzoned coffins.",
+      "name": "burial",
+      "tags": [
+        "buildings",
+        "fort",
+        "productivity"
+      ]
+    },
+    {
+      "help": "Quickly adjust burrow tiles and units.",
+      "name": "burrow",
+      "tags": [
+        "auto",
+        "design",
+        "fort",
+        "productivity",
+        "units"
+      ]
+    },
+    {
+      "help": "Adjust properties of caravans on the map.",
+      "name": "caravan",
+      "tags": [
+        "armok",
+        "bugfix",
+        "fort"
+      ]
+    },
+    {
+      "help": "Cause pregnancies.",
+      "name": "catsplosion",
+      "tags": [
+        "animals",
+        "armok",
+        "fort"
+      ]
+    },
+    {
+      "help": "Change item attributes (material, quality).",
+      "name": "changeitem",
+      "tags": [
+        "adventure",
+        "armok",
+        "fort",
+        "items"
+      ]
+    },
+    {
+      "help": "Change the material of an entire geology layer.",
+      "name": "changelayer",
+      "tags": [
+        "armok",
+        "fort",
+        "map"
+      ]
+    },
+    {
+      "help": "Change the material of a mineral inclusion.",
+      "name": "changevein",
+      "tags": [
+        "armok",
+        "fort",
+        "map"
+      ]
+    },
+    {
+      "help": "Quickly get your civilians to safety.",
+      "name": "gui/civ-alert",
+      "tags": [
+        "fort",
+        "gameplay",
+        "interface",
+        "military",
+        "units"
+      ]
+    },
+    {
+      "help": "Removes a civil war.",
+      "name": "fix/civil-war",
+      "tags": [
+        "bugfix",
+        "fort"
+      ]
+    },
+    {
+      "help": "Remove contaminants from tiles, items, and creatures.",
+      "name": "clean",
+      "tags": [
+        "adventure",
+        "armok",
+        "fort",
+        "fps",
+        "items",
+        "map",
+        "units"
+      ]
+    },
+    {
+      "help": "Cleans up construction materials.",
+      "name": "cleanconst",
+      "tags": [
+        "buildings",
+        "fort",
+        "fps"
+      ]
+    },
+    {
+      "help": "Confiscates and dumps garbage owned by dwarves.",
+      "name": "cleanowned",
+      "tags": [
+        "fort",
+        "items",
+        "productivity"
+      ]
+    },
+    {
+      "help": "Clear the terminal screen.",
+      "name": "clear",
+      "tags": [
+        "dfhack"
+      ]
+    },
+    {
+      "help": "Removes all smoke from the map.",
+      "name": "clear-smoke",
+      "tags": [
+        "armok",
+        "fort",
+        "fps",
+        "map"
+      ]
+    },
+    {
+      "help": "Removes all webs from the map.",
+      "name": "clear-webs",
+      "tags": [
+        "adventure",
+        "armok",
+        "fort",
+        "map",
+        "units"
+      ]
+    },
+    {
+      "help": "Clear the terminal screen.",
+      "name": "cls",
+      "tags": [
+        "dfhack"
+      ]
+    },
+    {
+      "help": "Add pages to written content that have no pages.",
+      "name": "fix/codex-pages",
+      "tags": [
+        "bugfix",
+        "fort",
+        "items"
+      ]
+    },
+    {
+      "help": "Manipulate vermin colonies and hives.",
+      "name": "colonies",
+      "tags": [
+        "adventure",
+        "armok",
+        "fort",
+        "map"
+      ]
+    },
+    {
+      "help": "Set the combat-hardened value on a unit.",
+      "name": "combat-harden",
+      "tags": [
+        "armok",
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Combine items that can be stacked together.",
+      "name": "combine",
+      "tags": [
+        "fort",
+        "items",
+        "plants",
+        "productivity",
+        "stockpiles"
+      ]
+    },
+    {
+      "help": "Configure which confirmation dialogs are enabled.",
+      "name": "gui/confirm",
+      "tags": [
+        "fort",
+        "interface"
+      ]
+    },
+    {
+      "help": "Adds confirmation dialogs for destructive actions.",
+      "name": "confirm",
+      "tags": [
+        "fort",
+        "interface"
+      ]
+    },
+    {
+      "help": "Configure DFHack and manage active DFHack tools.",
+      "name": "gui/control-panel",
+      "tags": [
+        "dfhack"
+      ]
+    },
+    {
+      "help": "Configure DFHack and manage active DFHack tools.",
+      "name": "control-panel",
+      "tags": [
+        "dfhack"
+      ]
+    },
+    {
+      "help": "Removes jobs with an id of -1 from units.",
+      "name": "fix/corrupt-jobs",
+      "tags": [
+        "bugfix",
+        "fort"
+      ]
+    },
+    {
+      "help": "Virtual keyboard for typing with the mouse.",
+      "name": "gui/cp437-table",
+      "tags": [
+        "dfhack"
+      ]
+    },
+    {
+      "help": "Display low-level properties of the selected unit.",
+      "name": "cprobe",
+      "tags": [
+        "adventure",
+        "buildings",
+        "fort",
+        "inspection",
+        "map",
+        "units"
+      ]
+    },
+    {
+      "help": "Summon items from the aether.",
+      "name": "gui/create-item",
+      "tags": [
+        "adventure",
+        "armok",
+        "fort",
+        "items"
+      ]
+    },
+    {
+      "help": "Create arbitrary items.",
+      "name": "createitem",
+      "tags": [
+        "adventure",
+        "armok",
+        "fort",
+        "items"
+      ]
+    },
+    {
+      "help": "Check for cursed creatures (undead, necromancers...).",
+      "name": "cursecheck",
+      "tags": [
+        "armok",
+        "fort",
+        "inspection",
+        "units"
+      ]
+    },
+    {
+      "help": "Remove dead units from the list so migrants can arrive again.",
+      "name": "fix/dead-units",
+      "tags": [
+        "bugfix",
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Find out the cause of death for a creature.",
+      "name": "deathcause",
+      "tags": [
+        "fort",
+        "inspection",
+        "units"
+      ]
+    },
+    {
+      "help": "Start a fort deep underground.",
+      "name": "deep-embark",
+      "tags": [
+        "embark",
+        "fort",
+        "gameplay"
+      ]
+    },
+    {
+      "help": "Removes all ramps designated for removal from the map.",
+      "name": "deramp",
+      "tags": [
+        "armok",
+        "fort",
+        "map"
+      ]
+    },
+    {
+      "help": "Design designation utility with shapes.",
+      "name": "gui/design",
+      "tags": [
+        "design",
+        "fort",
+        "interface",
+        "map",
+        "productivity"
+      ]
+    },
+    {
+      "help": "Cause corpses, clothes, and/or food to rot away over time.",
+      "name": "deteriorate",
+      "tags": [
+        "fort",
+        "fps",
+        "gameplay",
+        "items"
+      ]
+    },
+    {
+      "help": "Instantly exit DF without saving.",
+      "name": "die",
+      "tags": [
+        "dfhack"
+      ]
+    },
+    {
+      "help": "Instantly complete dig designations.",
+      "name": "dig-now",
+      "tags": [
+        "armok",
+        "fort",
+        "map"
+      ]
+    },
+    {
+      "help": "Dig designate a circle (filled or hollow).",
+      "name": "digcircle",
+      "tags": [
+        "design",
+        "fort",
+        "map",
+        "productivity"
+      ]
+    },
+    {
+      "help": "Select or designate an exploratory pattern.",
+      "name": "digexp",
+      "tags": [
+        "design",
+        "fort",
+        "map",
+        "productivity"
+      ]
+    },
+    {
+      "help": "Dig layerstone.",
+      "name": "digl",
+      "tags": [
+        "design",
+        "fort",
+        "map",
+        "productivity"
+      ]
+    },
+    {
+      "help": "Dig layerstone, following through z-levels.",
+      "name": "diglx",
+      "tags": [
+        "design",
+        "fort",
+        "map",
+        "productivity"
+      ]
+    },
+    {
+      "help": "Dig all veins of a given type.",
+      "name": "digtype",
+      "tags": [
+        "design",
+        "fort",
+        "map",
+        "productivity"
+      ]
+    },
+    {
+      "help": "Dig a whole vein.",
+      "name": "digv",
+      "tags": [
+        "design",
+        "fort",
+        "map",
+        "productivity"
+      ]
+    },
+    {
+      "help": "Dig a whole vein, following through z-levels.",
+      "name": "digvx",
+      "tags": [
+        "design",
+        "fort",
+        "map",
+        "productivity"
+      ]
+    },
+    {
+      "help": "View or alter diplomatic relationships.",
+      "name": "diplomacy",
+      "tags": [
+        "armok",
+        "fort",
+        "inspection",
+        "military"
+      ]
+    },
+    {
+      "help": "List available DFHack commands.",
+      "name": "dir",
+      "tags": [
+        "dfhack"
+      ]
+    },
+    {
+      "help": "Deactivate a DFHack tool that has some persistent effect.",
+      "name": "disable",
+      "tags": [
+        "dfhack"
+      ]
+    },
+    {
+      "help": "Make floating webs drop to the ground.",
+      "name": "fix/drop-webs",
+      "tags": [
+        "bugfix",
+        "fort",
+        "items"
+      ]
+    },
+    {
+      "help": "Allow discarded water buckets to be used again.",
+      "name": "fix/dry-buckets",
+      "tags": [
+        "bugfix",
+        "fort",
+        "items"
+      ]
+    },
+    {
+      "help": "Allow animals to be treated at hospitals.",
+      "name": "dwarfvet",
+      "tags": [
+        "animals",
+        "fort",
+        "gameplay"
+      ]
+    },
+    {
+      "help": "Set mental attributes of a dwarf to an ideal.",
+      "name": "elevate-mental",
+      "tags": [
+        "armok",
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Set physical attributes of a dwarf to an ideal.",
+      "name": "elevate-physical",
+      "tags": [
+        "armok",
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Allows you to embark as any civilisation, including dead and non-dwarven ones.",
+      "name": "embark-anyone",
+      "tags": [
+        "armok",
+        "embark"
+      ]
+    },
+    {
+      "help": "Embark wherever you want.",
+      "name": "gui/embark-anywhere",
+      "tags": [
+        "armok",
+        "embark",
+        "interface"
+      ]
+    },
+    {
+      "help": "Adjust dwarves' skills when embarking.",
+      "name": "embark-skills",
+      "tags": [
+        "armok",
+        "embark",
+        "units"
+      ]
+    },
+    {
+      "help": "Allow dwarves to emigrate from the fortress when stressed.",
+      "name": "emigration",
+      "tags": [
+        "fort",
+        "gameplay",
+        "units"
+      ]
+    },
+    {
+      "help": "Empty the contents of containers onto the floor.",
+      "name": "empty-bin",
+      "tags": [
+        "fort",
+        "items",
+        "productivity"
+      ]
+    },
+    {
+      "help": "Empties stuck items from wheelbarrows.",
+      "name": "fix/empty-wheelbarrows",
+      "tags": [
+        "bugfix",
+        "fort",
+        "items"
+      ]
+    },
+    {
+      "help": "Activate a DFHack tool that has some persistent effect.",
+      "name": "enable",
+      "tags": [
+        "dfhack"
+      ]
+    },
+    {
+      "help": "Fixes unengravable corrupted tiles so they are able to be engraved.",
+      "name": "fix/engravings",
+      "tags": [
+        "bugfix",
+        "fort"
+      ]
+    },
+    {
+      "help": "Entomb any corpse into tomb zones.",
+      "name": "entomb",
+      "tags": [
+        "buildings",
+        "fort",
+        "items"
+      ]
+    },
+    {
+      "help": "Exports extended legends data for external viewing.",
+      "name": "exportlegends",
+      "tags": [
+        "inspection",
+        "legends"
+      ]
+    },
+    {
+      "help": "Kill things.",
+      "name": "exterminate",
+      "tags": [
+        "armok",
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Put out fires.",
+      "name": "extinguish",
+      "tags": [
+        "adventure",
+        "armok",
+        "buildings",
+        "fort",
+        "items",
+        "map",
+        "units"
+      ]
+    },
+    {
+      "help": "Manage romantic relationships and generate pregnancies.",
+      "name": "gui/family-affairs",
+      "tags": [
+        "adventure",
+        "animals",
+        "armok",
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Citizens walk fast and and finish jobs instantly.",
+      "name": "fastdwarf",
+      "tags": [
+        "armok",
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Control discovery flags for map features.",
+      "name": "feature",
+      "tags": [
+        "armok",
+        "fort",
+        "map"
+      ]
+    },
+    {
+      "help": "Temporarily satisfy the needs of a unit.",
+      "name": "fillneeds",
+      "tags": [
+        "armok",
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Flood-fill selected traffic designation from cursor.",
+      "name": "filltraffic",
+      "tags": [
+        "design",
+        "fort",
+        "map",
+        "productivity"
+      ]
+    },
+    {
+      "help": "Lights things on fire.",
+      "name": "firestarter",
+      "tags": [
+        "adventure",
+        "armok",
+        "fort",
+        "items",
+        "map",
+        "units"
+      ]
+    },
+    {
+      "help": "Teleport your adventurer to the mouse cursor.",
+      "name": "flashstep",
+      "tags": [
+        "adventure",
+        "armok",
+        "units"
+      ]
+    },
+    {
+      "help": "Counts map blocks with flowing liquids.",
+      "name": "flows",
+      "tags": [
+        "fort",
+        "inspection",
+        "map"
+      ]
+    },
+    {
+      "help": "Forbid and list forbidden items on the map.",
+      "name": "forbid",
+      "tags": [
+        "fort",
+        "items",
+        "productivity"
+      ]
+    },
+    {
+      "help": "Trigger in-game events.",
+      "name": "force",
+      "tags": [
+        "armok",
+        "fort",
+        "gameplay"
+      ]
+    },
+    {
+      "help": "Move items into a unit's inventory.",
+      "name": "forceequip",
+      "tags": [
+        "adventure",
+        "animals",
+        "fort",
+        "items",
+        "military",
+        "units"
+      ]
+    },
+    {
+      "help": "Forces DF to pause.",
+      "name": "fpause",
+      "tags": [
+        "dfhack"
+      ]
+    },
+    {
+      "help": "Fully heal the selected unit.",
+      "name": "full-heal",
+      "tags": [
+        "armok",
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Shows the sexual orientation of units.",
+      "name": "gaydar",
+      "tags": [
+        "animals",
+        "fort",
+        "inspection",
+        "units"
+      ]
+    },
+    {
+      "help": "Geld and ungeld animals.",
+      "name": "geld",
+      "tags": [
+        "animals",
+        "armok",
+        "fort"
+      ]
+    },
+    {
+      "help": "Prevent dwarves from getting stuck and refusing to work.",
+      "name": "fix/general-strike",
+      "tags": [
+        "bugfix",
+        "fort"
+      ]
+    },
+    {
+      "help": "Designate trees for chopping and shrubs for gathering.",
+      "name": "getplants",
+      "tags": [
+        "fort",
+        "plants",
+        "productivity"
+      ]
+    },
+    {
+      "help": "Toggles an adventurer's ghost status.",
+      "name": "ghostly",
+      "tags": [
+        "adventure",
+        "armok",
+        "units"
+      ]
+    },
+    {
+      "help": "Inspect and edit DF game data.",
+      "name": "gui/gm-editor",
+      "tags": [
+        "animals",
+        "armok",
+        "buildings",
+        "dfhack",
+        "inspection",
+        "items",
+        "jobs",
+        "map",
+        "plants",
+        "stockpiles",
+        "units",
+        "workorders"
+      ]
+    },
+    {
+      "help": "Inspect and edit unit attributes.",
+      "name": "gui/gm-unit",
+      "tags": [
+        "animals",
+        "armok",
+        "dfhack",
+        "inspection",
+        "units"
+      ]
+    },
+    {
+      "help": "Display help about a command or plugin.",
+      "name": "help",
+      "tags": [
+        "dfhack"
+      ]
+    },
+    {
+      "help": "Go it alone in your fortress and attempt the hermit challenge.",
+      "name": "hermit",
+      "tags": [
+        "fort",
+        "gameplay"
+      ]
+    },
+    {
+      "help": "Creates a pit straight to the underworld.",
+      "name": "hfs-pit",
+      "tags": [
+        "armok",
+        "fort",
+        "map"
+      ]
+    },
+    {
+      "help": "Hide the DFHack terminal window.",
+      "name": "hide",
+      "tags": [
+        "dfhack"
+      ]
+    },
+    {
+      "help": "Hide the interface layer.",
+      "name": "hide-interface",
+      "tags": [
+        "interface"
+      ]
+    },
+    {
+      "help": "Hide new fort tutorial popups.",
+      "name": "hide-tutorials",
+      "tags": [
+        "adventure",
+        "fort",
+        "interface"
+      ]
+    },
+    {
+      "help": "Invoke hotkeys from the interactive menu.",
+      "name": "hotkeys",
+      "tags": [
+        "dfhack"
+      ]
+    },
+    {
+      "help": "Automatically milk and shear animals.",
+      "name": "husbandry",
+      "tags": [
+        "auto",
+        "fort"
+      ]
+    },
+    {
+      "help": "Allow dwarves to independently craft objects when they have the need.",
+      "name": "idle-crafting",
+      "tags": [
+        "fort",
+        "gameplay"
+      ]
+    },
+    {
+      "help": "Allow immortals to satisfy their cravings for food and drink.",
+      "name": "immortal-cravings",
+      "tags": [
+        "fort",
+        "gameplay"
+      ]
+    },
+    {
+      "help": "Automatically allocate new z-levels of sky.",
+      "name": "infinite-sky",
+      "tags": [
+        "auto",
+        "design",
+        "fort",
+        "map"
+      ]
+    },
+    {
+      "help": "Exports information about DFHack for bug reports.",
+      "name": "install-info",
+      "tags": [
+        "dfhack"
+      ]
+    },
+    {
+      "help": "Show how to craft instruments or create work orders for them.",
+      "name": "instruments",
+      "tags": [
+        "fort",
+        "inspection",
+        "workorders"
+      ]
+    },
+    {
+      "help": "Perform bulk operations on groups of items.",
+      "name": "item",
+      "tags": [
+        "fort",
+        "items",
+        "productivity"
+      ]
+    },
+    {
+      "help": "Fort journal with a multi-line text editor.",
+      "name": "gui/journal",
+      "tags": [
+        "adventure",
+        "fort",
+        "interface"
+      ]
+    },
+    {
+      "help": "Mess with the justice system.",
+      "name": "justice",
+      "tags": [
+        "armok",
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Create hotkeys that will run DFHack commands.",
+      "name": "keybinding",
+      "tags": [
+        "dfhack"
+      ]
+    },
+    {
+      "help": "Manage your dfhack keybinds visually.",
+      "name": "gui/keybinds",
+      "tags": [
+        "dfhack"
+      ]
+    },
+    {
+      "help": "Gracefully stop any currently-running Lua scripts.",
+      "name": "kill-lua",
+      "tags": [
+        "dfhack"
+      ]
+    },
+    {
+      "help": "Prevent item scatter when a site is reclaimed or visited.",
+      "name": "lair",
+      "tags": [
+        "armok",
+        "fort",
+        "map"
+      ]
+    },
+    {
+      "help": "Thrash your enemies with a flying suplex.",
+      "name": "launch",
+      "tags": [
+        "adventure",
+        "armok",
+        "units"
+      ]
+    },
+    {
+      "help": "In-game DFHack command launcher with integrated help.",
+      "name": "gui/launcher",
+      "tags": [
+        "dfhack"
+      ]
+    },
+    {
+      "help": "Inspect and pull levers.",
+      "name": "lever",
+      "tags": [
+        "armok",
+        "buildings",
+        "fort",
+        "inspection",
+        "productivity"
+      ]
+    },
+    {
+      "help": "Change heavy and varied aquifers to light aquifers.",
+      "name": "light-aquifers-only",
+      "tags": [
+        "armok",
+        "embark",
+        "fort",
+        "map"
+      ]
+    },
+    {
+      "help": "Interactively paint liquids onto the map.",
+      "name": "gui/liquids",
+      "tags": [
+        "armok",
+        "fort",
+        "map"
+      ]
+    },
+    {
+      "help": "Place magma, water or obsidian.",
+      "name": "liquids",
+      "tags": [
+        "adventure",
+        "armok",
+        "fort",
+        "map"
+      ]
+    },
+    {
+      "help": "Use settings from liquids at cursor position.",
+      "name": "liquids-here",
+      "tags": [
+        "adventure",
+        "armok",
+        "fort",
+        "map"
+      ]
+    },
+    {
+      "help": "List guildhall and temple agreements.",
+      "name": "list-agreements",
+      "tags": [
+        "fort",
+        "inspection"
+      ]
+    },
+    {
+      "help": "Show migration wave membership and history.",
+      "name": "list-waves",
+      "tags": [
+        "fort",
+        "inspection",
+        "units"
+      ]
+    },
+    {
+      "help": "Load and register a plugin library.",
+      "name": "load",
+      "tags": [
+        "dfhack"
+      ]
+    },
+    {
+      "help": "Scan the map for metal ores.",
+      "name": "locate-ore",
+      "tags": [
+        "armok",
+        "fort",
+        "map",
+        "productivity"
+      ]
+    },
+    {
+      "help": "Automatically mark and route items in monitored stockpiles.",
+      "name": "logistics",
+      "tags": [
+        "animals",
+        "auto",
+        "fort",
+        "items",
+        "stockpiles"
+      ]
+    },
+    {
+      "help": "Halts loyalty cascades where dwarves are fighting dwarves.",
+      "name": "fix/loyaltycascade",
+      "tags": [
+        "bugfix",
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "List available DFHack commands.",
+      "name": "ls",
+      "tags": [
+        "dfhack"
+      ]
+    },
+    {
+      "help": "Overlay to modify pressure plates and gear assemblies after construction.",
+      "name": "machine-toggle",
+      "tags": [
+        "armok",
+        "buildings",
+        "fort",
+        "interface"
+      ]
+    },
+    {
+      "help": "Boost skills of the selected dwarf.",
+      "name": "make-legendary",
+      "tags": [
+        "armok",
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Crown the selected unit as a monarch.",
+      "name": "make-monarch",
+      "tags": [
+        "armok",
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Converts the selected unit to be a fortress citizen.",
+      "name": "makeown",
+      "tags": [
+        "armok",
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Display help about a command or plugin.",
+      "name": "man",
+      "tags": [
+        "dfhack"
+      ]
+    },
+    {
+      "help": "Export displayed text to a Markdown file.",
+      "name": "markdown",
+      "tags": [
+        "adventure",
+        "fort",
+        "items",
+        "units"
+      ]
+    },
+    {
+      "help": "Mass select things to remove.",
+      "name": "gui/mass-remove",
+      "tags": [
+        "buildings",
+        "design",
+        "fort",
+        "productivity",
+        "stockpiles"
+      ]
+    },
+    {
+      "help": "Designate creatures for pitting.",
+      "name": "gui/masspit",
+      "tags": [
+        "animals",
+        "fort",
+        "productivity"
+      ]
+    },
+    {
+      "help": "Trigger a migrant wave.",
+      "name": "migrants-now",
+      "tags": [
+        "armok",
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Make citizens more miserable.",
+      "name": "misery",
+      "tags": [
+        "fort",
+        "gameplay",
+        "units"
+      ]
+    },
+    {
+      "help": "Manange your active mods.",
+      "name": "gui/mod-manager",
+      "tags": [
+        "dfhack",
+        "interface"
+      ]
+    },
+    {
+      "help": "Run multiple DFHack commands.",
+      "name": "multicmd",
+      "tags": [
+        "dfhack"
+      ]
+    },
+    {
+      "help": "Find books that contain the secrets of life and death.",
+      "name": "necronomicon",
+      "tags": [
+        "fort",
+        "inspection",
+        "items"
+      ]
+    },
+    {
+      "help": "Protect fertile eggs incubating in a nestbox.",
+      "name": "nestboxes",
+      "tags": [
+        "animals",
+        "auto",
+        "fort"
+      ]
+    },
+    {
+      "help": "Prevents NOEXERT units from getting tired when training.",
+      "name": "fix/noexert-exhaustion",
+      "tags": [
+        "bugfix",
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Interactive panel for managing map-specific notes.",
+      "name": "gui/notes",
+      "tags": [
+        "fort",
+        "interface",
+        "map"
+      ]
+    },
+    {
+      "help": "Manage map-specific notes.",
+      "name": "notes",
+      "tags": [
+        "fort",
+        "interface",
+        "map"
+      ]
+    },
+    {
+      "help": "Show notifications for important events.",
+      "name": "gui/notify",
+      "tags": [
+        "adventure",
+        "fort",
+        "interface"
+      ]
+    },
+    {
+      "help": "Fix phantom occupancy issues.",
+      "name": "fix/occupancy",
+      "tags": [
+        "bugfix",
+        "fort",
+        "map"
+      ]
+    },
+    {
+      "help": "Run commands when a fortress is first started.",
+      "name": "on-new-fortress",
+      "tags": [
+        "dfhack"
+      ]
+    },
+    {
+      "help": "Run commands only if they haven't been run before in this world.",
+      "name": "once-per-save",
+      "tags": [
+        "dfhack"
+      ]
+    },
+    {
+      "help": "Open a legends screen from fort or adventure mode.",
+      "name": "open-legends",
+      "tags": [
+        "inspection",
+        "legends"
+      ]
+    },
+    {
+      "help": "Manage manager orders.",
+      "name": "orders",
+      "tags": [
+        "fort",
+        "productivity",
+        "workorders"
+      ]
+    },
+    {
+      "help": "Reposition DFHack overlay widgets.",
+      "name": "gui/overlay",
+      "tags": [
+        "dfhack",
+        "interface"
+      ]
+    },
+    {
+      "help": "Manage onscreen widgets.",
+      "name": "overlay",
+      "tags": [
+        "dfhack",
+        "interface"
+      ]
+    },
+    {
+      "help": "Fixes ownership links.",
+      "name": "fix/ownership",
+      "tags": [
+        "bugfix",
+        "fort",
+        "items",
+        "units"
+      ]
+    },
+    {
+      "help": "Highlights tiles reachable from the cursor or a trade depot.",
+      "name": "gui/pathable",
+      "tags": [
+        "fort",
+        "inspection",
+        "map"
+      ]
+    },
+    {
+      "help": "Modify the pet population cap.",
+      "name": "pet-uncapper",
+      "tags": [
+        "animals",
+        "fort",
+        "gameplay"
+      ]
+    },
+    {
+      "help": "List guildhall and temple agreements.",
+      "name": "gui/petitions",
+      "tags": [
+        "fort",
+        "inspection"
+      ]
+    },
+    {
+      "help": "Grow and remove shrubs or trees.",
+      "name": "plant",
+      "tags": [
+        "adventure",
+        "armok",
+        "fort",
+        "map",
+        "plants"
+      ]
+    },
+    {
+      "help": "List available plugins and whether they are enabled.",
+      "name": "plug",
+      "tags": [
+        "dfhack"
+      ]
+    },
+    {
+      "help": "Sets available points at the embark screen.",
+      "name": "points",
+      "tags": [
+        "armok",
+        "embark",
+        "fort"
+      ]
+    },
+    {
+      "help": "Limit the maximum size of migrant waves.",
+      "name": "pop-control",
+      "tags": [
+        "fort",
+        "gameplay"
+      ]
+    },
+    {
+      "help": "Ensure the population cap is respected.",
+      "name": "fix/population-cap",
+      "tags": [
+        "bugfix",
+        "fort"
+      ]
+    },
+    {
+      "help": "Report cursor and mouse position, along with other info.",
+      "name": "position",
+      "tags": [
+        "adventure",
+        "dfhack",
+        "fort",
+        "inspection",
+        "map"
+      ]
+    },
+    {
+      "help": "See the preferences of a dwarf or set them to a designated profile.",
+      "name": "pref-adjust",
+      "tags": [
+        "armok",
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Shows a warning if you are using a pre-release build of DFHack.",
+      "name": "gui/prerelease-warning",
+      "tags": [
+        "dfhack"
+      ]
+    },
+    {
+      "help": "Manage room assignments for off-map units and noble roles.",
+      "name": "preserve-rooms",
+      "tags": [
+        "bugfix",
+        "fort",
+        "interface"
+      ]
+    },
+    {
+      "help": "Preserve tomb assignments when assigned units die.",
+      "name": "preserve-tombs",
+      "tags": [
+        "bugfix",
+        "fort"
+      ]
+    },
+    {
+      "help": "Automatically boost the priority of important job types.",
+      "name": "prioritize",
+      "tags": [
+        "auto",
+        "fort",
+        "jobs"
+      ]
+    },
+    {
+      "help": "Display low-level properties of the selected tile.",
+      "name": "probe",
+      "tags": [
+        "adventure",
+        "buildings",
+        "fort",
+        "inspection",
+        "map",
+        "units"
+      ]
+    },
+    {
+      "help": "Show raw resources available on the map.",
+      "name": "prospect",
+      "tags": [
+        "armok",
+        "embark",
+        "fort",
+        "inspection",
+        "map"
+      ]
+    },
+    {
+      "help": "Fix nicknames being erased or not displayed.",
+      "name": "fix/protect-nicks",
+      "tags": [
+        "bugfix",
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Make an item appear on a table.",
+      "name": "putontable",
+      "tags": [
+        "adventure",
+        "armok",
+        "buildings",
+        "fort",
+        "items"
+      ]
+    },
+    {
+      "help": "Quickly and easily create quantum stockpiles.",
+      "name": "gui/quantum",
+      "tags": [
+        "fort",
+        "map",
+        "productivity",
+        "stockpiles"
+      ]
+    },
+    {
+      "help": "Quickly run saved commands.",
+      "name": "gui/quickcmd",
+      "tags": [
+        "dfhack"
+      ]
+    },
+    {
+      "help": "Apply layout blueprints to your fort.",
+      "name": "gui/quickfort",
+      "tags": [
+        "buildings",
+        "design",
+        "fort",
+        "map",
+        "productivity",
+        "stockpiles"
+      ]
+    },
+    {
+      "help": "Apply layout blueprints to your fort.",
+      "name": "quickfort",
+      "tags": [
+        "buildings",
+        "design",
+        "fort",
+        "map",
+        "productivity",
+        "stockpiles"
+      ]
+    },
+    {
+      "help": "Immediately autosave the game.",
+      "name": "quicksave",
+      "tags": [
+        "dfhack",
+        "fort"
+      ]
+    },
+    {
+      "help": "In-game quickstart guide for new users of DFHack.",
+      "name": "quickstart-guide",
+      "tags": []
+    },
+    {
+      "help": "Change regional animal populations.",
+      "name": "region-pops",
+      "tags": [
+        "animals",
+        "fort",
+        "inspection"
+      ]
+    },
+    {
+      "help": "Regrow surface grass and cavern moss.",
+      "name": "regrass",
+      "tags": [
+        "adventure",
+        "animals",
+        "armok",
+        "fort",
+        "map",
+        "plants"
+      ]
+    },
+    {
+      "help": "Resets unit age.",
+      "name": "rejuvenate",
+      "tags": [
+        "armok",
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Reload a loaded plugin.",
+      "name": "reload",
+      "tags": [
+        "dfhack"
+      ]
+    },
+    {
+      "help": "Reduce stress values for fortress dwarves.",
+      "name": "remove-stress",
+      "tags": [
+        "armok",
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Remove wear from items in your fort.",
+      "name": "remove-wear",
+      "tags": [
+        "armok",
+        "fort",
+        "items"
+      ]
+    },
+    {
+      "help": "Edit in-game language-based names.",
+      "name": "gui/rename",
+      "tags": [
+        "adventure",
+        "animals",
+        "fort",
+        "items",
+        "productivity",
+        "units"
+      ]
+    },
+    {
+      "help": "Call a DFHack command at a periodic interval.",
+      "name": "repeat",
+      "tags": [
+        "dfhack"
+      ]
+    },
+    {
+      "help": "Resize armor and clothing.",
+      "name": "resize-armor",
+      "tags": [
+        "adventure",
+        "armok",
+        "fort",
+        "gameplay",
+        "items"
+      ]
+    },
+    {
+      "help": "Restrict traffic on squares above visible ice.",
+      "name": "restrictice",
+      "tags": [
+        "design",
+        "fort",
+        "map",
+        "productivity"
+      ]
+    },
+    {
+      "help": "Restrict traffic on every visible square with liquid.",
+      "name": "restrictliquids",
+      "tags": [
+        "design",
+        "fort",
+        "map",
+        "productivity"
+      ]
+    },
+    {
+      "help": "Bring a dead adventurer back to life.",
+      "name": "resurrect-adv",
+      "tags": [
+        "adventure",
+        "armok",
+        "units"
+      ]
+    },
+    {
+      "help": "Allow stuck offscreen units to enter the map.",
+      "name": "fix/retrieve-units",
+      "tags": [
+        "bugfix",
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Reveal map tiles.",
+      "name": "gui/reveal",
+      "tags": [
+        "adventure",
+        "armok",
+        "fort",
+        "map"
+      ]
+    },
+    {
+      "help": "Reveal the map.",
+      "name": "reveal",
+      "tags": [
+        "adventure",
+        "armok",
+        "fort",
+        "inspection",
+        "map"
+      ]
+    },
+    {
+      "help": "Reveal or hide the world map.",
+      "name": "reveal-adv-map",
+      "tags": [
+        "adventure",
+        "armok",
+        "map"
+      ]
+    },
+    {
+      "help": "Reveal all sites in the world.",
+      "name": "reveal-hidden-sites",
+      "tags": [
+        "adventure",
+        "armok",
+        "embark",
+        "fort",
+        "map"
+      ]
+    },
+    {
+      "help": "Reveal sneaking units.",
+      "name": "reveal-hidden-units",
+      "tags": [
+        "adventure",
+        "armok",
+        "fort",
+        "map",
+        "units"
+      ]
+    },
+    {
+      "help": "Hide everything, then reveal tiles with a path to a unit.",
+      "name": "revflood",
+      "tags": [
+        "adventure",
+        "armok",
+        "fort",
+        "inspection",
+        "map"
+      ]
+    },
+    {
+      "help": "Discard records about what was visible before revealing the map.",
+      "name": "revforget",
+      "tags": [
+        "adventure",
+        "armok",
+        "fort",
+        "inspection",
+        "map"
+      ]
+    },
+    {
+      "help": "Switch betwen reveal and unreveal.",
+      "name": "revtoggle",
+      "tags": [
+        "adventure",
+        "armok",
+        "fort",
+        "inspection",
+        "map"
+      ]
+    },
+    {
+      "help": "Create units, trees, or items.",
+      "name": "gui/sandbox",
+      "tags": [
+        "adventure",
+        "animals",
+        "armok",
+        "fort",
+        "items",
+        "map",
+        "plants",
+        "units"
+      ]
+    },
+    {
+      "help": "Run commands when game state changes occur.",
+      "name": "sc-script",
+      "tags": [
+        "dfhack"
+      ]
+    },
+    {
+      "help": "Execute a batch file of DFHack commands.",
+      "name": "script",
+      "tags": [
+        "dfhack"
+      ]
+    },
+    {
+      "help": "Manages seed and plant cooking based on seed stock levels.",
+      "name": "gui/seedwatch",
+      "tags": [
+        "auto",
+        "fort",
+        "plants"
+      ]
+    },
+    {
+      "help": "Automatically toggle seed cooking based on quantity available.",
+      "name": "seedwatch",
+      "tags": [
+        "auto",
+        "fort",
+        "plants"
+      ]
+    },
+    {
+      "help": "Alter a unit's romantic inclinations.",
+      "name": "set-orientation",
+      "tags": [
+        "armok",
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Modify the duration of the pre-game world update.",
+      "name": "set-timeskip-duration",
+      "tags": [
+        "adventure",
+        "armok",
+        "embark",
+        "fort"
+      ]
+    },
+    {
+      "help": "Set the graphics FPS cap.",
+      "name": "setfps",
+      "tags": [
+        "dfhack",
+        "fps"
+      ]
+    },
+    {
+      "help": "Import and export DF settings.",
+      "name": "gui/settings-manager",
+      "tags": [
+        "embark",
+        "interface"
+      ]
+    },
+    {
+      "help": "Unhides the DFHack terminal window.",
+      "name": "show",
+      "tags": [
+        "dfhack"
+      ]
+    },
+    {
+      "help": "Shows all items needed for active strange mood.",
+      "name": "showmood",
+      "tags": [
+        "armok",
+        "fort",
+        "inspection",
+        "jobs",
+        "units"
+      ]
+    },
+    {
+      "help": "Manage siege engines at a glance This interface provides a list of siege engines, their ammo count, and current active jobs whilst providing shortcuts to configure their firing/standy mode and view them in-world.",
+      "name": "gui/siegemanager",
+      "tags": [
+        "buildings",
+        "interface",
+        "productivity"
+      ]
+    },
+    {
+      "help": "List and zoom to people, locations, or artifacts.",
+      "name": "gui/sitemap",
+      "tags": [
+        "adventure",
+        "fort",
+        "inspection"
+      ]
+    },
+    {
+      "help": "Fixes sleeping units belonging to a camp that never wake up.",
+      "name": "fix/sleepers",
+      "tags": [
+        "adventure",
+        "bugfix"
+      ]
+    },
+    {
+      "help": "Create an infinite magma or water source.",
+      "name": "source",
+      "tags": [
+        "armok",
+        "fort",
+        "map"
+      ]
+    },
+    {
+      "help": "Automated spectator mode.",
+      "name": "gui/spectate",
+      "tags": [
+        "fort",
+        "inspection",
+        "interface"
+      ]
+    },
+    {
+      "help": "Automated spectator mode.",
+      "name": "spectate",
+      "tags": [
+        "fort",
+        "inspection",
+        "interface"
+      ]
+    },
+    {
+      "help": "Clean the map tile under the cursor.",
+      "name": "spotclean",
+      "tags": [
+        "adventure",
+        "armok",
+        "fort",
+        "fps",
+        "items",
+        "map",
+        "units"
+      ]
+    },
+    {
+      "help": "Solve FPS issues caused by fluctuating temperature.",
+      "name": "fix/stable-temp",
+      "tags": [
+        "bugfix",
+        "fort",
+        "fps",
+        "map"
+      ]
+    },
+    {
+      "help": "Change the number of dwarves you embark with.",
+      "name": "startdwarf",
+      "tags": [
+        "armok",
+        "embark",
+        "fort"
+      ]
+    },
+    {
+      "help": "Prevent infinite accumulation of roaming undead.",
+      "name": "starvingdead",
+      "tags": [
+        "fort",
+        "fps",
+        "gameplay",
+        "units"
+      ]
+    },
+    {
+      "help": "Import, export, or modify stockpile settings.",
+      "name": "stockpiles",
+      "tags": [
+        "design",
+        "fort",
+        "productivity",
+        "stockpiles"
+      ]
+    },
+    {
+      "help": "Task units to store their owned items.",
+      "name": "store-owned",
+      "tags": [
+        "buildings",
+        "fort",
+        "items"
+      ]
+    },
+    {
+      "help": "Trigger a strange mood.",
+      "name": "strangemood",
+      "tags": [
+        "armok",
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Remove items from caged prisoners.",
+      "name": "stripcaged",
+      "tags": [
+        "fort",
+        "items",
+        "productivity"
+      ]
+    },
+    {
+      "help": "Allow bugged instruments to be interacted with again.",
+      "name": "fix/stuck-instruments",
+      "tags": [
+        "bugfix",
+        "fort",
+        "items"
+      ]
+    },
+    {
+      "help": "Dismiss merchants that are stuck off the edge of the map.",
+      "name": "fix/stuck-merchants",
+      "tags": [
+        "bugfix",
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Allow squads and messengers to rescue lost squads.",
+      "name": "fix/stuck-squad",
+      "tags": [
+        "bugfix",
+        "fort",
+        "military"
+      ]
+    },
+    {
+      "help": "Prevent dwarves from getting stuck in Worship! states.",
+      "name": "fix/stuck-worship",
+      "tags": [
+        "bugfix",
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Allow doors that are stuck open to close.",
+      "name": "fix/stuckdoors",
+      "tags": [
+        "bugfix",
+        "buildings",
+        "fort"
+      ]
+    },
+    {
+      "help": "Make a dwarf supernaturally speedy.",
+      "name": "superdwarf",
+      "tags": [
+        "armok",
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Suspends building construction jobs.",
+      "name": "suspend",
+      "tags": [
+        "fort",
+        "jobs"
+      ]
+    },
+    {
+      "help": "Intelligently suspend and unsuspend jobs.",
+      "name": "gui/suspendmanager",
+      "tags": [
+        "fort",
+        "jobs"
+      ]
+    },
+    {
+      "help": "Intelligently suspend and unsuspend jobs.",
+      "name": "suspendmanager",
+      "tags": [
+        "auto",
+        "fort",
+        "jobs"
+      ]
+    },
+    {
+      "help": "Unstick noble symbols that cannot be re-designated.",
+      "name": "fix/symbol-unstick",
+      "tags": [
+        "bugfix",
+        "fort",
+        "items"
+      ]
+    },
+    {
+      "help": "Synchronize or randomize windmill movement.",
+      "name": "sync-windmills",
+      "tags": [
+        "buildings",
+        "fort"
+      ]
+    },
+    {
+      "help": "List the categories of DFHack tools or the tools with those tags.",
+      "name": "tags",
+      "tags": [
+        "dfhack"
+      ]
+    },
+    {
+      "help": "Automatically keep your dwarves in fresh clothing.",
+      "name": "tailor",
+      "tags": [
+        "auto",
+        "fort",
+        "workorders"
+      ]
+    },
+    {
+      "help": "Tame and train animals.",
+      "name": "tame",
+      "tags": [
+        "animals",
+        "armok",
+        "fort"
+      ]
+    },
+    {
+      "help": "Teleport units anywhere.",
+      "name": "gui/teleport",
+      "tags": [
+        "armok",
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Teleport a unit anywhere.",
+      "name": "teleport",
+      "tags": [
+        "armok",
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Interactively shape the map.",
+      "name": "gui/tiletypes",
+      "tags": [
+        "armok",
+        "fort",
+        "map"
+      ]
+    },
+    {
+      "help": "Paints tiles of specified types onto the map.",
+      "name": "tiletypes",
+      "tags": [
+        "adventure",
+        "armok",
+        "fort",
+        "map"
+      ]
+    },
+    {
+      "help": "Run tiletypes commands (seperated by ' ; ').",
+      "name": "tiletypes-command",
+      "tags": [
+        "adventure",
+        "armok",
+        "fort",
+        "map"
+      ]
+    },
+    {
+      "help": "Repeat tiletypes command at cursor (with brush).",
+      "name": "tiletypes-here",
+      "tags": [
+        "adventure",
+        "armok",
+        "fort",
+        "map"
+      ]
+    },
+    {
+      "help": "Repeat tiletypes command at cursor (with single tile brush).",
+      "name": "tiletypes-here-point",
+      "tags": [
+        "adventure",
+        "armok",
+        "fort",
+        "map"
+      ]
+    },
+    {
+      "help": "Fix FPS death.",
+      "name": "timestream",
+      "tags": [
+        "fort",
+        "fps",
+        "gameplay"
+      ]
+    },
+    {
+      "help": "Toggles the keyboard cursor.",
+      "name": "toggle-kbd-cursor",
+      "tags": [
+        "adventure",
+        "fort",
+        "interface"
+      ]
+    },
+    {
+      "help": "Overlay to allow changing track stop and roller settings after construction.",
+      "name": "trackstop",
+      "tags": [
+        "buildings",
+        "fort",
+        "interface"
+      ]
+    },
+    {
+      "help": "Inspect properties of the selected item.",
+      "name": "troubleshoot-item",
+      "tags": [
+        "fort",
+        "inspection",
+        "items"
+      ]
+    },
+    {
+      "help": "Replentishes mined-out adamantine.",
+      "name": "tubefill",
+      "tags": [
+        "armok",
+        "fort",
+        "map"
+      ]
+    },
+    {
+      "help": "Show/hide numeric liquid depth on the map.",
+      "name": "twaterlvl",
+      "tags": [
+        "interface"
+      ]
+    },
+    {
+      "help": "A collection of tweaks and bugfixes.",
+      "name": "tweak",
+      "tags": [
+        "bugfix",
+        "fort",
+        "fps",
+        "gameplay",
+        "interface"
+      ]
+    },
+    {
+      "help": "Describe how a command is implemented.",
+      "name": "type",
+      "tags": [
+        "dfhack"
+      ]
+    },
+    {
+      "help": "Undesignate building base materials for dumping.",
+      "name": "undump-buildings",
+      "tags": [
+        "buildings",
+        "fort",
+        "productivity"
+      ]
+    },
+    {
+      "help": "Unforbid all items.",
+      "name": "unforbid",
+      "tags": [
+        "fort",
+        "items",
+        "productivity"
+      ]
+    },
+    {
+      "help": "Undo gelding for an animal.",
+      "name": "ungeld",
+      "tags": [
+        "animals",
+        "armok",
+        "fort"
+      ]
+    },
+    {
+      "help": "Make military units reevaluate their uniforms.",
+      "name": "uniform-unstick",
+      "tags": [
+        "bugfix",
+        "fort",
+        "military"
+      ]
+    },
+    {
+      "help": "Display detailed information about a unit.",
+      "name": "gui/unit-info-viewer",
+      "tags": [
+        "adventure",
+        "fort",
+        "inspection",
+        "interface",
+        "units"
+      ]
+    },
+    {
+      "help": "Inspect syndrome details.",
+      "name": "gui/unit-syndromes",
+      "tags": [
+        "fort",
+        "inspection",
+        "units"
+      ]
+    },
+    {
+      "help": "Unload a plugin from memory.",
+      "name": "unload",
+      "tags": [
+        "dfhack"
+      ]
+    },
+    {
+      "help": "Adventure as any living historical figure.",
+      "name": "unretire-anyone",
+      "tags": [
+        "adventure",
+        "armok",
+        "embark"
+      ]
+    },
+    {
+      "help": "Revert a revealed map to its unrevealed state.",
+      "name": "unreveal",
+      "tags": [
+        "adventure",
+        "armok",
+        "fort",
+        "inspection",
+        "map"
+      ]
+    },
+    {
+      "help": "Resume suspended building construction jobs.",
+      "name": "unsuspend",
+      "tags": [
+        "auto",
+        "fort",
+        "jobs"
+      ]
+    },
+    {
+      "help": "Reports citizens who can't reach any other citizens.",
+      "name": "warn-stranded",
+      "tags": [
+        "fort",
+        "units"
+      ]
+    },
+    {
+      "help": "Change the weather.",
+      "name": "weather",
+      "tags": [
+        "armok",
+        "fort",
+        "inspection",
+        "map"
+      ]
+    },
+    {
+      "help": "Moves stuck wildlife off the map so new waves can enter.",
+      "name": "fix/wildlife",
+      "tags": [
+        "animals",
+        "bugfix",
+        "fort"
+      ]
+    },
+    {
+      "help": "Reduce the time that dwarves idle after completing a job.",
+      "name": "work-now",
+      "tags": [
+        "fort",
+        "gameplay",
+        "jobs"
+      ]
+    },
+    {
+      "help": "Create manager workorders.",
+      "name": "workorder",
+      "tags": [
+        "fort",
+        "productivity",
+        "workorders"
+      ]
+    }
+  ],
+  "count": 311,
+  "filter": null,
+  "filter_kind": null,
+  "tags": [
+    {
+      "description": "Tools that are useful while in adventure mode.",
+      "tag": "adventure"
+    },
+    {
+      "description": "Tools that interact with animals.",
+      "tag": "animals"
+    },
+    {
+      "description": "Tools which give the player god-like powers or the ability to access information the game intentionally keeps hidden. Players that do not wish to see these tools can hide them in the \"Preferences\" tab of gui/control-panel.",
+      "tag": "armok"
+    },
+    {
+      "description": "Tools that run in the background and automatically manage routine, toilsome aspects of your fortress.",
+      "tag": "auto"
+    },
+    {
+      "description": "Tools that fix specific bugs, either permanently or on-demand.",
+      "tag": "bugfix"
+    },
+    {
+      "description": "Tools that interact with buildings and furniture.",
+      "tag": "buildings"
+    },
+    {
+      "description": "Tools that help you with fort layout.",
+      "tag": "design"
+    },
+    {
+      "description": "Tools that are useful when debugging or developing mods.",
+      "tag": "dev"
+    },
+    {
+      "description": "Tools that you use to run DFHack commands or interact with the DFHack or DF system.",
+      "tag": "dfhack"
+    },
+    {
+      "description": "Tools that are useful while on the fort embark screen or while creating an adventurer.",
+      "tag": "embark"
+    },
+    {
+      "description": "Tools that are useful while in fort mode.",
+      "tag": "fort"
+    },
+    {
+      "description": "Tools that help you prevent impact to your FPS.",
+      "tag": "fps"
+    },
+    {
+      "description": "Tools that introduce new gameplay elements.",
+      "tag": "gameplay"
+    },
+    {
+      "description": "Tools that interact with game graphics.",
+      "tag": "graphics"
+    },
+    {
+      "description": "Tools that let you view information that is otherwise difficult to find.",
+      "tag": "inspection"
+    },
+    {
+      "description": "Tools that interact with or extend the DF user interface.",
+      "tag": "interface"
+    },
+    {
+      "description": "Tools that interact with in-game items.",
+      "tag": "items"
+    },
+    {
+      "description": "Tools that interact with jobs.",
+      "tag": "jobs"
+    },
+    {
+      "description": "Tools that deal with labor assignment.",
+      "tag": "labors"
+    },
+    {
+      "description": "Tools that are useful while in legends mode.",
+      "tag": "legends"
+    },
+    {
+      "description": "Tools that interact with the game map.",
+      "tag": "map"
+    },
+    {
+      "description": "Tools that interact with the military.",
+      "tag": "military"
+    },
+    {
+      "description": "Tools that interact with grass, trees, shrubs, and crops.",
+      "tag": "plants"
+    },
+    {
+      "description": "Tools that help you perform common tasks quickly and easily.",
+      "tag": "productivity"
+    },
+    {
+      "description": "Tools that interact with stockpiles.",
+      "tag": "stockpiles"
+    },
+    {
+      "description": "Tools that are not yet available for the current release.",
+      "tag": "unavailable"
+    },
+    {
+      "description": "Tools that interact with units.",
+      "tag": "units"
+    },
+    {
+      "description": "Tools that interact with workorders.",
+      "tag": "workorders"
+    }
+  ]
+}
