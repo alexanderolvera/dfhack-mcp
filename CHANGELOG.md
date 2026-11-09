@@ -50,6 +50,15 @@ what to read instead.
   type, and a `category` parameter to narrow it to one.
 - `fort_status.hostiles_on_map` and `rooms_and_zones.ghosts.active_total`
   report two facts that were only visible inside alert sentences before.
+- Every fog-gated tool takes an optional `reveal_hidden` that bypasses fog of
+  war, and every response from one reports `fog_of_war: "applied"` or
+  `"bypassed"`. Fog of war stays on by default, so spoiler policy is now the
+  client's call. The tools are `defenses`, `environment`, `fluids`,
+  `fort_health`, `fort_status`, `geology`, `historical_figure`,
+  `livestock_and_pastures`, `map_overview`, `military`, `rooms_and_zones`,
+  `threats`, `tile_region` and `unit_appearance`. `squad_orders` keeps refusing
+  kill orders against hidden units, because that check decides what the fort
+  does, not what the client sees.
 - `unit_appearance` is the portrait read for one unit: DF's appearance
   modifiers with their description bands, hair and beard styling, hair, skin
   and eye colors as DF names them, missing parts and scars, and everything worn
@@ -75,8 +84,16 @@ what to read instead.
 
 ### Changed
 
+- **Breaking:** `geology`'s `reveal_hidden` now behaves like every other
+  tool's, and a bypassed survey has the same shape as a default one.
+  `caverns_hidden[]` merges into `caverns_discovered[]`, `magma_hidden` gives
+  way to `magma_reached`, and the `reveal_hidden: true` echo becomes
+  `fog_of_war: "bypassed"`. The magma sea's z-range is no longer reported here;
+  `fluids` with `reveal_hidden` gives `magma_sea.top_z`.
 - Every id, cursor and coordinate parameter accepts both `42` and `"42"`.
   `citizen`'s `unit_id` was a string and is now a number.
+- The package, registry listing and README describe dfhack-mcp as a DFHack
+  access layer rather than an advisor.
 
 ### Fixed
 
