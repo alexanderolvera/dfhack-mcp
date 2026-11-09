@@ -1,5 +1,6 @@
 import { runJsonScript } from '../query.ts';
 import type { ToolDef } from '../register.ts';
+import { FOG_OF_WAR_NOTE, fogArgs, revealHiddenParam, type FogReport } from '../fog.ts';
 
 export interface UniformSlotRow {
   item_type: string;
@@ -43,7 +44,7 @@ export interface SquadRow {
   training: SquadTraining;
 }
 
-export interface Military {
+export interface Military extends FogReport {
   squad_count: number;
   soldiers: number;
   assigned_positions: number;
@@ -53,8 +54,8 @@ export interface Military {
   squads: SquadRow[];
 }
 
-export async function military(): Promise<Military | { error: string }> {
-  const data = await runJsonScript<Military>('military', [], ['squads']);
+export async function military(revealHidden?: boolean): Promise<Military | { error: string }> {
+  const data = await runJsonScript<Military>('military', fogArgs(revealHidden), ['squads']);
   if ('error' in data) return data;
   for (const sq of data.squads) {
     if (!Array.isArray(sq.roster)) sq.roster = [];
@@ -83,7 +84,7 @@ export const militaryDef: ToolDef = {
     'type (ARMOR/HELM/PANTS/GLOVES/SHOES/SHIELD/WEAPON/...) into assigned_count ' +
     '(items the uniform calls for — a required-but-never-found item still counts as 1) ' +
     "vs missing_count (of those, how many are not currently worn/wielded — DF's own " +
-    'uniform-unstick logic, or never assigned at all) — this is the tool-API spec\'s ' +
+    "uniform-unstick logic, or never assigned at all) — this is the tool-API spec's " +
     'originally-promised "equipment_gaps" (e.g. "8 of them have no armor"), previously ' +
     "unfulfilled; a fully-equipped soldier's uniform[] is empty (uniform_complete says " +
     'so already) to keep the payload proportional to actual gaps, not fort size. ammo — ' +
@@ -92,6 +93,8 @@ export const militaryDef: ToolDef = {
     'and ammo_items_assigned, the total ammo items currently carried by the squad; ' +
     "training — the active training-schedule month's sleep_mode, uniform_mode, and " +
     'active_orders (both undefined/empty when the fort has never customized that ' +
-    "routine's month). Returns {\"error\":\"no fort loaded\"} if no fort is active.",
-  run: military,
+    'routine\'s month). Returns {"error":"no fort loaded"} if no fort is active. ' +
+    FOG_OF_WAR_NOTE,
+  shape: { reveal_hidden: revealHiddenParam },
+  run: ({ reveal_hidden }) => military(reveal_hidden),
 };

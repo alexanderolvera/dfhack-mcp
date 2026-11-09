@@ -12,6 +12,7 @@
     "halls": 4,
     "seats": 36
   },
+  "fog_of_war": "applied",
   "ghosts": {
     "active": [],
     "active_total": 0,

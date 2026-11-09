@@ -18,6 +18,7 @@ Gives an image or narrative client what it needs to draw or describe one unit: D
 | Name | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
 | unit_id | integer (coerced, ≥ 0) | Yes | — | A live unit_id, e.g. from a find_unit match. |
+| reveal_hidden | boolean | No | `false` | Bypass [fog of war](../../CONTRIBUTING.md#fog-of-war-the-reveal_hidden-opt-in): also read what stands on undiscovered tiles. The response reports the mode as `fog_of_war`. |
 
 ## Returns
 - `unit_id`, `name`, `race` (creature name, e.g. `dwarf`), `caste` (caste token, e.g. `MALE`), `sex`, `age` (whole years), `body_size_cm3` (current body size).
@@ -33,6 +34,7 @@ Gives an image or narrative client what it needs to draw or describe one unit: D
 - `missing_parts[]`: names of the top-most missing body parts (a part whose parent is also missing is implied and not listed). Capped at 20 with `missing_parts_truncated`.
 - `scars[]`: `{ part, layer?, kinds[] }`, one row per scarred part/layer. `kinds` are the `scar_*` wound-part flags DF sets on healing (`scar_cut`, `scar_smashed`, `scar_broken`, `scar_edged_shake1`, `scar_blunt_shake1`, `scar_joint_bend1`, ...). Capped at 20 with `scars_truncated`.
 - `inventory[]`: `{ item_id, role, body_part?, item, type, material?, quality, wear?, dye?, decorations[], artifact_name? }`. `role` is DF's `inv_item_role_type` (`Worn`, `Weapon`, `Flask`, `Hauled`, `Strapped`, `StuckIn`, `Piercing`, `WrappedAround`, `InMouth`, `Pet`, `SewnInto`), `body_part` is where it is held or worn, `item` is DF's plain description, `type` is the `item_type` token, and `quality` is the `item_quality` name (`Ordinary` … `Masterful`, `Artifact`). `wear` (1 worn, 2 threadbare, 3 tattered) is omitted when 0. `dye` is `{ material, color }` for dyed cloth. `decorations[]` is `{ type, material, quality }` per improvement (`ART_IMAGE`, `COVERED`, `RINGS_HANGING`, `BANDS`, `SPIKES`, `SEWN_IMAGE`, ...). Sorted by role, body part, then item id, and capped at 30 with `inventory_truncated`.
+- `fog_of_war` — `"applied"` (the default) or `"bypassed"` (with `reveal_hidden=true`).
 
 ```json
 {
@@ -69,6 +71,7 @@ Gives an image or narrative client what it needs to draw or describe one unit: D
 
 ## Caveats & limits
 - Returns `{"error":"no visible unit with id N ..."}` both for an id that doesn't exist and for a unit standing on an undiscovered tile (fog of war, via `mcp_unitVisibility`). The two cases share one message so the error never confirms that an unseen unit exists. Off-map units fail closed the same way.
+- **Fog-of-war bypass**: with `reveal_hidden=true`, a unit standing on an undiscovered tile resolves instead of returning the not-found error.
 - Returns `{"error":"no fort loaded"}` when no fort is active.
 - Works for any unit, not just citizens: animals return their own caste's modifiers and colors (a dog has a `body` `LENGTH` and a `tail` color), usually with empty `tissue_styles` and `inventory`.
 - Item contents aren't walked: a backpack or quiver is listed, but not what's inside it.

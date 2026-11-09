@@ -81,36 +81,38 @@ what it has to work with.
 
 ### Sensors — the state of your fort
 
-No arguments; each reports on the loaded fort, except `game_state()`, which works at any screen.
+Each reports on the loaded fort, except `game_state()`, which works at any screen.
+
+**Fog of war is on by default.** Undiscovered tiles, the units standing on them and undiscovered caverns never appear. What a player may see past that is the client's call, so every fog-gated tool takes the same optional `reveal_hidden: true` to bypass it, and every response from one reports `fog_of_war: "applied" | "bypassed"`. The fog-gated tools are `defenses`, `environment`, `fluids`, `fort_health`, `fort_status`, `geology`, `historical_figure`, `livestock_and_pastures`, `map_overview`, `military`, `rooms_and_zones`, `threats`, `tile_region` and `unit_appearance`. A bypassed full-map scan (`fluids`, `geology`) reads every tile, so it takes longer; raise `DFHACK_MCP_TIMEOUT_MS` on a large map. See [CONTRIBUTING's fog-of-war section](CONTRIBUTING.md#fog-of-war-the-reveal_hidden-opt-in).
 
 - **`game_state()`** — DFHack and DF versions, game mode (title/fortress/adventure/other), whether a world and map are loaded, paused, the raw clock (`year`, `year_tick`, formatted date), and the world/fort identity. The one tool that works with no fort loaded; cheap enough to poll.
-- **`fort_status()`** — name, date/season, identity (world, save folder, site, civ), population, wealth, happiness breakdown, recent deaths, hostiles on map.
+- **`fort_status(reveal_hidden?)`** — name, date/season, identity (world, save folder, site, civ), population, wealth, happiness breakdown, recent deaths, hostiles on map.
 - **`stocks(category?)`** — raw usable counts of food, drink and key materials, a usable count for every DF item type (optionally one `category`), and the population to normalize them by.
-- **`threats()`** — dangerous units grouped by type; active vs. contained, great-danger/invader/undead flags, plus each group's decisive traits (trapavoid, flier, fire, webber, building-destroyer, ranged).
+- **`threats(reveal_hidden?)`** — dangerous units grouped by type; active vs. contained, great-danger/invader/undead flags, plus each group's decisive traits (trapavoid, flier, fire, webber, building-destroyer, ranged).
 - **`unmet_needs()`** — the needs system aggregated: the top unmet needs ranked by how many dwarves are distracted, and how starved each is.
 - **`jobs_and_labor()`** — workforce utilization: busy vs. idle adults (children excluded), idle %, and a ranked breakdown of active jobs.
-- **`military()`** — squads (each with its `squad_id`, the id `squad_orders` targets), enlisted soldiers, filled positions, readiness against hostiles on the map, and per-squad roster equipment gaps (missing uniform pieces), ammo, and active training order.
+- **`military(reveal_hidden?)`** — squads (each with its `squad_id`, the id `squad_orders` targets), enlisted soldiers, filled positions, readiness against hostiles on the map, and per-squad roster equipment gaps (missing uniform pieces), ammo, and active training order.
 - **`injuries_and_health()`** — wounded / patients / bedridden / unconscious counts, plus the care needed (diagnosis, surgery, suture, …).
-- **`defenses()`** — active hostiles with map positions and distance/direction/z-delta to the fort core and nearest drawbridge, plus a controllable-structure inventory (bridges, levers, floodgates, hatches, cage traps, doors).
+- **`defenses(reveal_hidden?)`** — active hostiles with map positions and distance/direction/z-delta to the fort core and nearest drawbridge, plus a controllable-structure inventory (bridges, levers, floodgates, hatches, cage traps, doors).
 - **`burrows()`** — every burrow's size and membership, plus the civilian-alert safety-burrow set (configured/active/linked burrows) — the read half of `civilian_alert`.
 - **`mechanisms()`** — every lever's position, state, and linked target(s) (bridge/door/floodgate/hatch/support/weapon-trap); pressure-plate trigger conditions; unlinked levers and bridges.
 - **`moods()`** — any active strange mood (fey/secretive/possessed/macabre/fell): the dwarf, driving skill, workshop state, and each demanded material cross-referenced against fort stock — the "demands bones, fort has zero" early warning.
 - **`mandates_and_justice()`** — the nobility's overhead: active production mandates and export bans, unmet noble room demands, and justice state (open cases, convictions awaiting punishment, restraint capacity).
-- **`rooms_and_zones()`** — the facility inventory, each count paired with its demand-side number: bedrooms, dining halls, the hospital, wells, temples, taverns, libraries, guildhalls, and coffins free vs. dead awaiting burial. The supply-side companion to `unmet_needs()`.
+- **`rooms_and_zones(reveal_hidden?)`** — the facility inventory, each count paired with its demand-side number: bedrooms, dining halls, the hospital, wells, temples, taverns, libraries, guildhalls, and coffins free vs. dead awaiting burial. The supply-side companion to `unmet_needs()`.
 - **`trade()`** — the caravan lifecycle and trade depot: depot existence/completeness and wagon-accessibility, caravans present and their state, broker assignment/presence, and the count and approximate value of goods staged in the depot.
-- **`environment()`** — ambient conditions right now: season and weather, surface temperature and whether exposed water is frozen, the embark's biome alignment (evil/good/reanimating), and — for each cavern the fort has **already breached** — whether it is open or sealed. Fog-of-war honest.
+- **`environment(reveal_hidden?)`** — ambient conditions right now: season and weather, surface temperature and whether exposed water is frozen, the embark's biome alignment (evil/good/reanimating), and — for each cavern the fort has **already breached** — whether it is open or sealed.
 - **`find_unit(query)`** — look up citizens by name fragment or profession; a compact dossier per match (profession, age, stress, job, squad, health flags). Chain into `citizen` for depth.
 - **`citizen(unit_id)`** — the full character sheet for one dwarf: social graph (spouse/parents/children/friends/grudges, each with a `unit_id` you can walk), worshipped deities, notable personality extremes, skills of note, likes/detests, and recent thoughts tied to current stress.
-- **`unit_appearance(unit_id)`** — the portrait read for one unit: DF's appearance modifiers (eyes, nose, hair length, build, ...) as raw values with their description band, hair/beard styling, hair/skin/eye colors as DF names them (including age graying), missing parts and scars, and everything worn or wielded with material, quality, wear, dye, and decorations.
+- **`unit_appearance(unit_id, reveal_hidden?)`** — the portrait read for one unit: DF's appearance modifiers (eyes, nose, hair length, build, ...) as raw values with their description band, hair/beard styling, hair/skin/eye colors as DF names them (including age graying), missing parts and scars, and everything worn or wielded with material, quality, wear, dye, and decorations.
 - **`site_history()`** — the fort's entry in the world saga: founding, the fort name in Dwarven + English with etymology, prior sieges/battles at the site, and notable figures who died here.
-- **`historical_figure(hf_id)`** — one figure's legends entry, dead or alive, fort-dweller or not: name in its native language + English, race/caste, birth and death (cause, site, slayer with `hf_id`), entity affiliations and positions held, relationships and worshipped deities (each with an `hf_id` you can walk), site links, kills, and the saga events that involve them.
+- **`historical_figure(hf_id, reveal_hidden?)`** — one figure's legends entry, dead or alive, fort-dweller or not: name in its native language + English, race/caste, birth and death (cause, site, slayer with `hf_id`), entity affiliations and positions held, relationships and worshipped deities (each with an `hf_id` you can walk), site links, kills, and the saga events that involve them.
 - **`artifacts_and_engravings()`** — the fort's masterworks and notable engravings.
 - **`chronicle()`** — a scannable recent-events feed for the fort.
 
-**Spatial** (fog-of-war honest — undiscovered tiles never leak):
+**Spatial** (with fog applied, undiscovered tiles never leak):
 
-- **`map_overview()`** — cheap orientation to run _before_ any per-tile read: map extents, the fort-core coordinate, the surface z-level, the z-levels carrying player activity (digging/construction), and stairways as vertical columns. Fixed-size regardless of fort size.
-- **`tile_region(z?, x0?, y0?, x1?, y1?)`** — a bounded window of one z-level as an ASCII grid plus a self-describing legend. Undiscovered tiles stay `?`. All params optional: none → a 60×40 window on the fort core; `z` alone → that level's centroid; explicit corners otherwise. Hard-capped at 100×100 (oversized requests are clamped, never errored). Renders the map; never designs it.
+- **`map_overview(reveal_hidden?)`** — cheap orientation to run _before_ any per-tile read: map extents, the fort-core coordinate, the surface z-level, the z-levels carrying player activity (digging/construction), and stairways as vertical columns. Fixed-size regardless of fort size.
+- **`tile_region(z?, x0?, y0?, x1?, y1?, reveal_hidden?)`** — a bounded window of one z-level as an ASCII grid plus a self-describing legend. Undiscovered tiles stay `?` unless `reveal_hidden`. All params optional: none → a 60×40 window on the fort core; `z` alone → that level's centroid; explicit corners otherwise. Hard-capped at 100×100 (oversized requests are clamped, never errored). Renders the map; never designs it.
 
   | glyph       | meaning                     | glyph   | meaning                                 |
   | ----------- | --------------------------- | ------- | --------------------------------------- |
@@ -124,7 +126,7 @@ No arguments; each reports on the loaded fort, except `game_state()`, which work
   | `<` `>` `x` | up / down / up-down stair   | (space) | open space                              |
   | `T`         | tree                        |         |                                         |
 
-- **`geology(reveal_hidden?)`** — a one-call geological survey (revealed-info only by default): surface z-level, the exposed layer stack with material names, the aquifer (light vs. heavy, z-range), discovered caverns, whether the magma sea is reached, and surface water. `reveal_hidden: true` bypasses fog of war (a debug/spoiler switch, default off).
+- **`geology(reveal_hidden?)`** — a one-call geological survey: surface z-level, the exposed layer stack with material names, the aquifer (light vs. heavy, z-range), discovered caverns, whether the magma sea is reached, and surface water.
 
 ### Reference — how DF works
 

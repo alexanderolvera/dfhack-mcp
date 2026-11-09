@@ -1,6 +1,7 @@
 {
   "adults": 77,
   "assigned_positions": 13,
+  "fog_of_war": "applied",
   "great_danger_on_map": 0,
   "hostiles_on_map": 0,
   "soldiers": 13,

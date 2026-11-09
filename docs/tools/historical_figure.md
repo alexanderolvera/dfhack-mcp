@@ -18,6 +18,7 @@ tags: [dfhack-mcp/tool]
 | Name | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
 | hf_id | integer (coerced, ≥ 0) | Yes | — | A historical figure id, e.g. a relationship's or slayer's hf_id. |
+| reveal_hidden | boolean | No | `false` | Bypass [fog of war](../../CONTRIBUTING.md#fog-of-war-the-reveal_hidden-opt-in): also read what stands on undiscovered tiles. The response reports the mode as `fog_of_war`. |
 
 ## Returns
 - `hf_id` (number), `name` (the figure's name in its own language, e.g. Dwarven for a dwarf), `name_english`. Both are absent for an unnamed figure.
@@ -35,6 +36,7 @@ tags: [dfhack-mcp/tool]
 - `unnamed_kills[]` — `{ race, count }`, kills of creatures that weren't historical figures, summed per race, highest count first.
 - `events[]` — `{ event_id, year, type, site_id? }` for every saga event that involves the figure, most recent first. `type` is a `df.history_event_type` token.
 - Each list `<key>` also gets `<key>_truncated` (`true`) and `<key>_total` when its cap dropped entries. The same goes for `positions` inside each entity. Neither key is present when nothing was dropped.
+- `fog_of_war` — `"applied"` (the default) or `"bypassed"` (with `reveal_hidden=true`).
 
 ```json
 {
@@ -79,6 +81,7 @@ tags: [dfhack-mcp/tool]
 ```
 
 ## Caveats & limits
+- **Fog-of-war bypass**: with `reveal_hidden=true`, `unit_id` is also present when the figure's unit stands on an undiscovered tile.
 - Caps: entities 50, positions 25 per entity, relationships 50, worship 20, sites 25, kills 50, unnamed kills 25, events 50.
 - An unknown id returns `{"error":"no historical figure with id N"}`. A non-numeric id returns an `{"error":...}` too, and `{"error":"no fort loaded"}` means no fort is active.
 - `events[]` lists ids, types and years only. The tool doesn't expand each event's details beyond what `death` and `kills` already pull out of `HIST_FIGURE_DIED`.
@@ -94,7 +97,7 @@ tags: [dfhack-mcp/tool]
 - Site links: `hf.site_links[]`, typed via `df.histfig_site_link_type`, with `.site` (a `df.world_site` id), `.sub_id` and `.entity`. The fixture's night creatures carry `LAIR` links.
 - Deaths and kills come from `HIST_FIGURE_DIED` events (`.victim_hf`, `.slayer_hf`, `.slayer_race`, `.slayer_caste`, `.death_cause` → `df.death_type`, `.site`). An unnamed killer has `slayer_hf == -1` but still a race/caste. `hf.info.kills.events` holds the same kill-event ids, but the tool scans the saga instead because it's already walking it for `events[]` and doesn't depend on `info.kills` being present. `unnamed_kills` comes from `hf.info.kills.killed_race[i]` / `killed_count[i]` (parallel vectors, along with `killed_caste`/`killed_site`/`killed_region`/`killed_underground_region`), summed per race.
 - `events[]` keeps every entry in `world.history.events` where `event:isRelatedToHistfigID(hf_id)` is true. That's the game's own notion of involvement, so it covers event types the tool never parses itself. `site_id` is read through pcall because only some event types have a `.site`.
-- **Fog of war (`mcp_unitVisibility`).** Most of this tool is world history, the legends record DF keeps for the whole world, and none of it is tied to the map. So the legends fields are returned for any figure, the same way `site_history` returns the saga. The one map-bound fact is `unit_id`. Exposing it for a creature in an undiscovered cavern would reveal that it's on the map, the same X-ray leak `mcp_unitVisibility` exists to prevent. So `unit_id` is emitted only when `df.unit.find(hf.unit_id)` returns a loaded unit and `visibility.is_hidden(u)` is false. A figure off the map and a figure on a hidden tile look identical (no `unit_id`), so this fails closed. `hf.unit_id` itself is often set for figures who aren't on this map: in the fixture, the forgotten beasts and fallen world-gen dwarves all have a `unit_id` with no loaded unit behind it. No position or whereabouts is ever emitted.
+- **Fog of war (`mcp_unitVisibility`).** Most of this tool is world history, the legends record DF keeps for the whole world, and none of it is tied to the map. So the legends fields are returned for any figure, the same way `site_history` returns the saga. The one map-bound fact is `unit_id`. Exposing it for a creature in an undiscovered cavern would reveal that it's on the map, the same X-ray leak `mcp_unitVisibility` exists to prevent. So `unit_id` is emitted only when `df.unit.find(hf.unit_id)` returns a loaded unit and the fog gate's `unit_hidden(u)` is false (or `reveal_hidden` bypasses the gate). A figure off the map and a figure on a hidden tile look identical (no `unit_id`), so this fails closed. `hf.unit_id` itself is often set for figures who aren't on this map: in the fixture, the forgotten beasts and fallen world-gen dwarves all have a `unit_id` with no loaded unit behind it. No position or whereabouts is ever emitted.
 - T2 goldens: `test/golden/historical_figure.json` is hf 179 (a dead citizen slain by another citizen). `scripts/verify.mjs`'s `HISTORICAL_FIGURE_GOLDEN_IDS` adds `historical_figure.<id>.json` for hf 177 (a living citizen, Stukos's slayer, holding a position), 30 (a dead dwarf with spouse, children, a lover, a former civ position, killed by an unnamed goblin), 4 (a forgotten beast that never came to the fort, with seven named kills and unnamed kills) and 22 (a deity with spheres). The fixture has no figure whose unit stands on a hidden tile, so the `unit_id` gate has no golden that exercises it.
 
 ## Related

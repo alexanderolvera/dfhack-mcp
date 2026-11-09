@@ -1,5 +1,6 @@
 import { runJsonScript } from '../query.ts';
 import type { ToolDef } from '../register.ts';
+import { FOG_OF_WAR_NOTE, fogArgs, revealHiddenParam, type FogReport } from '../fog.ts';
 
 export interface AnimalRow {
   unit_id: number;
@@ -24,7 +25,7 @@ export interface CageRow {
   occupants_truncated: boolean;
 }
 
-export interface LivestockAndPastures {
+export interface LivestockAndPastures extends FogReport {
   tame_total: number;
   pets: number;
   livestock: number;
@@ -52,13 +53,14 @@ export interface LivestockAndPastures {
   unassigned_count: number;
 }
 
-export async function livestockAndPastures(): Promise<LivestockAndPastures | { error: string }> {
-  const data = await runJsonScript<LivestockAndPastures>('livestockAndPastures', [], [
-    'by_group',
-    'marked_for_slaughter',
-    'trained',
-    'cages',
-  ]);
+export async function livestockAndPastures(
+  revealHidden?: boolean
+): Promise<LivestockAndPastures | { error: string }> {
+  const data = await runJsonScript<LivestockAndPastures>(
+    'livestockAndPastures',
+    fogArgs(revealHidden),
+    ['by_group', 'marked_for_slaughter', 'trained', 'cages']
+  );
   if ('error' in data) return data;
   if (data.grazers && !Array.isArray(data.grazers.unpastured)) data.grazers.unpastured = [];
   return data;
@@ -79,27 +81,29 @@ export const livestockAndPasturesDef: ToolDef = {
     'how many are pastured without a nestbox in reach, how many are unpastured) ' +
     'since the consequence (missed eggs) is mild and the population is usually ' +
     'large — gated on adulthood (a juvenile of an egg-laying caste cannot ' +
-    'actually lay yet, matching DFHack\'s own autonestbox behavior). ' +
+    "actually lay yet, matching DFHack's own autonestbox behavior). " +
     'marked_for_slaughter and trained (training_level Trained..MasterfullyTrained — ' +
-    'DF\'s single shared training-quality scale, NOT which discipline the animal was ' +
+    "DF's single shared training-quality scale, NOT which discipline the animal was " +
     'trained for; it does not persist war-vs-hunting per animal) list individual ' +
     'animals, capped. cages[]/cages_truncated lists occupied cages with their ' +
-    'occupants (dfhack.buildings.getCageOccupants); each cage\'s own occupants[] ' +
+    "occupants (dfhack.buildings.getCageOccupants); each cage's own occupants[] " +
     'is independently capped too (occupants_total/occupants_truncated), so a ' +
-    'single densely-packed cage trap can\'t inflate the response either. ' +
+    "single densely-packed cage trap can't inflate the response either. " +
     'unassigned_count is animals ' +
     'with no pasture, cage, or chain — DFHack\'s zone tool calls this "unassigned" ' +
     '(roaming loose); reported as a count only since it is commonly large and often ' +
     'intentional (e.g. free-roaming cats). Every unit fact here is gated through the ' +
-    'fog-of-war visibility check — an undiscovered cavern\'s wildlife never leaks in. ' +
+    "fog-of-war visibility check — an undiscovered cavern's wildlife never leaks in. " +
     'The tame-animal enumeration (tame_total/pets/livestock/by_group/grazers/' +
     'egg_layers/marked_for_slaughter/trained/unassigned_count) is ADDITIONALLY ' +
-    'restricted to this fort\'s own civ, so a caravan\'s or diplomat\'s pack animal ' +
+    "restricted to this fort's own civ, so a caravan's or diplomat's pack animal " +
     'is excluded; cages[].occupants[] intentionally skips that restriction — a ' +
-    'cage\'s contents (which may include a captured wild or hostile creature) are ' +
+    "cage's contents (which may include a captured wild or hostile creature) are " +
     'a structural fact independent of ownership, still fog-of-war gated. The ' +
-    'tame-animal enumeration also requires isActive/not isDead (a dead animal\'s ' +
+    "tame-animal enumeration also requires isActive/not isDead (a dead animal's " +
     'unit record never counts). ' +
-    'Returns {"error":"no fort loaded"} if no fort is active.',
-  run: livestockAndPastures,
+    'Returns {"error":"no fort loaded"} if no fort is active. ' +
+    FOG_OF_WAR_NOTE,
+  shape: { reveal_hidden: revealHiddenParam },
+  run: ({ reveal_hidden }) => livestockAndPastures(reveal_hidden),
 };

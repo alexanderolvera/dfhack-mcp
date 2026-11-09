@@ -1,6 +1,7 @@
 import { runJsonScript } from '../query.ts';
 import { z } from 'zod';
 import type { ToolDef } from '../register.ts';
+import { FOG_OF_WAR_NOTE, fogArgs, revealHiddenParam, type FogReport } from '../fog.ts';
 
 export interface Liquid {
   x: number;
@@ -9,7 +10,7 @@ export interface Liquid {
   depth: number;
 }
 
-export interface TileRegion {
+export interface TileRegion extends FogReport {
   z: number;
   origin: [number, number];
   size: [number, number];
@@ -31,8 +32,16 @@ export async function tileRegion(args: {
   y0?: number;
   x1?: number;
   y1?: number;
+  reveal_hidden?: boolean;
 }): Promise<TileRegion | { error: string }> {
-  const argv = [toArg(args.z), toArg(args.x0), toArg(args.y0), toArg(args.x1), toArg(args.y1)];
+  const argv = [
+    toArg(args.z),
+    toArg(args.x0),
+    toArg(args.y0),
+    toArg(args.x1),
+    toArg(args.y1),
+    ...fogArgs(args.reveal_hidden),
+  ];
   return runJsonScript<TileRegion>('tileRegion', argv, ['grid', 'liquids']);
 }
 
@@ -48,21 +57,23 @@ export const tileRegionDef: ToolDef = {
     'to FOUR CLASSES — workshop/furnace W, stockpile S, machine M, furniture n — ' +
     'never per-building detail. The grid glyph is depth-blind; a separate sparse ' +
     'liquids list carries per-tile [{x,y,type,depth}] (flow_size 1..7). ' +
-    'Undiscovered tiles are ? (fog of war) and are NEVER painted over. ' +
-    'All five parameters are OPTIONAL: with none, returns a fixed DEFAULT 60x40 ' +
+    'With fog of war applied, undiscovered tiles are ? and are NEVER painted over. ' +
+    'All five window parameters are OPTIONAL: with none, returns a fixed DEFAULT 60x40 ' +
     'window centered on the fort core (the busiest citizen z-level and that ' +
     "level's citizen centroid); pass z alone to recenter on THAT level's own " +
     'citizen centroid; pass z,x0,y0,x1,y1 for an explicit rectangle. The window ' +
     'is hard-capped at 100x100 per side — an oversized request is CLAMPED (never ' +
     'errored) with truncated:true and the original size echoed in requested. ' +
     'Facts only: it renders the map, it does not design or suggest layouts. ' +
-    'Read-only. Returns {"error":"no fort loaded"} if no fort is active.',
+    'Read-only. Returns {"error":"no fort loaded"} if no fort is active. ' +
+    FOG_OF_WAR_NOTE,
   shape: {
     z: coord().describe('z-level to render; defaults to the busiest citizen level'),
     x0: coord().describe('window corner X (with y0,x1,y1 for an explicit rectangle)'),
     y0: coord().describe('window corner Y'),
     x1: coord().describe('opposite window corner X'),
     y1: coord().describe('opposite window corner Y'),
+    reveal_hidden: revealHiddenParam,
   },
   run: (args) => tileRegion(args),
 };

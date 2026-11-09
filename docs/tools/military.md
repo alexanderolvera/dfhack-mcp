@@ -15,7 +15,9 @@ tags: [dfhack-mcp/tool]
 Reports the fort's fighting strength and reads it against what is actually on the map. Two deliberately different counts: `soldiers` is living, present citizens actually in a squad, while `assigned_positions` is filled squad slots — a slot can still hold a member who is dead or off-map, and the gap between the two numbers is the point. Hostile counts use the same predicate as `threats` (great-danger creatures split out). Each squad also carries `roster[]`, `ammo`, and `training` — the tool-API spec's originally-promised `equipment_gaps` ("you have 21 soldiers" vs. "8 of them have no armor"), previously unfulfilled. An AI co-pilot calls it when assessing defense readiness, after `threats` reports contacts, or before a siege to confirm the squad is actually equipped.
 
 ## Parameters
-None.
+| Name | Type | Required | Default | Description |
+|---|---|---|---|---|
+| reveal_hidden | boolean | No | `false` | Bypass [fog of war](../../CONTRIBUTING.md#fog-of-war-the-reveal_hidden-opt-in): also read what stands on undiscovered tiles. The response reports the mode as `fog_of_war`. |
 
 ## Returns
 - `squad_count` (number) — squads belonging to the fortress entity.
@@ -29,6 +31,7 @@ None.
   - `roster[]` — one row per FILLED position **whose occupant is a living, present unit** (see Caveats): `{ unit_id, name, uniform, uniform_complete }`. `uniform_complete` is true iff nothing is missing. `uniform[]` is empty when `uniform_complete` is true — populated ONLY when there's a gap, aggregated by item type (`ARMOR`/`HELM`/`PANTS`/`GLOVES`/`SHOES`/`SHIELD`/`WEAPON`/`QUIVER`/`BACKPACK`/`FLASK`/...) as `{ item_type, assigned_count, missing_count }`: `assigned_count` is how many items the uniform calls for (a required-but-never-found item still counts as 1, so it's never less than `missing_count`), `missing_count` is how many of those are not currently worn/wielded (DF's own `uniform-unstick` logic) or were never found/assigned at all. `QUIVER`/`BACKPACK`/`FLASK` are assigned outside the main uniform slots (DF tracks them as their own fields) but checked the same way — a marksdwarf with an unassigned quiver shows up here, not silently inside `uniform_complete: true`.
   - `ammo` — `{ specs, ammo_items_assigned }`. `specs[]` is `{ item_type, target_amount, assigned_count }` — `target_amount` is the squad's shared configured total (e.g. 250 bolts for the whole squad), **not per soldier**. Both `assigned_count` and `ammo_items_assigned` are actual bolt QUANTITIES (summed stack sizes), not a count of assigned item-stack objects — one assigned stack can hold many bolts, or DFHack's archery logic can split one stack into several partial ones, so counting stacks would over/undercount against `target_amount`. `ammo_items_assigned` is zero for a melee-only squad.
   - `training` — `{ cur_routine_idx, month, sleep_mode?, uniform_mode?, active_orders }`, the active training-schedule month's settings. `sleep_mode`/`uniform_mode`/`active_orders` are absent/empty when the fort has never customized that routine's month (the common case).
+- `fog_of_war` — `"applied"` (the default) or `"bypassed"` (with `reveal_hidden=true`).
 
 ```json
 {
@@ -72,6 +75,7 @@ A roster row with a gap (illustrative, not a live capture — the fixture's sold
 - Returns `{"error":"no fort loaded"}` when no fort is active.
 - Caged/chained hostiles are excluded from `hostiles_on_map` (same predicate as `threats`), so a full zoo of caged goblins reads as zero threat.
 - `hostiles_on_map` is fog-of-war gated through `mcp_unitVisibility`, so it equals `threats()`' `active_hostiles` and the length of `defenses()`' `threats[]`. Before 1.4.1 it was not gated, and an undiscovered cavern/underworld population inflated it — a fort that had never breached a cavern could read `hostiles_on_map: 2` while `threats` correctly reported zero.
+- **Fog-of-war bypass**: with `reveal_hidden=true`, `hostiles_on_map` and `great_danger_on_map` also count hostiles on undiscovered tiles.
 - `assigned_positions` can overstate strength (dead/off-map members still fill slots); lead with `soldiers`.
 - No caps: squad/position/uniform-slot counts are small in practice (DF's own squad-size limit bounds `roster[]`); `uniform[]` is additionally kept empty for any fully-equipped soldier, so payload size tracks actual gaps, not fort size.
 - `squad_position.occupant` is a **historical figure id**, resolved to a live unit via `historical_figure.unit_id` — a position holder currently off-map or dead still counts toward `filled` but is excluded from `roster[]` (a dead soldier's gear sitting on their corpse would otherwise read as a false `uniform_complete: false`).

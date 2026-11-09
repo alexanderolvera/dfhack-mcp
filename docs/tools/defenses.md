@@ -15,7 +15,9 @@ tags: [dfhack-mcp/tool]
 Reports active hostiles with map positions and their geometry to the fort core and the nearest drawbridge, plus an inventory of controllable defensive structures. Terrain-aware: each threat is classified inside/outside the fort's walled perimeter by walkability-group connectivity, and a `perimeter_terrain` window renders the busiest citizen level as an ASCII grid. Facts only — the tactics are the caller's to decide.
 
 ## Parameters
-None.
+| Name | Type | Required | Default | Description |
+|---|---|---|---|---|
+| reveal_hidden | boolean | No | `false` | Bypass [fog of war](../../CONTRIBUTING.md#fog-of-war-the-reveal_hidden-opt-in): also read what stands on undiscovered tiles. The response reports the mode as `fog_of_war`. |
 
 ## Returns
 Top-level fields:
@@ -24,6 +26,7 @@ Top-level fields:
 - `threats[]` — DISCOVERED hostiles only. Each: `name`, `token`, `pos {x,y,z}`, `walk_group` (0 = no walkable footing, e.g. a flier over open air), `location` ("inside" = shares a citizen walk group), `footing` (`symbol`, `terrain`, `open_to_sky`), `from_core?` and `nearest_bridge?` geometry (`dist` = Chebyshev tile distance, `dz` = z-levels with + meaning the other point is above the threat, `dir` = compass bearing or "here")
 - `structures` — `bridges[]` (`{x, y, z, tiles, direction}`), `levers`, `floodgates`, `hatches`, `cage_traps`, `doors {total, forbidden}`
 - `perimeter_terrain` — single-z window on the busiest citizen level: `z`, `citizens_on_level`, `center`, `origin`, `w`, `h`, `exposure {open_to_sky, covered, undiscovered}`, `fortifications[]` (positions), `distinct` (glyph → count), `legend` (glyph → meaning, pruned to exactly the glyphs in `grid`, so it always has the same keys as `distinct`), `grid` (ASCII rows)
+- `fog_of_war` — `"applied"` (the default) or `"bypassed"` (with `reveal_hidden=true`).
 
 ```json
 {
@@ -59,6 +62,7 @@ Top-level fields:
 - Inside/outside is WALKING connectivity: a FLIER or BUILDING_DESTROYER can reach the fort while reported "outside" — cross-reference the creature's traits via game_data() (e.g. cage traps do not hold a TRAPAVOID creature).
 - `perimeter_terrain` is a single z-level and does not synthesize a multi-z approach vector.
 - Fog of war is honest on BOTH axes. Terrain: undiscovered tiles render as "?" and never leak their real type. Units: `threats[]` is filtered through `mcp_unitVisibility`, so a hostile standing on an undiscovered tile is absent entirely — no name, no creature token, no coordinates. This is why `footing` has no `discovered` field: a listed threat is a discovered threat by construction.
+- **Fog-of-war bypass**: with `reveal_hidden=true`, `threats[]` also lists hostiles on undiscovered tiles, and `perimeter_terrain` renders real terrain where it would show `?` (`exposure.undiscovered` is 0).
 - `threats[]` therefore reports the same population as `threats()`' `active_hostiles` and `military()`'s `hostiles_on_map`. All three share one predicate: active, living, dangerous, non-citizen, not caged/chained, not fog-of-war hidden.
 - Which lever raises which bridge is not recorded in the raws, so bridges and levers are reported separately, not linked.
 - `walk_group` 0 means no walkable footing at the threat's tile.

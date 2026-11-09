@@ -6,7 +6,7 @@ if df.global.gamemode ~= df.game_mode.DWARF then
   return
 end
 
-local visibility = reqscript('mcp_unitVisibility')
+local fog = reqscript('mcp_unitVisibility').fog_gate({ ... })
 
 local WELLS_CAP = 20
 local DEITY_WORSHIP_MIN = 1
@@ -143,7 +143,7 @@ local function well_source(w)
     if blk then
       local lx, ly = x % 16, y % 16
       local des = blk.designation[lx][ly]
-      if des.hidden then return 'unknown' end
+      if fog.des_hidden(des) then return 'unknown' end
       if des.flow_size > 0 then
         return des.liquid_type and 'magma' or 'water'
       end
@@ -199,7 +199,7 @@ local civ_id = df.global.plotinfo.civ_id
 local active_ghosts = {}
 local active_ghost_hf = {}
 for _, u in ipairs(df.global.world.units.active) do
-  if u.flags3.ghostly and not visibility.is_hidden(u) then
+  if u.flags3.ghostly and not fog.unit_hidden(u) then
     active_ghosts[#active_ghosts + 1] = {
       unit_id = u.id,
       name = dfhack.units.getReadableName(u),
@@ -248,4 +248,5 @@ emit({
     active_total = active_ghosts_total,
     unquiet_dead_count = unquiet_dead_count,
   },
+  fog_of_war = fog.mode,
 })

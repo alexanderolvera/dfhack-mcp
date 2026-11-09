@@ -1,5 +1,6 @@
 import { runJsonScript } from '../query.ts';
 import type { ToolDef } from '../register.ts';
+import { FOG_OF_WAR_NOTE, fogArgs, revealHiddenParam, type FogReport } from '../fog.ts';
 
 export interface ThreatGroup {
   name: string;
@@ -14,14 +15,14 @@ export interface ThreatGroup {
   ranged_attacks: string[];
 }
 
-export interface Threats {
+export interface Threats extends FogReport {
   active_hostiles: number;
   contained: number;
   groups: ThreatGroup[];
 }
 
-export async function threats(): Promise<Threats | { error: string }> {
-  const res = await runJsonScript<Threats>('threats', [], ['groups']);
+export async function threats(revealHidden?: boolean): Promise<Threats | { error: string }> {
+  const res = await runJsonScript<Threats>('threats', fogArgs(revealHidden), ['groups']);
   if ('error' in res) return res;
   for (const g of res.groups) {
     if (!Array.isArray(g.traits)) g.traits = [];
@@ -38,6 +39,8 @@ export const threatsDef: ToolDef = {
     'ACTIVE hostiles from CONTAINED ones (caged/chained), flags great-danger ' +
     'creatures (megabeasts, titans, demons, forgotten beasts), invaders, and ' +
     'the undead. Returns ' +
-    '{"error":"no fort loaded"} if no fort is active.',
-  run: threats,
+    '{"error":"no fort loaded"} if no fort is active. ' +
+    FOG_OF_WAR_NOTE,
+  shape: { reveal_hidden: revealHiddenParam },
+  run: ({ reveal_hidden }) => threats(reveal_hidden),
 };

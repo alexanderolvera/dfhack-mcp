@@ -6,7 +6,7 @@ if df.global.gamemode ~= df.game_mode.DWARF then
   return
 end
 
-local visibility = reqscript('mcp_unitVisibility')
+local fog = reqscript('mcp_unitVisibility').fog_gate({ ... })
 
 local SLAUGHTER_CAP = 50
 local TRAINED_CAP = 50
@@ -88,7 +88,7 @@ local unassigned_count = 0
 for _, u in ipairs(df.global.world.units.active) do
   local ok, tame = pcall(dfhack.units.isTame, u)
   if ok and tame and dfhack.units.isActive(u) and not dfhack.units.isDead(u)
-    and dfhack.units.isOwnCiv(u) and not visibility.is_hidden(u) then
+    and dfhack.units.isOwnCiv(u) and not fog.unit_hidden(u) then
     tame_total = tame_total + 1
     local race = df.global.world.raws.creatures.all[u.race]
     local token = race and tostring(race.creature_id) or 'UNKNOWN'
@@ -176,7 +176,7 @@ for _, c in ipairs(df.global.world.buildings.other.CAGE) do
   local occupants = safe(function() return dfhack.buildings.getCageOccupants(c) end, {}) or {}
   local rows = {}
   for _, u in ipairs(occupants) do
-    if not visibility.is_hidden(u) then
+    if not fog.unit_hidden(u) then
       local race = df.global.world.raws.creatures.all[u.race]
       rows[#rows + 1] = animal_row(u, race and tostring(race.creature_id) or 'UNKNOWN')
     end
@@ -224,4 +224,5 @@ emit({
   cages = cages,
   cages_truncated = cages_truncated,
   unassigned_count = unassigned_count,
+  fog_of_war = fog.mode,
 })

@@ -22,6 +22,7 @@ Renders the "earthworks" view of one z-level: terrain shape (dug/undug, soil vs 
 | `y0` | integer (coerced) | no | centered window | window corner Y |
 | `x1` | integer (coerced) | no | centered window | opposite window corner X |
 | `y1` | integer (coerced) | no | centered window | opposite window corner Y |
+| `reveal_hidden` | boolean | No | `false` | Bypass [fog of war](../../CONTRIBUTING.md#fog-of-war-the-reveal_hidden-opt-in): also read what stands on undiscovered tiles. The response reports the mode as `fog_of_war`. |
 
 With no arguments: a fixed DEFAULT 60x40 window centered on the fort core (busiest citizen z-level and that level's citizen centroid). Passing `z` alone recenters on THAT level's own citizen centroid (falls back to the busiest level's centroid, then map center). All five give an explicit rectangle (corner order is normalized).
 
@@ -38,6 +39,7 @@ With no arguments: a fixed DEFAULT 60x40 window centered on the fort core (busie
 | `hidden_tiles` | count of `?` fog-of-war tiles in the grid |
 | `truncated` | an oversized request was clamped to the 100x100 cap |
 | `requested` | present only when truncated: the original `[w, h]` |
+| `fog_of_war` | `"applied"` (the default) or `"bypassed"` (with `reveal_hidden=true`) |
 
 Full glyph set: `?` fog, `#` undug stone/wall, `,` undug soil, `F` fortification, `.` dug floor, `r` ramp, `v` ramp top, `<` `>` `x` stairs, `T` tree, `~` water/brook, ` ` open space, `+` constructed floor, `%` magma, `W` `S` `M` `n` building classes.
 
@@ -71,6 +73,7 @@ Full glyph set: `?` fog, `#` undug stone/wall, `,` undug soil, `F` fortification
 ## Caveats & limits
 - Window hard-capped at 100x100 per side; an oversized request is CLAMPED, never errored — `truncated: true` with the original size echoed in `requested`. The window also never exceeds the map, and the origin is clamped so it fits.
 - Fog of war is honest: hidden tiles stay `?`, are never overwritten by overlays, and are never read for liquid depth.
+- **Fog-of-war bypass**: with `reveal_hidden=true`, undiscovered tiles render their real terrain and overlays instead of `?`, so `hidden_tiles` is 0 and the legend never carries `?`.
 - Building detail is collapsed to exactly four classes; anything unlisted (bridges, floodgates, traps, farm plots, wells, trade depot) renders as its underlying terrain, not a building glyph.
 - The grid liquid glyph collapses flow depth; per-tile depth lives only in the sparse `liquids` list (capped at 400 entries, `liquids_truncated` when hit).
 - Parameters accept numbers or numeric strings (coerced) — the CLI test path passes strings.
@@ -79,7 +82,7 @@ Full glyph set: `?` fog, `#` undug stone/wall, `,` undug soil, `F` fortification
 ## Implementation notes
 - `z`/`x0`/`y0`/`x1`/`y1` accept a number or a numeric string (coerced), then get serialized back to strings for the positional Lua contract: `Z X0 Y0 X1 Y1`.
 - The default window's anchor (busiest citizen z-level, that level's citizen centroid) is the same fort-core anchor `defenses` uses.
-- Composes on top of `mcp_readTerrain.read_window`'s base grid rather than re-deriving terrain: the overlay glyphs (`+ % W S M n ,`) are chosen to not collide with the terrain glyphs it already owns (`F T ~ < > x`); water reuses `~` for the same "watery" meaning. Overlays are stamped in order — liquids/soil/construction first, then building footprints — so a building footprint wins over an underlying liquid or soil glyph where they overlap, and neither overlay ever paints over a `?` tile.
+- Composes on top of the fog gate's `read_window` (`mcp_readTerrain`) base grid rather than re-deriving terrain: the overlay glyphs (`+ % W S M n ,`) are chosen to not collide with the terrain glyphs it already owns (`F T ~ < > x`); water reuses `~` for the same "watery" meaning. Overlays are stamped in order — liquids/soil/construction first, then building footprints — so a building footprint wins over an underlying liquid or soil glyph where they overlap, and neither overlay ever paints over a `?` tile.
 - Verified live on 53.15-r2 (fort on :5005): `buildings.all` + `b:getType()` (`df.building_type`) for classification; `dfhack.buildings.containsTile(b, x, y)` correctly honors irregular stockpile footprints (not just the bounding box); construction floors are identified by tiletype material `CONSTRUCTION`; liquids by `designation.flow_size` + `liquid_type`.
 - The per-z-level tile-block cache (16x16-aligned, keyed by block origin) avoids a per-tile `getTileBlock` call, which is measurably slower across a 100x100 window.
 

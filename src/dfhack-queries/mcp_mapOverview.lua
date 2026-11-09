@@ -6,6 +6,8 @@ if df.global.gamemode ~= df.game_mode.DWARF then
   return
 end
 
+local fog = reqscript('mcp_readTerrain').fog_gate({ ... })
+
 local COLUMNS_CAP = 40
 local m = df.global.world.map
 local SHAPE = df.tiletype_shape
@@ -32,7 +34,7 @@ if core then
     local blk = dfhack.maps.getTileBlock(core.x, core.y, z)
     if blk then
       local des = blk.designation[lx][ly]
-      if not des.hidden and des.outside and is_ground(SHAPE[attrs[blk.tiletype[lx][ly]].shape]) then
+      if not fog.des_hidden(des) and des.outside and is_ground(SHAPE[attrs[blk.tiletype[lx][ly]].shape]) then
         surface_z = z
         break
       end
@@ -63,7 +65,7 @@ for _, b in ipairs(m.map_blocks) do
     local desx = des[lx]
     for ly = 0, 15 do
       local role = STAIR[ttx[ly]]
-      if role and not desx[ly].hidden then
+      if role and not fog.des_hidden(desx[ly]) then
         local key = (bx + lx) .. ',' .. (by + ly)
         local c = col[key]
         if c then
@@ -148,4 +150,5 @@ emit({
   stair_columns = columns,
   stair_columns_total = stair_columns_total,
   stair_columns_truncated = stair_columns_truncated,
+  fog_of_war = fog.mode,
 })

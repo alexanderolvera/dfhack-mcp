@@ -244,6 +244,17 @@ Never `--update` against a non-fixture fort.
   adds a `historical_figure.<hf_id>.json` for each extra fixture figure, so a dead
   citizen, a living citizen, a non-fort beast and a deity are all pinned. See
   [`docs/tools/historical_figure.md`](tools/historical_figure.md).
+- **Fog of war** is checked in both modes. Goldens capture the default
+  (`fog_of_war: "applied"`). The `fog_bypass_*` invariants probe each fog-gated
+  tool again with `reveal_hidden: true` and check that the response reports
+  `"bypassed"`, that no count drops, and that a grid only loses its `?` masks.
+  `fog_bypass_only_adds_hostiles` also renders, with fog applied, the tile under
+  each of the first five hostiles the bypass lists: a hostile must be listed with
+  fog applied exactly when its tile is not `?`. A gate that leaks hidden units
+  fails it even though every count check would pass. A bypassed `fluids` or
+  `geology` scan takes 12–14 s on the software-rendered fixture, over the 10 s
+  default, so the harness starts its server with `DFHACK_MCP_TIMEOUT_MS=60000`
+  unless you set the variable yourself.
 - **Actuators** (write tools, Tier 2 / M3) verify as **fixture → apply → assert
   readback → restore-fixture**. Still deterministic; the committed save is the
   anchor the apply is measured against and restored to.

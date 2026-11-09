@@ -60,6 +60,19 @@ dfhack-mcp 2.0 is a DFHack access layer: it reports facts and executes what it i
 | `notable_low` (food/drink under 14 days, fuel < 5, wood < 20, cloth < 10) | `counts.food`, `.drink`, `.fuel`, `.wood`, `.cloth` against your own thresholds |
 | `notable_high` (stone > 500) | `counts.stone` (= `inventory.BOULDER`) |
 
+## Fog of war: one `reveal_hidden` opt-in
+
+Fog of war is still on by default. Every fog-gated tool now takes the same optional `reveal_hidden: boolean` (`defenses`, `environment`, `fluids`, `fort_health`, `fort_status`, `geology`, `historical_figure`, `livestock_and_pastures`, `map_overview`, `military`, `rooms_and_zones`, `threats`, `tile_region`, `unit_appearance`), and every response from one of them carries `fog_of_war: "applied" | "bypassed"`. The default responses are unchanged apart from that new field.
+
+`geology` already had a `reveal_hidden` before 2.0, with its own response shape. It now works like the rest: a bypassed survey has the same fields as a default one, computed as if the whole map were discovered.
+
+| Before 2.0, with `reveal_hidden: true` | 2.0 |
+| --- | --- |
+| `reveal_hidden: true` in the response | `fog_of_war: "bypassed"` |
+| `caverns_hidden[]` (undiscovered caverns, listed apart) | merged into `caverns_discovered[]`, which lists every cavern when bypassed |
+| `magma_hidden { z_top, z_bottom }` (undiscovered magma sea) | `magma_reached: true` when the sea exists. Its z-range is no longer reported; `fluids` with `reveal_hidden: true` gives `magma_sea.top_z`. |
+| layer stack ran the full column; surface facts read revealed tiles only | layer stack runs the full column, and `surface_z_max`, brook, river, murky pools and cavern water also read undiscovered tiles |
+
 ## Errors carry a `code`
 
 Every error payload now has a stable `code` alongside the `error` message: `NOT_CONNECTED`, `NO_FORT`, `NO_GAME`, `NOT_FOUND`, `INVALID_ARGUMENT`, `TIMEOUT` or `SCRIPT_ERROR`. Branch on `code`; the message text may change between releases. Arguments that fail a tool's input schema are still rejected by the MCP SDK before the tool runs, as a plain-text protocol error with no `code`.

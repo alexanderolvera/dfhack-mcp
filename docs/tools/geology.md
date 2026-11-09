@@ -17,21 +17,22 @@ Reports the geological substrate of the loaded embark: the surface z-level, the 
 ## Parameters
 | Name | Type | Required | Default | Description |
 |---|---|---|---|---|
-| reveal_hidden | boolean | No | `false` | Bypass fog of war: also report undiscovered caverns (`caverns_hidden`) and the magma-sea z-range (`magma_hidden`) regardless of discovery. A debug/spoiler switch. |
+| reveal_hidden | boolean | No | `false` | Bypass [fog of war](../../CONTRIBUTING.md#fog-of-war-the-reveal_hidden-opt-in): also read undiscovered tiles and caverns. The response reports the mode as `fog_of_war`. |
 
 ## Returns
 - `surface_z_max` (number) — the highest open-to-sky ground z-level found ANYWHERE on the embark. Distinct from [map_overview](map_overview.md)'s `surface_z_at_core`, which reads only the fort-core column; on a sloped embark the two differ by however much relief the map has. Both were called `surface_z` before 1.4.1, which made a caller composing the two tools silently pick whichever it happened to read first.
 - `layers[]` — bands of consecutive z-levels sharing a material set: `{ z_top, z_bottom, kind, materials[] }`. `kind` is one of `soil | sedimentary | metamorphic | igneous_extrusive | igneous_intrusive | mixed | unknown`; `materials` are in-game names (e.g. "limestone") that `game_data` resolves.
 - `aquifer` — `{ present }` plus, when present, `type` (`light`/`heavy`), `z_top`, `z_bottom`.
-- `caverns_discovered[]` — `{ layer, z_top, z_bottom, water }` (layer 1 = first cavern); only caverns whose Discovered flag is set.
-- `magma_reached` (boolean) — the magma-SEA discovery flag alone, never a volcano/pool/hauled magma.
+- `caverns_discovered[]` — `{ layer, z_top, z_bottom, water }` (layer 1 = first cavern); only caverns whose Discovered flag is set, or every cavern with `reveal_hidden=true`.
+- `magma_reached` (boolean) — the magma-SEA discovery flag alone, never a volcano/pool/hauled magma. With `reveal_hidden=true` it reports whether the magma sea exists at all.
 - `surface_water` — `{ brook, river, murky_pools, permanent_freeze }`. `murky_pools` counts connected stagnant-water bodies; `permanent_freeze` means the biome base temperature is at/below freezing (glacier/tundra), not a seasonal-winter claim.
-- Only with `reveal_hidden=true`: `reveal_hidden: true`, `caverns_hidden[]`, and `magma_hidden { z_top, z_bottom }` (the latter only when the sea is undiscovered).
+- `fog_of_war` — `"applied"` (the default) or `"bypassed"` (with `reveal_hidden=true`).
 
 ```json
 {
   "aquifer": { "present": true, "type": "light", "z_bottom": 125, "z_top": 128 },
   "caverns_discovered": [],
+  "fog_of_war": "applied",
   "layers": [
     {
       "kind": "soil",
@@ -59,9 +60,10 @@ Reports the geological substrate of the loaded embark: the surface z-level, the 
 
 ## Caveats & limits
 - Returns `{"error":"no fort loaded"}` when no fort is active.
-- Layer depth is fog-gated: bands stop at the deepest revealed z by default (`reveal_hidden` shows the full column). Layer sampling uses full map data (embark-survey knowledge) on a coarse 4x4 stride.
+- Layer depth is fog-gated: bands stop at the deepest revealed z by default. Layer sampling uses full map data (embark-survey knowledge) on a coarse 4x4 stride.
+- **Fog-of-war bypass**: with `reveal_hidden=true`, the layer stack runs the full column, every cavern appears in `caverns_discovered`, `magma_reached` reports whether the sea exists, and the surface facts (`surface_z_max`, brook, river, murky pools, cavern water) also read undiscovered tiles. The payload has the same shape in both modes. It reads every tile rather than skipping undiscovered ones, so it runs about twice as long (about 12 s against the headless fixture, where the applied survey takes about 6 s). Raise `DFHACK_MCP_TIMEOUT_MS` on a large map.
 - The aquifer is a survey fact known at embark, so it is NOT fog-gated.
-- `caverns_hidden`/`magma_hidden` appear only under `reveal_hidden=true`; the default payload carries no tell about undiscovered depths.
+- Before 2.0, `reveal_hidden=true` added `reveal_hidden: true`, `caverns_hidden[]` and `magma_hidden { z_top, z_bottom }` instead; see [migrating to 2.0](../migrating-to-2.0.md). The magma sea's z-range is not reported in either mode.
 - `permanent_freeze` is base-temperature derived; a warm biome that freezes only in deep winter is honestly NOT flagged (DF 53.15 does not reliably expose a per-biome winter minimum — plotinfo hi/lo temps read back as sentinels). The true/frozen path is untested on the current fixture (biomes 77-81F).
 - Cavern water is scoped to each cavern's own tiles (via `designation.feature_global`), so a cistern or aquifer seep sharing the z-band is not miscredited.
 - Payload is bounded: layer bands and cavern rows are O(depth); no per-tile output.

@@ -6,6 +6,7 @@
     "z_top": 128
   },
   "caverns_discovered": [],
+  "fog_of_war": "applied",
   "layers": [
     {
       "kind": "soil",

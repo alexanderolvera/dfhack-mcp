@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { runJsonScript } from '../query.ts';
 import type { ToolDef } from '../register.ts';
+import { FOG_OF_WAR_NOTE, fogArgs, revealHiddenParam, type FogReport } from '../fog.ts';
 
 export interface FigureRef {
   hf_id: number;
@@ -80,7 +81,7 @@ export interface FigureEvent {
   site_id?: number;
 }
 
-export interface HistoricalFigure {
+export interface HistoricalFigure extends FogReport {
   hf_id: number;
   name?: string;
   name_english?: string;
@@ -119,14 +120,29 @@ export interface HistoricalFigure {
   events_total?: number;
 }
 
-const LIST_FIELDS = ['entities', 'relationships', 'worship', 'sites', 'kills', 'unnamed_kills', 'events'];
+const LIST_FIELDS = [
+  'entities',
+  'relationships',
+  'worship',
+  'sites',
+  'kills',
+  'unnamed_kills',
+  'events',
+];
 
 function asList<T>(value: unknown): T[] {
   return Array.isArray(value) ? (value as T[]) : [];
 }
 
-export async function historicalFigure(hfId: number): Promise<HistoricalFigure | { error: string }> {
-  const data = await runJsonScript<HistoricalFigure>('historicalFigure', [String(hfId)], LIST_FIELDS);
+export async function historicalFigure(
+  hfId: number,
+  revealHidden?: boolean
+): Promise<HistoricalFigure | { error: string }> {
+  const data = await runJsonScript<HistoricalFigure>(
+    'historicalFigure',
+    [String(hfId), ...fogArgs(revealHidden)],
+    LIST_FIELDS
+  );
   if ('error' in data) return data;
   for (const entity of data.entities) {
     entity.links = asList(entity.links);
@@ -152,13 +168,15 @@ export const historicalFigureDef: ToolDef = {
     'with *_truncated/*_total present only when the cap dropped entries. unit_id ' +
     'appears only when the figure is a unit on this map on a discovered tile. ' +
     'Returns {"error":...} for an unknown hf_id or {"error":"no fort loaded"} if ' +
-    'no fort is active.',
+    'no fort is active. ' +
+    FOG_OF_WAR_NOTE,
   shape: {
     hf_id: z.coerce
       .number()
       .int()
       .nonnegative()
       .describe("A historical figure id, e.g. a relationship's or slayer's hf_id"),
+    reveal_hidden: revealHiddenParam,
   },
-  run: ({ hf_id }) => historicalFigure(hf_id),
+  run: ({ hf_id, reveal_hidden }) => historicalFigure(hf_id, reveal_hidden),
 };

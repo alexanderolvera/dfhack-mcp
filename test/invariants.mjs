@@ -4,6 +4,53 @@
 const isInt = (n) => typeof n === 'number' && Number.isInteger(n);
 const inRange = (n, lo, hi) => typeof n === 'number' && n >= lo && n <= hi;
 
+const bypass = (tool, args = () => ({})) => ({ tool, args: (p) => ({ ...args(p), reveal_hidden: true }) });
+
+function fogModes(p, tools) {
+  const out = [];
+  for (const t of tools) {
+    if (p[t].fog_of_war !== 'applied') out.push(`${t} default reports fog_of_war=${p[t].fog_of_war}, expected applied`);
+    if (p.probes[t]?.fog_of_war !== 'bypassed')
+      out.push(`${t} reveal_hidden reports fog_of_war=${p.probes[t]?.fog_of_war}, expected bypassed`);
+  }
+  return out;
+}
+
+function atLeast(out, label, gated, bypassed) {
+  if (!(isInt(gated) && isInt(bypassed))) out.push(`${label}: ${gated} / ${bypassed} are not integers`);
+  else if (bypassed < gated) out.push(`${label}: bypassed ${bypassed} < applied ${gated}`);
+}
+
+function masksOnly(out, label, applied, bypassed) {
+  if (!Array.isArray(applied) || !Array.isArray(bypassed) || applied.length !== bypassed.length) {
+    out.push(`${label}: applied and bypassed grids differ in shape`);
+    return;
+  }
+  applied.forEach((row, y) => {
+    for (let x = 0; x < row.length; x++) {
+      const b = bypassed[y][x];
+      if (b === '?') out.push(`${label}: bypassed grid still shows ? at row ${y} col ${x}`);
+      if (row[x] !== '?' && row[x] !== b)
+        out.push(`${label}: applied "${row[x]}" !== bypassed "${b}" at row ${y} col ${x} (fog must only mask)`);
+    }
+  });
+}
+
+const threatKey = (t) => `${t.name}@${t.pos?.x},${t.pos?.y},${t.pos?.z}`;
+const THREAT_TILE_PROBES = 5;
+const threatTileProbes = Object.fromEntries(
+  Array.from({ length: THREAT_TILE_PROBES }, (_, i) => [
+    `threatTile${i}`,
+    {
+      tool: 'tile_region',
+      args: (p) => {
+        const t = p.probes.defenses?.threats?.[i];
+        return t ? { z: t.pos.z, x0: t.pos.x, y0: t.pos.y, x1: t.pos.x, y1: t.pos.y } : null;
+      },
+    },
+  ])
+);
+
 export const INVARIANTS = [
   {
     name: 'population_consistency',
@@ -764,7 +811,7 @@ export const INVARIANTS = [
   {
     name: 'geology_depths_ordered_and_fog_honest',
     tools: ['geology'],
-    desc: 'every layer/aquifer/cavern z_top >= z_bottom, aquifer.type is light|heavy when present, and the default payload leaks no undiscovered-depth keys',
+    desc: 'every layer/aquifer/cavern z_top >= z_bottom, aquifer.type is light|heavy when present, and no removed pre-2.0 bypass key appears',
     check(p) {
       const d = p.geology;
       const out = [];
@@ -807,11 +854,9 @@ export const INVARIANTS = [
       }
       if (typeof d.magma_reached !== 'boolean')
         out.push(`magma_reached=${d.magma_reached} is not a boolean`);
-      // FOG OF WAR: with reveal_hidden NOT passed (the harness calls geology with no
-      // args), the fog-piercing keys must be entirely ABSENT — no undiscovered
-      // cavern/magma z-range may leak into the default survey.
+      // The pre-2.0 bypass keys are gone; fog_bypass_only_adds_depths covers the bypass.
       for (const k of ['reveal_hidden', 'caverns_hidden', 'magma_hidden']) {
-        if (k in d) out.push(`default payload leaks fog-of-war key "${k}"`);
+        if (k in d) out.push(`payload carries the removed fog-of-war key "${k}"`);
       }
       // Surface water counts are sane.
       const sw = d.surface_water ?? {};
@@ -2308,6 +2353,138 @@ export const INVARIANTS = [
       if (!isInt(id.site_id) || !isInt(id.civ_id)) out.push(`site_id/civ_id not integers: ${id.site_id}/${id.civ_id}`);
       if (id.site_name?.english !== f.fort_name)
         out.push(`identity.site_name.english ${id.site_name?.english} !== fort_name ${f.fort_name}`);
+      return out;
+    },
+  },
+  {
+    name: 'fog_bypass_only_adds_hostiles',
+    tools: ['threats', 'fort_status', 'military', 'defenses'],
+    probes: {
+      threats: bypass('threats'),
+      fort_status: bypass('fort_status'),
+      military: bypass('military'),
+      defenses: bypass('defenses'),
+      ...threatTileProbes,
+    },
+    desc: 'reveal_hidden reports fog_of_war=bypassed, never lowers a hostile count, keeps the tools agreeing, only unmasks the perimeter grid, and each bypass-listed hostile is listed with fog applied exactly when tile_region renders its tile as something other than ?',
+    check(p) {
+      const q = p.probes;
+      const out = fogModes(p, ['threats', 'fort_status', 'military', 'defenses']);
+      atLeast(out, 'threats.active_hostiles', p.threats.active_hostiles, q.threats.active_hostiles);
+      atLeast(out, 'threats.contained', p.threats.contained, q.threats.contained);
+      atLeast(out, 'fort_status.hostiles_on_map', p.fort_status.hostiles_on_map, q.fort_status.hostiles_on_map);
+      atLeast(out, 'military.hostiles_on_map', p.military.hostiles_on_map, q.military.hostiles_on_map);
+      atLeast(out, 'military.great_danger_on_map', p.military.great_danger_on_map, q.military.great_danger_on_map);
+      atLeast(out, 'defenses.threats', p.defenses.threats?.length, q.defenses.threats?.length);
+      if (q.threats.active_hostiles !== q.military.hostiles_on_map || q.threats.active_hostiles !== q.defenses.threats?.length)
+        out.push(`bypassed hostile counts disagree: threats ${q.threats.active_hostiles}, military ${q.military.hostiles_on_map}, defenses ${q.defenses.threats?.length}`);
+      if (q.fort_status.hostiles_on_map !== q.threats.active_hostiles + q.threats.contained)
+        out.push(`bypassed fort_status.hostiles_on_map ${q.fort_status.hostiles_on_map} !== threats ${q.threats.active_hostiles} + ${q.threats.contained}`);
+      const pa = p.defenses.perimeter_terrain;
+      const pb = q.defenses.perimeter_terrain;
+      if (pa && pb) {
+        masksOnly(out, 'defenses.perimeter_terrain', pa.grid, pb.grid);
+        if (pb.exposure?.undiscovered !== 0)
+          out.push(`bypassed perimeter exposure.undiscovered=${pb.exposure?.undiscovered}, expected 0`);
+      }
+      const listed = new Set((p.defenses.threats ?? []).map(threatKey));
+      (q.defenses.threats ?? []).slice(0, THREAT_TILE_PROBES).forEach((t, i) => {
+        const glyph = q[`threatTile${i}`]?.grid?.[0];
+        if (listed.has(threatKey(t)) === (glyph === '?'))
+          out.push(`${threatKey(t)} renders "${glyph}" with fog applied but is ${listed.has(threatKey(t)) ? '' : 'not '}listed by the applied defenses`);
+      });
+      return out;
+    },
+  },
+  {
+    name: 'fog_bypass_only_adds_units',
+    tools: ['fort_health', 'livestock_and_pastures', 'rooms_and_zones'],
+    probes: {
+      fort_health: bypass('fort_health'),
+      livestock_and_pastures: bypass('livestock_and_pastures'),
+      rooms_and_zones: bypass('rooms_and_zones'),
+    },
+    desc: 'reveal_hidden reports fog_of_war=bypassed and never lowers a unit, tame-animal or ghost count',
+    check(p) {
+      const q = p.probes;
+      const out = fogModes(p, ['fort_health', 'livestock_and_pastures', 'rooms_and_zones']);
+      atLeast(out, 'fort_health.units.active', p.fort_health.units?.active, q.fort_health.units?.active);
+      atLeast(out, 'fort_health.units.dead_on_map', p.fort_health.units?.dead_on_map, q.fort_health.units?.dead_on_map);
+      atLeast(out, 'livestock_and_pastures.tame_total', p.livestock_and_pastures.tame_total, q.livestock_and_pastures.tame_total);
+      atLeast(out, 'rooms_and_zones.ghosts.active_total', p.rooms_and_zones.ghosts?.active_total, q.rooms_and_zones.ghosts?.active_total);
+      return out;
+    },
+  },
+  {
+    name: 'fog_bypass_only_unmasks_terrain',
+    tools: ['tile_region', 'map_overview'],
+    probes: {
+      tile_region: bypass('tile_region', (p) => {
+        const [x0, y0] = p.tile_region.origin;
+        const [w, h] = p.tile_region.size;
+        return { z: p.tile_region.z, x0, y0, x1: x0 + w - 1, y1: y0 + h - 1 };
+      }),
+      map_overview: bypass('map_overview'),
+    },
+    desc: 'reveal_hidden reports fog_of_war=bypassed, renders the same window with every ? replaced and nothing else changed, and never drops a stair column',
+    check(p) {
+      const q = p.probes;
+      const out = fogModes(p, ['tile_region', 'map_overview']);
+      masksOnly(out, 'tile_region', p.tile_region.grid, q.tile_region.grid);
+      if (q.tile_region.hidden_tiles !== 0) out.push(`bypassed tile_region.hidden_tiles=${q.tile_region.hidden_tiles}, expected 0`);
+      if (!p.tile_region.liquids_truncated && !q.tile_region.liquids_truncated)
+        atLeast(out, 'tile_region.liquids', p.tile_region.liquids?.length, q.tile_region.liquids?.length);
+      atLeast(out, 'map_overview.stair_columns_total', p.map_overview.stair_columns_total, q.map_overview.stair_columns_total);
+      return out;
+    },
+  },
+  {
+    name: 'fog_bypass_only_adds_depths',
+    tools: ['environment', 'geology', 'fluids'],
+    probes: {
+      environment: bypass('environment'),
+      geology: bypass('geology'),
+      fluids: bypass('fluids'),
+    },
+    desc: 'reveal_hidden reports fog_of_war=bypassed, never drops a cavern, a water/ice z-level, a flood-risk tile, a reached magma sea or a found well source, and never shortens the layer stack',
+    check(p) {
+      const q = p.probes;
+      const out = fogModes(p, ['environment', 'geology', 'fluids']);
+      atLeast(out, 'environment.caverns_discovered', p.environment.caverns_discovered, q.environment.caverns_discovered);
+      atLeast(out, 'geology.caverns_discovered', p.geology.caverns_discovered?.length, q.geology.caverns_discovered?.length);
+      if (p.geology.magma_reached && !q.geology.magma_reached) out.push('geology.magma_reached is true applied but false bypassed');
+      const deepest = (d) => Math.min(...(d.layers ?? []).map((b) => b.z_bottom));
+      if (deepest(q.geology) > deepest(p.geology))
+        out.push(`bypassed layer stack bottoms at z=${deepest(q.geology)}, above the applied z=${deepest(p.geology)}`);
+      atLeast(out, 'fluids.water_layers_total', p.fluids.water_layers_total, q.fluids.water_layers_total);
+      atLeast(out, 'fluids.ice_layers_total', p.fluids.ice_layers_total, q.fluids.ice_layers_total);
+      atLeast(out, 'fluids.flood_risk_total', p.fluids.flood_risk_total, q.fluids.flood_risk_total);
+      if (p.fluids.magma_sea && !q.fluids.magma_sea) out.push('fluids.magma_sea is reported applied but not bypassed');
+      const wellAt = new Map((q.fluids.wells ?? []).map((w) => [`${w.x},${w.y},${w.z}`, w]));
+      for (const w of p.fluids.wells ?? []) {
+        const b = wellAt.get(`${w.x},${w.y},${w.z}`);
+        if (w.source !== 'unknown' && b && b.source !== w.source)
+          out.push(`well ${w.x},${w.y},${w.z}: applied source ${w.source}, bypassed ${b.source}`);
+      }
+      return out;
+    },
+  },
+  {
+    name: 'fog_bypass_unit_lookups',
+    tools: ['unit_appearance', 'historical_figure'],
+    probes: {
+      unit_appearance: bypass('unit_appearance', (p) => ({ unit_id: p.unit_appearance.unit_id })),
+      historical_figure: bypass('historical_figure', (p) => ({ hf_id: p.historical_figure.hf_id })),
+    },
+    desc: 'reveal_hidden reports fog_of_war=bypassed on the per-id lookups and never unlinks a unit the gated call already resolved',
+    check(p) {
+      const q = p.probes;
+      const out = fogModes(p, ['unit_appearance', 'historical_figure']);
+      if (q.unit_appearance.unit_id !== p.unit_appearance.unit_id)
+        out.push(`bypassed unit_appearance returned unit ${q.unit_appearance.unit_id}, expected ${p.unit_appearance.unit_id}`);
+      const u = p.historical_figure.unit_id;
+      if (u != null && q.historical_figure.unit_id !== u)
+        out.push(`historical_figure.unit_id ${u} applied but ${q.historical_figure.unit_id} bypassed`);
       return out;
     },
   },

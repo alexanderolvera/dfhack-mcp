@@ -1,5 +1,6 @@
 import { runJsonScript } from '../query.ts';
 import type { ToolDef } from '../register.ts';
+import { FOG_OF_WAR_NOTE, fogArgs, revealHiddenParam, type FogReport } from '../fog.ts';
 
 export interface Geo {
   dist: number;
@@ -52,7 +53,7 @@ export interface PerimeterTerrain {
   grid: string[];
 }
 
-export interface Defenses {
+export interface Defenses extends FogReport {
   fort_core: { x: number; y: number; z: number; citizens: number } | null;
   interior: Interior;
   threats: DefenseThreat[];
@@ -67,8 +68,8 @@ export interface Defenses {
   perimeter_terrain: PerimeterTerrain | null;
 }
 
-export async function defenses(): Promise<Defenses | { error: string }> {
-  const res = await runJsonScript<Defenses>('defenses', [], ['threats']);
+export async function defenses(revealHidden?: boolean): Promise<Defenses | { error: string }> {
+  const res = await runJsonScript<Defenses>('defenses', fogArgs(revealHidden), ['threats']);
   if ('error' in res) return res;
   if (res.structures && !Array.isArray(res.structures.bridges)) res.structures.bridges = [];
   if (res.interior && !Array.isArray(res.interior.groups)) res.interior.groups = [];
@@ -103,13 +104,15 @@ export const defensesDef: ToolDef = {
     'substrate: an ASCII tile grid (with legend) plus counts of walls, ' +
     'fortifications (with positions), and open-to-sky vs covered vs undiscovered ' +
     'tiles. Facts only — decide the tactics yourself, and use game_data() for a ' +
-    'creature\'s trait facts (e.g. cage traps do not hold a TRAPAVOID creature). ' +
+    "creature's trait facts (e.g. cage traps do not hold a TRAPAVOID creature). " +
     'Caveats: inside/outside is walking connectivity, so a FLIER or ' +
     'BUILDING_DESTROYER can reach you while reported "outside" — cross-reference ' +
     'its traits. perimeter_terrain is a single z-level and does not synthesize a ' +
     'multi-z approach vector; undiscovered tiles are fog of war ("?") and never ' +
     'leak their real type. Which lever raises which bridge is not recorded in the ' +
     'raws, so bridges and levers are reported separately, not linked. Returns ' +
-    '{"error":"no fort loaded"} if no fort is active.',
-  run: defenses,
+    '{"error":"no fort loaded"} if no fort is active. ' +
+    FOG_OF_WAR_NOTE,
+  shape: { reveal_hidden: revealHiddenParam },
+  run: ({ reveal_hidden }) => defenses(reveal_hidden),
 };

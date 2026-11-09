@@ -1,5 +1,6 @@
 import { runJsonScript } from '../query.ts';
 import type { ToolDef } from '../register.ts';
+import { FOG_OF_WAR_NOTE, fogArgs, revealHiddenParam, type FogReport } from '../fog.ts';
 
 export interface MapExtents {
   x: number;
@@ -27,7 +28,7 @@ export interface StairColumn {
   z_bottom: number;
 }
 
-export interface MapOverview {
+export interface MapOverview extends FogReport {
   extents: MapExtents;
   fort_core: FortCore | null;
   surface_z_at_core: number | null;
@@ -37,8 +38,12 @@ export interface MapOverview {
   stair_columns_truncated: boolean;
 }
 
-export async function mapOverview(): Promise<MapOverview | { error: string }> {
-  const data = await runJsonScript<MapOverview>('mapOverview', [], ['stair_columns']);
+export async function mapOverview(
+  revealHidden?: boolean
+): Promise<MapOverview | { error: string }> {
+  const data = await runJsonScript<MapOverview>('mapOverview', fogArgs(revealHidden), [
+    'stair_columns',
+  ]);
   if ('error' in data) return data;
   if (data.activity) {
     for (const k of ['z_levels', 'construction_z', 'digging_z'] as const) {
@@ -58,7 +63,7 @@ export const mapOverviewDef: ToolDef = {
     'extents (x/y/z tile counts), the fort-core coordinate (the same 3D citizen ' +
     'centroid defenses() reports), surface_z_at_core — the surface z-level ' +
     'directly above the fort center, i.e. the highest open-to-sky ground tile in ' +
-    "THAT ONE COLUMN, or null if the core is not under open sky (this is NOT " +
+    'THAT ONE COLUMN, or null if the core is not under open sky (this is NOT ' +
     "geology()'s surface_z_max, which is the highest open-to-sky ground tile " +
     'anywhere on the embark; on a sloped map the two legitimately differ by many ' +
     'z-levels, so pick the one you mean) — the z-levels that carry player activity (construction and ' +
@@ -73,6 +78,8 @@ export const mapOverviewDef: ToolDef = {
     'gives the full count). ' +
     'Fog-of-war honest: undiscovered tiles never leak. Use it to decide which ' +
     'z-levels and area to pull grids for. Returns {"error":"no fort loaded"} if ' +
-    'no fort is active.',
-  run: mapOverview,
+    'no fort is active. ' +
+    FOG_OF_WAR_NOTE,
+  shape: { reveal_hidden: revealHiddenParam },
+  run: ({ reveal_hidden }) => mapOverview(reveal_hidden),
 };

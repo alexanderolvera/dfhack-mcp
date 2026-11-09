@@ -1,6 +1,7 @@
 import { runJsonScript } from '../query.ts';
 import type { ToolDef } from '../register.ts';
 import { normalizeIdentity, type Identity } from './gameState.ts';
+import { FOG_OF_WAR_NOTE, fogArgs, revealHiddenParam, type FogReport } from '../fog.ts';
 
 export interface DeathCause {
   cause: string;
@@ -15,7 +16,7 @@ export interface RecentDeaths {
   citizen_causes: DeathCause[];
 }
 
-export interface FortStatus {
+export interface FortStatus extends FogReport {
   fort_name: string;
   date: string;
   season: string;
@@ -27,8 +28,8 @@ export interface FortStatus {
   hostiles_on_map: number;
 }
 
-export async function fortStatus(): Promise<FortStatus | { error: string }> {
-  const data = await runJsonScript<FortStatus>('fortStatus');
+export async function fortStatus(revealHidden?: boolean): Promise<FortStatus | { error: string }> {
+  const data = await runJsonScript<FortStatus>('fortStatus', fogArgs(revealHidden));
   if ('error' in data) return data;
   if (data.recent_deaths && !Array.isArray(data.recent_deaths.citizen_causes)) {
     data.recent_deaths.citizen_causes = [];
@@ -47,12 +48,14 @@ export const fortStatusDef: ToolDef = {
     'breakdown (miserable/unhappy/content/happy), recent_deaths, and ' +
     'hostiles_on_map (discovered, non-citizen dangerous units, caged/chained ones ' +
     'included). recent_deaths covers deaths recorded AT THIS ' +
-    'SITE within the last game year: how many were the fort\'s own citizens, what ' +
+    "SITE within the last game year: how many were the fort's own citizens, what " +
     'killed them (citizen_causes, e.g. THIRST/STARVATION/STRUCK_DOWN), how many of ' +
     'those citizens were slain BY another citizen (the murder/loyalty-cascade ' +
     'signal, which no other tool reports), and how many of the dead were outsiders ' +
-    'rather than fort members. Citizenship is the victim\'s membership in the fort ' +
+    "rather than fort members. Citizenship is the victim's membership in the fort " +
     "group, so another civilization's dwarves killed at your gate count as " +
-    'outsiders, not as your losses. Returns {"error":"no fort loaded"} if no fort is active.',
-  run: fortStatus,
+    'outsiders, not as your losses. Returns {"error":"no fort loaded"} if no fort is active. ' +
+    FOG_OF_WAR_NOTE,
+  shape: { reveal_hidden: revealHiddenParam },
+  run: ({ reveal_hidden }) => fortStatus(reveal_hidden),
 };

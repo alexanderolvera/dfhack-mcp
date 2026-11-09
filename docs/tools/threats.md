@@ -15,7 +15,9 @@ tags: [dfhack-mcp/tool]
 Enumerates every dangerous unit on the map (active, not dead, `isDanger`, not a citizen), grouped by creature so "12 goblins" reads as one line. Separates ACTIVE hostiles from CONTAINED ones (caged/chained — a captured beast is a hazard-in-waiting, not a live attack) and classifies each group (invader, undead, crazed, great-danger). Each group also carries tactical intel resolved from the representative unit's creature raws: the creature token, a curated set of decisive traits, and ranged/breath attack labels. An AI co-pilot calls it to know what is on the map before reasoning about defense; the tool reports the facts, not the counter-strategy.
 
 ## Parameters
-None.
+| Name | Type | Required | Default | Description |
+|---|---|---|---|---|
+| reveal_hidden | boolean | No | `false` | Bypass [fog of war](../../CONTRIBUTING.md#fog-of-war-the-reveal_hidden-opt-in): also read what stands on undiscovered tiles. The response reports the mode as `fog_of_war`. |
 
 ## Returns
 | Field | Meaning |
@@ -29,6 +31,7 @@ None.
 | `groups[].token` | creature raw id (a direct `game_data` handle, e.g. `"DEMON_19"`); `null` if unresolvable |
 | `groups[].traits` | curated decisive traits: `trapavoid`, `flier`, `fire`, `webber`, `building_destroyer`, `ranged` |
 | `groups[].ranged_attacks` | ranged/breath attack labels (interaction `adv_name`s) |
+| `fog_of_war` | `"applied"` (the default) or `"bypassed"` (with `reveal_hidden=true`) |
 
 ```json
 {
@@ -53,6 +56,7 @@ None.
 
 ## Caveats & limits
 - **Fog of war**: a unit standing on an undiscovered tile (`designation.hidden`, or off-map/unloaded) is filtered out entirely — never counted or grouped — whether loose or caged/chained. Only hostiles the fort has actually found are reported.
+- **Fog-of-war bypass**: with `reveal_hidden=true`, hostiles on undiscovered tiles are counted and grouped too.
 - Distinct groups per (name, containment): a caged beast never masks a loose one of the same kind.
 - Intel comes from the group's first-seen (representative) unit; degrades gracefully — an unresolvable race/caste yields `token: null` and empty `traits`/`ranged_attacks` rather than an error.
 - The `fire` trait unions FIREIMMUNE flags with a name-based scan of attack labels for "fire"/"flame"; `webber` unions the WEBBER flag with "web" attacks.

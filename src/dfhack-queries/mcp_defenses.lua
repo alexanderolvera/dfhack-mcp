@@ -7,7 +7,7 @@ if df.global.gamemode ~= df.game_mode.DWARF then
 end
 
 local terrain = reqscript('mcp_readTerrain')
-local visibility = reqscript('mcp_unitVisibility')
+local fog = reqscript('mcp_unitVisibility').fog_gate({ ... })
 
 local function footing(p)
   local blk = dfhack.maps.getTileBlock(p.x, p.y, p.z)
@@ -85,7 +85,7 @@ for _, u in ipairs(df.global.world.units.active) do
   if dfhack.units.isActive(u) and not dfhack.units.isDead(u)
      and dfhack.units.isDanger(u) and not dfhack.units.isCitizen(u)
      and not (u.flags1.caged or u.flags1.chained)
-     and not visibility.is_hidden(u) then
+     and not fog.unit_hidden(u) then
     local p = u.pos
     local token = nil
     pcall(function() token = df.global.world.raws.creatures.all[u.race].creature_id end)
@@ -121,7 +121,7 @@ if primary_z then
   local ccy = math.floor(z_sy[primary_z] / primary_n)
   local x0 = math.max(0, math.min(m.x_count - W, ccx - math.floor(W / 2)))
   local y0 = math.max(0, math.min(m.y_count - H, ccy - math.floor(H / 2)))
-  local win = terrain.read_window(x0, y0, primary_z, W, H)
+  local win = fog.read_window(x0, y0, primary_z, W, H)
   perimeter_terrain = {
     z = primary_z, citizens_on_level = primary_n, center = { x = ccx, y = ccy },
     origin = win.origin, w = win.w, h = win.h,
@@ -143,4 +143,5 @@ emit({
     doors = { total = doors_total, forbidden = doors_forbidden },
   },
   perimeter_terrain = perimeter_terrain,
+  fog_of_war = fog.mode,
 })
