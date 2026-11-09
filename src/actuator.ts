@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { randomUUID } from 'node:crypto';
 import type { QueryToolDef } from './register.ts';
+import { ToolError } from './errors.ts';
 
 function stableStringify(v: unknown): string {
   if (v === null || typeof v !== 'object') return JSON.stringify(v) ?? 'null';
@@ -170,23 +171,26 @@ export function defineActuator<A extends { confirm_token?: string }>(
 
       const rec = redeem(token, def.name);
       if (!rec) {
-        throw new Error(
-          'invalid or expired confirm_token; tokens are single-use — run a fresh preview'
+        throw new ToolError(
+          'invalid or expired confirm_token; tokens are single-use — run a fresh preview',
+          'INVALID_ARGUMENT'
         );
       }
       if (opDigestOf(args as Record<string, unknown>) !== rec.opDigest) {
-        throw new Error(
-          "the operation's arguments differ from the preview; the confirm_token is void — preview the exact operation you intend to apply"
+        throw new ToolError(
+          "the operation's arguments differ from the preview; the confirm_token is void — preview the exact operation you intend to apply",
+          'INVALID_ARGUMENT'
         );
       }
       const plan = await def.plan(args);
       if (isQueryError(plan)) return plan;
       if (plan.blocked && plan.blocked.length) {
-        throw new Error(`cannot apply: ${plan.blocked.join('; ')}`);
+        throw new ToolError(`cannot apply: ${plan.blocked.join('; ')}`, 'INVALID_ARGUMENT');
       }
       if (plan.signature !== rec.signature) {
-        throw new Error(
-          "the operation's own targets changed since preview; the confirm_token is void — re-preview"
+        throw new ToolError(
+          "the operation's own targets changed since preview; the confirm_token is void — re-preview",
+          'INVALID_ARGUMENT'
         );
       }
       if (plan.noop) {

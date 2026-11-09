@@ -10,14 +10,14 @@ if df.global.gamemode ~= df.game_mode.DWARF then
 end
 
 if not string.match(query, '^%d+$') then
-  emit({ error = 'historical_figure expects a numeric hf_id (all digits); got "' .. tostring(query) .. '"' })
+  emit({ error = 'historical_figure expects a numeric hf_id (all digits); got "' .. tostring(query) .. '"', code = 'INVALID_ARGUMENT' })
   return
 end
 
 local HF_ID = tonumber(query)
 local hf = df.historical_figure.find(HF_ID)
 if not hf then
-  emit({ error = 'no historical figure with id ' .. query })
+  emit({ error = 'no historical figure with id ' .. query, code = 'NOT_FOUND' })
   return
 end
 

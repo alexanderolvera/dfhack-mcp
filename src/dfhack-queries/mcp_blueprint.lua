@@ -523,7 +523,7 @@ if sub == 'plan_apply' or sub == 'apply_apply' then
 
   local pre_existing = readback().designated_tiles
   local stats, err = run_qf('run', false)
-  if not stats then emit({ error = err }) return end
+  if not stats then emit({ error = err, code = 'SCRIPT_ERROR' }) return end
   local tiles = (mode == 'dig') and stats.dig_designated or stats.zone_designated
   emit({
     changes = attach_source({
@@ -571,7 +571,7 @@ if sub == 'plan_undo' or sub == 'apply_undo' then
   end
 
   local stats, err = run_qf('undo', false)
-  if not stats then emit({ error = err }) return end
+  if not stats then emit({ error = err, code = 'SCRIPT_ERROR' }) return end
   local reverted = (mode == 'dig') and stats.dig_undesignated or stats.zones_removed
   local undo = {
     reversal = 'blueprint_apply',
@@ -588,4 +588,4 @@ if sub == 'plan_undo' or sub == 'apply_undo' then
   return
 end
 
-emit({ error = 'unknown subcommand: ' .. tostring(sub) })
+emit({ error = 'unknown subcommand: ' .. tostring(sub), code = 'INVALID_ARGUMENT' })

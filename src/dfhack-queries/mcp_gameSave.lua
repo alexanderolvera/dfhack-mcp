@@ -54,7 +54,7 @@ if sub == 'apply' then
   local facts = save_facts()
   local out, rc = dfhack.run_command_silent('quicksave')
   if rc ~= 0 then
-    emit({ error = 'quicksave failed (command_result ' .. tostring(rc) .. '): ' .. tostring(out) })
+    emit({ error = 'quicksave failed (command_result ' .. tostring(rc) .. '): ' .. tostring(out), code = 'SCRIPT_ERROR' })
     return
   end
   emit({
@@ -77,4 +77,4 @@ if sub == 'apply' then
   return
 end
 
-emit({ error = 'unknown subcommand: ' .. tostring(sub) })
+emit({ error = 'unknown subcommand: ' .. tostring(sub), code = 'INVALID_ARGUMENT' })

@@ -22,7 +22,7 @@ export interface IdentifyDisambiguation {
 
 export async function identify(
   query: string
-): Promise<Identify | IdentifyDisambiguation | { error: string }> {
+): Promise<Identify | IdentifyDisambiguation | { error: string; code?: string }> {
   const data = await gameData(query);
   if ('error' in data) return data;
   if ('match_count' in data) {
@@ -36,7 +36,7 @@ export async function identify(
 
   // identify() only ever queries the default creature kind, so a single hit is always CreatureDossier.
   if (data.kind !== 'creature') {
-    return { error: `expected a creature dossier, got kind '${data.kind}'` };
+    return { error: `expected a creature dossier, got kind '${data.kind}'`, code: 'SCRIPT_ERROR' };
   }
   const creature = data;
 

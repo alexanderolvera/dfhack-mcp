@@ -270,4 +270,4 @@ if sub == 'plan_assign' or sub == 'apply_assign' then
   return
 end
 
-emit({ error = 'unknown subcommand: ' .. tostring(sub) })
+emit({ error = 'unknown subcommand: ' .. tostring(sub), code = 'INVALID_ARGUMENT' })

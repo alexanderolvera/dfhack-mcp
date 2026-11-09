@@ -107,6 +107,8 @@ reviewable record that the surface changed.
 Every tool is callable and returns well-formed JSON *or* the documented
 `{"error":"no fort loaded"}`. This is the literal "an agent can reach and call
 every command" check. Needs Dwarf Fortress running with DFHack and a fort loaded.
+Every `{error}` payload the harness sees, in any tier, must also carry a known
+`code` (`ERROR_CODES` in `src/errors.ts`); one without fails the run.
 
 T1 has two assertion modes, opposite fixtures, mutually exclusive:
 

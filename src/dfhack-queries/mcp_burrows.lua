@@ -259,4 +259,4 @@ if sub == 'plan_alert' or sub == 'apply_alert' then
   return
 end
 
-emit({ error = 'unknown subcommand: ' .. tostring(sub) })
+emit({ error = 'unknown subcommand: ' .. tostring(sub), code = 'INVALID_ARGUMENT' })

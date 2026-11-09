@@ -12,7 +12,7 @@ local MAX_ENTRIES = 500
 
 local ok, list = pcall(quickfort_list.do_list_internal, true, false)
 if not ok then
-  emit({ error = 'quickfort blueprint scan failed: ' .. tostring(list) })
+  emit({ error = 'quickfort blueprint scan failed: ' .. tostring(list), code = 'SCRIPT_ERROR' })
   return
 end
 

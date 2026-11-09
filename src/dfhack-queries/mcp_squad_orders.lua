@@ -307,4 +307,4 @@ if sub == 'apply' then
   return
 end
 
-emit({ error = 'unknown subcommand: ' .. tostring(sub) })
+emit({ error = 'unknown subcommand: ' .. tostring(sub), code = 'INVALID_ARGUMENT' })

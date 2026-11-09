@@ -10,13 +10,13 @@ if df.global.gamemode ~= df.game_mode.DWARF then
 end
 
 if not string.match(query, '^%d+$') then
-  emit({ error = 'citizen expects a numeric unit_id (all digits); got "' .. tostring(query) .. '"' })
+  emit({ error = 'citizen expects a numeric unit_id (all digits); got "' .. tostring(query) .. '"', code = 'INVALID_ARGUMENT' })
   return
 end
 
 local u = df.unit.find(tonumber(query))
 if not u then
-  emit({ error = 'no unit with id ' .. query .. ' (use find_unit to get a valid unit_id)' })
+  emit({ error = 'no unit with id ' .. query .. ' (use find_unit to get a valid unit_id)', code = 'NOT_FOUND' })
   return
 end
 

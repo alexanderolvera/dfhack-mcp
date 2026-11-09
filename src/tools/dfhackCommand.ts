@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { CR, RpcError } from 'dfhack-remote-node';
 import { runDfhackCommand } from '../dfclient.ts';
 import { runJsonScript } from '../query.ts';
+import { ToolError } from '../errors.ts';
 import {
   defineActuator,
   isQueryError,
@@ -142,6 +143,7 @@ function commandFailed(
 ): QueryError & Record<string, unknown> {
   return {
     error: 'command failed',
+    code: 'SCRIPT_ERROR',
     command,
     args,
     command_result: r.command_result,
@@ -166,7 +168,12 @@ function lineOf(command: string, args: string[]): string {
 
 function entryFor(args: RunArgs): AllowlistEntry {
   const entry = findAllowlisted(args.command, args.args ?? []);
-  if (!entry) throw new Error(`not allowlisted: ${lineOf(args.command, args.args ?? [])}`);
+  if (!entry) {
+    throw new ToolError(
+      `not allowlisted: ${lineOf(args.command, args.args ?? [])}`,
+      'INVALID_ARGUMENT'
+    );
+  }
   return entry;
 }
 
@@ -296,7 +303,13 @@ export async function dfhackCommandRun(a: RunArgs): Promise<unknown> {
   const args = a.args ?? [];
   const entry = findAllowlisted(a.command, args);
   if (!entry) {
-    return { error: 'not allowlisted', command: a.command, args, allowlist: allowlistFacts() };
+    return {
+      error: 'not allowlisted',
+      code: 'INVALID_ARGUMENT',
+      command: a.command,
+      args,
+      allowlist: allowlistFacts(),
+    };
   }
   if (entry.access === 'mutate') return mutator.run({ ...a, args });
   const r = await runCaptured(a.command, args);

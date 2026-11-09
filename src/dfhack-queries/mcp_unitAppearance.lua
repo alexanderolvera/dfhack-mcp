@@ -9,7 +9,7 @@ if df.global.gamemode ~= df.game_mode.DWARF then
 end
 
 if not string.match(query, '^%d+$') then
-  emit({ error = 'unit_appearance expects a numeric unit_id (all digits); got "' .. tostring(query) .. '"' })
+  emit({ error = 'unit_appearance expects a numeric unit_id (all digits); got "' .. tostring(query) .. '"', code = 'INVALID_ARGUMENT' })
   return
 end
 
@@ -17,7 +17,7 @@ local visibility = reqscript('mcp_unitVisibility')
 
 local u = df.unit.find(tonumber(query))
 if not u or visibility.is_hidden(u) then
-  emit({ error = 'no visible unit with id ' .. query .. ' (use find_unit to get a valid unit_id)' })
+  emit({ error = 'no visible unit with id ' .. query .. ' (use find_unit to get a valid unit_id)', code = 'NOT_FOUND' })
   return
 end
 
