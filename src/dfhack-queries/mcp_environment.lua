@@ -145,16 +145,6 @@ for num, open in pairs(cavern_open) do
 end
 table.sort(caverns, function(a, b) return a.cavern < b.cavern end)
 
-local alerts = {}
-if water_frozen then alerts[#alerts + 1] = 'surface water is frozen' end
-if evil then alerts[#alerts + 1] = 'evil biome' end
-if reanimating then alerts[#alerts + 1] = 'reanimating biome: the dead reanimate' end
-for _, c in ipairs(caverns) do
-  if c.open_to_fort then
-    alerts[#alerts + 1] = 'cavern ' .. c.cavern .. ' is open to fort pathing'
-  end
-end
-
 emit({
   season = season,
   season_name = season_name,
@@ -168,5 +158,4 @@ emit({
   biome = { evil = evil, good = good, reanimating = reanimating },
   caverns = caverns,
   caverns_discovered = #caverns,
-  alerts = alerts,
 })

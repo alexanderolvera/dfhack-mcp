@@ -1,8 +1,4 @@
 {
-  "alerts": [
-    "27 of 77 working-age dwarves idle (35%)",
-    "61x job cancellation: Equipment mismatch"
-  ],
   "cancellations": {
     "by_reason": [
       {

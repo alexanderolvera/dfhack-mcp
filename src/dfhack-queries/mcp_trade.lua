@@ -227,19 +227,6 @@ if fort then
   end
 end
 
-local alerts = {}
-if depot.exists and not depot.accessible then
-  alerts[#alerts + 1] = 'trade depot is not wagon-accessible'
-end
-local at_depot_n = 0
-for _, c in ipairs(caravans) do if c.state == 'AtDepot' then at_depot_n = at_depot_n + 1 end end
-if at_depot_n > 0 and not broker.assigned then
-  alerts[#alerts + 1] = 'caravan at depot with no broker assigned'
-end
-if at_depot_n > 0 and broker.assigned and not broker.at_depot then
-  alerts[#alerts + 1] = 'caravan at depot, broker not at the depot'
-end
-
 emit({
   depot = depot,
   goods_at_depot = goods,
@@ -247,5 +234,4 @@ emit({
   caravan_count = caravan_count,
   caravans_truncated = caravans_truncated,
   broker = broker,
-  alerts = alerts,
 })

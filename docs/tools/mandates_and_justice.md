@@ -28,11 +28,9 @@ None.
 - `demands[]` — unmet room demands: `{ noble, position, demand: office|bedroom|dining|tomb, required_value, met: false }`.
 - `demands_truncated` (boolean).
 - `justice` — `{ active, open_cases, pending_punishments, prison_sentences, scheduled_beatings, scheduled_hammerstrikes, restraints_built, restraints_free, restraints_unbuilt }`.
-- `alerts[]` — mandate deadlines within 7 days, unmet demand count, prison sentences exceeding free restraints.
 
 ```json
 {
-  "alerts": [],
   "demands": [],
   "demands_truncated": false,
   "export_bans": [],
@@ -69,7 +67,7 @@ None.
 - `scheduled_hammerstrikes` sums total strikes across punishments, while `prison_sentences` and `scheduled_beatings` count convicts — mixed units by design of the underlying fields.
 - Restraint capacity counts ALL constructed chains + cages (a chain/cage is "free" when the game reports nothing assigned to it), not only justice-designated ones. A restraint the player has placed but no dwarf has built yet cannot hold a convict, so it is excluded from `restraints_built`/`restraints_free` and counted in `restraints_unbuilt` instead.
 - `open_cases` = crimes discovered but not yet sentenced.
-- `deadline_days` alert threshold: unmet mandate with <= 7 days remaining. Verified on 53.15-r2: mandate_type {0=Export, 1=Make, 2=Guild}.
+- Verified on 53.15-r2: mandate_type {0=Export, 1=Make, 2=Guild}.
 
 ## Implementation notes
 Restraint occupancy goes through the building's own `isAssigned()` vmethod rather than reading assignment fields directly, because chains and cages do not share a field name: `building_chainst` exposes `assigned` (a single unit ref) and `chained`, while `building_cagest` exposes `assigned_units`/`assigned_items` (vectors). Reading `.assigned` off a cage is a hard error in DFHack Lua (`Cannot read field building_cagest.assigned: not found`), which took the whole tool down until 1.4.1. `isAssigned()` dispatches per type and was cross-checked live against beds and coffins, where its answer matches `rooms_and_zones`' independently-derived assigned/free split. "Constructed" is `getBuildStage() >= getMaxBuildStage()`, which agrees with `flags.exists` on every building type checked.

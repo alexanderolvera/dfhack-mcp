@@ -84,7 +84,7 @@ what it has to work with.
 
 No arguments; each reports on the loaded fort.
 
-- **`fort_status()`** — name, date/season, population, wealth, happiness breakdown, pre-triaged alerts.
+- **`fort_status()`** — name, date/season, population, wealth, happiness breakdown, recent deaths, hostiles on map.
 - **`stocks()`** — food/drink as days-of-supply, plus critical material counts and notable low/high lists.
 - **`threats()`** — dangerous units grouped by type; active vs. contained, great-danger/invader/undead flags, plus each group's decisive traits (trapavoid, flier, fire, webber, building-destroyer, ranged).
 - **`unmet_needs()`** — the needs system aggregated: the top unmet needs ranked by how many dwarves are distracted, and how starved each is.

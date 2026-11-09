@@ -171,18 +171,7 @@ if active_truncated then
   active = capped
 end
 
-local alerts = {}
-for _, row in ipairs(active) do
-  for _, d in ipairs(row.demands) do
-    if d.have == 0 and d.gathered < d.needed then
-      alerts[#alerts + 1] = row.name .. ' demands ' .. d.material ..
-        ' but the fort has none in stock'
-    end
-  end
-end
-
 emit({
   active = active,
   active_truncated = active_truncated,
-  alerts = alerts,
 })

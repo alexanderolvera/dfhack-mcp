@@ -27,17 +27,15 @@ None.
 - `taverns`, `libraries`, `guildhalls` (numbers).
 - `coffins_free`, `coffins_used` (numbers) — occupancy by contained corpse/body items.
 - `dead_unburied` (number) — loose corpses of the fort's own race, not interred, not marked for dumping.
-- `ghosts` — `{ active[], active_truncated, unquiet_dead_count }`. `active[]` is `{ unit_id, name, histfig_id }` for every VISIBLE apparition currently on the map (fog-of-war gated, capped 50). `unquiet_dead_count` is this civ's dead who are world-flagged as unquiet ghosts (`historical_figure.flags.ghost`) and NOT represented in the visible `active[]` list — that is deliberately not the same claim as "confirmed no apparition is active": a ghost hidden behind fog of war is excluded from `active[]` (never leaked) but still counted in `unquiet_dead_count`, since the world-level ghost fact is fair game even when its exact map location isn't.
-- `alerts[]` — adults without a bedroom; dead exceeding free coffins; worshipped deities lacking a temple; any active ghost (the alert's count is the true total, computed BEFORE the 50-cap — never just `active[].length` — with a `+` suffix when `active_truncated` is true, so a 50-ghost cap never silently under-reports as "exactly 50").
+- `ghosts` — `{ active[], active_truncated, active_total, unquiet_dead_count }`. `active[]` is `{ unit_id, name, histfig_id }` for every VISIBLE apparition currently on the map (fog-of-war gated, capped 50); `active_total` is the full visible count before the cap, so a 50-ghost cap never reads as exactly 50. `unquiet_dead_count` is this civ's dead who are world-flagged as unquiet ghosts (`historical_figure.flags.ghost`) and NOT represented in the visible `active[]` list — that is deliberately not the same claim as "confirmed no apparition is active": a ghost hidden behind fog of war is excluded from `active[]` (never leaked) but still counted in `unquiet_dead_count`, since the world-level ghost fact is fair game even when its exact map location isn't.
 
 ```json
 {
-  "alerts": [],
   "bedrooms": { "adults_without": 0, "assigned": 78, "dormitories": 1, "unassigned": 53 },
   "coffins_free": 38,
   "coffins_used": 1,
   "dead_unburied": 0,
-  "ghosts": { "active": [], "active_truncated": false, "unquiet_dead_count": 0 },
+  "ghosts": { "active": [], "active_truncated": false, "active_total": 0, "unquiet_dead_count": 0 },
   "dining": { "halls": 4, "seats": 36 },
   "guildhalls": 3,
   "hospital": {

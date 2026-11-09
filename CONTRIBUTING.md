@@ -164,8 +164,11 @@ the way a player reads a screen or looks something up. They do not tell the agen
 what to build or how to fight; that judgment is the agent's job. A field that
 says *what to do* is advice — leave it out (or, if it's a genuine limitation the
 caller must know, put it in the tool *description*, not the per-call payload).
-Restating a fact that crossed a threshold ("28 dwarves unhappy") is fine — that
-mirrors the game's own announcements.
+Thresholds belong to the client too: report the number (`happiness.unhappy`,
+`idle_pct`), never a sentence that fires when it crosses a line the server
+picked ("28 dwarves unhappy"). Deciding which facts deserve attention is
+triage, and a prose restatement of a field already in the payload is a second
+copy of it to drift.
 
 ## Adding a tool
 

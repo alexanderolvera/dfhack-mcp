@@ -29,7 +29,6 @@ None.
   - `roster[]` — one row per FILLED position **whose occupant is a living, present unit** (see Caveats): `{ unit_id, name, uniform, uniform_complete }`. `uniform_complete` is true iff nothing is missing. `uniform[]` is empty when `uniform_complete` is true — populated ONLY when there's a gap, aggregated by item type (`ARMOR`/`HELM`/`PANTS`/`GLOVES`/`SHOES`/`SHIELD`/`WEAPON`/`QUIVER`/`BACKPACK`/`FLASK`/...) as `{ item_type, assigned_count, missing_count }`: `assigned_count` is how many items the uniform calls for (a required-but-never-found item still counts as 1, so it's never less than `missing_count`), `missing_count` is how many of those are not currently worn/wielded (DF's own `uniform-unstick` logic) or were never found/assigned at all. `QUIVER`/`BACKPACK`/`FLASK` are assigned outside the main uniform slots (DF tracks them as their own fields) but checked the same way — a marksdwarf with an unassigned quiver shows up here, not silently inside `uniform_complete: true`.
   - `ammo` — `{ specs, ammo_items_assigned }`. `specs[]` is `{ item_type, target_amount, assigned_count }` — `target_amount` is the squad's shared configured total (e.g. 250 bolts for the whole squad), **not per soldier**. Both `assigned_count` and `ammo_items_assigned` are actual bolt QUANTITIES (summed stack sizes), not a count of assigned item-stack objects — one assigned stack can hold many bolts, or DFHack's archery logic can split one stack into several partial ones, so counting stacks would over/undercount against `target_amount`. `ammo_items_assigned` is zero for a melee-only squad.
   - `training` — `{ cur_routine_idx, month, sleep_mode?, uniform_mode?, active_orders }`, the active training-schedule month's settings. `sleep_mode`/`uniform_mode`/`active_orders` are absent/empty when the fort has never customized that routine's month (the common case).
-- `alerts[]` — "no military squads — the fort is undefended"; a NO-defenders callout when a great-danger creature faces zero soldiers; an incomplete-uniform callout per roster member.
 
 ```json
 {
@@ -53,8 +52,7 @@ None.
       "name": "The Torrid Portals", "filled": 5, "positions": 10,
       "ammo": { "specs": [{ "item_type": "AMMO", "target_amount": 250, "assigned_count": 129 }], "ammo_items_assigned": 113 }
     }
-  ],
-  "alerts": []
+  ]
 }
 ```
 
@@ -76,7 +74,7 @@ A roster row with a gap (illustrative, not a live capture — the fixture's sold
 - `hostiles_on_map` is fog-of-war gated through `mcp_unitVisibility`, so it equals `threats()`' `active_hostiles` and the length of `defenses()`' `threats[]`. Before 1.4.1 it was not gated, and an undiscovered cavern/underworld population inflated it — a fort that had never breached a cavern could read `hostiles_on_map: 2` while `threats` correctly reported zero.
 - `assigned_positions` can overstate strength (dead/off-map members still fill slots); lead with `soldiers`.
 - No caps: squad/position/uniform-slot counts are small in practice (DF's own squad-size limit bounds `roster[]`); `uniform[]` is additionally kept empty for any fully-equipped soldier, so payload size tracks actual gaps, not fort size.
-- `squad_position.occupant` is a **historical figure id**, resolved to a live unit via `historical_figure.unit_id` — a position holder currently off-map or dead still counts toward `filled` but is excluded from `roster[]` (a dead soldier's gear sitting on their corpse would otherwise read as a false "incomplete uniform" alert).
+- `squad_position.occupant` is a **historical figure id**, resolved to a live unit via `historical_figure.unit_id` — a position holder currently off-map or dead still counts toward `filled` but is excluded from `roster[]` (a dead soldier's gear sitting on their corpse would otherwise read as a false `uniform_complete: false`).
 - `missing_count` counts two distinct shortages the same way: an item assigned to the uniform but not currently worn/wielded (a soldier mid-equip reads as missing until they physically pick it up and equip it), and a required uniform spec with NOTHING assigned yet (no suitable item found at all — counted as 1 assigned, 1 missing, so `missing_count` never exceeds `assigned_count`). Both read as "missing" — the tool doesn't distinguish "en route" from "nothing to route."
 - Reports facts; no stationing or tactical advice.
 

@@ -1,7 +1,4 @@
 {
-  "alerts": [
-    "trade depot is not wagon-accessible"
-  ],
   "broker": {
     "assigned": true,
     "at_depot": false,

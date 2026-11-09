@@ -1,5 +1,4 @@
 {
-  "alerts": [],
   "bedrooms": {
     "adults_without": 0,
     "assigned": 78,
@@ -15,6 +14,7 @@
   },
   "ghosts": {
     "active": [],
+    "active_total": 0,
     "active_truncated": false,
     "unquiet_dead_count": 0
   },

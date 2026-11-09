@@ -25,11 +25,9 @@ None.
 | `top_needs[]` | up to 8 rows `{need, dwarves, worst_focus}`, sorted by dwarves distracted (desc), then severity |
 | `top_needs[].need` | `df.need_type` token, e.g. `PrayOrMeditate`, `DrinkAlcohol`, `Socialize` |
 | `top_needs[].worst_focus` | most negative `focus_level` seen for that need. **Not on a fixed scale** — see the scale note in Caveats before comparing two rows |
-| `alerts[]` | at most one line, only when the top need distracts ≥ 25% of the fort |
 
 ```json
 {
-  "alerts": ["73 of 78 dwarves distracted by unmet need: BeWithFamily"],
   "dwarves_with_unmet_need": 77,
   "population": 78,
   "top_needs": [
@@ -49,7 +47,7 @@ None.
   - `need_level` is per-dwarf-per-need and is not exposed in this aggregate (the row is a minimum across many dwarves who may hold different levels), so the floor for a given row cannot be recovered from the payload alone.
 - "Distracted" is a heuristic cut: `focus_level < -1000` (tunable in the Lua), applied as an ABSOLUTE threshold regardless of `need_level`. Because floors scale with `need_level`, -1000 is a much smaller fraction of a level-10 need's range than of a level-1 need's, so the cut is slightly more eager for low-level needs. Slightly-unfulfilled needs don't count.
 - `top_needs` is capped at 8 — the long tail of 1-2-dwarf needs is dropped as non-actionable.
-- Almost every dwarf always carries at least one distracted need, so `dwarves_with_unmet_need` being high is baseline, not news; the alert fires only on REACH (top need distracting ≥ 25% of citizens).
+- Almost every dwarf always carries at least one distracted need, so `dwarves_with_unmet_need` being high is baseline, not news; the informative number is REACH — `top_needs[0].dwarves` against `population`.
 - A dwarf holding several needs of one type (e.g. PrayOrMeditate per deity) counts once for that type, at their worst focus.
 - Verified live on DFHack 53.15-r2 (`soul.personality.needs` iterates; `df.need_type[id]` yields readable tokens).
 - Returns `{"error":"no fort loaded"}` if no fort is active.

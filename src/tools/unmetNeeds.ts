@@ -11,11 +11,10 @@ export interface UnmetNeeds {
   population: number;
   dwarves_with_unmet_need: number;
   top_needs: NeedRow[];
-  alerts: string[];
 }
 
 export function unmetNeeds(): Promise<UnmetNeeds | { error: string }> {
-  return runJsonScript<UnmetNeeds>('unmetNeeds', [], ['top_needs', 'alerts']);
+  return runJsonScript<UnmetNeeds>('unmetNeeds', [], ['top_needs']);
 }
 
 export const unmetNeedsDef: ToolDef = {

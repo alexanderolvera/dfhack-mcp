@@ -127,8 +127,8 @@ async function checkState(client, state) {
   );
   if (state === 'AtDepot')
     check(
-      trade.alerts.some((a) => a.startsWith('caravan at depot')),
-      'AtDepot raises a broker alert (the fixture broker is never at the depot)'
+      trade.broker?.at_depot !== true,
+      `AtDepot reports the broker away from the depot (broker.at_depot=${trade.broker?.at_depot}; the fixture broker never is)`
     );
   lua('df.global.pause_state = false');
 }

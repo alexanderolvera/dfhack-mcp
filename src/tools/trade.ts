@@ -64,11 +64,10 @@ export interface Trade {
   caravan_count: number;
   caravans_truncated: boolean;
   broker: BrokerState;
-  alerts: string[];
 }
 
 export async function trade(): Promise<Trade | { error: string }> {
-  const data = await runJsonScript<Trade>('trade', [], ['caravans', 'alerts']);
+  const data = await runJsonScript<Trade>('trade', [], ['caravans']);
   if ('error' in data) return data;
   for (const row of data.caravans) {
     if (row.manifest && !Array.isArray(row.manifest.by_category)) row.manifest.by_category = [];

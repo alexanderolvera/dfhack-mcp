@@ -15,11 +15,10 @@ export interface InjuriesAndHealth {
   unconscious: number;
   asleep: number;
   care_needs: CareRow[];
-  alerts: string[];
 }
 
 export function injuriesAndHealth(): Promise<InjuriesAndHealth | { error: string }> {
-  return runJsonScript<InjuriesAndHealth>('injuriesAndHealth', [], ['care_needs', 'alerts']);
+  return runJsonScript<InjuriesAndHealth>('injuriesAndHealth', [], ['care_needs']);
 }
 
 export const injuriesAndHealthDef: ToolDef = {

@@ -28,13 +28,11 @@ None.
   - `demands[]` — `{ material, needed, gathered, have }`; `have` is matching fort stock (-1 if suitability was unevaluable), matched with DFHack's own suitability predicates so category demands (bones/cloth/shell) resolve the way DF itself resolves them.
   - `demands_truncated` (boolean).
 - `active_truncated` (boolean).
-- `alerts[]` — a demand with `have == 0` and not yet gathered (workshop-claim status is already on each `active[]` row).
 
 ```json
 {
   "active": [],
-  "active_truncated": false,
-  "alerts": []
+  "active_truncated": false
 }
 ```
 

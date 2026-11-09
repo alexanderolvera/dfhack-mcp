@@ -6,9 +6,6 @@ if df.global.gamemode ~= df.game_mode.DWARF then
   return
 end
 
-local IDLE_FRACTION_ALERT = 0.30
-local CANCEL_SPAM_ALERT = 10
-
 local citizens = dfhack.units.getCitizens(true)
 local JT = df.job_type
 
@@ -69,14 +66,6 @@ end
 
 local idle_pct = adults > 0 and math.floor(idle * 100 / adults) or 0
 
-local alerts = {}
-if adults > 0 and (idle / adults) >= IDLE_FRACTION_ALERT then
-  alerts[#alerts+1] = idle .. ' of ' .. adults .. ' working-age dwarves idle (' .. idle_pct .. '%)'
-end
-if #cancel_reasons > 0 and cancel_reasons[1].count >= CANCEL_SPAM_ALERT then
-  alerts[#alerts+1] = cancel_reasons[1].count .. 'x job cancellation: ' .. cancel_reasons[1].reason
-end
-
 emit({
   workforce = adults,
   children = children,
@@ -89,5 +78,4 @@ emit({
     by_reason = cancel_reasons,
     by_reason_truncated = cancel_reasons_truncated,
   },
-  alerts = alerts,
 })

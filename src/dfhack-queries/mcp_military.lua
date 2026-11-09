@@ -196,22 +196,6 @@ for _, u in ipairs(df.global.world.units.active) do
   end
 end
 
-local alerts = {}
-if #squads == 0 then
-  alerts[#alerts+1] = 'no military squads — the fort is undefended'
-end
-if hostiles > 0 and great_danger > 0 and soldiers == 0 then
-  alerts[#alerts+1] = 'NO defenders against a great-danger creature (' .. great_danger ..
-    ' on map, 0 soldiers)'
-end
-for _, sq in ipairs(squads) do
-  for _, row in ipairs(sq.roster) do
-    if not row.uniform_complete then
-      alerts[#alerts+1] = row.name .. ' (' .. sq.name .. ') has an incomplete uniform'
-    end
-  end
-end
-
 emit({
   squad_count = #squads,
   soldiers = soldiers,
@@ -220,5 +204,4 @@ emit({
   hostiles_on_map = hostiles,
   great_danger_on_map = great_danger,
   squads = squads,
-  alerts = alerts,
 })

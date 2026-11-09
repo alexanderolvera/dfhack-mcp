@@ -91,16 +91,6 @@ table.sort(care_needs, function(a, b)
   return a.care < b.care
 end)
 
-local UNCONSCIOUS_FRACTION_ALERT = 0.10
-local UNCONSCIOUS_MIN_ALERT = 3
-
-local alerts = {}
-if unconscious >= UNCONSCIOUS_MIN_ALERT and #citizens > 0
-    and (unconscious / #citizens) >= UNCONSCIOUS_FRACTION_ALERT then
-  local pct = math.floor(unconscious * 100 / #citizens)
-  alerts[#alerts+1] = unconscious .. ' dwarves unconscious (' .. pct .. '% of pop)'
-end
-
 emit({
   population = #citizens,
   wounded = wounded,
@@ -110,5 +100,4 @@ emit({
   unconscious = unconscious,
   asleep = asleep,
   care_needs = care_needs,
-  alerts = alerts,
 })

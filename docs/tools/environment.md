@@ -24,11 +24,9 @@ Top-level fields:
 - `biome` — `{evil, good, reanimating}` booleans
 - `caverns[]` — ONLY caverns the fort has discovered: `{cavern (1-3), open_to_fort}` (a revealed cavern tile shares a citizen walk group)
 - `caverns_discovered` — count
-- `alerts[]`
 
 ```json
 {
-  "alerts": [],
   "biome": {
     "evil": false,
     "good": false,

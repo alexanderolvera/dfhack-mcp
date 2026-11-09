@@ -29,14 +29,10 @@ None.
 | `groups[].token` | creature raw id (a direct `game_data` handle, e.g. `"DEMON_19"`); `null` if unresolvable |
 | `groups[].traits` | curated decisive traits: `trapavoid`, `flier`, `fire`, `webber`, `building_destroyer`, `ranged` |
 | `groups[].ranged_attacks` | ranged/breath attack labels (interaction `adv_name`s) |
-| `alerts[]` | pre-triaged lines: great-danger first (with unioned traits), then invaders, then other hostiles — `contained` is already its own field, so a contained count is not separately alerted |
 
 ```json
 {
   "active_hostiles": 5,
-  "alerts": [
-    "5 great-danger creatures loose (megabeast/titan/demon/FB); traits: trapavoid, fire, building_destroyer, ranged"
-  ],
   "contained": 2,
   "groups": [
     {
@@ -56,7 +52,7 @@ None.
 ```
 
 ## Caveats & limits
-- **Fog of war**: a unit standing on an undiscovered tile (`designation.hidden`, or off-map/unloaded) is filtered out entirely — never counted, grouped, or alerted on — whether loose or caged/chained. Only hostiles the fort has actually found are reported.
+- **Fog of war**: a unit standing on an undiscovered tile (`designation.hidden`, or off-map/unloaded) is filtered out entirely — never counted or grouped — whether loose or caged/chained. Only hostiles the fort has actually found are reported.
 - Distinct groups per (name, containment): a caged beast never masks a loose one of the same kind.
 - Intel comes from the group's first-seen (representative) unit; degrades gracefully — an unresolvable race/caste yields `token: null` and empty `traits`/`ranged_attacks` rather than an error.
 - The `fire` trait unions FIREIMMUNE flags with a name-based scan of attack labels for "fire"/"flame"; `webber` unions the WEBBER flag with "web" attacks.
@@ -65,7 +61,7 @@ None.
 
 ## Implementation notes
 - The base hostile predicate (`active`, not dead, `isDanger`, not a citizen) is shared with `fort_status`; the two should stay in sync if that predicate ever changes.
-- The fog-of-war filter (via `mcp_unitVisibility`) exists because an earlier version of this tool, and `fort_status`, could expose undiscovered hostiles — an X-ray leak fixed by gating unit enumeration on fog-of-war before a unit ever reaches a group, count, or alert.
+- The fog-of-war filter (via `mcp_unitVisibility`) exists because an earlier version of this tool, and `fort_status`, could expose undiscovered hostiles — an X-ray leak fixed by gating unit enumeration on fog-of-war before a unit ever reaches a group or count.
 - Creature raws are resolved via `df.global.world.raws.creatures.all[u.race]` (a `creature_raw`); `.creature_id` is the token (e.g. `"DEMON_4"`). Confirmed live on DFHack 53.15-r2: the caste vector is the `caste` field (not `castes`), and the representative caste is `caste[0]`.
 - `caste.flags` is a bitfield whose true keys are stable token names. It must be iterated with `pairs()` — indexing it directly by a token name throws "not found" for any bit that isn't set in that build, so a direct lookup isn't safe.
 - Ranged/breath attacks resolve via `caste.body_info.interactions[].interaction.adv_name`.
