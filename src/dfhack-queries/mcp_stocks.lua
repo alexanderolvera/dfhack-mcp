@@ -18,7 +18,7 @@ if category == '' then category = nil end
 if category then
   category = category:upper()
   if not isItemTypeToken(category) then
-    emit({ error = "unknown item type '" .. category .. "' (expected a df.item_type token, e.g. DRINK or BAR)" })
+    emit({ error = "unknown item type '" .. category .. "' (expected a df.item_type token, e.g. DRINK or BAR)", code = 'INVALID_ARGUMENT' })
     return
   end
 end
