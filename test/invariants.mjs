@@ -59,6 +59,35 @@ export const INVARIANTS = [
     },
   },
   {
+    name: 'stocks_inventory_consistent',
+    tools: ['stocks'],
+    probes: {
+      narrowed: { tool: 'stocks', args: () => ({ category: 'drink' }) },
+    },
+    desc: 'inventory is a non-negative integer per item-type token, agrees with the curated counts it overlaps, and category narrows it to exactly that one type',
+    check(p) {
+      const d = p.stocks;
+      const inv = d.inventory ?? {};
+      const c = d.counts ?? {};
+      const out = [];
+      for (const [k, v] of Object.entries(inv)) {
+        if (!/^[A-Z][A-Z_]*$/.test(k)) out.push(`inventory key "${k}" is not an item-type token`);
+        if (!(isInt(v) && v >= 0)) out.push(`inventory.${k}=${v} is not a non-negative integer`);
+      }
+      const same = { drink: 'DRINK', wood: 'WOOD', cloth: 'CLOTH', tanned_hides: 'SKIN_TANNED', stone: 'BOULDER', prepared_meals: 'FOOD' };
+      for (const [ck, token] of Object.entries(same)) {
+        if (c[ck] !== inv[token]) out.push(`counts.${ck}=${c[ck]} !== inventory.${token}=${inv[token]}`);
+      }
+      const edible = ['FOOD', 'MEAT', 'FISH', 'CHEESE', 'EGG', 'PLANT', 'PLANT_GROWTH'].reduce((s, t) => s + (inv[t] ?? 0), 0);
+      if (c.food !== edible) out.push(`counts.food=${c.food} !== sum of edible inventory types ${edible}`);
+      if (!(c.fuel <= (inv.BAR ?? 0))) out.push(`counts.fuel=${c.fuel} exceeds inventory.BAR=${inv.BAR}`);
+      const n = p.probes.narrowed?.inventory ?? {};
+      if (JSON.stringify(n) !== JSON.stringify({ DRINK: inv.DRINK }))
+        out.push(`stocks(category:"drink").inventory=${JSON.stringify(n)}, expected {"DRINK":${inv.DRINK}}`);
+      return out;
+    },
+  },
+  {
     name: 'stocks_notable_keys_known',
     tools: ['stocks'],
     desc: 'notable_low / notable_high name real stock categories, never a typo',

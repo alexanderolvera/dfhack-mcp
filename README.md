@@ -85,7 +85,7 @@ what it has to work with.
 No arguments; each reports on the loaded fort.
 
 - **`fort_status()`** — name, date/season, population, wealth, happiness breakdown, pre-triaged alerts.
-- **`stocks()`** — food/drink as days-of-supply, plus critical material counts and notable low/high lists.
+- **`stocks(category?)`** — food/drink as days-of-supply, critical material counts, notable low/high lists, and a usable count for every DF item type (optionally one `category`).
 - **`threats()`** — dangerous units grouped by type; active vs. contained, great-danger/invader/undead flags, plus each group's decisive traits (trapavoid, flier, fire, webber, building-destroyer, ranged).
 - **`unmet_needs()`** — the needs system aggregated: the top unmet needs ranked by how many dwarves are distracted, and how starved each is.
 - **`jobs_and_labor()`** — workforce utilization: busy vs. idle adults (children excluded), idle %, and a ranked breakdown of active jobs.
