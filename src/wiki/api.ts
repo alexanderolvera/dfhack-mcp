@@ -1,19 +1,9 @@
-import { cleanHtml } from './clean.ts';
 import pkg from '../../package.json' with { type: 'json' };
 
 const API = 'https://dwarffortresswiki.org/api.php';
 const USER_AGENT = `${pkg.name}/${pkg.version} (personal DF co-pilot)`;
 // The wiki kept DF2014 for the Steam/Premium release — a known constant, no v50.
 export const VERSION_NS = 'DF2014';
-const SEARCH_LIMIT = 8;
-
-export interface WikiSearchResult {
-  title: string;
-  snippet: string;
-}
-export interface WikiSearch {
-  results: WikiSearchResult[];
-}
 
 export interface Resolved {
   title: string; // final page title (missing === false guaranteed)
@@ -25,50 +15,6 @@ async function apiGet(params: Record<string, string>): Promise<any> {
   const res = await fetch(url, { headers: { 'User-Agent': USER_AGENT } });
   if (!res.ok) throw new Error(`wiki API HTTP ${res.status}`);
   return res.json();
-}
-
-let df2014NsId: string | null = null;
-async function versionNamespaceId(): Promise<string | null> {
-  if (df2014NsId !== null) return df2014NsId;
-  try {
-    const data = await apiGet({ action: 'query', meta: 'siteinfo', siprop: 'namespaces' });
-    const namespaces = data?.query?.namespaces ?? {};
-    for (const ns of Object.values<any>(namespaces)) {
-      if (ns['*'] === VERSION_NS || ns.canonical === VERSION_NS) {
-        df2014NsId = String(ns.id);
-        return df2014NsId;
-      }
-    }
-  } catch {
-    /* fall through — search still works without a namespace bias */
-  }
-  return null;
-}
-
-export async function wikiSearch(query: string): Promise<WikiSearch | { error: string }> {
-  const q = query.trim();
-  if (!q) return { error: 'empty query' };
-  try {
-    const nsId = await versionNamespaceId();
-    const params: Record<string, string> = {
-      action: 'query',
-      list: 'search',
-      srsearch: q,
-      srlimit: String(SEARCH_LIMIT),
-    };
-    // Bias into DF2014 but keep main namespace (0) — bare titles redirect into DF2014.
-    params.srnamespace = nsId ? `0|${nsId}` : '0';
-    const data = await apiGet(params);
-    const hits: any[] = data?.query?.search ?? [];
-    return {
-      results: hits.slice(0, SEARCH_LIMIT).map((h) => ({
-        title: h.title,
-        snippet: cleanHtml(h.snippet ?? ''),
-      })),
-    };
-  } catch (err) {
-    return { error: `wiki search failed: ${(err as Error).message}` };
-  }
 }
 
 function hasNamespace(title: string): boolean {

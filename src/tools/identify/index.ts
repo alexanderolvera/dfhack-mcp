@@ -1,5 +1,5 @@
 import { gameData, type CreatureDossier, type GameDataStub } from '../gameData.ts';
-import { wikiLookupTool } from '../wikiLookup.ts';
+import { wikiLookup } from '../../wiki/index.ts';
 import { excerpt, isProcedural, wikiPlan, type WikiExcerpt } from './wiki.ts';
 import { z } from 'zod';
 import type { ToolDef } from '../../register.ts';
@@ -52,7 +52,7 @@ export async function identify(
   for (const { topic, title } of wikiPlan(creature)) {
     let res;
     try {
-      res = await wikiLookupTool(title);
+      res = await wikiLookup(title);
     } catch (err) {
       notes.push(`Wiki lookup for "${title}" failed: ${(err as Error).message}.`);
       continue;

@@ -77,8 +77,6 @@ const TOOL_ARGS = {
   game_data: { query: 'cat' },
   historical_figure: { hf_id: '179' },
   identify: { query: 'cat' },
-  wiki_search: { query: 'cage trap' },
-  wiki_lookup: { title: 'Cage trap' },
   // tile_region is parameterized; a deterministic explicit rectangle so T1
   // reachability and the invariants exercise the ARG path, not only the default.
   // The T2 golden deliberately overrides this back to {} (see GOLDEN_NO_ARG) so
@@ -122,11 +120,6 @@ const GOLDEN_NO_ARG = new Set(['tile_region', 'work_details']);
 
 // Extra fixture figures goldened as test/golden/historical_figure.<hf_id>.json; see docs/tools/historical_figure.md.
 const HISTORICAL_FIGURE_GOLDEN_IDS = [4, 22, 30, 177];
-
-// Tools whose output depends on the network / external wiki, not the frozen
-// fort. Reachable in every tier, but excluded from T2 goldens (not deterministic
-// against a committed save). game_data/identify fuse world raws — kept in T2.
-const NETWORK_TOOLS = new Set(['wiki_search', 'wiki_lookup']);
 
 // Fields that are a live instantaneous reading, not frozen game state, even
 // against a paused fixture — masked to null before the golden snapshot/compare
@@ -344,17 +337,6 @@ async function tier1NoFort(client) {
   );
   for (const name of [...EXPECTED.tools].sort()) {
     const { data, isError } = await callJson(client, name);
-    // Wiki tools have no game dependency, so they do NOT return the guard here.
-    if (NETWORK_TOOLS.has(name)) {
-      if (data.__unparsable__ !== undefined) {
-        fail(`${name}: returned non-JSON: ${String(data.__unparsable__).slice(0, 80)}`);
-      } else if (isError || typeof data.error === 'string') {
-        fail(`${name}: network tool errored: ${data.error ?? '(isError)'}`);
-      } else {
-        ok(`${name}: reachable, well-formed JSON (network tool, no game dependency)`);
-      }
-      continue;
-    }
     // Guard must be normal output — not isError, not a crash, not different
     // data (docs/VERIFY.md).
     if (data.__unparsable__ !== undefined) {
@@ -381,10 +363,6 @@ async function tier2(client) {
   mkdirSync(GOLDEN_DIR, { recursive: true });
   const payloads = {}; // captured here, reused by runInvariants() below
   for (const name of [...EXPECTED.tools].sort()) {
-    if (NETWORK_TOOLS.has(name)) {
-      console.log(`  ○ ${name}: skipped (network-dependent, not goldened)`);
-      continue;
-    }
     // Golden snapshot: capture the deterministic no-arg default for tools that
     // opt into it (their TOOL_ARGS entry exists only to exercise the param path
     // in other tiers), otherwise the tool's normal fixture args.
@@ -421,13 +399,11 @@ async function tier2(client) {
   await assignWorkDetailActuatorChecks(client); // live add+remove round trip; restores the fixture
 }
 
-// Call every tool in `names` once and return a { name -> payload } map. Skips
-// network tools (no game dependency, non-deterministic). Used by --invariants to
-// gather exactly the payloads the specs read.
+// Call every tool in `names` once and return a { name -> payload } map. Used by
+// --invariants to gather exactly the payloads the specs read.
 async function capturePayloads(client, names) {
   const payloads = {};
   for (const name of names) {
-    if (NETWORK_TOOLS.has(name)) continue;
     payloads[name] = (await callJson(client, name)).data;
   }
   return payloads;

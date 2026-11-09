@@ -11,7 +11,7 @@ tags: [dfhack-mcp/tool]
 > One-call "what is this creature and how do I handle it": fuses THIS WORLD's raws (ground truth) with the DF wiki (strategy).
 
 ## Purpose
-Resolves a creature query (raw token, name fragment, or live unit_id) to a full dossier from this world's raws, and attaches 1-2 trimmed wiki strategy excerpts. It composes `game_data` (resolution + dossier) and `wiki_lookup` (article text) rather than re-implementing either. An AI co-pilot calls it when a creature shows up (via `threats`, `find_unit`, sighting reports) so world-specific facts — e.g. a TRAPAVOID flag meaning cage traps cannot hold it — are never missed by leaning on a generic wiki page alone. The dossier's own `flags[]`/`interactions[]` carry the decisive traits directly; there's no separate derived summary of them.
+Resolves a creature query (raw token, name fragment, or live unit_id) to a full dossier from this world's raws, and attaches 1-2 trimmed wiki strategy excerpts. It composes `game_data` (resolution + dossier) and the DF wiki (article text, via `src/wiki`) rather than re-implementing either. An AI co-pilot calls it when a creature shows up (via `threats`, `find_unit`, sighting reports) so world-specific facts — e.g. a TRAPAVOID flag meaning cage traps cannot hold it — are never missed by leaning on a generic wiki page alone. The dossier's own `flags[]`/`interactions[]` carry the decisive traits directly; there's no separate derived summary of them.
 
 ## Parameters
 | Name | Type | Required | Default | Description |
@@ -65,4 +65,4 @@ On multiple matches, a disambiguation passthrough: `{ query, match_count, trunca
 - Trait-page selection treats a creature as "fire" if it has a `FIREIMMUNE*` flag OR one of its interaction names matches `/fire|flame|magma|jet|fireball/i` — this catches fire breath weapons that don't carry a `FIREIMMUNE` flag. Fire beats `BUILDINGDESTROYER` when picking the single trait page.
 
 ## Related
-[game_data](game_data.md) · [wiki_lookup](wiki_lookup.md) · [wiki_search](wiki_search.md) · [threats](threats.md) · [find_unit](find_unit.md)
+[game_data](game_data.md) · [threats](threats.md) · [find_unit](find_unit.md)

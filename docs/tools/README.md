@@ -4,7 +4,7 @@ tags: [dfhack-mcp/tool, index]
 
 # Tool Index — dfhack-mcp
 
-One note per MCP tool (52 tools: 36 sensors, 5 reference, 9 gated actuators, 1 gated command runner, 1 dev), tracking `src/tools/registry.ts`. Each note carries frontmatter (`tool` / `tier` / `gated` / `source` / `lua`), parameters from the zod schema, the real return shape from the Lua query, and a trimmed example from the frozen-fixture goldens where one exists.
+One note per MCP tool (50 tools: 36 sensors, 3 reference, 9 gated actuators, 1 gated command runner, 1 dev), tracking `src/tools/registry.ts`. Each note carries frontmatter (`tool` / `tier` / `gated` / `source` / `lua`), parameters from the zod schema, the real return shape from the Lua query, and a trimmed example from the frozen-fixture goldens where one exists.
 
 Doctrine reminder: every tool is **facts-only** — it senses and reports; judgment stays with the AI client. Actuators are gated behind `DFHACK_MCP_ACTUATORS` and follow the §A0 preview/confirm contract; `dfhack_command_run` is gated separately behind `DFHACK_MCP_COMMANDS`; `run_lua` is dev-gated behind `DFHACK_MCP_DEV`.
 
@@ -54,12 +54,10 @@ Doctrine reminder: every tool is **facts-only** — it senses and reports; judgm
 - [fluids](fluids.md) — aquifers, water/magma per z-level, flood exposure, well source depth
 - [blueprint_library](blueprint_library.md) — quickfort blueprints on disk (shipped library + user's own)
 
-## Reference (5)
+## Reference (3)
 
 - [game_data](game_data.md) — this world's raws: six dossier kinds (creature/material/plant/reaction/item/building)
 - [identify](identify.md) — one-call raws + wiki fusion for a named creature
-- [wiki_search](wiki_search.md) — DF2014 wiki search
-- [wiki_lookup](wiki_lookup.md) — DF2014 wiki page as clean cached text
 - [dfhack_command_list](dfhack_command_list.md) — every DFHack command (`ls`) with one-line help and tags
 
 ## Actuators (9, gated)

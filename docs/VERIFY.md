@@ -19,13 +19,11 @@ Exit code is non-zero on any failure, so CI and pre-push hooks can gate on it.
 
 A few tools also have a standalone live-verification script, for deeper manual
 checks the tiered harness's fixture-agnostic checks don't cover (specific
-regression guards, cache-hit proof, live text output to read by eye). Each
-needs Dwarf Fortress + DFHack running (`verify:wiki` is pure HTTP and needs
-neither):
+regression guards, live text output to read by eye). Each needs Dwarf
+Fortress + DFHack running:
 
 ```sh
 npm run verify:game-data   # game_data across all 6 kinds + two regression guards
-npm run verify:wiki        # wiki_search/wiki_lookup: redirect, cache hit, not-found
 npm run verify:trade-caravan   # trade with a caravan on-site (starts its own container)
 ```
 
@@ -54,7 +52,8 @@ is `dist/index.js`, run by whatever Node the caller has. It builds a fresh
 tarball into a throwaway directory so its deps resolve from the registry —
 not this repo's `node_modules` — then boots the installed bundle over MCP
 with the gates pinned explicitly (`DFHACK_MCP_ACTUATORS=1`, `DFHACK_MCP_DEV`
-unset) so the expected 41-tool count can't drift with whatever
+unset) so the expected tool count (`SURFACE_ACTUATORS_ON`, derived from the
+registry) can't drift with whatever
 `DFHACK_MCP_*` the caller's shell happens to export. It asserts the handshake
 version, tool count, and a handful of required tool names. Runnable locally
 (needs network for the registry install); exit 0 means the artifact is
@@ -120,11 +119,9 @@ T1 has two assertion modes, opposite fixtures, mutually exclusive:
   no-fort guard ([#6](https://github.com/alexanderolvera/dfhack-mcp/issues/6)),
   closing the long-standing "guard coded but never exercised" gap, and it is the
   no-fort reachability path for
-  [#28](https://github.com/alexanderolvera/dfhack-mcp/issues/28). The wiki tools
-  (`wiki_search`, `wiki_lookup`) are pure HTTP with **no game dependency**, so
-  they are NOT asserted to return the guard — instead they must still return
-  well-formed, non-error output. A genuine "DFHack unreachable" surfaces as its
-  connection error and correctly fails (it is not masked as a pass). Boot the
+  [#28](https://github.com/alexanderolvera/dfhack-mcp/issues/28). A genuine
+  "DFHack unreachable" surfaces as its connection error and correctly fails (it
+  is not masked as a pass). Boot the
   no-fort fixture with the empty-`dfhack.init` container in
   [`docker/README.md`](../docker/README.md); run with
   `DFHACK_PORT=<port> … node scripts/verify.mjs --tier=1 --no-fort`.
@@ -176,8 +173,7 @@ at the end of T2, reusing the payloads it already captured.
 ### T2 — golden + invariants (fixture container)
 
 A full-payload golden snapshot per tool against the fixture, plus the invariants
-above. `wiki_search` / `wiki_lookup` are network-dependent and excluded from
-goldens; every other tool is covered.
+above. Every tool is covered.
 
 **The fixture is the versioned DF container image**
 ([`docker/`](../docker/), [#27](https://github.com/alexanderolvera/dfhack-mcp/issues/27)),

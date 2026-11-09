@@ -12,7 +12,7 @@ tags: [dfhack-mcp/tool]
 > A one-call geological survey of the embark, REVEALED-INFO ONLY by default.
 
 ## Purpose
-Reports the geological substrate of the loaded embark: the surface z-level, the layer stack the fort has actually exposed (banded by z-range, kind, and in-game material names), the aquifer, discovered caverns, whether the magma sea has been reached, and surface water facts. An AI co-pilot calls it to orient before digging-related reasoning or before fusing material names with `game_data`/`wiki_lookup`. Fog of war is honored by default: undiscovered caverns and an unreached magma sea are omitted entirely, never leaked as z-ranges. It reports what is there, not where to dig.
+Reports the geological substrate of the loaded embark: the surface z-level, the layer stack the fort has actually exposed (banded by z-range, kind, and in-game material names), the aquifer, discovered caverns, whether the magma sea has been reached, and surface water facts. An AI co-pilot calls it to orient before digging-related reasoning or before resolving material names with `game_data`. Fog of war is honored by default: undiscovered caverns and an unreached magma sea are omitted entirely, never leaked as z-ranges. It reports what is there, not where to dig.
 
 ## Parameters
 | Name | Type | Required | Default | Description |
@@ -21,7 +21,7 @@ Reports the geological substrate of the loaded embark: the surface z-level, the 
 
 ## Returns
 - `surface_z_max` (number) — the highest open-to-sky ground z-level found ANYWHERE on the embark. Distinct from [map_overview](map_overview.md)'s `surface_z_at_core`, which reads only the fort-core column; on a sloped embark the two differ by however much relief the map has. Both were called `surface_z` before 1.4.1, which made a caller composing the two tools silently pick whichever it happened to read first.
-- `layers[]` — bands of consecutive z-levels sharing a material set: `{ z_top, z_bottom, kind, materials[] }`. `kind` is one of `soil | sedimentary | metamorphic | igneous_extrusive | igneous_intrusive | mixed | unknown`; `materials` are in-game names (e.g. "limestone") that `game_data`/`wiki_lookup` resolve.
+- `layers[]` — bands of consecutive z-levels sharing a material set: `{ z_top, z_bottom, kind, materials[] }`. `kind` is one of `soil | sedimentary | metamorphic | igneous_extrusive | igneous_intrusive | mixed | unknown`; `materials` are in-game names (e.g. "limestone") that `game_data` resolves.
 - `aquifer` — `{ present }` plus, when present, `type` (`light`/`heavy`), `z_top`, `z_bottom`.
 - `caverns_discovered[]` — `{ layer, z_top, z_bottom, water }` (layer 1 = first cavern); only caverns whose Discovered flag is set.
 - `magma_reached` (boolean) — the magma-SEA discovery flag alone, never a volcano/pool/hauled magma.
@@ -74,4 +74,4 @@ Field paths confirmed live on DFHack 53.15:
 - Nested list fields (e.g. a layer's `materials[]`) can arrive from Lua as `{}` for an empty table rather than `[]`; the TS wrapper coerces these back to arrays to keep the contract firm.
 
 ## Related
-[map_overview](map_overview.md) · [tile_region](tile_region.md) · [environment](environment.md) · [game_data](game_data.md) · [wiki_lookup](wiki_lookup.md)
+[map_overview](map_overview.md) · [tile_region](tile_region.md) · [environment](environment.md) · [game_data](game_data.md)

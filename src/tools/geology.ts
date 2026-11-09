@@ -66,11 +66,11 @@ export const geologyDef: ToolDef = {
     'directly above the fort centre only; on a sloped map the two legitimately ' +
     'differ by many z-levels); the layer stack the fort has exposed (each band ' +
     'z_top..z_bottom with a kind — soil/sedimentary/metamorphic/igneous — and the ' +
-    'in-game material names, e.g. "limestone", that game_data/wiki_lookup resolve); ' +
-    'the aquifer (presence, light vs. heavy type, and z-range, enough to fuse with ' +
-    'wiki_lookup("Aquifer")); the caverns actually DISCOVERED (each with z-range and ' +
-    'whether it holds water); whether the magma sea has been reached; and surface ' +
-    'water (brook, river, murky-pool count, and permanent_freeze — whether the ' +
+    'in-game material names, e.g. "limestone", that game_data resolves); the ' +
+    'aquifer (presence, light vs. heavy type, and z-range); the caverns actually ' +
+    'DISCOVERED (each with z-range and whether it holds water); whether the magma ' +
+    'sea has been reached; and surface water (brook, river, murky-pool count, and ' +
+    'permanent_freeze — whether the ' +
     "biome's base temperature keeps surface water frozen year-round, glacier/tundra, " +
     'the well-gating fact; not a seasonal winter claim). Undiscovered caverns and an ' +
     'unreached magma sea are OMITTED ' +

@@ -10,8 +10,7 @@ random live fort.
 **Why the container image is the fixture.** Its fort loads paused, so tool reads
 are byte-identical across calls *and across container restarts* (verified) — the
 determinism a golden needs. So these goldens are **committed and pinned to the
-image tag**. `wiki_search` / `wiki_lookup` are network-dependent and are not
-goldened; every other tool is.
+image tag**.
 
 To (re)author goldens after a deliberate output change:
 
