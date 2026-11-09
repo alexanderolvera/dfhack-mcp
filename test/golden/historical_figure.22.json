@@ -4,6 +4,7 @@
   "deity": true,
   "entities": [],
   "events": [],
+  "fog_of_war": "applied",
   "hf_id": 22,
   "kills": [],
   "name": "Thabost Dorenkeshan",

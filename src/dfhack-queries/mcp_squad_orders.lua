@@ -6,7 +6,7 @@ if df.global.gamemode ~= df.game_mode.DWARF then
   return
 end
 
-local visibility = reqscript('mcp_unitVisibility')
+local fog = reqscript('mcp_unitVisibility').fog_gate({})
 
 local a = { ... }
 local sub = a[1]
@@ -169,10 +169,7 @@ local function validate()
           blocked[#blocked + 1] = 'no unit with id ' .. id
         elseif dfhack.units.isDead(u) or not dfhack.units.isActive(u) then
           blocked[#blocked + 1] = 'unit ' .. id .. ' is dead or not on the map'
-        elseif visibility.is_hidden(u) then
-          -- Fog-of-war gate: ordering an attack on a unit standing on an
-          -- undiscovered tile would act on knowledge the fort does not have.
-          -- Fail closed, exactly as the unit-listing sensors do.
+        elseif fog.unit_hidden(u) then
           blocked[#blocked + 1] = 'unit ' .. id ..
             ' is on an undiscovered tile and cannot be targeted'
         elseif dfhack.units.isCitizen(u) then

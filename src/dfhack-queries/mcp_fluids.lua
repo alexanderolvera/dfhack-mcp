@@ -7,6 +7,7 @@ if df.global.gamemode ~= df.game_mode.DWARF then
 end
 
 local terrain = reqscript('mcp_readTerrain')
+local fog = terrain.fog_gate({ ... })
 
 local TILE_BUDGET = 20000000
 local AQUIFER_LAYERS_CAP = 50
@@ -48,7 +49,7 @@ local function near_interior(x, y, z)
       if not (dx == 0 and dy == 0) then
         local nx, ny = x + dx, y + dy
         if nx >= 0 and ny >= 0 and nx < x_count and ny < y_count then
-          if not terrain.is_hidden(nx, ny, z) then
+          if not fog.tile_hidden(nx, ny, z) then
             local g = dfhack.maps.getWalkableGroup(xyz2pos(nx, ny, z))
             if g ~= 0 and interior_groups[g] then return true end
           end
@@ -99,7 +100,7 @@ for z = z_count - 1, 0, -1 do
               if x < x_count then
                 scanned_tiles = scanned_tiles + 1
                 local des = blk.designation[lx][ly]
-                if not terrain.is_hidden(x, y, z, blk) then
+                if not fog.tile_hidden(x, y, z, blk) then
                   local walkable_ice = ICE_WALKABLE[blk.tiletype[lx][ly]]
                   if walkable_ice ~= nil then
                     local ib = ice_by_z[z]
@@ -266,7 +267,7 @@ local function well_water_source(w)
     if blk then
       local lx, ly = x % 16, y % 16
       local des = blk.designation[lx][ly]
-      if terrain.is_hidden(x, y, z, blk) then return { source = 'unknown', depth_to_source = nil } end
+      if fog.tile_hidden(x, y, z, blk) then return { source = 'unknown', depth_to_source = nil } end
       if des.flow_size > 0 then
         return { source = des.liquid_type and 'magma' or 'water', depth_to_source = w.z - z }
       end
@@ -324,4 +325,5 @@ emit({
   wells_truncated = wells_truncated,
   legend = next(footing_glyphs) and terrain.legend_for(footing_glyphs) or nil,
   scan = { complete = scan_complete, tiles_scanned = scanned_tiles, last_z_scanned = last_z_scanned },
+  fog_of_war = fog.mode,
 })

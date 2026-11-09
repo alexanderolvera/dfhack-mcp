@@ -13,6 +13,7 @@
   "flood_risk_tiles": [],
   "flood_risk_total": 0,
   "flood_risk_truncated": false,
+  "fog_of_war": "applied",
   "ice_layers": [],
   "ice_layers_total": 0,
   "ice_layers_truncated": false,

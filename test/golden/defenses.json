@@ -1,4 +1,5 @@
 {
+  "fog_of_war": "applied",
   "fort_core": {
     "citizens": 78,
     "x": 79,

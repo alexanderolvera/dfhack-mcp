@@ -13,10 +13,10 @@ if not string.match(query, '^%d+$') then
   return
 end
 
-local visibility = reqscript('mcp_unitVisibility')
+local fog = reqscript('mcp_unitVisibility').fog_gate(args)
 
 local u = df.unit.find(tonumber(query))
-if not u or visibility.is_hidden(u) then
+if not u or fog.unit_hidden(u) then
   emit({ error = 'no visible unit with id ' .. query .. ' (use find_unit to get a valid unit_id)', code = 'NOT_FOUND' })
   return
 end
@@ -334,6 +334,7 @@ local out = {
   sex = (u.sex == 1 and 'male') or (u.sex == 0 and 'female') or nil,
   age = age and math.floor(age) or nil,
   body_size_cm3 = safe(function() return u.body.size_info.size_cur end, nil),
+  fog_of_war = fog.mode,
 }
 
 out.features, out.features_truncated = capped(read_features(), FEATURE_CAP)

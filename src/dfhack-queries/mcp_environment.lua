@@ -6,6 +6,8 @@ if df.global.gamemode ~= df.game_mode.DWARF then
   return
 end
 
+local fog = reqscript('mcp_readTerrain').fog_gate({ ... })
+
 local WATER_FREEZE = 10000
 local BIOME_STEP   = 11
 local SEASONS = { [0] = 'spring', [1] = 'summer', [2] = 'autumn', [3] = 'winter' }
@@ -63,7 +65,7 @@ for x = math.floor(BIOME_STEP / 2), m.x_count - 1, BIOME_STEP do
       if blk then
         local lx, ly = x % 16, y % 16
         local des = blk.designation[lx][ly]
-        if not des.hidden then
+        if not fog.des_hidden(des) then
           local sh = df.tiletype_shape[df.tiletype.attrs[blk.tiletype[lx][ly]].shape]
           if des.outside and sh ~= 'EMPTY' and sh ~= 'NONE' then
             temps[#temps + 1] = blk.temperature_1[lx][ly]
@@ -108,7 +110,7 @@ for _, b in ipairs(m.map_blocks) do
     local f = dfhack.maps.getGlobalInitFeature(gf)
     if f and tostring(f._type):find('subterranean_from_layer') then
       local discovered = false
-      pcall(function() discovered = f.flags.Discovered end)
+      pcall(function() discovered = fog.feature_discovered(f) end)
       if discovered then
         cavern_of_gf[gf] = (f.start_depth or 0) + 1
         seen_gf[gf] = true
@@ -128,7 +130,7 @@ if any_discovered then
       for lx = 0, 15 do
         for ly = 0, 15 do
           local des = b.designation[lx][ly]
-          if des.feature_global and not des.hidden then
+          if des.feature_global and not fog.des_hidden(des) then
             local g = dfhack.maps.getWalkableGroup(xyz2pos(bx + lx, by + ly, bz))
             if g ~= 0 and citizen_groups[g] then cavern_open[num] = true end
           end
@@ -158,4 +160,5 @@ emit({
   biome = { evil = evil, good = good, reanimating = reanimating },
   caverns = caverns,
   caverns_discovered = #caverns,
+  fog_of_war = fog.mode,
 })

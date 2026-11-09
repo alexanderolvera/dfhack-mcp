@@ -15,7 +15,9 @@ tags: [dfhack-mcp/tool]
 Answers "how big is this map, where is the fort, and which z-levels is the player actually working on?" so an agent can aim its expensive `tile_region` grid reads instead of sweeping ~147 z-levels blind. Reports map extents, the fort-core coordinate (the same 3D citizen centroid `defenses` uses), the surface z above the fort center, the z-levels carrying construction and pending digging, and stairways collapsed to traversable single-column vertical runs. The payload is fixed-size regardless of fort size.
 
 ## Parameters
-None.
+| Name | Type | Required | Default | Description |
+|---|---|---|---|---|
+| reveal_hidden | boolean | No | `false` | Bypass [fog of war](../../CONTRIBUTING.md#fog-of-war-the-reveal_hidden-opt-in): also read what stands on undiscovered tiles. The response reports the mode as `fog_of_war`. |
 
 ## Returns
 - `extents` — `{ x, y, z }` tile counts.
@@ -25,6 +27,7 @@ None.
 - `stair_columns[]` — `{ x, y, z_top, z_bottom }` traversable vertical runs; two vertically-adjacent stair tiles connect only by DF's real stair rule (lower offers up-access AND upper offers down-access), so a helical shaft splits into its climbable segments. Ranked by run height, tallest first.
 - `stair_columns_total` (number) — full count before capping.
 - `stair_columns_truncated` (boolean) — true when the cap dropped runs.
+- `fog_of_war` — `"applied"` (the default) or `"bypassed"` (with `reveal_hidden=true`).
 
 ```json
 {
@@ -49,6 +52,7 @@ None.
 - Returns `{"error":"no fort loaded"}` when no fort is active.
 - `stair_columns` cap is 40; ranking by height (then x, y, z_top for determinism) means the tallest, most orientation-salient shafts survive and only trivial 2-level fragments get dropped.
 - Fog-of-war honest: the surface probe and stair scan skip hidden tiles. Pending DIG designations are counted regardless of the hidden flag — they are the player's own markers, not sensed terrain.
+- **Fog-of-war bypass**: with `reveal_hidden=true`, `surface_z_at_core` and `stair_columns` also read undiscovered tiles.
 - `fort_core` equals `defenses().fort_core` byte-for-byte (same centroid computation).
 - The TS wrapper backfills `surface_z_at_core`/`fort_core` to `null` when the Lua encoder omits them, and coerces empty nested activity lists to `[]` — the contract is nullable fields, never sometimes-missing ones.
 - Version note (53.15): `world.constructions` is GONE on this build; constructions come from `df.construction.get_vector()`.

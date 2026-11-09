@@ -15,7 +15,9 @@ tags: [dfhack-mcp/tool]
 Reports the fort's ambient state at call time: season, dominant weather (none/rain/snow), surface temperature and whether exposed water is currently frozen, the alignment of the biomes visible at embark (evil/good/reanimating), and — for each cavern the fort has ALREADY breached — whether it is open to fort pathing or sealed off. A small fixed-size payload suited to frequent polling.
 
 ## Parameters
-None.
+| Name | Type | Required | Default | Description |
+|---|---|---|---|---|
+| reveal_hidden | boolean | No | `false` | Bypass [fog of war](../../CONTRIBUTING.md#fog-of-war-the-reveal_hidden-opt-in): also read what stands on undiscovered tiles. The response reports the mode as `fog_of_war`. |
 
 ## Returns
 Top-level fields:
@@ -24,6 +26,7 @@ Top-level fields:
 - `biome` — `{evil, good, reanimating}` booleans
 - `caverns[]` — ONLY caverns the fort has discovered: `{cavern (1-3), open_to_fort}` (a revealed cavern tile shares a citizen walk group)
 - `caverns_discovered` — count
+- `fog_of_war` — `"applied"` (the default) or `"bypassed"` (with `reveal_hidden=true`).
 
 ```json
 {
@@ -48,6 +51,7 @@ Top-level fields:
 
 ## Caveats & limits
 - Fog-of-war honest: reports NOTHING about undiscovered cavern layers — a fort that has breached none returns an empty `caverns` list.
+- **Fog-of-war bypass**: with `reveal_hidden=true`, `caverns[]` lists every cavern layer on the map, discovered or not (`caverns_discovered` counts them), and the surface temperature and biome samples also read undiscovered tiles.
 - `surface.temperature` and `water_frozen` are null when no surface tile could be sampled (fully roofed/hidden); the DFHack Lua encoder cannot emit JSON null, so the TS wrapper normalizes the omitted scalars to explicit null.
 - Per-tile savagery is unavailable in this DFHack build, so no savage flag is reported.
 - The freeze fact is CURRENT temperature; geology() carries the will-it-freeze-in-winter fact — the two compose.

@@ -6,7 +6,7 @@ if df.global.gamemode ~= df.game_mode.DWARF then
   return
 end
 
-local visibility = reqscript('mcp_unitVisibility')
+local fog = reqscript('mcp_unitVisibility').fog_gate({ ... })
 
 local groups = {}
 local order = {}
@@ -69,7 +69,7 @@ end
 for _, u in ipairs(df.global.world.units.active) do
   if dfhack.units.isActive(u) and not dfhack.units.isDead(u)
      and dfhack.units.isDanger(u) and not dfhack.units.isCitizen(u)
-     and not visibility.is_hidden(u) then
+     and not fog.unit_hidden(u) then
     local contained = u.flags1.caged or u.flags1.chained
     local name = dfhack.units.getReadableName(u)
     local flags = classify(u)
@@ -98,4 +98,5 @@ emit({
   active_hostiles = active_total,
   contained = contained_total,
   groups = group_list,
+  fog_of_war = fog.mode,
 })

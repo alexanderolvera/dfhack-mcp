@@ -2,7 +2,7 @@ local args = {...}
 local query = args[1] or ''
 
 local emit = reqscript('mcp_jsonOut').emit
-local visibility = reqscript('mcp_unitVisibility')
+local fog = reqscript('mcp_unitVisibility').fog_gate(args)
 
 if df.global.gamemode ~= df.game_mode.DWARF then
   emit({ error = 'no fort loaded' })
@@ -288,7 +288,7 @@ end
 
 local function visible_unit_id()
   local u = hf.unit_id >= 0 and df.unit.find(hf.unit_id) or nil
-  if u and not visibility.is_hidden(u) then return u.id end
+  if u and not fog.unit_hidden(u) then return u.id end
   return nil
 end
 
@@ -322,6 +322,7 @@ local out = {
   birth = (not is_deity and not is_force) and { year = hf.born_year } or nil,
   death = read_death(death_event),
   unit_id = visible_unit_id(),
+  fog_of_war = fog.mode,
 }
 emit_list(out, 'entities', read_entities())
 emit_list(out, 'relationships', relationships)

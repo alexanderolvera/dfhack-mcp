@@ -1,6 +1,6 @@
 import { runJsonScript } from '../query.ts';
-import { z } from 'zod';
 import type { ToolDef } from '../register.ts';
+import { FOG_OF_WAR_NOTE, fogArgs, revealHiddenParam, type FogReport } from '../fog.ts';
 
 export interface GeoLayer {
   z_top: number;
@@ -30,29 +30,24 @@ export interface SurfaceWater {
   permanent_freeze: boolean;
 }
 
-export interface Geology {
+export interface Geology extends FogReport {
   surface_z_max: number;
   layers: GeoLayer[];
   aquifer: Aquifer;
   caverns_discovered: Cavern[];
   magma_reached: boolean;
   surface_water: SurfaceWater;
-  reveal_hidden?: true;
-  caverns_hidden?: Cavern[];
-  magma_hidden?: { z_top: number; z_bottom: number };
 }
 
-export async function geology(reveal_hidden = false): Promise<Geology | { error: string }> {
-  const data = await runJsonScript<Geology>(
-    'geology',
-    [reveal_hidden ? 'true' : 'false'],
-    ['layers', 'caverns_discovered']
-  );
+export async function geology(revealHidden?: boolean): Promise<Geology | { error: string }> {
+  const data = await runJsonScript<Geology>('geology', fogArgs(revealHidden), [
+    'layers',
+    'caverns_discovered',
+  ]);
   if ('error' in data) return data;
   for (const b of data.layers ?? []) {
     if (!Array.isArray(b.materials)) b.materials = [];
   }
-  if (reveal_hidden && !Array.isArray(data.caverns_hidden)) data.caverns_hidden = [];
   return data;
 }
 
@@ -73,19 +68,11 @@ export const geologyDef: ToolDef = {
     'permanent_freeze — whether the ' +
     "biome's base temperature keeps surface water frozen year-round, glacier/tundra, " +
     'the well-gating fact; not a seasonal winter claim). Undiscovered caverns and an ' +
-    'unreached magma sea are OMITTED ' +
-    '(fog of war stays honest). Set reveal_hidden=true to BYPASS FOG OF WAR and also ' +
-    'surface every undiscovered cavern (caverns_hidden) and the magma sea z-range ' +
-    '(magma_hidden) — a debug/spoiler switch, default false. Reports what is there, ' +
-    'not where to dig. Returns {"error":"no fort loaded"} if no fort is active.',
-  shape: {
-    reveal_hidden: z
-      .boolean()
-      .optional()
-      .describe(
-        'Bypass fog of war: also report undiscovered caverns and the magma-sea ' +
-          'z-range regardless of discovery. Default false (undiscovered depths omitted).'
-      ),
-  },
-  run: ({ reveal_hidden }) => geology(reveal_hidden ?? false),
+    'unreached magma sea are OMITTED; with reveal_hidden=true every cavern is listed ' +
+    'in caverns_discovered, magma_reached reports whether the sea exists, and the ' +
+    'layer stack runs the full column. Reports what is there, not where to dig. ' +
+    'Returns {"error":"no fort loaded"} if no fort is active. ' +
+    FOG_OF_WAR_NOTE,
+  shape: { reveal_hidden: revealHiddenParam },
+  run: ({ reveal_hidden }) => geology(reveal_hidden),
 };

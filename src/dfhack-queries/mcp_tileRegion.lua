@@ -56,6 +56,7 @@ local pz, pn = nil, -1
 for zz, c in pairs(z_count) do if c > pn then pn = c; pz = zz end end
 
 local a = { ... }
+local fog = reqscript('mcp_readTerrain').fog_gate(a)
 local az, ax0, ay0, ax1, ay1 =
   tonumber(a[1]), tonumber(a[2]), tonumber(a[3]), tonumber(a[4]), tonumber(a[5])
 
@@ -92,8 +93,7 @@ y0 = math.max(0, math.min(m.y_count - h, y0))
 if z < 0 then z = 0 elseif z >= m.z_count then z = m.z_count - 1 end
 truncated = truncated or false
 
-local rt = reqscript('mcp_readTerrain')
-local win = rt.read_window(x0, y0, z, w, h)
+local win = fog.read_window(x0, y0, z, w, h)
 
 local rows = {}
 for i, s in ipairs(win.grid) do
@@ -192,6 +192,7 @@ local out = {
   liquids_truncated = liquids_truncated,
   hidden_tiles = win.hidden_tiles,
   truncated = truncated,
+  fog_of_war = fog.mode,
 }
 if truncated then out.requested = { req_w, req_h } end
 emit(out)

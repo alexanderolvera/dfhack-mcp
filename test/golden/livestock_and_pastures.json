@@ -179,6 +179,7 @@
     "total": 13,
     "unpastured": 0
   },
+  "fog_of_war": "applied",
   "grazers": {
     "pastured": 17,
     "total": 17,

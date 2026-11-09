@@ -8,8 +8,7 @@ if df.global.gamemode ~= df.game_mode.DWARF then
   return
 end
 
-local args = { ... }
-local reveal_hidden = args[1] == 'true' or args[1] == '1'
+local fog = reqscript('mcp_readTerrain').fog_gate({ ... })
 
 local w = df.global.world
 local ttattrs = df.tiletype.attrs
@@ -72,8 +71,7 @@ for _, blk in ipairs(blocks) do
   for lx = 0, 15 do
     for ly = 0, 15 do
       local des = blk.designation[lx][ly]
-      local hidden = des.hidden
-      local visible = not hidden
+      local visible = not fog.des_hidden(des)
       if visible then
         if bz < revealed_zmin then revealed_zmin = bz end
         if bz > revealed_zmax then revealed_zmax = bz end
@@ -131,7 +129,7 @@ end
 
 if surface_z < 0 then surface_z = revealed_zmax end
 
-local z_floor = reveal_hidden and 0 or ((revealed_zmin ~= math.huge) and revealed_zmin or 0)
+local z_floor = (revealed_zmin ~= math.huge) and revealed_zmin or 0
 local zs = {}
 for z in pairs(perZ) do
   if z <= surface_z and z >= z_floor then zs[#zs + 1] = z end
@@ -212,7 +210,7 @@ for _, blk in ipairs(blocks) do
       for lx = 0, 15 do
         for ly = 0, 15 do
           local des = blk.designation[lx][ly]
-          if des.feature_global and (reveal_hidden or not des.hidden)
+          if des.feature_global and not fog.des_hidden(des)
             and des.flow_size > 0 and not des.liquid_type then
             feature_water[mi] = true
           end
@@ -223,9 +221,7 @@ for _, blk in ipairs(blocks) do
 end
 
 local caverns_discovered = {}
-local caverns_hidden = {}
 local magma_reached = false
-local magma_hidden
 
 for i = 0, #mf - 1 do
   local feat = mf[i]
@@ -238,21 +234,14 @@ for i = 0, #mf - 1 do
       z_bottom = zmin,
       water = feature_water[i] or false,
     }
-    if feat.flags.Discovered then
+    if fog.feature_discovered(feat) then
       caverns_discovered[#caverns_discovered + 1] = row
-    elseif reveal_hidden then
-      caverns_hidden[#caverns_hidden + 1] = row
     end
   elseif ft == df.feature_type.magma_core_from_layer then
-    if feat.flags.Discovered then magma_reached = true end
-    if reveal_hidden and not feat.flags.Discovered then
-      local zmin, zmax = feature_zrange(feat.feature)
-      magma_hidden = { z_top = zmax, z_bottom = zmin }
-    end
+    if fog.feature_discovered(feat) then magma_reached = true end
   end
 end
 table.sort(caverns_discovered, function(a, b) return a.z_top > b.z_top end)
-table.sort(caverns_hidden, function(a, b) return a.z_top > b.z_top end)
 
 local function count_pools()
   local seen = {}
@@ -291,10 +280,6 @@ local out = {
   caverns_discovered = caverns_discovered,
   magma_reached = magma_reached,
   surface_water = surface_water,
+  fog_of_war = fog.mode,
 }
-if reveal_hidden then
-  out.reveal_hidden = true
-  out.caverns_hidden = caverns_hidden
-  if magma_hidden then out.magma_hidden = magma_hidden end
-end
 emit(out)

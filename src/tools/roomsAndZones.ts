@@ -1,5 +1,6 @@
 import { runJsonScript } from '../query.ts';
 import type { ToolDef } from '../register.ts';
+import { FOG_OF_WAR_NOTE, fogArgs, revealHiddenParam, type FogReport } from '../fog.ts';
 
 export type SupplyLevel = 'none' | 'low' | 'ok';
 
@@ -53,7 +54,7 @@ export interface Ghosts {
   unquiet_dead_count: number;
 }
 
-export interface RoomsAndZones {
+export interface RoomsAndZones extends FogReport {
   bedrooms: Bedrooms;
   dining: Dining;
   hospital: Hospital;
@@ -70,8 +71,12 @@ export interface RoomsAndZones {
   ghosts: Ghosts;
 }
 
-export async function roomsAndZones(): Promise<RoomsAndZones | { error: string }> {
-  const data = await runJsonScript<RoomsAndZones>('roomsAndZones', [], ['wells']);
+export async function roomsAndZones(
+  revealHidden?: boolean
+): Promise<RoomsAndZones | { error: string }> {
+  const data = await runJsonScript<RoomsAndZones>('roomsAndZones', fogArgs(revealHidden), [
+    'wells',
+  ]);
   if ('error' in data) return data;
   if (data.temples) {
     if (!Array.isArray(data.temples.dedicated)) data.temples.dedicated = [];
@@ -95,16 +100,18 @@ export const roomsAndZonesDef: ToolDef = {
     'guildhalls, and coffins free vs. dead awaiting burial (loose corpses of ' +
     "the fort's own race). ghosts reports active apparitions currently on the " +
     'map (`active[]`, fog-of-war gated and capped; active_total is the full count ' +
-    'before the cap) plus unquiet_dead_count — this civ\'s ' +
+    "before the cap) plus unquiet_dead_count — this civ's " +
     'dead who are world-flagged as unquiet ghosts (`flags.ghost`) and NOT ' +
     'represented in the visible `active[]` list. This is deliberately not the ' +
     'same as "confirmed absent locally": a ghost hidden behind fog of war is ' +
     'excluded from `active[]` (never leaked) but still counted here, since the ' +
-    'world-level ghost fact is fair game even when its exact location isn\'t. ' +
+    "world-level ghost fact is fair game even when its exact location isn't. " +
     'The supply-side companion to unmet_needs(). Reports ' +
     'what the fort has, not what to build. ' +
     'Wells are capped (wells_truncated flags the overflow); bedroom and coffin ' +
     'detail is aggregated to counts. Returns {"error":"no fort loaded"} if no ' +
-    'fort is active.',
-  run: roomsAndZones,
+    'fort is active. ' +
+    FOG_OF_WAR_NOTE,
+  shape: { reveal_hidden: revealHiddenParam },
+  run: ({ reveal_hidden }) => roomsAndZones(reveal_hidden),
 };

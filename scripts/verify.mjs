@@ -189,11 +189,14 @@ function canonicalize(value) {
   return value;
 }
 
+// The software-rendered fixture needs more than the 10 s default for a full-map reveal_hidden scan.
+const HARNESS_TIMEOUT_MS = '60000';
+
 function connect(env = process.env) {
   const transport = new StdioClientTransport({
     command: process.execPath,
     args: [join(ROOT, 'src', 'index.ts')],
-    env: { ...env },
+    env: { DFHACK_MCP_TIMEOUT_MS: HARNESS_TIMEOUT_MS, ...env },
     cwd: ROOT,
   });
   const client = new Client({ name: 'dfhack-mcp-verify', version: '1.0.0' });

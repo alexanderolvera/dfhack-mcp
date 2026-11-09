@@ -1,5 +1,6 @@
 import { runJsonScript } from '../query.ts';
 import type { ToolDef } from '../register.ts';
+import { FOG_OF_WAR_NOTE, fogArgs, revealHiddenParam, type FogReport } from '../fog.ts';
 
 export type Weather = 'none' | 'rain' | 'snow';
 
@@ -22,7 +23,7 @@ export interface Cavern {
   open_to_fort: boolean;
 }
 
-export interface Environment {
+export interface Environment extends FogReport {
   season: number;
   season_name: 'spring' | 'summer' | 'autumn' | 'winter' | string;
   surface: Surface;
@@ -31,8 +32,10 @@ export interface Environment {
   caverns_discovered: number;
 }
 
-export async function environment(): Promise<Environment | { error: string }> {
-  const data = await runJsonScript<Environment>('environment', [], ['caverns']);
+export async function environment(
+  revealHidden?: boolean
+): Promise<Environment | { error: string }> {
+  const data = await runJsonScript<Environment>('environment', fogArgs(revealHidden), ['caverns']);
   if ('error' in data) return data;
   if (data.surface) {
     if (data.surface.temperature === undefined) data.surface.temperature = null;
@@ -54,6 +57,8 @@ export const environmentDef: ToolDef = {
     'Fog-of-war honest: reports NOTHING about undiscovered cavern layers (a fort ' +
     'that has breached none returns an empty caverns list). Small fixed-size ' +
     'payload. Per-tile savagery is unavailable in this DFHack build, so no savage ' +
-    'flag is reported. Returns {"error":"no fort loaded"} if no fort is active.',
-  run: environment,
+    'flag is reported. Returns {"error":"no fort loaded"} if no fort is active. ' +
+    FOG_OF_WAR_NOTE,
+  shape: { reveal_hidden: revealHiddenParam },
+  run: ({ reveal_hidden }) => environment(reveal_hidden),
 };

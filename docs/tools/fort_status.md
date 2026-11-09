@@ -15,7 +15,9 @@ tags: [dfhack-mcp/tool]
 The single-call snapshot: fort name, in-game date and season, the fort's identity, population, created wealth, a happiness breakdown, recent deaths, and the count of hostiles on the map. An AI co-pilot typically calls this first each session to orient itself before reaching for the deeper sensors.
 
 ## Parameters
-None.
+| Name | Type | Required | Default | Description |
+|---|---|---|---|---|
+| reveal_hidden | boolean | No | `false` | Bypass [fog of war](../../CONTRIBUTING.md#fog-of-war-the-reveal_hidden-opt-in): also read what stands on undiscovered tiles. The response reports the mode as `fog_of_war`. |
 
 ## Returns
 Top-level fields:
@@ -26,6 +28,7 @@ Top-level fields:
 - `happiness` — `{miserable, unhappy, content, happy}` citizen counts
 - `recent_deaths` — deaths recorded AT THIS SITE within the last game year: `since_year` (the cutoff), `citizens` (the fort's own dead), `citizens_slain_by_citizen` (how many of those were killed by a fellow citizen), `outsiders_at_site` (dead who were not fort members), `citizen_causes[]` (`{cause, count}` for citizens only, most-common first, e.g. `THIRST`, `STARVATION`, `STRUCK_DOWN`)
 - `hostiles_on_map` — discovered, living, non-citizen dangerous units on the map, caged/chained ones included (equals `threats`' `active_hostiles + contained`)
+- `fog_of_war` — `"applied"` (the default) or `"bypassed"` (with `reveal_hidden=true`).
 
 ```json
 {
@@ -65,6 +68,7 @@ Top-level fields:
 - The death window is the last **1 game year** (`since_year` states the cutoff explicitly). It is a recency window, not fort history — use [site_history](site_history.md) for the full record.
 - Deaths are read from DF's dedicated `history.events_death` index, scanned newest-first and stopped at the year cutoff, so cost is proportional to recent deaths rather than to world age.
 - **Fog of war**: `hostiles_on_map` excludes any unit standing on an undiscovered tile — an undiscovered cavern's inhabitants never surface here (same gate as [threats](threats.md)).
+- **Fog-of-war bypass**: with `reveal_hidden=true`, `hostiles_on_map` also counts hostiles on undiscovered tiles.
 - Small fixed-size payload; no parameters, no pagination.
 - Returns `{"error":"no fort loaded"}` if no fort is active. To find out what DF is doing when no fort is loaded, use [game_state](game_state.md), which works at any screen.
 

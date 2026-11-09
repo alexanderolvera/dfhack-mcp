@@ -6,6 +6,7 @@
   },
   "caverns": [],
   "caverns_discovered": 0,
+  "fog_of_war": "applied",
   "season": 3,
   "season_name": "winter",
   "surface": {

@@ -1,6 +1,7 @@
 {
   "active_hostiles": 0,
   "contained": 2,
+  "fog_of_war": "applied",
   "groups": [
     {
       "contained": true,

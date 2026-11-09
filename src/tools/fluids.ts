@@ -1,5 +1,6 @@
 import { runJsonScript } from '../query.ts';
 import type { ToolDef } from '../register.ts';
+import { FOG_OF_WAR_NOTE, fogArgs, revealHiddenParam, type FogReport } from '../fog.ts';
 
 export interface AquiferLayer {
   z_top: number;
@@ -49,7 +50,7 @@ export interface FluidsWell {
   depth_to_source?: number;
 }
 
-export interface Fluids {
+export interface Fluids extends FogReport {
   aquifer_layers: AquiferLayer[];
   aquifer_layers_total: number;
   aquifer_layers_truncated: boolean;
@@ -70,8 +71,8 @@ export interface Fluids {
   scan: { complete: boolean; tiles_scanned: number; last_z_scanned: number | null };
 }
 
-export function fluids(): Promise<Fluids | { error: string }> {
-  return runJsonScript<Fluids>('fluids', [], [
+export function fluids(revealHidden?: boolean): Promise<Fluids | { error: string }> {
+  return runJsonScript<Fluids>('fluids', fogArgs(revealHidden), [
     'aquifer_layers',
     'water_layers',
     'ice_layers',
@@ -107,7 +108,7 @@ export const fluidsDef: ToolDef = {
     '(a size floor meant to separate a real magma sea from a small pool/volcano pipe), ' +
     'omitted (not a null field) if no such level is revealed. flood_risk_tiles[] lists ' +
     'revealed FULL-depth (max_depth 7/7) water tiles chebyshev-adjacent to a tile in the ' +
-    "same walkable group as any citizen — a flood-EXPOSURE fact (this water sits next to fort-reachable " +
+    'same walkable group as any citizen — a flood-EXPOSURE fact (this water sits next to fort-reachable ' +
     'space right now), not a prediction of whether or when it floods anything; capped ' +
     'at 50 (flood_risk_total/flood_risk_truncated track the real count). wells[] extends ' +
     "rooms_and_zones' well read with each well's x/y and the water source found scanning " +
@@ -117,6 +118,8 @@ export const fluidsDef: ToolDef = {
     'before reaching z=0 (scan.last_z_scanned marks where it stopped); every field above ' +
     'is still fog-of-war-safe when that happens, just possibly missing deep layers. ' +
     'Facts only — no dig/pump/floodgate recommendations. Returns {"error":"no fort ' +
-    'loaded"} if no fort is active.',
-  run: fluids,
+    'loaded"} if no fort is active. ' +
+    FOG_OF_WAR_NOTE,
+  shape: { reveal_hidden: revealHiddenParam },
+  run: ({ reveal_hidden }) => fluids(reveal_hidden),
 };

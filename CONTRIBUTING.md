@@ -271,22 +271,26 @@ Two `reqscript`'d Lua modules centralize fog-of-war correctness so individual
 tools never re-derive it. They aren't tools themselves (no `docs/tools/*.md`
 page), so their behavior is documented here instead:
 
-- **`mcp_readTerrain.lua`** — the terrain substrate for spatial tools.
-  Undiscovered tiles (`designation.hidden`) are always rendered as `?`; the
-  real tiletype is never serialized. `read_window(x0, y0, z, w, h)`
-  block-caches reads (~26x faster than per-tile `getTileType`) and is the one
-  place the tile-shape-to-glyph mapping and the hidden-tile convention live.
-  Used by `defenses`, `fluids` and `tile_region` via `reqscript('mcp_readTerrain')`.
+- **`mcp_readTerrain.lua`** — the terrain substrate for spatial tools, and the
+  one place fog of war is decided. `fog_gate(args)` reads the bypass flag from a
+  script's argv and returns the gate every fog-gated script uses: `mode`
+  (`"applied"`/`"bypassed"`), `tile_hidden(x, y, z, blk)`, `des_hidden(des)` for a
+  designation already in hand, `feature_discovered(feat)` for caverns and the
+  magma sea, and `read_window(x0, y0, z, w, h)`. With fog applied, undiscovered
+  tiles (`designation.hidden`) render as `?` and the real tiletype is never
+  serialized. `read_window` block-caches reads (~26x faster than per-tile
+  `getTileType`) and is the one place the tile-shape-to-glyph mapping and the
+  hidden-tile convention live. A tile with no loaded block is hidden in both
+  modes (fail closed).
 - **`mcp_unitVisibility.lua`** — the fog-of-war gate for UNIT enumeration, the
-  companion to the module above. `is_hidden(u)` is the single source of truth
-  for "has the fort discovered the tile this unit stands on"; every
-  unit-listing tool (`threats`, `fort_status`, and any future wildlife/
-  animal-economy sensor) must `reqscript` this and filter through it rather
-  than re-deriving the `designation.hidden` check inline — that duplication is
-  exactly how a real fog-of-war leak happened once (an undiscovered cavern's
-  hostiles reported as "on the map" — an X-ray leak on `threats`/`fort_status`,
-  since fixed). A caged/chained beast is gated the same as a loose one;
-  off-map/unloaded tiles are treated as unseen (fail closed, never leak).
+  companion to the module above. Its `fog_gate(args)` returns the terrain gate
+  plus `unit_hidden(u)`, the single source of truth for "has the fort discovered
+  the tile this unit stands on". Every unit-listing tool must `reqscript` this
+  and filter through it rather than re-deriving the `designation.hidden` check
+  inline. That duplication is exactly how a real fog-of-war leak happened once
+  (an undiscovered cavern's hostiles reported as "on the map", an X-ray leak on
+  `threats`/`fort_status`, since fixed). A caged/chained beast is gated the same
+  as a loose one; an off-map unit is treated as unseen in both modes.
 
 **Writing a tool that reads terrain or enumerates units? `reqscript` the
 relevant module above — don't re-implement the hidden-tile check.**
@@ -304,3 +308,40 @@ Both modules use the standard DFHack `--@ module = true` idiom: a leading
 `if dfhack_flags and dfhack_flags.module then return end` guard so a
 `reqscript` caller gets only the functions, while direct invocation
 (`dfhack-run mcp_readTerrain ...`) still runs the script's tail.
+
+### Fog of war: the `reveal_hidden` opt-in
+
+Fog of war is on by default, and what a player may see is the client's policy,
+not the server's. So every fog-gated tool takes the same optional
+`reveal_hidden: boolean` (default `false`) and every response from it reports
+`fog_of_war: "applied" | "bypassed"`, so a client can never mistake one mode for
+the other. The fog-gated tools are `defenses`, `environment`, `fluids`,
+`fort_health`, `fort_status`, `geology`, `historical_figure`,
+`livestock_and_pastures`, `map_overview`, `military`, `rooms_and_zones`,
+`threats`, `tile_region` and `unit_appearance`.
+
+The bypass is implemented once. The TS side declares the shared
+`revealHiddenParam` from `src/fog.ts` and appends `fogArgs(reveal_hidden)`
+(`--reveal-hidden`) to the script's argv; the script hands its argv to
+`fog_gate`, which strips the flag, so positional arguments are unaffected. A
+bypassed response is computed as if the whole map were discovered: the same
+fields and shape, with more in them. `test/fog.test.mjs` fails if a script takes
+the flag without its tool sending it (or the reverse), if a fog-gated script
+does not report `fog_of_war`, or if any other script reads `designation.hidden`
+or `flags.Discovered` itself. Only `blueprint_apply` and `squad_orders` may, to
+report undiscovered tiles as a fact.
+
+A full-map scan reads every tile instead of skipping undiscovered ones, so
+`fluids` and `geology` take noticeably longer with `reveal_hidden=true`; raise
+`DFHACK_MCP_TIMEOUT_MS` on a large map.
+
+Tools that stay out of the opt-in:
+
+- `squad_orders` refuses a kill order against a unit on an undiscovered tile
+  and always applies fog (`fog_gate({})`). It is a write: bypassing it would
+  change what the fort does, not what the client shows.
+- `blueprint_apply` and `squad_orders` only *report* undiscovered tiles
+  (`fog_of_war_tiles`, `target_undiscovered`); they gate nothing.
+- `dfhack_command_run`'s `prospect` reads the revealed map only. Its `all`/`hell`
+  keywords, which scan undiscovered tiles, stay off the allowlist.
+- `game_state` and `artifacts_and_engravings` read no map-bound fog state.

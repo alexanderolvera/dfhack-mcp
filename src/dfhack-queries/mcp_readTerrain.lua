@@ -44,16 +44,7 @@ function sym(tt, hidden)
   else return '.' end
 end
 
--- Fail-closed single-tile fog-of-war check, sharable across every reader that
--- needs a per-tile (not per-window) test. Pass an already-fetched block (blk)
--- to skip the re-fetch when the caller has one in hand; omit it otherwise.
-function is_hidden(x, y, z, blk)
-  blk = blk or dfhack.maps.getTileBlock(x, y, z)
-  if not blk then return true end
-  return blk.designation[x % 16][y % 16].hidden
-end
-
-function read_window(x0, y0, z, w, h)
+local function read_window(x0, y0, z, w, h, reveal)
   local m = df.global.world.map
   local cache = {}
   local function block(x, y)
@@ -76,7 +67,7 @@ function read_window(x0, y0, z, w, h)
       local hidden, tt, outside = false, nil, nil
       if blk then
         local des = blk.designation[x % 16][y % 16]
-        hidden = des.hidden
+        hidden = des.hidden and not reveal
         outside = des.outside
         tt = blk.tiletype[x % 16][y % 16]
       end
@@ -103,6 +94,33 @@ function read_window(x0, y0, z, w, h)
   }
 end
 
+local REVEAL_HIDDEN_FLAG = '--reveal-hidden'
+
+local function take_reveal_flag(args)
+  local found = false
+  for i = #args, 1, -1 do
+    if args[i] == REVEAL_HIDDEN_FLAG then
+      table.remove(args, i)
+      found = true
+    end
+  end
+  return found
+end
+
+function fog_gate(args)
+  local reveal = take_reveal_flag(args)
+  local gate = { reveal = reveal, mode = reveal and 'bypassed' or 'applied' }
+  function gate.des_hidden(des) return not reveal and des.hidden end
+  function gate.tile_hidden(x, y, z, blk)
+    blk = blk or dfhack.maps.getTileBlock(x, y, z)
+    if not blk then return true end
+    return not reveal and blk.designation[x % 16][y % 16].hidden
+  end
+  function gate.feature_discovered(feat) return reveal or feat.flags.Discovered end
+  function gate.read_window(x0, y0, z, w, h) return read_window(x0, y0, z, w, h, reveal) end
+  return gate
+end
+
 if dfhack_flags and dfhack_flags.module then
   return
 end
@@ -115,14 +133,17 @@ if df.global.gamemode ~= df.game_mode.DWARF then
 end
 
 local a = { ... }
+local fog = fog_gate(a)
 local x0 = tonumber(a[1])
 local y0 = tonumber(a[2])
 local z = tonumber(a[3])
 local w = tonumber(a[4]) or 100
 local h = tonumber(a[5]) or 100
 if not (x0 and y0 and z) then
-  emit({ error = 'usage: mcp_readTerrain X0 Y0 Z [W] [H]', code = 'INVALID_ARGUMENT' })
+  emit({ error = 'usage: mcp_readTerrain X0 Y0 Z [W] [H] [--reveal-hidden]', code = 'INVALID_ARGUMENT' })
   return
 end
 
-emit(read_window(x0, y0, z, w, h))
+local win = fog.read_window(x0, y0, z, w, h)
+win.fog_of_war = fog.mode
+emit(win)
