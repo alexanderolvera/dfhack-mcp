@@ -252,8 +252,8 @@ Never `--update` against a non-fixture fort.
   each of the first five hostiles the bypass lists: a hostile must be listed with
   fog applied exactly when its tile is not `?`. A gate that leaks hidden units
   fails it even though every count check would pass. A bypassed `fluids` or
-  `geology` scan takes 12–14 s on the software-rendered fixture, over the 10 s
-  default, so the harness starts its server with `DFHACK_MCP_TIMEOUT_MS=60000`
+  `geology` scan takes 12–14 s on the software-rendered fixture, which leaves little
+  headroom under the 30 s default on a slower host, so the harness starts its server with `DFHACK_MCP_TIMEOUT_MS=60000`
   unless you set the variable yourself.
 - **Actuators** (write tools, Tier 2 / M3) verify as **fixture → apply → assert
   readback → restore-fixture**. Still deterministic; the committed save is the

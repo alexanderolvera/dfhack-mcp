@@ -43,7 +43,7 @@ what to read instead.
 - Every error payload carries a machine-readable `code`: `NOT_CONNECTED`,
   `NO_FORT`, `NO_GAME`, `NOT_FOUND`, `INVALID_ARGUMENT`, `TIMEOUT` or
   `SCRIPT_ERROR`.
-- Each call to DFHack has a deadline, 10 seconds by default
+- Each call to DFHack has a deadline, 30 seconds by default
   (`DFHACK_MCP_TIMEOUT_MS`). A call that misses it returns `TIMEOUT` and is
   never retried, because the script may have partly run.
 - `stocks` has an `inventory` section with the usable count of every DF item

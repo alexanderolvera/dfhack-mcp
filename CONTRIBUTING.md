@@ -233,7 +233,7 @@ DFHack, lazy-connecting on first use, and share one helper, `withRetry`, for the
 rules below.
 
 - **Deadline.** Each attempt (connect, script-path registration and the call
-  itself) must finish within `DFHACK_MCP_TIMEOUT_MS`, 10 000 ms by default. A miss
+  itself) must finish within `DFHACK_MCP_TIMEOUT_MS`, 30 000 ms by default. A miss
   throws `TimeoutError` (`code: TIMEOUT`) and closes the connection, including one
   still mid-handshake, so the next call reconnects cleanly.
 - **No retry after the call may have run.** An `RpcError` means DFHack was

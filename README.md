@@ -230,7 +230,7 @@ All optional, set in your MCP client's `env` for the server:
 | `DFHACK_MCP_COMMANDS`  | _(unset)_   | Set to `1` to expose `dfhack_command_run`, which runs an allowlist of DFHack's own commands (separate from the actuator gate). |
 | `DFHACK_MCP_DEV`       | _(unset)_   | Set to `1` to expose `run_lua`, a raw DFHack Lua escape hatch (reads **and writes** game state; for tool authors only). |
 | `DFHACK_MCP_QUERY_DIR` | `src/dfhack-queries/` (dev) / `dist/dfhack-queries/` (bundled) | Overrides the directory from which the MCP query scripts are loaded. |
-| `DFHACK_MCP_TIMEOUT_MS` | `10000`   | Per-call deadline, in milliseconds, for each DFHack RPC call. A call that misses it returns `TIMEOUT`, resets the connection, and is never retried. |
+| `DFHACK_MCP_TIMEOUT_MS` | `30000`   | Per-call deadline, in milliseconds, for each DFHack RPC call. A call that misses it returns `TIMEOUT`, resets the connection, and is never retried. |
 
 ## Errors
 
@@ -264,7 +264,7 @@ are rejected by the MCP SDK before the tool runs, as plain text with no `code`.
 - **`"code":"TIMEOUT"`** — DFHack is reachable but did not answer in time (the
   game is hung, a modal dialog is open, or a long save is running). The next call
   reconnects. Raise `DFHACK_MCP_TIMEOUT_MS` if your fort is large enough that a
-  normal call takes longer than 10 seconds.
+  normal call takes longer than 30 seconds.
 - **An error about not reaching DFHack** — Dwarf Fortress isn't running with
   DFHack, or the RPC port differs. Confirm DF is up with DFHack and that
   `DFHACK_HOST` / `DFHACK_PORT` match (defaults `127.0.0.1:5000`).

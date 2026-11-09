@@ -3,7 +3,7 @@ import { DwarfClient, RpcError } from 'dfhack-remote-node';
 
 const HOST = process.env.DFHACK_HOST ?? '127.0.0.1';
 const PORT = Number(process.env.DFHACK_PORT ?? 5000);
-const DEFAULT_TIMEOUT_MS = 10_000;
+const DEFAULT_TIMEOUT_MS = 30_000;
 const TIMEOUT_MS = positiveOr(Number(process.env.DFHACK_MCP_TIMEOUT_MS), DEFAULT_TIMEOUT_MS);
 
 const QUERY_DIR =

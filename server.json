@@ -52,11 +52,11 @@
         },
         {
           "name": "DFHACK_MCP_TIMEOUT_MS",
-          "description": "Per-call deadline for DFHack RPC calls, in milliseconds. Defaults to 10000.",
+          "description": "Per-call deadline for DFHack RPC calls, in milliseconds. Defaults to 30000.",
           "format": "number",
           "isRequired": false,
           "isSecret": false,
-          "default": "10000"
+          "default": "30000"
         }
       ]
     }

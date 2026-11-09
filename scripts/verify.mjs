@@ -189,7 +189,7 @@ function canonicalize(value) {
   return value;
 }
 
-// The software-rendered fixture needs more than the 10 s default for a full-map reveal_hidden scan.
+// Headroom over the 30 s default for full-map reveal_hidden scans on a slow host.
 const HARNESS_TIMEOUT_MS = '60000';
 
 function connect(env = process.env) {

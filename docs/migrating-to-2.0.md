@@ -77,7 +77,7 @@ Fog of war is still on by default. Every fog-gated tool now takes the same optio
 
 Every error payload now has a stable `code` alongside the `error` message: `NOT_CONNECTED`, `NO_FORT`, `NO_GAME`, `NOT_FOUND`, `INVALID_ARGUMENT`, `TIMEOUT` or `SCRIPT_ERROR`. Branch on `code`; the message text may change between releases. Arguments that fail a tool's input schema are still rejected by the MCP SDK before the tool runs, as a plain-text protocol error with no `code`.
 
-Each call now has a deadline (`DFHACK_MCP_TIMEOUT_MS`, default 10000). A call that misses it returns `TIMEOUT` and is never retried, because the script may have partly run.
+Each call now has a deadline (`DFHACK_MCP_TIMEOUT_MS`, default 30000). A call that misses it returns `TIMEOUT` and is never retried, because the script may have partly run.
 
 ## Knowing what DF is doing without a fort
 
