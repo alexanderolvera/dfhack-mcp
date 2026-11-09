@@ -12,7 +12,7 @@ tags: [dfhack-mcp/tool]
 > The fort's art, as labeled facts.
 
 ## Purpose
-Reports the fort's named artifacts (paginated) plus an aggregated summary of the map's engravings. Each artifact carries its dwarven/translated name, item type and base material, created value, quality, maker, decorations, and any engraved inscription text (e.g. a slab's secret). Engravings are grouped by the art image they depict, with counts (never itemized per tile). Each group carries the image's title and what it shows (the depicted figures with their histfig ids, items, plants and shapes, the verbs linking them, and the history event it commemorates), alongside a quality histogram and the top engravers. An AI co-pilot calls it to inventory the fort's art, read slab inscriptions, or find which past events and figures the fort's walls depict.
+Reports the fort's named artifacts (paginated) plus an aggregated summary of the map's engravings. Each artifact carries its dwarven/translated name, item type and base material, created value, quality, maker, decorations, and any engraved inscription text (e.g. a slab's secret). Engravings are grouped by the art image they depict, with counts (never itemized per tile). Each group carries the image's title and what it shows (the depicted figures with their histfig ids, items, plants and shapes, the verbs linking them, and the history event it commemorates), alongside a quality histogram and the top engravers. A client calls it to inventory the fort's art, read slab inscriptions, or find which past events and figures the fort's walls depict.
 
 ## Parameters
 | Name | Type | Required | Default | Description |

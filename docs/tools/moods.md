@@ -12,7 +12,7 @@ tags: [dfhack-mcp/tool]
 > Any active strange mood (fey/secretive/possessed/macabre/fell) and its material countdown.
 
 ## Purpose
-Reports each dwarf seized by a strange mood: the mood type, the driving artifact skill, the workshop claimed (or that none is yet), the game's raw mood countdown, and every demanded material cross-referenced against fort stock — needed, gathered so far, and how many the fort actually has. The whole early warning is "demands bones, fort has zero": the tool reports the demand vs. the stock, not what to go collect. An AI co-pilot calls it when a mood announcement fires, or periodically, since an unsatisfiable mood ends in insanity.
+Reports each dwarf seized by a strange mood: the mood type, the driving artifact skill, the workshop claimed (or that none is yet), the game's raw mood countdown, and every demanded material cross-referenced against fort stock — needed, gathered so far, and how many the fort actually has. The whole early warning is "demands bones, fort has zero": the tool reports the demand vs. the stock, not what to go collect. A client calls it when a mood announcement fires, or periodically, since an unsatisfiable mood ends in insanity.
 
 ## Parameters
 None.

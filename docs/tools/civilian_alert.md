@@ -12,7 +12,7 @@ tags: [dfhack-mcp/tool]
 > Toggle a named burrow in or out of the fort's civilian-alert safety set — "siege spotted -> everyone inside," the single most-wanted emergency capability.
 
 ## Purpose
-The same mechanism as DFHack's `gui/civ-alert` and the vanilla Squads panel's alert button. Execute-never-decide: the caller names the burrow (by id or name) and whether it should be part of the alert; the tool toggles exactly that. `enabled=true` adds the burrow to the alert set AND sounds the alarm (civilians immediately path to a linked burrow) if it wasn't already sounding. `enabled=false` removes the burrow; the alarm is only silenced once the alert set becomes fully empty — removing one of several linked burrows leaves the others (and the alarm) active. An AI co-pilot calls it the moment `threats` reports a siege, naming a burrow `burrows()` already reported.
+The same mechanism as DFHack's `gui/civ-alert` and the vanilla Squads panel's alert button. Execute-never-decide: the caller names the burrow (by id or name) and whether it should be part of the alert; the tool toggles exactly that. `enabled=true` adds the burrow to the alert set AND sounds the alarm (civilians immediately path to a linked burrow) if it wasn't already sounding. `enabled=false` removes the burrow; the alarm is only silenced once the alert set becomes fully empty — removing one of several linked burrows leaves the others (and the alarm) active. A client calls it the moment `threats` reports a siege, naming a burrow `burrows()` already reported.
 
 ## Parameters
 | Name | Type | Required | Default | Description |

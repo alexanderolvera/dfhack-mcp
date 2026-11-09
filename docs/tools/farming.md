@@ -12,7 +12,7 @@ tags: [dfhack-mcp/tool]
 > The fort's farm plots and seed stock as facts: the early-survival pipeline between "what's plantable" and "what's in stock."
 
 ## Purpose
-`stocks` sees food *outputs* (meals, drink) and `game_data` knows what's plantable *in the abstract* (a plant raw's `farm_plantable` flag), but nothing saw the pipeline in between: which plots exist, what's actually assigned to grow in them each season, and whether there's seed on hand to plant it. An AI co-pilot calls this to catch an idle plot (no crop assigned in any season) or, by joining a plot's `crop` against `seed_totals[]`, a crop assigned with zero seed in stock — before either becomes a food crisis — and to compose with `game_data`'s plant dossiers for a full picture of what a crop needs.
+`stocks` sees food *outputs* (meals, drink) and `game_data` knows what's plantable *in the abstract* (a plant raw's `farm_plantable` flag), but nothing saw the pipeline in between: which plots exist, what's actually assigned to grow in them each season, and whether there's seed on hand to plant it. A client calls this to catch an idle plot (no crop assigned in any season) or, by joining a plot's `crop` against `seed_totals[]`, a crop assigned with zero seed in stock — before either becomes a food crisis — and to compose with `game_data`'s plant dossiers for a full picture of what a crop needs.
 
 ## Parameters
 None.

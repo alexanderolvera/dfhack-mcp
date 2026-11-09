@@ -8,8 +8,10 @@ suggestions the author is free to take or leave.
 
 ## What this project is
 
-An MCP server that exposes a live Dwarf Fortress fort to an AI agent as a small
-set of curated, **read-only** tools. TypeScript, **Node 24**, run directly via
+An MCP server that is a DFHack access layer for AI clients: it exposes a live
+Dwarf Fortress game as **read-only by default** tools that report facts, with
+gated actuators that execute exactly what they are asked. Judgment stays in the
+client. TypeScript, **Node 24**, run directly via
 type-stripping (no build step in dev). It talks to DFHack Remote RPC on
 `localhost:5000` through the published `dfhack-remote-node` client.
 

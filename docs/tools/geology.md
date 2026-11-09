@@ -12,7 +12,7 @@ tags: [dfhack-mcp/tool]
 > A one-call geological survey of the embark, REVEALED-INFO ONLY by default.
 
 ## Purpose
-Reports the geological substrate of the loaded embark: the surface z-level, the layer stack the fort has actually exposed (banded by z-range, kind, and in-game material names), the aquifer, discovered caverns, whether the magma sea has been reached, and surface water facts. An AI co-pilot calls it to orient before digging-related reasoning or before resolving material names with `game_data`. Fog of war is honored by default: undiscovered caverns and an unreached magma sea are omitted entirely, never leaked as z-ranges. It reports what is there, not where to dig.
+Reports the geological substrate of the loaded embark: the surface z-level, the layer stack the fort has actually exposed (banded by z-range, kind, and in-game material names), the aquifer, discovered caverns, whether the magma sea has been reached, and surface water facts. A client calls it to orient before digging-related reasoning or before resolving material names with `game_data`. Fog of war is honored by default: undiscovered caverns and an unreached magma sea are omitted entirely, never leaked as z-ranges. It reports what is there, not where to dig.
 
 ## Parameters
 | Name | Type | Required | Default | Description |

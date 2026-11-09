@@ -96,7 +96,7 @@ export const mechanismsDef: ToolDef = {
   name: 'mechanisms',
   title: 'Mechanisms',
   description:
-    "The fort's lever/pressure-plate wiring as facts — players (and an AI co-pilot) " +
+    "The fort's lever/pressure-plate wiring as facts — players (and an AI client) " +
     'routinely forget which lever raises which bridge; this makes it legible. ' +
     'levers[] lists every lever with its position, current state (0/1 — the physical ' +
     'orientation, NOT which way any linked gate is), linked_targets (every building its ' +

@@ -12,7 +12,7 @@ tags: [dfhack-mcp/tool]
 > A bounded window of ONE z-level rendered as an ASCII character grid plus a self-describing legend.
 
 ## Purpose
-Renders the "earthworks" view of one z-level: terrain shape (dug/undug, soil vs stone, ramps, stairs, fortifications, trees), constructed floors, liquids, and building footprints collapsed to four classes (workshop/furnace `W`, stockpile `S`, machine `M`, furniture `n`) — never per-building detail. It composes on the fog-of-war-safe `mcp_readTerrain` substrate: undiscovered tiles are `?` and are never painted over, so the `?` count always equals `hidden_tiles`. An AI co-pilot calls it to see the physical layout of an area; it renders the map, it does not design or suggest layouts. This was the first parameterized MCP tool.
+Renders the "earthworks" view of one z-level: terrain shape (dug/undug, soil vs stone, ramps, stairs, fortifications, trees), constructed floors, liquids, and building footprints collapsed to four classes (workshop/furnace `W`, stockpile `S`, machine `M`, furniture `n`) — never per-building detail. It composes on the fog-of-war-safe `mcp_readTerrain` substrate: undiscovered tiles are `?` and are never painted over, so the `?` count always equals `hidden_tiles`. A client calls it to see the physical layout of an area; it renders the map, it does not design or suggest layouts. This was the first parameterized MCP tool.
 
 ## Parameters
 | Name | Type | Required | Default | Description |

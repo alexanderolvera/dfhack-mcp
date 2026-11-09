@@ -12,7 +12,7 @@ tags: [dfhack-mcp/tool]
 > Dangerous units currently on the map, grouped by creature type.
 
 ## Purpose
-Enumerates every dangerous unit on the map (active, not dead, `isDanger`, not a citizen), grouped by creature so "12 goblins" reads as one line. Separates ACTIVE hostiles from CONTAINED ones (caged/chained — a captured beast is a hazard-in-waiting, not a live attack) and classifies each group (invader, undead, crazed, great-danger). Each group also carries tactical intel resolved from the representative unit's creature raws: the creature token, a curated set of decisive traits, and ranged/breath attack labels. An AI co-pilot calls it to know what is on the map before reasoning about defense; the tool reports the facts, not the counter-strategy.
+Enumerates every dangerous unit on the map (active, not dead, `isDanger`, not a citizen), grouped by creature so "12 goblins" reads as one line. Separates ACTIVE hostiles from CONTAINED ones (caged/chained — a captured beast is a hazard-in-waiting, not a live attack) and classifies each group (invader, undead, crazed, great-danger). Each group also carries tactical intel resolved from the representative unit's creature raws: the creature token, a curated set of decisive traits, and ranged/breath attack labels. A client calls it to know what is on the map before reasoning about defense; the tool reports the facts, not the counter-strategy.
 
 ## Parameters
 None.

@@ -9,10 +9,10 @@ tags: [dfhack-mcp/tool]
 
 # mechanisms
 
-> The fort's lever/pressure-plate wiring as facts — players routinely forget which lever raises which bridge; an AI co-pilot literally cannot know it without this.
+> The fort's lever/pressure-plate wiring as facts — players routinely forget which lever raises which bridge; a client literally cannot know it without this.
 
 ## Purpose
-Completes the emergency-response trio with `civilian_alert` and the nearest-drawbridge geometry `defenses` already reports. Reports every lever's position, state, and linked target(s); every pressure plate's linked target(s) and trigger conditions; and which levers/bridges are wired to nothing. An AI co-pilot calls it before `pull_lever` to name the right lever, and to spot a defensive bridge with no lever at all.
+Completes the emergency-response trio with `civilian_alert` and the nearest-drawbridge geometry `defenses` already reports. Reports every lever's position, state, and linked target(s); every pressure plate's linked target(s) and trigger conditions; and which levers/bridges are wired to nothing. A client calls it before `pull_lever` to name the right lever, and to spot a defensive bridge with no lever at all.
 
 ## Parameters
 None.

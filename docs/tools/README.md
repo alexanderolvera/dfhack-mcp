@@ -80,7 +80,7 @@ Doctrine reminder: every tool is **facts-only** — it senses and reports; judgm
 
 ## Composition map
 
-Typical co-pilot flows these notes cross-link:
+Typical client flows these notes cross-link:
 - Orient: [fort_status](fort_status.md) → [chronicle](chronicle.md) → drill-downs
 - Threat triage: [threats](threats.md) → [game_data](game_data.md) → [defenses](defenses.md) / [military](military.md)
 - Emergency response: [threats](threats.md) → [burrows](burrows.md) → [civilian_alert](civilian_alert.md); [mechanisms](mechanisms.md) → [pull_lever](pull_lever.md); [military](military.md) → [squad_orders](squad_orders.md)

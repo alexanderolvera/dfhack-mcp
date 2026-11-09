@@ -14,7 +14,7 @@ tags: [dfhack-mcp/tool]
 > Water and magma engineering facts: aquifers, standing/flowing water, the magma sea, flood exposure at the fort interior, and well water-source depth.
 
 ## Purpose
-The Earthworks tier (`tile_region`, `geology`, `map_overview`) reads dry terrain and rock layers, but water/magma engineering — wells drying up, aquifer breach planning, flooding exposure, magma-forge feasibility — was blind (issue [#80](https://github.com/alexanderolvera/dfhack-mcp/issues/80)). An AI co-pilot calls this to see which z-levels carry a light vs. heavy aquifer before planning a breach, how much standing water exists and where, whether the magma sea has been struck yet, whether any full-depth water sits right next to the fort's reachable interior, and how deep a well's water source sits below it.
+The Earthworks tier (`tile_region`, `geology`, `map_overview`) reads dry terrain and rock layers, but water/magma engineering — wells drying up, aquifer breach planning, flooding exposure, magma-forge feasibility — was blind (issue [#80](https://github.com/alexanderolvera/dfhack-mcp/issues/80)). A client calls this to see which z-levels carry a light vs. heavy aquifer before planning a breach, how much standing water exists and where, whether the magma sea has been struck yet, whether any full-depth water sits right next to the fort's reachable interior, and how deep a well's water source sits below it.
 
 ## Parameters
 None.

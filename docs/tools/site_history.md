@@ -12,7 +12,7 @@ tags: [dfhack-mcp/tool]
 > This fort's entry in the PERMANENT world saga (the durable history event log, not the pruned live report stream).
 
 ## Purpose
-Reads the durable world-history event log for the loaded site only: the founding (year, in-game date, owning civilization in Dwarven and English), the fort name in both languages with a word-by-word etymology, prior sieges/battles fought AT this site, and the notable historical figures who died here. An AI co-pilot calls it for storytelling and chronicle context that survives across seasons — unlike the live report stream, this data is never pruned. Scoped strictly to the loaded site_id; never a world-gen data dump.
+Reads the durable world-history event log for the loaded site only: the founding (year, in-game date, owning civilization in Dwarven and English), the fort name in both languages with a word-by-word etymology, prior sieges/battles fought AT this site, and the notable historical figures who died here. A client calls it for storytelling and chronicle context that survives across seasons — unlike the live report stream, this data is never pruned. Scoped strictly to the loaded site_id; never a world-gen data dump.
 
 ## Parameters
 None.

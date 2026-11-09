@@ -59,7 +59,7 @@ Dossier shapes:
 ## Caveats & limits
 - Disambiguation lists cap at 8 matches; exact matches are listed first so the intended hit survives the cap.
 - Building dossiers cap `reactions` at 8 (`reactions_truncated` + `reactions_total` when over).
-- `flags` are CURATED advisor-relevant subsets, not the full raw flag dumps.
+- `flags` are a selected subset of caste flags, not the full raw flag dump.
 - No-loaded-game error is `{"error":"no game loaded"}` — note the different wording from the fort sensors' "no fort loaded" (raws only need a world, not a fort).
 - Temperature facts carry both raw DF "urist" values and Celsius conversions.
 - Empty per-kind lists/maps are normalized ({} vs [] Lua-encoder quirks are coerced in the TS wrapper).
