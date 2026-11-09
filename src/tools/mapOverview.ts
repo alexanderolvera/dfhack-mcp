@@ -35,11 +35,10 @@ export interface MapOverview {
   stair_columns: StairColumn[];
   stair_columns_total: number;
   stair_columns_truncated: boolean;
-  alerts: string[];
 }
 
 export async function mapOverview(): Promise<MapOverview | { error: string }> {
-  const data = await runJsonScript<MapOverview>('mapOverview', [], ['stair_columns', 'alerts']);
+  const data = await runJsonScript<MapOverview>('mapOverview', [], ['stair_columns']);
   if ('error' in data) return data;
   if (data.activity) {
     for (const k of ['z_levels', 'construction_z', 'digging_z'] as const) {

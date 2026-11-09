@@ -25,11 +25,10 @@ export interface JobsAndLabor {
   idle_pct: number;
   top_jobs: JobRow[];
   cancellations: Cancellations;
-  alerts: string[];
 }
 
 export async function jobsAndLabor(): Promise<JobsAndLabor | { error: string }> {
-  const data = await runJsonScript<JobsAndLabor>('jobsAndLabor', [], ['top_jobs', 'alerts']);
+  const data = await runJsonScript<JobsAndLabor>('jobsAndLabor', [], ['top_jobs']);
   if ('error' in data) return data;
   if (data.cancellations && !Array.isArray(data.cancellations.by_reason)) {
     data.cancellations.by_reason = [];

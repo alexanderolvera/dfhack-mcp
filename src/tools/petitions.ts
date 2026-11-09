@@ -32,14 +32,13 @@ export interface Petitions {
   residency_petitions: ResidencyPetition[];
   residency_petitions_truncated: boolean;
   awaiting_decision_count: number;
-  alerts: string[];
 }
 
 export async function petitions(): Promise<Petitions | { error: string }> {
   const data = await runJsonScript<Petitions>(
     'petitions',
     [],
-    ['location_petitions', 'residency_petitions', 'alerts']
+    ['location_petitions', 'residency_petitions']
   );
   if ('error' in data) return data;
   // Lua nil (no timeout tracked) is an OMITTED key in the JSON, not `null` --

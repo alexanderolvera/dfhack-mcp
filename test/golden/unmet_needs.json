@@ -1,7 +1,4 @@
 {
-  "alerts": [
-    "73 of 78 dwarves distracted by unmet need: BeWithFamily"
-  ],
   "dwarves_with_unmet_need": 77,
   "population": 78,
   "top_needs": [

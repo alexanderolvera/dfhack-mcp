@@ -94,37 +94,8 @@ end
 local group_list = {}
 for _, key in ipairs(order) do group_list[#group_list+1] = groups[key] end
 
-local alerts = {}
-local great, invaders, other = 0, 0, 0
-local great_traits, seen_trait = {}, {}
-for _, g in ipairs(group_list) do
-  if not g.contained then
-    if g.great_danger then
-      great = great + g.count
-      for _, t in ipairs(g.traits or {}) do
-        if not seen_trait[t] then seen_trait[t] = true; great_traits[#great_traits+1] = t end
-      end
-    elseif g.invader then invaders = invaders + g.count
-    else other = other + g.count end
-  end
-end
-if great > 0 then
-  local line = great .. ' great-danger creature' .. (great > 1 and 's' or '') .. ' loose (megabeast/titan/demon/FB)'
-  if #great_traits > 0 then
-    line = line .. '; traits: ' .. table.concat(great_traits, ', ')
-  end
-  alerts[#alerts+1] = line
-end
-if invaders > 0 then
-  alerts[#alerts+1] = invaders .. ' invader' .. (invaders > 1 and 's' or '') .. ' on map'
-end
-if other > 0 then
-  alerts[#alerts+1] = other .. ' other hostile' .. (other > 1 and 's' or '') .. ' on map'
-end
-
 emit({
   active_hostiles = active_total,
   contained = contained_total,
   groups = group_list,
-  alerts = alerts,
 })

@@ -22,11 +22,11 @@ export interface FortStatus {
   wealth: number;
   happiness: { miserable: number; unhappy: number; content: number; happy: number };
   recent_deaths: RecentDeaths;
-  alerts: string[];
+  hostiles_on_map: number;
 }
 
 export async function fortStatus(): Promise<FortStatus | { error: string }> {
-  const data = await runJsonScript<FortStatus>('fortStatus', [], ['alerts']);
+  const data = await runJsonScript<FortStatus>('fortStatus');
   if ('error' in data) return data;
   if (data.recent_deaths && !Array.isArray(data.recent_deaths.citizen_causes)) {
     data.recent_deaths.citizen_causes = [];
@@ -40,8 +40,9 @@ export const fortStatusDef: ToolDef = {
   description:
     'One-call situational overview of the currently loaded Dwarf Fortress fort: ' +
     'name, in-game date and season, population, created wealth, a happiness ' +
-    'breakdown (miserable/unhappy/content/happy), recent_deaths, and a pre-triaged ' +
-    'list of alerts worth attention. recent_deaths covers deaths recorded AT THIS ' +
+    'breakdown (miserable/unhappy/content/happy), recent_deaths, and ' +
+    'hostiles_on_map (discovered, non-citizen dangerous units, caged/chained ones ' +
+    'included). recent_deaths covers deaths recorded AT THIS ' +
     'SITE within the last game year: how many were the fort\'s own citizens, what ' +
     'killed them (citizen_causes, e.g. THIRST/STARVATION/STRUCK_DOWN), how many of ' +
     'those citizens were slain BY another citizen (the murder/loyalty-cascade ' +

@@ -30,14 +30,9 @@ None.
 | `caravan_count` | total caravans before the cap |
 | `caravans_truncated` | list capped (cap = 8) |
 | `broker.assigned` / `present` / `at_depot` / `name` / `current_job` | broker facts; `at_depot` = standing within the depot footprint |
-| `alerts[]` | factual lines: depot not wagon-accessible; caravan at depot with no broker; caravan at depot, broker elsewhere |
 
 ```json
 {
-  "alerts": [
-    "trade depot is not wagon-accessible",
-    "caravan at depot, broker not at the depot"
-  ],
   "broker": {
     "assigned": true,
     "at_depot": false,

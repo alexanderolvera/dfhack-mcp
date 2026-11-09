@@ -29,11 +29,10 @@ export interface Environment {
   biome: Biome;
   caverns: Cavern[];
   caverns_discovered: number;
-  alerts: string[];
 }
 
 export async function environment(): Promise<Environment | { error: string }> {
-  const data = await runJsonScript<Environment>('environment', [], ['caverns', 'alerts']);
+  const data = await runJsonScript<Environment>('environment', [], ['caverns']);
   if ('error' in data) return data;
   if (data.surface) {
     if (data.surface.temperature === undefined) data.surface.temperature = null;

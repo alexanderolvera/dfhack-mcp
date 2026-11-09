@@ -8,7 +8,6 @@ end
 
 local LOCATION_CAP = 50
 local RESIDENCY_CAP = 50
-local DEADLINE_SOON = 7
 local TICKS_PER_DAY = 1200
 local TICKS_PER_YEAR = TICKS_PER_DAY * 28 * 12
 
@@ -192,28 +191,10 @@ local location_petitions_truncated, residency_petitions_truncated
 location_petitions, location_petitions_truncated = cap(location_petitions, LOCATION_CAP)
 residency_petitions, residency_petitions_truncated = cap(residency_petitions, RESIDENCY_CAP)
 
-local alerts = {}
-for _, p in ipairs(location_petitions) do
-  if p.warned_ready and p.status == 'outstanding' then
-    alerts[#alerts + 1] = p.petitioner .. "'s " .. string.lower(p.building) ..
-      ' petition is ready to establish but still outstanding (' .. p.age_days .. ' days)'
-  end
-end
-for _, p in ipairs(residency_petitions) do
-  if p.status == 'outstanding' and p.deadline_days ~= nil and p.deadline_days <= DEADLINE_SOON then
-    alerts[#alerts + 1] = p.petitioner .. "'s " .. string.lower(p.kind) ..
-      ' petition has ' .. p.deadline_days .. ' day(s) left to decide'
-  end
-end
-if awaiting_decision_count > 0 then
-  alerts[#alerts + 1] = awaiting_decision_count .. ' petition(s) awaiting a decision'
-end
-
 emit({
   location_petitions = location_petitions,
   location_petitions_truncated = location_petitions_truncated,
   residency_petitions = residency_petitions,
   residency_petitions_truncated = residency_petitions_truncated,
   awaiting_decision_count = awaiting_decision_count,
-  alerts = alerts,
 })

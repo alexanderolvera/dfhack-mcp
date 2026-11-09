@@ -25,11 +25,10 @@ export interface Mood {
 export interface Moods {
   active: Mood[];
   active_truncated: boolean;
-  alerts: string[];
 }
 
 export function moods(): Promise<Moods | { error: string }> {
-  return runJsonScript<Moods>('moods', [], ['active', 'alerts']);
+  return runJsonScript<Moods>('moods', [], ['active']);
 }
 
 export const moodsDef: ToolDef = {
@@ -43,7 +42,7 @@ export const moodsDef: ToolDef = {
     'material cross-referenced against fort stock — needed, gathered so far, and ' +
     'how many the fort actually has (have). The early warning is "demands bones, ' +
     'fort has zero": it reports the demand vs. the stock, not what to go collect. ' +
-    'Returns {"active":[],"active_truncated":false,"alerts":[]} when no strange ' +
+    'Returns {"active":[],"active_truncated":false} when no strange ' +
     'mood is in progress (the common case), and {"error":"no fort loaded"} if no ' +
     'fort is active.',
   run: moods,

@@ -1,7 +1,4 @@
 {
-  "alerts": [
-    "2 hostiles on map"
-  ],
   "date": "19th Obsidian, Year 7",
   "fort_name": "Fortress of Dreams",
   "happiness": {
@@ -10,6 +7,7 @@
     "miserable": 0,
     "unhappy": 4
   },
+  "hostiles_on_map": 2,
   "population": 78,
   "recent_deaths": {
     "citizen_causes": [],

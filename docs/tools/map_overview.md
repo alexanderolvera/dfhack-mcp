@@ -25,7 +25,6 @@ None.
 - `stair_columns[]` — `{ x, y, z_top, z_bottom }` traversable vertical runs; two vertically-adjacent stair tiles connect only by DF's real stair rule (lower offers up-access AND upper offers down-access), so a helical shaft splits into its climbable segments. Ranked by run height, tallest first.
 - `stair_columns_total` (number) — full count before capping.
 - `stair_columns_truncated` (boolean) — true when the cap dropped runs.
-- `alerts[]` — e.g. "fort core column is not open to sky (surface_z_at_core unknown)".
 
 ```json
 {
@@ -34,7 +33,6 @@ None.
     "digging_z": [111],
     "z_levels": [111, 124, 127, 128, 131, 132]
   },
-  "alerts": [],
   "extents": { "x": 144, "y": 144, "z": 147 },
   "fort_core": { "citizens": 78, "x": 79, "y": 54, "z": 122 },
   "stair_columns": [

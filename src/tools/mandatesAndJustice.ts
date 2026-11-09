@@ -53,14 +53,13 @@ export interface MandatesAndJustice {
   demands: DemandRow[];
   demands_truncated: boolean;
   justice: Justice;
-  alerts: string[];
 }
 
 export function mandatesAndJustice(): Promise<MandatesAndJustice | { error: string }> {
   return runJsonScript<MandatesAndJustice>(
     'mandatesAndJustice',
     [],
-    ['nobles', 'mandates', 'export_bans', 'guild_demands', 'demands', 'alerts']
+    ['nobles', 'mandates', 'export_bans', 'guild_demands', 'demands']
   );
 }
 
@@ -78,8 +77,8 @@ export const mandatesAndJusticeDef: ToolDef = {
     'free, with placed-but-not-yet-built ones counted separately in ' +
     'restraints_unbuilt) so you can see whether a sentence can be served. ' +
     'Reports what the nobles demand and ' +
-    'the justice backlog, not what to build about it; threshold restatements are ' +
-    'in alerts. Lists are capped (see the *_truncated flags). Returns ' +
+    'the justice backlog, not what to build about it. Lists are capped (see the ' +
+    '*_truncated flags). Returns ' +
     '{"error":"no fort loaded"} if no fort is active.',
   run: mandatesAndJustice,
 };

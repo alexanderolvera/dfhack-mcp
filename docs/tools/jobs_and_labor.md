@@ -25,11 +25,9 @@ None.
 - `idle_pct` (number) — floor(idle * 100 / workforce).
 - `top_jobs[]` — up to 10 `{ job, count }` rows, count-descending; `job` is the raw `df.job_type` token (e.g. "StoreItemInStockpile").
 - `cancellations` — `{ total, by_reason[], by_reason_truncated }`. `total` is every `CANCEL_JOB` OCCURRENCE in the currently-retained report buffer (DF's own report log, which evicts old entries — in practice roughly the last few months of play, no separate time window applied) — weighted by DF's own `repeat_count` (see Caveats), not a raw row count. `by_reason[]` is `{ reason, count }`, the reason text taken verbatim from after the last colon in the announcement (e.g. `"Equipment mismatch"`, `"Needs foxtail millet"`), also occurrence-weighted, sorted count-descending, capped at 20 distinct reasons.
-- `alerts[]` — fires when idle share >= 30% of adults, or when the top cancellation reason has fired >= 10 times.
 
 ```json
 {
-  "alerts": ["27 of 77 working-age dwarves idle (35%)", "61x job cancellation: Equipment mismatch"],
   "cancellations": {
     "total": 71,
     "by_reason": [
@@ -61,7 +59,7 @@ None.
 - `top_jobs` is capped at 10 rows (no truncation flag; the tail is simply dropped).
 - "Working" includes personal-need jobs (Sleep, Eat, DrinkItem count as jobs, not idle), so `idle` measures dwarves literally between tasks.
 - Job names are raw job_type tokens, not prettified strings.
-- Idle alert threshold: >= 30% of adults (a fort always runs ~10-20% idle churn; validated live at 35%).
+- A fort always runs some idle churn (~10-20% observed live), so a nonzero `idle_pct` alone is normal.
 - Derived from the citizens themselves, not `world.jobs.list` (which is a linked list on this build).
 - `cancellations.by_reason` aggregates the reason string VERBATIM, not a generalized category — two item-specific reasons ("Needs foxtail millet" vs. "Needs rope reed seeds") stay distinct rows even though both mean "missing an item"; a systemic reason (e.g. a pathing or equipment problem) naturally clusters into one high-count row instead.
 - `cancellations.total` reflects whatever DF's report buffer currently retains, not a fixed lookback window — an old, high-report-volume fort's buffer covers less wall-clock time than a young fort's.

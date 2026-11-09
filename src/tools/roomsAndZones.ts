@@ -49,6 +49,7 @@ export interface ActiveGhost {
 export interface Ghosts {
   active: ActiveGhost[];
   active_truncated: boolean;
+  active_total: number;
   unquiet_dead_count: number;
 }
 
@@ -67,11 +68,10 @@ export interface RoomsAndZones {
   coffins_used: number;
   dead_unburied: number;
   ghosts: Ghosts;
-  alerts: string[];
 }
 
 export async function roomsAndZones(): Promise<RoomsAndZones | { error: string }> {
-  const data = await runJsonScript<RoomsAndZones>('roomsAndZones', [], ['wells', 'alerts']);
+  const data = await runJsonScript<RoomsAndZones>('roomsAndZones', [], ['wells']);
   if ('error' in data) return data;
   if (data.temples) {
     if (!Array.isArray(data.temples.dedicated)) data.temples.dedicated = [];
@@ -94,7 +94,8 @@ export const roomsAndZonesDef: ToolDef = {
     'worshipped by citizens that lack a dedicated temple), taverns, libraries, ' +
     'guildhalls, and coffins free vs. dead awaiting burial (loose corpses of ' +
     "the fort's own race). ghosts reports active apparitions currently on the " +
-    'map (`active[]`, fog-of-war gated) plus unquiet_dead_count — this civ\'s ' +
+    'map (`active[]`, fog-of-war gated and capped; active_total is the full count ' +
+    'before the cap) plus unquiet_dead_count — this civ\'s ' +
     'dead who are world-flagged as unquiet ghosts (`flags.ghost`) and NOT ' +
     'represented in the visible `active[]` list. This is deliberately not the ' +
     'same as "confirmed absent locally": a ghost hidden behind fog of war is ' +

@@ -10,7 +10,6 @@ local MANDATE_CAP = 50
 local BAN_CAP = 50
 local DEMAND_CAP = 50
 local TICKS_PER_DAY = 1200
-local DEADLINE_SOON = 7
 
 local plotinfo = df.global.plotinfo
 local ent = df.historical_entity.find(plotinfo.group_id)
@@ -231,21 +230,6 @@ local justice = {
   restraints_unbuilt = restraints_unbuilt,
 }
 
-local alerts = {}
-for _, m in ipairs(mandates) do
-  if m.remaining and m.remaining > 0 and m.deadline_days and m.deadline_days <= DEADLINE_SOON then
-    alerts[#alerts + 1] = m.noble .. "'s mandate (make " .. m.count .. ' ' .. m.item ..
-      ') has ' .. m.remaining .. ' left, ' .. m.deadline_days .. ' day(s) to deadline'
-  end
-end
-if #demands > 0 then
-  alerts[#alerts + 1] = #demands .. ' unmet noble room demand' .. (#demands == 1 and '' or 's')
-end
-if prison_sentences > 0 and restraints_free < prison_sentences then
-  alerts[#alerts + 1] = prison_sentences .. ' prison sentence' .. (prison_sentences == 1 and '' or 's') ..
-    ' pending, ' .. restraints_free .. ' free restraint' .. (restraints_free == 1 and '' or 's')
-end
-
 emit({
   population = #citizens,
   nobles = noble_rows,
@@ -257,5 +241,4 @@ emit({
   demands = demands,
   demands_truncated = demands_truncated,
   justice = justice,
-  alerts = alerts,
 })

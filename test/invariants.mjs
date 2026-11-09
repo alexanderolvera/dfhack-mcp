@@ -232,6 +232,13 @@ export const INVARIANTS = [
       const g = d.ghosts ?? {};
       if (!(isInt(g.unquiet_dead_count) && g.unquiet_dead_count >= 0))
         out.push(`ghosts.unquiet_dead_count=${g.unquiet_dead_count} is not a non-negative integer`);
+      const listedGhosts = (g.active ?? []).length;
+      if (!(isInt(g.active_total) && g.active_total >= listedGhosts))
+        out.push(`ghosts.active_total=${g.active_total} is below the ${listedGhosts} listed`);
+      else if (Boolean(g.active_truncated) !== g.active_total > listedGhosts)
+        out.push(
+          `ghosts.active_truncated=${g.active_truncated} disagrees with active_total ${g.active_total} vs listed ${listedGhosts}`
+        );
       (g.active ?? []).forEach((a, i) => {
         if (!isInt(a.unit_id)) out.push(`ghosts.active[${i}].unit_id=${a.unit_id} is not an integer`);
         if (!isInt(a.histfig_id)) out.push(`ghosts.active[${i}].histfig_id=${a.histfig_id} is not an integer`);
@@ -396,27 +403,6 @@ export const INVARIANTS = [
             out.push(`active[${i}].demands[${j}].have=${dem?.have} is below the -1 sentinel`);
         });
       });
-      return out;
-    },
-  },
-  {
-    name: 'alerts_are_nonempty_strings',
-    tools: ['fort_status', 'injuries_and_health'],
-    desc: 'alerts, when present, are human-readable non-empty strings',
-    check(p) {
-      const out = [];
-      for (const t of ['fort_status', 'injuries_and_health']) {
-        const a = p[t].alerts;
-        if (a === undefined) continue;
-        if (!Array.isArray(a)) {
-          out.push(`${t}.alerts is not an array`);
-          continue;
-        }
-        a.forEach((s, i) => {
-          if (typeof s !== 'string' || !s.trim())
-            out.push(`${t}.alerts[${i}] is not a non-empty string`);
-        });
-      }
       return out;
     },
   },
@@ -993,9 +979,9 @@ export const INVARIANTS = [
     },
   },
   {
-    name: 'recent_deaths_wellformed_and_alerted',
+    name: 'recent_deaths_wellformed',
     tools: ['fort_status'],
-    desc: 'recent_deaths counts are non-negative, citizen_causes sums to the citizen count, slain-by-citizen never exceeds citizen deaths, and any citizen death raises an alert',
+    desc: 'recent_deaths counts are non-negative, citizen_causes sums to the citizen count, and slain-by-citizen never exceeds citizen deaths',
     check(p) {
       const d = p.fort_status.recent_deaths;
       const out = [];
@@ -1022,13 +1008,6 @@ export const INVARIANTS = [
       }
       if (isInt(d.citizens) && summed !== d.citizens)
         out.push(`citizen_causes sum ${summed} !== citizens ${d.citizens}`);
-      // The whole point of the field: a citizen death must reach the alert list.
-      const alerts = p.fort_status.alerts ?? [];
-      const mentionsDeath = alerts.some((a) => /citizen death/i.test(a));
-      if (isInt(d.citizens) && d.citizens > 0 && !mentionsDeath)
-        out.push(`${d.citizens} citizen death(s) recorded but no alert mentions them`);
-      if (isInt(d.citizens) && d.citizens === 0 && mentionsDeath)
-        out.push('an alert mentions citizen deaths but recent_deaths.citizens is 0');
       return out;
     },
   },
@@ -1176,6 +1155,22 @@ export const INVARIANTS = [
           out.push(`defenses.threats[${i}] leaked a fog-of-war tile as its footing`);
       }
       return out;
+    },
+  },
+  {
+    name: 'fort_status_hostiles_are_threats_loose_plus_contained',
+    tools: ['fort_status', 'threats'],
+    desc: 'fort_status.hostiles_on_map counts the same fog-of-war-gated population as threats, caged/chained included',
+    check(p) {
+      const onMap = p.fort_status.hostiles_on_map;
+      const { active_hostiles: loose, contained } = p.threats;
+      if (!(isInt(onMap) && onMap >= 0))
+        return [`fort_status.hostiles_on_map=${onMap} is not a non-negative integer`];
+      if (isInt(loose) && isInt(contained) && onMap !== loose + contained)
+        return [
+          `fort_status.hostiles_on_map=${onMap} !== threats active_hostiles ${loose} + contained ${contained}`,
+        ];
+      return [];
     },
   },
   {
@@ -1516,7 +1511,7 @@ export const INVARIANTS = [
   {
     name: 'petitions_wellformed',
     tools: ['petitions'],
-    desc: 'location/residency petition rows carry a known status and only the deity/guild_profession field their building kind allows, active rows sort before resolved ones, the 50-row caps and awaiting_decision_count are honored, and alerts are non-empty strings',
+    desc: 'location/residency petition rows carry a known status and only the deity/guild_profession field their building kind allows, active rows sort before resolved ones, and the 50-row caps and awaiting_decision_count are honored',
     check(p) {
       const d = p.petitions;
       const out = [];
@@ -1602,15 +1597,6 @@ export const INVARIANTS = [
           out.push(
             `awaiting_decision_count=${d.awaiting_decision_count} is less than visible awaiting rows ${visible}`
           );
-      }
-
-      if (!Array.isArray(d.alerts)) {
-        out.push('alerts is not an array');
-      } else {
-        d.alerts.forEach((s, i) => {
-          if (typeof s !== 'string' || !s.trim())
-            out.push(`alerts[${i}] is not a non-empty string`);
-        });
       }
 
       return out;

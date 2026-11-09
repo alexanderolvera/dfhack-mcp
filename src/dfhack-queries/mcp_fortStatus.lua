@@ -108,31 +108,6 @@ local recent_deaths = {
   citizen_causes = cause_rows,
 }
 
-local UNHAPPY_FRACTION_ALERT = 0.10
-local UNHAPPY_MIN_ALERT = 3
-
-local alerts = {}
-if hap.unhappy >= UNHAPPY_MIN_ALERT and #citizens > 0
-    and (hap.unhappy / #citizens) >= UNHAPPY_FRACTION_ALERT then
-  local pct = math.floor(hap.unhappy * 100 / #citizens)
-  alerts[#alerts+1] = hap.unhappy .. ' dwarves unhappy (' .. pct .. '% of pop)'
-end
-if hostiles > 0 then
-  alerts[#alerts+1] = hostiles .. ' hostile' .. (hostiles > 1 and 's' or '') .. ' on map'
-end
-if citizen_deaths > 0 then
-  local parts = {}
-  for _, r in ipairs(cause_rows) do
-    parts[#parts + 1] = r.count .. ' ' .. string.lower(r.cause):gsub('_', ' ')
-  end
-  alerts[#alerts+1] = citizen_deaths .. ' citizen death' .. (citizen_deaths == 1 and '' or 's') ..
-    ' since year ' .. since_year .. ' (' .. table.concat(parts, ', ') .. ')'
-end
-if slain_by_citizen > 0 then
-  alerts[#alerts+1] = slain_by_citizen .. ' of those citizen' ..
-    (slain_by_citizen == 1 and ' was' or 's were') .. ' slain by another citizen'
-end
-
 emit({
   fort_name  = ok and fname or 'unknown',
   date       = ord(day) .. ' ' .. months[midx + 1] .. ', Year ' .. df.global.cur_year,
@@ -141,5 +116,5 @@ emit({
   wealth     = wealth,
   happiness  = hap,
   recent_deaths = recent_deaths,
-  alerts     = alerts,
+  hostiles_on_map = hostiles,
 })

@@ -227,22 +227,6 @@ for _, hf in ipairs(df.global.world.history.figures) do
 end
 
 local adults_without = math.max(0, adults - bed_assigned)
-local alerts = {}
-if adults_without > 0 then
-  alerts[#alerts + 1] = adults_without .. ' adult' .. (adults_without == 1 and '' or 's') ..
-    ' without an assigned bedroom'
-end
-if dead_unburied > 0 and coffins_free < dead_unburied then
-  alerts[#alerts + 1] = dead_unburied .. ' dead awaiting burial, ' .. coffins_free .. ' free coffins'
-end
-if #needed > 0 then
-  alerts[#alerts + 1] = #needed .. ' worshipped deit' .. (#needed == 1 and 'y' or 'ies') ..
-    ' without a dedicated temple'
-end
-if active_ghosts_total > 0 then
-  local suffix = active_ghosts_truncated and '+' or ''
-  alerts[#alerts + 1] = active_ghosts_total .. suffix .. ' active ghost' .. (active_ghosts_total == 1 and '' or 's')
-end
 
 emit({
   bedrooms = { assigned = bed_assigned, unassigned = bed_unassigned, adults_without = adults_without, dormitories = dormitories },
@@ -261,7 +245,7 @@ emit({
   ghosts = {
     active = active_ghosts,
     active_truncated = active_ghosts_truncated,
+    active_total = active_ghosts_total,
     unquiet_dead_count = unquiet_dead_count,
   },
-  alerts = alerts,
 })
