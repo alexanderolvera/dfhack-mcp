@@ -99,7 +99,7 @@ export const INVARIANTS = [
   {
     name: 'find_unit_matches_carry_ids',
     tools: ['find_unit'],
-    desc: 'every match exposes an integer unit_id (the documented chain into citizen/identify)',
+    desc: 'every match exposes an integer unit_id (the documented chain into citizen/game_data)',
     check(p) {
       const d = p.find_unit;
       if (!Array.isArray(d.matches)) return ['matches is not an array'];

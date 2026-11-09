@@ -72,7 +72,7 @@ Confirmed live on DFHack 53.15-r2: `dfhack.units.getReadableName`, `getProfessio
 
 ## Related
 - [citizen](citizen.md) — the deep dossier a match's `unit_id` chains into.
-- [identify](identify.md) — a match's `unit_id` also chains here to go deeper on creature/trait facts.
+- [game_data](game_data.md) — a match's `unit_id` also chains here for the unit's creature dossier (flags, attacks, interactions).
 - [work_details](work_details.md) — labor-group membership for a found unit.
 - [injuries_and_health](injuries_and_health.md) — details behind the wounded/patient flags.
 - [game_data](game_data.md) — a live unit_id also resolves in the creature kind for species facts.

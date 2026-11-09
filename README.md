@@ -6,7 +6,7 @@ not an autopilot. Point Claude (or any MCP client) at it and ask _"how's my fort
 doing?"_ — it reads happiness, threats, stocks, jobs, health, and defenses
 straight from the running game and answers in plain language.
 
-**Read-only by default.** The 41 sensor and reference tools only observe the
+**Read-only by default.** The 38 sensor and reference tools only observe the
 game. A handful of **actuators** that _change_ the fort — queue manager orders,
 apply quickfort blueprints, assign labor, sound the civilian alert, pull a lever —
 ship behind an explicit opt-in and stay hidden until you enable them (see
@@ -18,9 +18,8 @@ Two kinds of tools:
   `threats`, `stocks`, `jobs_and_labor`, `military`, `injuries_and_health`,
   `defenses`, and more.
 - **Reference** answers _how does Dwarf Fortress work?_ — `game_data` is **your
-  world's** ground truth (its loaded raws), the `wiki_*` tools are the general
-  explanation, and `identify` fuses the two for _"what is this creature and how
-  do I handle it."_
+  world's** ground truth (its loaded raws), and `dfhack_command_list` lists what
+  DFHack itself can do.
 
 It returns **facts, not advice** — already-summarized JSON that reads like a
 glance at the screen, leaving the judgment to the agent.
@@ -128,13 +127,9 @@ No arguments; each reports on the loaded fort.
 
 ### Reference — how DF works
 
-`wiki_*` are pure HTTP and work without the game; `game_data` / `identify` read a
-loaded world.
+`game_data` reads a loaded world; `dfhack_command_list` works without one.
 
 - **`game_data(query, kind?)`** — your world's raws across six kinds (`creature`, `material`, `plant`, `reaction`, `item`, `building`; default `creature`). Ground truth for procedural creatures (demons, forgotten beasts, titans) that never reach the wiki. `query` is a token (`DEMON_4`, `INORGANIC:IRON`), a name (`"plump helmet"`), or — for creatures — a live `unit_id`. One strong hit → a full dossier; several → a disambiguation list; none → `{"match_count":0,"matches":[]}`.
-- **`identify(query)`** — _"what is this creature and how do I handle it"_ in one call: fuses `game_data` (your world's raws) with `wiki_lookup` (strategy). Returns the dossier (its `flags[]`/`interactions[]` carry facts like _TRAPAVOID → mechanical traps don't work_) plus 1–2 trimmed wiki excerpts. Reach for it when a threat appears.
-- **`wiki_search(query)`** — search the DF wiki for candidate titles + cleaned snippets (biased to the `DF2014` namespace).
-- **`wiki_lookup(title, section?, refresh?)`** — fetch a wiki article as clean text, pinned to `DF2014`; follows redirects, honors section fragments, cached ~30 days.
 - **`dfhack_command_list(filter?)`** — every command DFHack itself ships (built-ins, plugins, scripts) from DFHack's own `ls`: name, one-line help, and tags, plus the tag list from `tags`. `filter` is a tag or a name substring. Reports what exists, not what to run; works without a fort.
 
 ### Taking action (actuators)

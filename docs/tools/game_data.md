@@ -78,8 +78,6 @@ Dossier shapes:
 - **Item**: not every `itemdef_*st` carries the same fields — `itemdef_foodst` has no `value`/`name_plural`/`adjective`, for example — so optional fields are read defensively rather than assumed present.
 
 ## Related
-- [wiki_lookup](wiki_lookup.md) / [wiki_search](wiki_search.md) — general game knowledge; game_data is the ground truth for THIS world, including procedural creatures the wiki can't have.
-- [identify](identify.md) — what a live unit IS; game_data is what its species CAN DO.
 - [farming](farming.md) — which plants are actually planted where; game_data's plant dossier (`farm_plantable`, `surface`, `depth_min`/`depth_max`, `biomes`) is what CAN be grown.
 - [stocks](stocks.md) — items whose materials/reactions this tool explains.
 - [threats](threats.md) — pair a threat's creature token with its dossier here.

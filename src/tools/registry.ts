@@ -18,7 +18,6 @@ import { gameSaveDef } from './gameSave.ts';
 import { geologyDef } from './geology.ts';
 import { haulingRoutesDef } from './haulingRoutes.ts';
 import { historicalFigureDef } from './historicalFigure.ts';
-import { identifyDef } from './identify/index.ts';
 import { injuriesAndHealthDef } from './injuriesAndHealth.ts';
 import { jobsAndLaborDef } from './jobsAndLabor.ts';
 import { livestockAndPasturesDef } from './livestockAndPastures.ts';
@@ -41,8 +40,6 @@ import { tradeDef } from './trade.ts';
 import { unitAppearanceDef } from './unitAppearance.ts';
 import { unmetNeedsDef } from './unmetNeeds.ts';
 import { assignWorkDetailDef, workDetailsDef } from './workDetail.ts';
-import { wikiLookupDef } from './wikiLookup.ts';
-import { wikiSearchDef } from './wikiSearch.ts';
 import { workOrderCancelDef, workOrderCreateDef, workOrderListDef } from './workOrder.ts';
 
 export const ALL_TOOLS: ToolDef[] = [
@@ -69,7 +66,6 @@ export const ALL_TOOLS: ToolDef[] = [
   geologyDef,
   haulingRoutesDef,
   historicalFigureDef,
-  identifyDef,
   injuriesAndHealthDef,
   jobsAndLaborDef,
   livestockAndPasturesDef,
@@ -92,8 +88,6 @@ export const ALL_TOOLS: ToolDef[] = [
   tradeDef,
   unitAppearanceDef,
   unmetNeedsDef,
-  wikiLookupDef,
-  wikiSearchDef,
   workDetailsDef,
   workOrderCancelDef,
   workOrderCreateDef,

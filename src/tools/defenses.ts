@@ -102,7 +102,7 @@ export const defensesDef: ToolDef = {
     'A perimeter_terrain field reads the busiest citizen level via the terrain ' +
     'substrate: an ASCII tile grid (with legend) plus counts of walls, ' +
     'fortifications (with positions), and open-to-sky vs covered vs undiscovered ' +
-    'tiles. Facts only — decide the tactics yourself, and use identify() for a ' +
+    'tiles. Facts only — decide the tactics yourself, and use game_data() for a ' +
     'creature\'s trait facts (e.g. cage traps do not hold a TRAPAVOID creature). ' +
     'Caveats: inside/outside is walking connectivity, so a FLIER or ' +
     'BUILDING_DESTROYER can reach you while reported "outside" — cross-reference ' +
