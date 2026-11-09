@@ -8,6 +8,23 @@
     "unhappy": 4
   },
   "hostiles_on_map": 2,
+  "identity": {
+    "civ_id": 10,
+    "civ_name": {
+      "dwarven": "Uzoledzul",
+      "english": "The Oily Vestibule"
+    },
+    "save_folder": "region1",
+    "site_id": 25,
+    "site_name": {
+      "dwarven": "Geshud Nåzom",
+      "english": "Fortress of Dreams"
+    },
+    "world_name": {
+      "dwarven": "Emeanenu",
+      "english": "The Eternal Planets"
+    }
+  },
   "population": 78,
   "recent_deaths": {
     "citizen_causes": [],

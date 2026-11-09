@@ -6,7 +6,7 @@ not an autopilot. Point Claude (or any MCP client) at it and ask _"how's my fort
 doing?"_ — it reads happiness, threats, stocks, jobs, health, and defenses
 straight from the running game and answers in plain language.
 
-**Read-only by default.** The 38 sensor and reference tools only observe the
+**Read-only by default.** The 42 sensor and reference tools only observe the
 game. A handful of **actuators** that _change_ the fort — queue manager orders,
 apply quickfort blueprints, assign labor, sound the civilian alert, pull a lever —
 ship behind an explicit opt-in and stay hidden until you enable them (see
@@ -81,9 +81,10 @@ what it has to work with.
 
 ### Sensors — the state of your fort
 
-No arguments; each reports on the loaded fort.
+No arguments; each reports on the loaded fort, except `game_state()`, which works at any screen.
 
-- **`fort_status()`** — name, date/season, population, wealth, happiness breakdown, recent deaths, hostiles on map.
+- **`game_state()`** — DFHack and DF versions, game mode (title/fortress/adventure/other), whether a world and map are loaded, paused, the raw clock (`year`, `year_tick`, formatted date), and the world/fort identity. The one tool that works with no fort loaded; cheap enough to poll.
+- **`fort_status()`** — name, date/season, identity (world, save folder, site, civ), population, wealth, happiness breakdown, recent deaths, hostiles on map.
 - **`stocks(category?)`** — raw usable counts of food, drink and key materials, a usable count for every DF item type (optionally one `category`), and the population to normalize them by.
 - **`threats()`** — dangerous units grouped by type; active vs. contained, great-danger/invader/undead flags, plus each group's decisive traits (trapavoid, flier, fire, webber, building-destroyer, ranged).
 - **`unmet_needs()`** — the needs system aggregated: the top unmet needs ranked by how many dwarves are distracted, and how starved each is.

@@ -4,14 +4,15 @@ tags: [dfhack-mcp/tool, index]
 
 # Tool Index — dfhack-mcp
 
-One note per MCP tool (49 tools: 36 sensors, 2 reference, 9 gated actuators, 1 gated command runner, 1 dev), tracking `src/tools/registry.ts`. Each note carries frontmatter (`tool` / `tier` / `gated` / `source` / `lua`), parameters from the zod schema, the real return shape from the Lua query, and a trimmed example from the frozen-fixture goldens where one exists.
+One note per MCP tool (53 tools: 37 sensors, 5 reference, 9 gated actuators, 1 gated command runner, 1 dev), tracking `src/tools/registry.ts`. Each note carries frontmatter (`tool` / `tier` / `gated` / `source` / `lua`), parameters from the zod schema, the real return shape from the Lua query, and a trimmed example from the frozen-fixture goldens where one exists.
 
 Doctrine reminder: every tool is **facts-only** — it senses and reports; judgment stays with the AI client. Actuators are gated behind `DFHACK_MCP_ACTUATORS` and follow the §A0 preview/confirm contract; `dfhack_command_run` is gated separately behind `DFHACK_MCP_COMMANDS`; `run_lua` is dev-gated behind `DFHACK_MCP_DEV`.
 
-## Sensors (36)
+## Sensors (37)
 
 *Fort & dwarves*
-- [fort_status](fort_status.md) — one-call situational overview; canonical "is a fort loaded" probe
+- [game_state](game_state.md) — versions, mode, pause, clock and world/fort identity; works with no fort loaded
+- [fort_status](fort_status.md) — one-call situational overview
 - [fort_health](fort_health.md) — FPS/GFPS, item clutter by category, unit counts — the fort's computational health
 - [citizen](citizen.md) — deep dossier on one dwarf
 - [unit_appearance](unit_appearance.md) — the portrait read: features, styling, colors, marks, kit

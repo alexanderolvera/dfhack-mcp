@@ -115,7 +115,11 @@ T1 has two assertion modes, opposite fixtures, mutually exclusive:
   **mirror**. Every *game-dependent* tool MUST return its `{"error":"no fort
   loaded"}` (or game_data's `"no game loaded"`) guard as **normal
   output** — not `isError`, not a crash/traceback, not a different error, and
-  **not real data**. Anything else fails. This is what actually **exercises** the
+  **not real data**. Anything else fails. The exception is `game_state`, the one
+  tool built to work without a fort: it must return real data reporting
+  `mode: "title"`, `world_loaded`/`map_loaded` false, both version strings, and
+  `paused`/`clock`/`identity` null. `dfhack_command_list` reads only DFHack's own
+  command list, so like the wiki tools it must return well-formed, non-error data. This is what actually **exercises** the
   no-fort guard ([#6](https://github.com/alexanderolvera/dfhack-mcp/issues/6)),
   closing the long-standing "guard coded but never exercised" gap, and it is the
   no-fort reachability path for

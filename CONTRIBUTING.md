@@ -73,7 +73,9 @@ container image tag *is* the fixture version.
 T1 also has a **`--no-fort`** mode (the mirror of `--require-fort`): pointed at a
 no-fort fixture — a container booted to the title screen with RPC up but no fort
 loaded ([`docker/README.md`](docker/README.md)) — it asserts every game-dependent
-tool returns its `{"error":"no fort loaded"}` guard cleanly. This **exercises**
+tool returns its `{"error":"no fort loaded"}` guard cleanly, and that
+`game_state`, the one tool built to work without a fort, reports the title
+screen. This **exercises**
 the no-fort guard ([#6](https://github.com/alexanderolvera/dfhack-mcp/issues/6))
 rather than trusting it's coded, and is the no-fort reachability path for
 [#28](https://github.com/alexanderolvera/dfhack-mcp/issues/28).

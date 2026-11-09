@@ -1,0 +1,31 @@
+{
+  "clock": {
+    "date": "19th Obsidian, Year 7",
+    "season": "Winter",
+    "year": 7,
+    "year_tick": 391869
+  },
+  "df_version": "v0.53.15 linux64 ITCH",
+  "dfhack_version": "53.15-r2",
+  "identity": {
+    "civ_id": 10,
+    "civ_name": {
+      "dwarven": "Uzoledzul",
+      "english": "The Oily Vestibule"
+    },
+    "save_folder": "region1",
+    "site_id": 25,
+    "site_name": {
+      "dwarven": "Geshud Nåzom",
+      "english": "Fortress of Dreams"
+    },
+    "world_name": {
+      "dwarven": "Emeanenu",
+      "english": "The Eternal Planets"
+    }
+  },
+  "map_loaded": true,
+  "mode": "fortress",
+  "paused": true,
+  "world_loaded": true
+}
