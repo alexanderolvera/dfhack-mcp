@@ -49,6 +49,7 @@ if (tier !== 0 || invariantsOnly) {
 // Used by T1/T2/invariants; T0 derives its own per-gate-state sets (see tier0()).
 const { ALL_TOOLS } = await import('../src/tools/registry.ts');
 const { isGatedOff } = await import('../src/register.ts');
+const { ERROR_CODES } = await import('../src/errors.ts');
 const EXPECTED = {
   tools: ALL_TOOLS.filter((d) => !isGatedOff(d))
     .map((d) => d.name)
@@ -202,11 +203,16 @@ function connect(env = process.env) {
 async function callJson(client, name, argsOverride) {
   const res = await client.callTool({ name, arguments: argsOverride ?? TOOL_ARGS[name] ?? {} });
   const text = res.content?.find((p) => p.type === 'text')?.text ?? '';
+  let data;
   try {
-    return { data: JSON.parse(text), isError: !!res.isError };
+    data = JSON.parse(text);
   } catch {
     return { data: { __unparsable__: text }, isError: true };
   }
+  if (data && typeof data.error === 'string' && !ERROR_CODES.includes(data.code)) {
+    fail(`${name}: {error} payload without a known code (code: ${JSON.stringify(data.code)})`);
+  }
+  return { data, isError: !!res.isError };
 }
 
 // Anchored + trimmed match, not a substring — a different error that merely

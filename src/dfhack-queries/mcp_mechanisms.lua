@@ -254,4 +254,4 @@ if sub == 'plan_pull' or sub == 'apply_pull' then
   return
 end
 
-emit({ error = 'unknown subcommand: ' .. tostring(sub) })
+emit({ error = 'unknown subcommand: ' .. tostring(sub), code = 'INVALID_ARGUMENT' })

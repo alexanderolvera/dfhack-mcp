@@ -81,7 +81,7 @@ do
   end
 end
 if not site then
-  emit({ error = 'no site loaded' })
+  emit({ error = 'no site loaded', code = 'NO_FORT' })
   return
 end
 

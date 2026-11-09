@@ -121,7 +121,7 @@ local z = tonumber(a[3])
 local w = tonumber(a[4]) or 100
 local h = tonumber(a[5]) or 100
 if not (x0 and y0 and z) then
-  emit({ error = 'usage: mcp_readTerrain X0 Y0 Z [W] [H]' })
+  emit({ error = 'usage: mcp_readTerrain X0 Y0 Z [W] [H]', code = 'INVALID_ARGUMENT' })
   return
 end
 

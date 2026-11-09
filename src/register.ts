@@ -1,6 +1,7 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { z } from 'zod';
-import { NotConnectedError } from './dfclient.ts';
+import { NotConnectedError, TimeoutError } from './dfclient.ts';
+import { ToolError, type ErrorCode, type ErrorPayload } from './errors.ts';
 
 /** A no-argument, read-only tool that returns a JSON-able object. */
 export interface ReadToolDef {
@@ -50,10 +51,18 @@ export function isGatedOff(
   );
 }
 
+function errorCodeOf(err: unknown): ErrorCode {
+  if (err instanceof NotConnectedError) return 'NOT_CONNECTED';
+  if (err instanceof TimeoutError) return 'TIMEOUT';
+  if (err instanceof ToolError) return err.code;
+  return 'SCRIPT_ERROR';
+}
+
 function errorPayload(name: string, err: unknown): string {
   const message =
     err instanceof NotConnectedError ? err.message : `${name} failed: ${(err as Error).message}`;
-  return JSON.stringify({ error: message });
+  const payload: ErrorPayload = { error: message, code: errorCodeOf(err) };
+  return JSON.stringify(payload);
 }
 
 function registerReadTool(server: McpServer, def: ReadToolDef): void {

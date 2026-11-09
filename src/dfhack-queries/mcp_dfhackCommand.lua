@@ -27,5 +27,5 @@ if sub == 'orders' then
 elseif sub == 'fort' then
   emit({ fort_loaded = true })
 else
-  emit({ error = 'unknown mode: ' .. tostring(sub) })
+  emit({ error = 'unknown mode: ' .. tostring(sub), code = 'INVALID_ARGUMENT' })
 end

@@ -660,5 +660,5 @@ local DISPATCH = {
 if DISPATCH[kind] then
   DISPATCH[kind](query)
 else
-  emit({ error = "unknown kind '" .. kind .. "'" })
+  emit({ error = "unknown kind '" .. kind .. "'", code = 'INVALID_ARGUMENT' })
 end

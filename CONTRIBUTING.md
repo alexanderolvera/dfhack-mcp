@@ -181,6 +181,8 @@ Follow the existing split:
    with `print(require('json').encode(...))`. **Sort any unordered list before
    emit** so goldens don't flap on `pairs()` order (see *Canonicalization* in
    `docs/VERIFY.md`).
+   Any `{error}` other than the shared `no fort loaded` guard sets its own
+   `code` (see *Shared internals: error codes* below).
 2. Add a thin `src/tools/<name>.ts` wrapper that calls
    `runJsonScript('<name>', args, listFields)` and types the result.
 3. In that same module, export a `ToolDef` descriptor — `export const <name>Def:
@@ -217,17 +219,51 @@ is capped at 512 entries with oldest-first eviction so abandoned previews can't
 leak memory over the server's lifetime; an evicted token simply reads as expired
 on redeem.
 
-## Shared internals: connection retry (`dfclient.ts`)
+## Shared internals: connection retry and deadline (`dfclient.ts`)
 
-`runLua` and `runScript` own the single RPC connection to DFHack, lazy-connecting
-on first use. Both share one retry rule: an `RpcError` means DFHack was reachable
-and the snippet/script actually ran and failed, so it's rethrown as-is rather than
-retried. Only a connection-level failure (e.g. a stale socket after DF restarted)
-resets the client and retries once, re-registering the query script path via
-`ensureConnected`. This distinction matters most for `runScript`: retrying on an
-`RpcError` would re-run the script, which for actuators (`work_order_create`,
-`blueprint_apply`, `assign_work_detail`) risks repeated side effects from a script
-that already partially executed.
+`runLua`, `runScript` and `runDfhackCommand` own the single RPC connection to
+DFHack, lazy-connecting on first use, and share one helper, `withRetry`, for the
+rules below.
+
+- **Deadline.** Each attempt (connect, script-path registration and the call
+  itself) must finish within `DFHACK_MCP_TIMEOUT_MS`, 10 000 ms by default. A miss
+  throws `TimeoutError` (`code: TIMEOUT`) and closes the connection, including one
+  still mid-handshake, so the next call reconnects cleanly.
+- **No retry after the call may have run.** An `RpcError` means DFHack was
+  reachable and the snippet/script actually ran and failed. A `TimeoutError` means
+  it may still be running. Both are rethrown as-is, never retried: retrying would
+  re-run the script, which for the actuators (`work_order_create`,
+  `blueprint_apply`, `assign_work_detail`, `game_save`, ...) and for the mutating
+  forms of `dfhack_command_run` risks repeating side effects from a script that
+  already partly ran. A timed-out call is not retried for read-only tools either:
+  a DFHack that missed one deadline is unlikely to meet the next.
+- **One reconnect for a dead socket.** Any other failure (e.g. a stale socket
+  after DF restarted) resets the client and retries once, re-registering the
+  query script path via `ensureConnected`. If that also fails, the caller gets
+  `NotConnectedError` (`code: NOT_CONNECTED`).
+
+Concurrent calls that arrive while the connection is being set up share the one
+in-flight connection attempt rather than each opening their own.
+
+## Shared internals: error codes (`errors.ts`)
+
+Every error payload carries a `code` from `ERROR_CODES` (the table is in the
+README's [Errors](README.md#errors) section). Codes are assigned in three places:
+
+- **Thrown errors**: `register.ts`'s `errorPayload` maps `NotConnectedError`,
+  `TimeoutError` and `ToolError` to their codes, and everything else (an
+  `RpcError`, unparsable script output) to `SCRIPT_ERROR`. Throw a `ToolError`
+  with a code when a tool's own TypeScript rejects a call.
+- **Shared Lua guards**: `runJsonScript` adds `NO_FORT` / `NO_GAME` to the
+  `no fort loaded` / `no game loaded` guards, so the guard lines in each script
+  stay as they are.
+- **Tool-specific errors**: anything else a script `emit`s, or a tool's
+  TypeScript returns, sets its own code (`emit({ error = ..., code = 'NOT_FOUND' })`).
+
+`test/errorCodes.test.mjs` scans every `emit({ error = ... })` in
+`src/dfhack-queries/` and every `{ error: '...' }` literal in `src/tools/` and
+fails on one without a known code, and the harness's `callJson` fails any T1/T2
+payload whose `error` lacks one.
 
 ## Shared internals: fog-of-war safety
 

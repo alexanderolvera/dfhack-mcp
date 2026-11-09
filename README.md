@@ -224,11 +224,41 @@ All optional, set in your MCP client's `env` for the server:
 | `DFHACK_MCP_COMMANDS`  | _(unset)_   | Set to `1` to expose `dfhack_command_run`, which runs an allowlist of DFHack's own commands (separate from the actuator gate). |
 | `DFHACK_MCP_DEV`       | _(unset)_   | Set to `1` to expose `run_lua`, a raw DFHack Lua escape hatch (reads **and writes** game state; for tool authors only). |
 | `DFHACK_MCP_QUERY_DIR` | `src/dfhack-queries/` (dev) / `dist/dfhack-queries/` (bundled) | Overrides the directory from which the MCP query scripts are loaded. |
+| `DFHACK_MCP_TIMEOUT_MS` | `10000`   | Per-call deadline, in milliseconds, for each DFHack RPC call. A call that misses it returns `TIMEOUT`, resets the connection, and is never retried. |
+
+## Errors
+
+Every error payload carries a stable, machine-readable `code` next to the
+human-readable `error` message, so a client can tell the states apart without
+matching message text:
+
+```json
+{ "error": "no fort loaded", "code": "NO_FORT" }
+```
+
+| `code`             | Meaning                                                                                       |
+| ------------------ | --------------------------------------------------------------------------------------------- |
+| `NOT_CONNECTED`    | DFHack could not be reached, even after one reconnect attempt.                                |
+| `NO_FORT`          | DFHack is reachable, but no fort is loaded.                                                   |
+| `NO_GAME`          | No world is loaded at all (`game_data`).                                          |
+| `NOT_FOUND`        | The id you passed (a unit, a historical figure) does not exist.                               |
+| `INVALID_ARGUMENT` | The call was well-formed, but the arguments or the game state reject it (for example, a stale `confirm_token`, or a command outside the allowlist). |
+| `TIMEOUT`          | DFHack accepted the call but did not answer within `DFHACK_MCP_TIMEOUT_MS`. The call is not retried, so it may have partly run. |
+| `SCRIPT_ERROR`     | The query script or DFHack command ran and failed.                                            |
+
+`NOT_CONNECTED`, `TIMEOUT`, `SCRIPT_ERROR` and the actuators' `INVALID_ARGUMENT`
+come back as MCP tool errors (`isError: true`). The others (the no-fort guard, a
+missing id) are ordinary tool output. Arguments that fail a tool's input schema
+are rejected by the MCP SDK before the tool runs, as plain text with no `code`.
 
 ## Troubleshooting
 
-- **`{"error":"no fort loaded"}`** — DFHack is reachable but you're at the title
+- **`{"error":"no fort loaded","code":"NO_FORT"}`** — DFHack is reachable but you're at the title
   screen or in the menus. Load a fort in Fortress mode.
+- **`"code":"TIMEOUT"`** — DFHack is reachable but did not answer in time (the
+  game is hung, a modal dialog is open, or a long save is running). The next call
+  reconnects. Raise `DFHACK_MCP_TIMEOUT_MS` if your fort is large enough that a
+  normal call takes longer than 10 seconds.
 - **An error about not reaching DFHack** — Dwarf Fortress isn't running with
   DFHack, or the RPC port differs. Confirm DF is up with DFHack and that
   `DFHACK_HOST` / `DFHACK_PORT` match (defaults `127.0.0.1:5000`).
