@@ -4,7 +4,7 @@ tags: [dfhack-mcp/tool, index]
 
 # Tool Index — dfhack-mcp
 
-One note per MCP tool (50 tools: 36 sensors, 3 reference, 9 gated actuators, 1 gated command runner, 1 dev), tracking `src/tools/registry.ts`. Each note carries frontmatter (`tool` / `tier` / `gated` / `source` / `lua`), parameters from the zod schema, the real return shape from the Lua query, and a trimmed example from the frozen-fixture goldens where one exists.
+One note per MCP tool (49 tools: 36 sensors, 2 reference, 9 gated actuators, 1 gated command runner, 1 dev), tracking `src/tools/registry.ts`. Each note carries frontmatter (`tool` / `tier` / `gated` / `source` / `lua`), parameters from the zod schema, the real return shape from the Lua query, and a trimmed example from the frozen-fixture goldens where one exists.
 
 Doctrine reminder: every tool is **facts-only** — it senses and reports; judgment stays with the AI client. Actuators are gated behind `DFHACK_MCP_ACTUATORS` and follow the §A0 preview/confirm contract; `dfhack_command_run` is gated separately behind `DFHACK_MCP_COMMANDS`; `run_lua` is dev-gated behind `DFHACK_MCP_DEV`.
 
@@ -54,10 +54,9 @@ Doctrine reminder: every tool is **facts-only** — it senses and reports; judgm
 - [fluids](fluids.md) — aquifers, water/magma per z-level, flood exposure, well source depth
 - [blueprint_library](blueprint_library.md) — quickfort blueprints on disk (shipped library + user's own)
 
-## Reference (3)
+## Reference (2)
 
 - [game_data](game_data.md) — this world's raws: six dossier kinds (creature/material/plant/reaction/item/building)
-- [identify](identify.md) — one-call raws + wiki fusion for a named creature
 - [dfhack_command_list](dfhack_command_list.md) — every DFHack command (`ls`) with one-line help and tags
 
 ## Actuators (9, gated)
@@ -82,7 +81,7 @@ Doctrine reminder: every tool is **facts-only** — it senses and reports; judgm
 
 Typical co-pilot flows these notes cross-link:
 - Orient: [fort_status](fort_status.md) → [chronicle](chronicle.md) → drill-downs
-- Threat triage: [threats](threats.md) → [identify](identify.md) → [defenses](defenses.md) / [military](military.md)
+- Threat triage: [threats](threats.md) → [game_data](game_data.md) → [defenses](defenses.md) / [military](military.md)
 - Emergency response: [threats](threats.md) → [burrows](burrows.md) → [civilian_alert](civilian_alert.md); [mechanisms](mechanisms.md) → [pull_lever](pull_lever.md); [military](military.md) → [squad_orders](squad_orders.md)
 - Production: [stocks](stocks.md) → [work_order_list](work_order_list.md) → [work_order_create](work_order_create.md)
 - Labor: [jobs_and_labor](jobs_and_labor.md) → [work_details](work_details.md) → [assign_work_detail](assign_work_detail.md)

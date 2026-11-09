@@ -76,7 +76,6 @@ const TOOL_ARGS = {
   find_unit: { query: 'a' },
   game_data: { query: 'cat' },
   historical_figure: { hf_id: '179' },
-  identify: { query: 'cat' },
   // tile_region is parameterized; a deterministic explicit rectangle so T1
   // reachability and the invariants exercise the ARG path, not only the default.
   // The T2 golden deliberately overrides this back to {} (see GOLDEN_NO_ARG) so

@@ -113,7 +113,7 @@ T1 has two assertion modes, opposite fixtures, mutually exclusive:
   broken headless load can't be reported as a verified instance.
 - **`--no-fort`** (no-fort fixture — title screen, RPC up, no fort loaded): the
   **mirror**. Every *game-dependent* tool MUST return its `{"error":"no fort
-  loaded"}` (or game_data/identify's `"no game loaded"`) guard as **normal
+  loaded"}` (or game_data's `"no game loaded"`) guard as **normal
   output** — not `isError`, not a crash/traceback, not a different error, and
   **not real data**. Anything else fails. This is what actually **exercises** the
   no-fort guard ([#6](https://github.com/alexanderolvera/dfhack-mcp/issues/6)),

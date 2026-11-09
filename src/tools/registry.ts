@@ -18,7 +18,6 @@ import { gameSaveDef } from './gameSave.ts';
 import { geologyDef } from './geology.ts';
 import { haulingRoutesDef } from './haulingRoutes.ts';
 import { historicalFigureDef } from './historicalFigure.ts';
-import { identifyDef } from './identify/index.ts';
 import { injuriesAndHealthDef } from './injuriesAndHealth.ts';
 import { jobsAndLaborDef } from './jobsAndLabor.ts';
 import { livestockAndPasturesDef } from './livestockAndPastures.ts';
@@ -67,7 +66,6 @@ export const ALL_TOOLS: ToolDef[] = [
   geologyDef,
   haulingRoutesDef,
   historicalFigureDef,
-  identifyDef,
   injuriesAndHealthDef,
   jobsAndLaborDef,
   livestockAndPasturesDef,

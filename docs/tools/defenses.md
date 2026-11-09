@@ -56,7 +56,7 @@ Top-level fields:
 ```
 
 ## Caveats & limits
-- Inside/outside is WALKING connectivity: a FLIER or BUILDING_DESTROYER can reach the fort while reported "outside" — cross-reference the creature's traits via identify()/game_data() (e.g. cage traps do not hold a TRAPAVOID creature).
+- Inside/outside is WALKING connectivity: a FLIER or BUILDING_DESTROYER can reach the fort while reported "outside" — cross-reference the creature's traits via game_data() (e.g. cage traps do not hold a TRAPAVOID creature).
 - `perimeter_terrain` is a single z-level and does not synthesize a multi-z approach vector.
 - Fog of war is honest on BOTH axes. Terrain: undiscovered tiles render as "?" and never leak their real type. Units: `threats[]` is filtered through `mcp_unitVisibility`, so a hostile standing on an undiscovered tile is absent entirely — no name, no creature token, no coordinates. This is why `footing` has no `discovered` field: a listed threat is a discovered threat by construction.
 - `threats[]` therefore reports the same population as `threats()`' `active_hostiles` and `military()`'s `hostiles_on_map`. All three share one predicate: active, living, dangerous, non-citizen, not caged/chained, not fog-of-war hidden.
@@ -75,7 +75,7 @@ Top-level fields:
 - `perimeter_terrain`'s window is centered on the primary level's citizen centroid, then clamped so the window stays within the map bounds.
 
 ## Related
-- [threats](threats.md) — the hostile roster this composes with; [identify](identify.md) for a creature's trait facts.
+- [threats](threats.md) — the hostile roster this composes with; [game_data](game_data.md) for a creature's trait facts.
 - [military](military.md) — the fort's own fighting force.
 - [tile_region](tile_region.md) / [map_overview](map_overview.md) — deeper terrain reads around a threat.
 - [environment](environment.md) — cavern open/sealed state, another approach vector.
