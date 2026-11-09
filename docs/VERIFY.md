@@ -121,7 +121,7 @@ T1 has two assertion modes, opposite fixtures, mutually exclusive:
   tool built to work without a fort: it must return real data reporting
   `mode: "title"`, `world_loaded`/`map_loaded` false, both version strings, and
   `paused`/`clock`/`identity` null. `dfhack_command_list` reads only DFHack's own
-  command list, so like the wiki tools it must return well-formed, non-error data. This is what actually **exercises** the
+  command list, so it must return well-formed, non-error data. This is what actually **exercises** the
   no-fort guard ([#6](https://github.com/alexanderolvera/dfhack-mcp/issues/6)),
   closing the long-standing "guard coded but never exercised" gap, and it is the
   no-fort reachability path for
