@@ -10,8 +10,46 @@ backwards-compatible fixes only.
 
 ## [Unreleased]
 
+This release makes dfhack-mcp a DFHack access layer: it reports facts and
+executes, and judgment moves to the client. Several tools and fields are
+removed. [docs/migrating-to-2.0.md](docs/migrating-to-2.0.md) maps each one to
+what to read instead.
+
+### Removed
+
+- **Breaking:** `wiki_search` and `wiki_lookup` are removed, along with the
+  `DFHACK_MCP_CACHE_DIR` cache. They were HTTP to dwarffortresswiki.org and
+  never touched DFHack. Clients bring their own game knowledge.
+- **Breaking:** `identify` is removed. Use `game_data`, which takes the same
+  `query` and returns every fact `identify` did.
+- **Breaking:** `alerts[]` is removed from `environment`, `fort_status`,
+  `injuries_and_health`, `jobs_and_labor`, `mandates_and_justice`,
+  `map_overview`, `military`, `moods`, `petitions`, `rooms_and_zones`,
+  `threats`, `trade` and `unmet_needs`, with the thresholds behind it. Each alert
+  restated a field in the same response; read the field instead.
+- **Breaking:** `stocks` no longer returns `food_days`, `drink_days`,
+  `notable_low` or `notable_high`, which rested on invented per-dwarf rates and
+  cutoffs. It returns raw counts with `population` alongside.
+
 ### Added
 
+- `game_state` works at any screen, including the title screen with no fort. It
+  reports DFHack and DF versions, the game mode, whether a world and map are
+  loaded, whether the game is paused, and the raw clock (`year`, `year_tick`
+  and the formatted date). It is cheap enough to poll.
+- `game_state` and `fort_status` report an `identity`: world name, save folder,
+  site and civ, with names in Dwarven and English. A client can key a fort on
+  it across sessions.
+- Every error payload carries a machine-readable `code`: `NOT_CONNECTED`,
+  `NO_FORT`, `NO_GAME`, `NOT_FOUND`, `INVALID_ARGUMENT`, `TIMEOUT` or
+  `SCRIPT_ERROR`.
+- Each call to DFHack has a deadline, 10 seconds by default
+  (`DFHACK_MCP_TIMEOUT_MS`). A call that misses it returns `TIMEOUT` and is
+  never retried, because the script may have partly run.
+- `stocks` has an `inventory` section with the usable count of every DF item
+  type, and a `category` parameter to narrow it to one.
+- `fort_status.hostiles_on_map` and `rooms_and_zones.ghosts.active_total`
+  report two facts that were only visible inside alert sentences before.
 - `unit_appearance` is the portrait read for one unit: DF's appearance
   modifiers with their description bands, hair and beard styling, hair, skin
   and eye colors as DF names them, missing parts and scars, and everything worn
