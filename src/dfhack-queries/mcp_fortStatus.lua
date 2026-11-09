@@ -8,21 +8,7 @@ end
 
 local visibility = reqscript('mcp_unitVisibility')
 
-local months = {'Granite','Slate','Felsite','Hematite','Malachite','Galena',
-                'Limestone','Sandstone','Timber','Moonstone','Opal','Obsidian'}
-local seasons = {'Spring','Summer','Autumn','Winter'}
-local tick = df.global.cur_year_tick
-local midx = math.floor(tick / 33600)
-local day = math.floor((tick % 33600) / 1200) + 1
-local function ord(n)
-  local v = n % 100
-  if v >= 11 and v <= 13 then return n .. 'th' end
-  local m = n % 10
-  if m == 1 then return n .. 'st'
-  elseif m == 2 then return n .. 'nd'
-  elseif m == 3 then return n .. 'rd'
-  else return n .. 'th' end
-end
+local clock = reqscript('mcp_gameDate').current()
 
 local ok, fname = pcall(function()
   return dfhack.translation.translateName(df.global.world.world_data.active_site[0].name, true)
@@ -135,8 +121,9 @@ end
 
 emit({
   fort_name  = ok and fname or 'unknown',
-  date       = ord(day) .. ' ' .. months[midx + 1] .. ', Year ' .. df.global.cur_year,
-  season     = seasons[math.floor(midx / 3) + 1],
+  date       = clock.date,
+  season     = clock.season,
+  identity   = reqscript('mcp_identity').read(true),
   population = #citizens,
   wealth     = wealth,
   happiness  = hap,

@@ -12,7 +12,7 @@ tags: [dfhack-mcp/tool]
 > One-call situational overview of the currently loaded Dwarf Fortress fort.
 
 ## Purpose
-The single-call snapshot: fort name, in-game date and season, population, created wealth, a happiness breakdown, and a pre-triaged list of alerts worth attention. An AI co-pilot typically calls this first each session to orient itself before reaching for the deeper sensors.
+The single-call snapshot: fort name, in-game date and season, the fort's identity, population, created wealth, a happiness breakdown, and a pre-triaged list of alerts worth attention. An AI co-pilot typically calls this first each session to orient itself before reaching for the deeper sensors.
 
 ## Parameters
 None.
@@ -20,6 +20,7 @@ None.
 ## Returns
 Top-level fields:
 - `fort_name`, `date` (in-game), `season`
+- `identity`: `world_name` (`{dwarven, english}`), `save_folder`, `site_id`, `site_name` (`{dwarven, english}`), `civ_id`, `civ_name` (`{dwarven, english}`). The same object [game_state](game_state.md) reports; field paths are documented there.
 - `population` — citizen count
 - `wealth` — created wealth
 - `happiness` — `{miserable, unhappy, content, happy}` citizen counts
@@ -41,6 +42,14 @@ Top-level fields:
     "citizen_causes": [{ "cause": "THIRST", "count": 1 }]
   },
   "fort_name": "Fortress of Dreams",
+  "identity": {
+    "civ_id": 10,
+    "civ_name": { "dwarven": "Uzoledzul", "english": "The Oily Vestibule" },
+    "save_folder": "region1",
+    "site_id": 25,
+    "site_name": { "dwarven": "Geshud Nåzom", "english": "Fortress of Dreams" },
+    "world_name": { "dwarven": "Emeanenu", "english": "The Eternal Planets" }
+  },
   "happiness": {
     "content": 58,
     "happy": 16,
@@ -61,7 +70,7 @@ Top-level fields:
 - Deaths are read from DF's dedicated `history.events_death` index, scanned newest-first and stopped at the year cutoff, so cost is proportional to recent deaths rather than to world age.
 - **Fog of war**: the hostile count/alert excludes any unit standing on an undiscovered tile — an undiscovered cavern's inhabitants never surface here (same gate as [threats](threats.md)).
 - Small fixed-size payload; no parameters, no pagination.
-- Returns `{"error":"no fort loaded"}` if no fort is active — this is also the canonical probe for whether a fort is loaded at all.
+- Returns `{"error":"no fort loaded"}` if no fort is active. To find out what DF is doing when no fort is loaded, use [game_state](game_state.md), which works at any screen.
 
 ## Implementation notes
 `recent_deaths` scans `df.global.world.history.events_death` — a purpose-built index of death events (2,740 entries on the Torchbristled world) rather than `history.events` (41,477 entries there). The vector is chronological, so the scan runs backward from the newest entry and breaks at the first event older than the cutoff, with a 5,000-entry backstop. This is what makes the read affordable in the fort's cheapest always-run tool: measured live, 68 entries visited in 0.002s, versus 0.32s for an equivalent backward scan over `history.events` and 4.5s for a full forward scan of it. Whole-tool time with the death scan included is ~0.011s.
@@ -75,3 +84,4 @@ The unhappy-population alert only fires when BOTH a minimum share (10% of citize
 - [unmet_needs](unmet_needs.md) / [moods](moods.md) — drill into the happiness breakdown.
 - [environment](environment.md) — the ambient-conditions companion snapshot.
 - [chronicle](chronicle.md) — what has happened since the last look.
+- [game_state](game_state.md): versions, mode, pause and clock, readable without a fort.

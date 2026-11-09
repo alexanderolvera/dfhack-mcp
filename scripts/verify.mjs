@@ -128,6 +128,24 @@ const HISTORICAL_FIGURE_GOLDEN_IDS = [4, 22, 30, 177];
 // against a committed save). game_data/identify fuse world raws — kept in T2.
 const NETWORK_TOOLS = new Set(['wiki_search', 'wiki_lookup']);
 
+// DFHack-only tools that read no game state, so --no-fort expects clean data from them.
+const GAME_INDEPENDENT_TOOLS = new Set(['dfhack_command_list']);
+
+// game_state is the one tool that must return real data at the title screen,
+// so --no-fort checks its title-screen shape instead of expecting the guard.
+function assertTitleScreenGameState(data) {
+  const problems = [];
+  if (data.mode !== 'title') problems.push(`mode=${data.mode}, expected title`);
+  if (data.world_loaded !== false || data.map_loaded !== false)
+    problems.push(`world_loaded=${data.world_loaded} map_loaded=${data.map_loaded}, expected false`);
+  for (const f of ['dfhack_version', 'df_version'])
+    if (typeof data[f] !== 'string' || !data[f]) problems.push(`${f} missing`);
+  for (const f of ['paused', 'clock', 'identity'])
+    if (data[f] !== null) problems.push(`${f}=${JSON.stringify(data[f])}, expected null`);
+  if (problems.length) fail(`game_state: ${problems.join('; ')}`);
+  else ok('game_state: reports the title screen with no world loaded (works without a fort)');
+}
+
 // Fields that are a live instantaneous reading, not frozen game state, even
 // against a paused fixture — masked to null before the golden snapshot/compare
 // so T2 doesn't flap on wall-clock timing. See docs/VERIFY.md's Special cases.
@@ -352,6 +370,22 @@ async function tier1NoFort(client) {
         fail(`${name}: network tool errored: ${data.error ?? '(isError)'}`);
       } else {
         ok(`${name}: reachable, well-formed JSON (network tool, no game dependency)`);
+      }
+      continue;
+    }
+    if (GAME_INDEPENDENT_TOOLS.has(name)) {
+      if (data.__unparsable__ !== undefined || isError || typeof data.error === 'string') {
+        fail(`${name}: must work without a fort, got: ${JSON.stringify(data).slice(0, 120)}`);
+      } else {
+        ok(`${name}: reachable, well-formed JSON (reads DFHack only, no game dependency)`);
+      }
+      continue;
+    }
+    if (name === 'game_state') {
+      if (data.__unparsable__ !== undefined || isError || typeof data.error === 'string') {
+        fail(`${name}: must work without a fort, got: ${JSON.stringify(data).slice(0, 120)}`);
+      } else {
+        assertTitleScreenGameState(data);
       }
       continue;
     }

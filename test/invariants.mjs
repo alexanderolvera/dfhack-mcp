@@ -2293,4 +2293,25 @@ export const INVARIANTS = [
       return out;
     },
   },
+  {
+    name: 'game_state_agrees_with_fort_status',
+    tools: ['game_state', 'fort_status'],
+    desc: 'with a fort loaded, game_state reports fortress mode and the same identity and date as fort_status',
+    check(p) {
+      const g = p.game_state;
+      const f = p.fort_status;
+      const out = [];
+      if (g.mode !== 'fortress') out.push(`mode is ${g.mode}, expected fortress`);
+      if (!g.world_loaded || !g.map_loaded) out.push(`world_loaded=${g.world_loaded} map_loaded=${g.map_loaded}`);
+      if (g.clock?.date !== f.date) out.push(`clock.date ${g.clock?.date} !== fort_status.date ${f.date}`);
+      if (!inRange(g.clock?.year_tick, 0, 403199)) out.push(`clock.year_tick ${g.clock?.year_tick} out of range`);
+      if (JSON.stringify(g.identity) !== JSON.stringify(f.identity))
+        out.push(`identity differs: ${JSON.stringify(g.identity)} vs ${JSON.stringify(f.identity)}`);
+      const id = f.identity ?? {};
+      if (!isInt(id.site_id) || !isInt(id.civ_id)) out.push(`site_id/civ_id not integers: ${id.site_id}/${id.civ_id}`);
+      if (id.site_name?.english !== f.fort_name)
+        out.push(`identity.site_name.english ${id.site_name?.english} !== fort_name ${f.fort_name}`);
+      return out;
+    },
+  },
 ];

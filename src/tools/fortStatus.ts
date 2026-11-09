@@ -1,5 +1,6 @@
 import { runJsonScript } from '../query.ts';
 import type { ToolDef } from '../register.ts';
+import { normalizeIdentity, type Identity } from './gameState.ts';
 
 export interface DeathCause {
   cause: string;
@@ -18,6 +19,7 @@ export interface FortStatus {
   fort_name: string;
   date: string;
   season: string;
+  identity: Identity | null;
   population: number;
   wealth: number;
   happiness: { miserable: number; unhappy: number; content: number; happy: number };
@@ -31,6 +33,7 @@ export async function fortStatus(): Promise<FortStatus | { error: string }> {
   if (data.recent_deaths && !Array.isArray(data.recent_deaths.citizen_causes)) {
     data.recent_deaths.citizen_causes = [];
   }
+  data.identity = normalizeIdentity(data.identity);
   return data;
 }
 
@@ -39,7 +42,8 @@ export const fortStatusDef: ToolDef = {
   title: 'Fort status',
   description:
     'One-call situational overview of the currently loaded Dwarf Fortress fort: ' +
-    'name, in-game date and season, population, created wealth, a happiness ' +
+    'name, in-game date and season, identity (world_name, save_folder, site_id/site_name, ' +
+    'civ_id/civ_name; names as {dwarven, english}), population, created wealth, a happiness ' +
     'breakdown (miserable/unhappy/content/happy), recent_deaths, and a pre-triaged ' +
     'list of alerts worth attention. recent_deaths covers deaths recorded AT THIS ' +
     'SITE within the last game year: how many were the fort\'s own citizens, what ' +

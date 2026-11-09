@@ -15,6 +15,7 @@ import { fortHealthDef } from './fortHealth.ts';
 import { fortStatusDef } from './fortStatus.ts';
 import { gameDataDef } from './gameData.ts';
 import { gameSaveDef } from './gameSave.ts';
+import { gameStateDef } from './gameState.ts';
 import { geologyDef } from './geology.ts';
 import { haulingRoutesDef } from './haulingRoutes.ts';
 import { historicalFigureDef } from './historicalFigure.ts';
@@ -66,6 +67,7 @@ export const ALL_TOOLS: ToolDef[] = [
   fortStatusDef,
   gameDataDef,
   gameSaveDef,
+  gameStateDef,
   geologyDef,
   haulingRoutesDef,
   historicalFigureDef,

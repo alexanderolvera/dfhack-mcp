@@ -54,7 +54,7 @@ is `dist/index.js`, run by whatever Node the caller has. It builds a fresh
 tarball into a throwaway directory so its deps resolve from the registry —
 not this repo's `node_modules` — then boots the installed bundle over MCP
 with the gates pinned explicitly (`DFHACK_MCP_ACTUATORS=1`, `DFHACK_MCP_DEV`
-unset) so the expected 41-tool count can't drift with whatever
+unset) so the expected tool count can't drift with whatever
 `DFHACK_MCP_*` the caller's shell happens to export. It asserts the handshake
 version, tool count, and a handful of required tool names. Runnable locally
 (needs network for the registry install); exit 0 means the artifact is
@@ -116,7 +116,11 @@ T1 has two assertion modes, opposite fixtures, mutually exclusive:
   **mirror**. Every *game-dependent* tool MUST return its `{"error":"no fort
   loaded"}` (or game_data/identify's `"no game loaded"`) guard as **normal
   output** — not `isError`, not a crash/traceback, not a different error, and
-  **not real data**. Anything else fails. This is what actually **exercises** the
+  **not real data**. Anything else fails. The exception is `game_state`, the one
+  tool built to work without a fort: it must return real data reporting
+  `mode: "title"`, `world_loaded`/`map_loaded` false, both version strings, and
+  `paused`/`clock`/`identity` null. `dfhack_command_list` reads only DFHack's own
+  command list, so like the wiki tools it must return well-formed, non-error data. This is what actually **exercises** the
   no-fort guard ([#6](https://github.com/alexanderolvera/dfhack-mcp/issues/6)),
   closing the long-standing "guard coded but never exercised" gap, and it is the
   no-fort reachability path for
