@@ -1,10 +1,12 @@
 # dfhack-mcp
 
-An [MCP](https://modelcontextprotocol.io) server that gives an AI agent a live
-window into your **Dwarf Fortress** fort — a co-pilot and early-warning advisor,
-not an autopilot. Point Claude (or any MCP client) at it and ask _"how's my fort
-doing?"_ — it reads happiness, threats, stocks, jobs, health, and defenses
-straight from the running game and answers in plain language.
+An [MCP](https://modelcontextprotocol.io) server that gives an AI client live
+access to **Dwarf Fortress** through [DFHack](https://dfhack.org). It is an
+access layer: it reports what is true in the running game and executes exactly
+what it is asked, and it leaves deciding what matters, and what to do about it,
+to the client. Point Claude (or any MCP client) at it and ask _"how's my fort
+doing?"_. The client reads happiness, threats, stocks, jobs, health and defenses
+straight from the game and does the reasoning itself.
 
 **Read-only by default.** The 39 sensor and reference tools only observe the
 game. A handful of **actuators** that _change_ the fort — queue manager orders,
@@ -21,8 +23,10 @@ Two kinds of tools:
   world's** ground truth (its loaded raws), and `dfhack_command_list` lists what
   DFHack itself can do.
 
-It returns **facts, not advice** — already-summarized JSON that reads like a
-glance at the screen, leaving the judgment to the agent.
+It returns **facts, not advice**: structured JSON in DF's own terms, with no
+thresholds, triage or strategy text layered on top. Rates, alerts and game
+knowledge belong to the client. [docs/migrating-to-2.0.md](docs/migrating-to-2.0.md)
+lists what moved out of the server in 2.0.
 
 Every tool has a reference page — parameters, return shape, real example
 output, caveats — in [docs/tools](docs/tools/README.md).

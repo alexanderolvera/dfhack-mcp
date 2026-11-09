@@ -12,7 +12,7 @@ tags: [dfhack-mcp/tool]
 > A deep dossier on ONE citizen, chained by unit_id from find_unit (or chronicle).
 
 ## Purpose
-Where find_unit stays compact, this is the depth: one citizen's walkable social graph (spouse, parents, children, friends, grudges — each with an `hf_id` for `historical_figure()` and, while the figure is a live unit, a `unit_id` to pass back into citizen() and walk the graph), worshipped deities with worship strength, notable personality extremes, skills of note, likes/detests, physical highlights, and recent thoughts tied to current stress. An AI co-pilot calls it to understand why a dwarf is unhappy, who their relations are, or what they care about.
+Where find_unit stays compact, this is the depth: one citizen's walkable social graph (spouse, parents, children, friends, grudges — each with an `hf_id` for `historical_figure()` and, while the figure is a live unit, a `unit_id` to pass back into citizen() and walk the graph), worshipped deities with worship strength, notable personality extremes, skills of note, likes/detests, physical highlights, and recent thoughts tied to current stress. A client calls it to understand why a dwarf is unhappy, who their relations are, or what they care about.
 
 ## Parameters
 | Name | Type | Required | Default | Description |

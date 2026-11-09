@@ -12,7 +12,7 @@ tags: [dfhack-mcp/tool]
 > One-call situational overview of the currently loaded Dwarf Fortress fort.
 
 ## Purpose
-The single-call snapshot: fort name, in-game date and season, the fort's identity, population, created wealth, a happiness breakdown, recent deaths, and the count of hostiles on the map. An AI co-pilot typically calls this first each session to orient itself before reaching for the deeper sensors.
+The single-call snapshot: fort name, in-game date and season, the fort's identity, population, created wealth, a happiness breakdown, recent deaths, and the count of hostiles on the map. A client typically calls this first each session to orient itself before reaching for the deeper sensors.
 
 ## Parameters
 | Name | Type | Required | Default | Description |

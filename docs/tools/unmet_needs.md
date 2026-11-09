@@ -12,7 +12,7 @@ tags: [dfhack-mcp/tool]
 > Why the fort is stressed: the dwarven needs system aggregated across all citizens.
 
 ## Purpose
-Companion to `fort_status`'s happiness buckets: those say HOW MANY dwarves are unhappy; this says WHICH needs are starving them and how badly. It scans every citizen's `personality.needs`, counts each dwarf at most once per need type (using their worst focus for that type), and ranks need types by how many dwarves are meaningfully distracted. Reports which needs are unmet, not how to fix them — the co-pilot looks that up or reasons from the need type.
+Companion to `fort_status`'s happiness buckets: those say HOW MANY dwarves are unhappy; this says WHICH needs are starving them and how badly. It scans every citizen's `personality.needs`, counts each dwarf at most once per need type (using their worst focus for that type), and ranks need types by how many dwarves are meaningfully distracted. Reports which needs are unmet, not how to fix them — the client looks that up or reasons from the need type.
 
 ## Parameters
 None.

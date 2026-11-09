@@ -12,7 +12,7 @@ tags: [dfhack-mcp/tool]
 > Queue a job for a dwarf to walk to and pull a named lever — the same action as DFHack's `lever pull`.
 
 ## Purpose
-Execute-never-decide: the caller names the lever; the tool queues exactly one pull job on it. This QUEUES a job, it does not instantly flip the lever or its linked target(s) — the physical toggle (and any bridge/door/spike/support actually moving) happens once a dwarf reaches the lever and completes the job. An AI co-pilot calls it after `mechanisms()` names the lever wired to the bridge/floodgate it wants operated.
+Execute-never-decide: the caller names the lever; the tool queues exactly one pull job on it. This QUEUES a job, it does not instantly flip the lever or its linked target(s) — the physical toggle (and any bridge/door/spike/support actually moving) happens once a dwarf reaches the lever and completes the job. A client calls it after `mechanisms()` names the lever wired to the bridge/floodgate it wants operated.
 
 ## Parameters
 | Name | Type | Required | Default | Description |

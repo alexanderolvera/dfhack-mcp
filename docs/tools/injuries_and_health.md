@@ -12,7 +12,7 @@ tags: [dfhack-mcp/tool]
 > The fort's medical picture: how many dwarves are wounded, in the care queue, bedridden, or unconscious, plus a breakdown of what care is needed.
 
 ## Purpose
-Counts the citizens who are currently injured, queued for healthcare (patients), bedridden (should-not-move), and genuinely unconscious, and breaks down the outstanding care requests (diagnosis, surgery, suture, dressing, ...) so gaps in medical coverage — a missing diagnostician, surgeon, or supplies — are visible as facts. An AI co-pilot calls it after combat, accidents, or when checking whether the hospital pipeline is keeping up. It reports the demand side of medicine; the hospital's supply side lives in `rooms_and_zones`.
+Counts the citizens who are currently injured, queued for healthcare (patients), bedridden (should-not-move), and genuinely unconscious, and breaks down the outstanding care requests (diagnosis, surgery, suture, dressing, ...) so gaps in medical coverage — a missing diagnostician, surgeon, or supplies — are visible as facts. A client calls it after combat, accidents, or when checking whether the hospital pipeline is keeping up. It reports the demand side of medicine; the hospital's supply side lives in `rooms_and_zones`.
 
 ## Parameters
 None.

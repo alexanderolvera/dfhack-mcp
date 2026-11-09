@@ -12,7 +12,7 @@ tags: [dfhack-mcp/tool]
 > The fort's nobility overhead as facts: active mandates, export bans, unmet noble room demands, and the state of the justice system.
 
 ## Purpose
-Reports what the nobles are forcing on the fort right now — production mandates (make N of an item, with remaining count and days to deadline), export bans, guild demands, and unmet room demands (an appointed noble holds no room zone of a type their position requires) — plus the justice system: open cases, convictions awaiting punishment, and restraint capacity so it is visible whether a sentence can actually be served. An AI co-pilot calls it to see noble pressure and justice backlog as facts; the pairing "2 prison sentences pending, 0 free restraints" is the fact, "build a jail" is the caller's conclusion.
+Reports what the nobles are forcing on the fort right now — production mandates (make N of an item, with remaining count and days to deadline), export bans, guild demands, and unmet room demands (an appointed noble holds no room zone of a type their position requires) — plus the justice system: open cases, convictions awaiting punishment, and restraint capacity so it is visible whether a sentence can actually be served. A client calls it to see noble pressure and justice backlog as facts; the pairing "2 prison sentences pending, 0 free restraints" is the fact, "build a jail" is the caller's conclusion.
 
 ## Parameters
 None.

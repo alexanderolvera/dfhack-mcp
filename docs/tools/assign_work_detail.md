@@ -12,7 +12,7 @@ tags: [dfhack-mcp/tool]
 > Add or remove ONE fort citizen to/from ONE work detail (the game's labor groups).
 
 ## Purpose
-Toggles one citizen's membership in one work detail. Execute-never-decide: the caller names the unit, the detail, and the desired membership; the tool changes exactly that. Because `assigned_units` is the durable source of truth, the tool also mirrors the detail's labors onto the unit immediately (the game otherwise reconciles them only on a frame advance). An AI co-pilot calls it after deciding a labor change and previewing the effect via the dry-run.
+Toggles one citizen's membership in one work detail. Execute-never-decide: the caller names the unit, the detail, and the desired membership; the tool changes exactly that. Because `assigned_units` is the durable source of truth, the tool also mirrors the detail's labors onto the unit immediately (the game otherwise reconciles them only on a frame advance). A client calls it after deciding a labor change and previewing the effect via the dry-run.
 
 ## Parameters
 | Name | Type | Required | Default | Description |

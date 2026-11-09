@@ -1,7 +1,7 @@
 {
   "name": "dfhack-mcp",
   "version": "1.5.0",
-  "description": "MCP server exposing a live Dwarf Fortress fort to an AI agent as curated, semantic tools",
+  "description": "Live, facts-only access to a running Dwarf Fortress game through DFHack, as MCP tools",
   "mcpName": "io.github.alexanderolvera/dfhack-mcp",
   "type": "module",
   "bin": {

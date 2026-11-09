@@ -1,9 +1,14 @@
 # Contributing to dfhack-mcp
 
-This server exposes a live Dwarf Fortress fort to an AI agent as curated,
-semantic tools — **read-only by default**, with a small set of mutation
-_actuators_ (`work_order_*`, `blueprint_*`, `assign_work_detail`, `squad_orders`) gated behind
-`DFHACK_MCP_ACTUATORS` and absent from the tool list unless it is set. The DFHack
+This server is a DFHack access layer for AI clients. It exposes a live Dwarf
+Fortress game as MCP tools that report facts and execute exactly what they are
+asked. Judgment (thresholds, triage, strategy and game knowledge) lives in the
+client, not here; see [Facts, not advice](#facts-not-advice). It is **read-only
+by default**. The mutating _actuators_ (`work_order_*`, `blueprint_*`,
+`assign_work_detail`, `squad_orders`, `civilian_alert`, `pull_lever`,
+`game_save`) are gated behind `DFHACK_MCP_ACTUATORS`, and `dfhack_command_run`
+behind its own `DFHACK_MCP_COMMANDS`. Each is absent from the tool list unless
+its gate is set. The DFHack
 RPC transport,
 [`dfhack-remote-node`](https://www.npmjs.com/package/dfhack-remote-node), is a
 published npm dependency (its source lives in a
@@ -170,7 +175,9 @@ Thresholds belong to the client too: report the number (`happiness.unhappy`,
 `idle_pct`), never a sentence that fires when it crosses a line the server
 picked ("28 dwarves unhappy"). Deciding which facts deserve attention is
 triage, and a prose restatement of a field already in the payload is a second
-copy of it to drift.
+copy of it to drift. The same goes for game knowledge: picking which strategy
+text or wiki excerpt applies is curation, so the server ships none. Clients bring
+their own.
 
 ## Adding a tool
 

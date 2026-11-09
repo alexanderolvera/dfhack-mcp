@@ -12,7 +12,7 @@ tags: [dfhack-mcp/tool]
 > The fort's announcement/report stream (combat, deaths, moods, artifacts, sieges, migrants, ...) as triaged, cursor-addressable events.
 
 ## Purpose
-Reads DF's rolling, front-pruned report window and returns it as id-addressable events with a save/load-stable cursor. Events are triaged into categories (death, birth, marriage, battle, siege, mood, artifact, migrants, diplomacy, cave-in, megabeast, other) and combat spam is tamed via repeat counts, continuation-line folding, and battle-run collapse. An AI co-pilot polls it with the cursor to learn what happened since it last looked.
+Reads DF's rolling, front-pruned report window and returns it as id-addressable events with a save/load-stable cursor. Events are triaged into categories (death, birth, marriage, battle, siege, mood, artifact, migrants, diplomacy, cave-in, megabeast, other) and combat spam is tamed via repeat counts, continuation-line folding, and battle-run collapse. A client polls it with the cursor to learn what happened since it last looked.
 
 ## Parameters
 | Name | Type | Required | Default | Description |

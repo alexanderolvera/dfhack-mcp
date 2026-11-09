@@ -12,7 +12,7 @@ tags: [dfhack-mcp/tool]
 > The fort's burrows as facts, plus the civilian-alert safety-burrow set — the deferred "fort alarms" item, now unblocked.
 
 ## Purpose
-Burrows are DF's mechanism for confining citizens/animals to a region and, combined with the civilian alert, for herding everyone to safety during a siege. This tool reports every burrow's size and membership, and whether it's currently one of the alert's safety burrows — the read half of the `civilian_alert` actuator. An AI co-pilot calls it before sounding the alarm (to name a real burrow) and after (to confirm it stuck).
+Burrows are DF's mechanism for confining citizens/animals to a region and, combined with the civilian alert, for herding everyone to safety during a siege. This tool reports every burrow's size and membership, and whether it's currently one of the alert's safety burrows — the read half of the `civilian_alert` actuator. A client calls it before sounding the alarm (to name a real burrow) and after (to confirm it stuck).
 
 ## Parameters
 None.
