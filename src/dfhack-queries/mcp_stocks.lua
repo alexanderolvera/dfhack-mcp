@@ -6,12 +6,6 @@ if df.global.gamemode ~= df.game_mode.DWARF then
   return
 end
 
-local SEASON_DAYS = 84
-local FOOD_PER_SEASON, DRINK_PER_SEASON = 2, 5
-local LOW_DAYS = 14
-local LOW_FUEL, LOW_WOOD, LOW_CLOTH = 5, 20, 10
-local HIGH_STONE = 500
-
 local T = df.item_type
 
 local function isItemTypeToken(token)
@@ -91,24 +85,9 @@ if #worn > WORN_CAP then
 end
 
 local pop = #dfhack.units.getCitizens(true)
-local function days(total, per) return pop > 0 and math.floor(total * SEASON_DAYS / (pop * per)) or -1 end
-local food_days = days(c.food, FOOD_PER_SEASON)
-local drink_days = days(c.drink, DRINK_PER_SEASON)
-
-local low, high = {}, {}
-if food_days >= 0 and food_days < LOW_DAYS then low[#low+1] = 'food' end
-if drink_days >= 0 and drink_days < LOW_DAYS then low[#low+1] = 'drink' end
-if c.fuel < LOW_FUEL then low[#low+1] = 'fuel' end
-if c.wood < LOW_WOOD then low[#low+1] = 'wood' end
-if c.cloth < LOW_CLOTH then low[#low+1] = 'cloth' end
-if c.stone > HIGH_STONE then high[#high+1] = 'stone' end
 
 emit({
-  population  = pop,
-  food_days   = food_days,
-  drink_days  = drink_days,
-  notable_low = low,
-  notable_high = high,
+  population = pop,
   counts = c,
   inventory = inventory,
   clothing = {

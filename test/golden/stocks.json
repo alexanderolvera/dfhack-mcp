@@ -14,8 +14,6 @@
     "tanned_hides": 956,
     "wood": 305
   },
-  "drink_days": 662,
-  "food_days": 1505,
   "inventory": {
     "AMMO": 2120,
     "AMULET": 5,
@@ -111,9 +109,5 @@
     "WINDOW": 3,
     "WOOD": 305
   },
-  "notable_high": [
-    "stone"
-  ],
-  "notable_low": [],
   "population": 78
 }

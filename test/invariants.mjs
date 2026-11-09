@@ -38,16 +38,12 @@ export const INVARIANTS = [
   {
     name: 'stocks_nonnegative',
     tools: ['stocks'],
-    desc: 'raw counts are >= 0 and days-of-supply is >= 0 or the -1 no-population sentinel',
+    desc: 'raw counts and clothing tallies are non-negative',
     check(p) {
       const d = p.stocks;
       const out = [];
       for (const [k, v] of Object.entries(d.counts ?? {})) {
         if (!(typeof v === 'number' && v >= 0)) out.push(`counts.${k}=${v} is negative`);
-      }
-      for (const k of ['food_days', 'drink_days']) {
-        if (!(typeof d[k] === 'number' && d[k] >= -1))
-          out.push(`${k}=${d[k]} below the -1 sentinel`);
       }
       const cl = d.clothing ?? {};
       if (!(isInt(cl.no_shoes_count) && cl.no_shoes_count >= 0))
@@ -84,20 +80,6 @@ export const INVARIANTS = [
       const n = p.probes.narrowed?.inventory ?? {};
       if (JSON.stringify(n) !== JSON.stringify({ DRINK: inv.DRINK }))
         out.push(`stocks(category:"drink").inventory=${JSON.stringify(n)}, expected {"DRINK":${inv.DRINK}}`);
-      return out;
-    },
-  },
-  {
-    name: 'stocks_notable_keys_known',
-    tools: ['stocks'],
-    desc: 'notable_low / notable_high name real stock categories, never a typo',
-    check(p) {
-      const d = p.stocks;
-      const known = new Set([...Object.keys(d.counts ?? {}), 'food', 'drink']);
-      const out = [];
-      for (const k of [...(d.notable_low ?? []), ...(d.notable_high ?? [])]) {
-        if (!known.has(k)) out.push(`notable entry "${k}" is not a known stock key`);
-      }
       return out;
     },
   },
