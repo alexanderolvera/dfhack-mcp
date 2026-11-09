@@ -1,4 +1,5 @@
 import { runJsonScript } from '../query.ts';
+import { readSnapshot, snapshotEnabled, type Snapshot } from '../snapshot.ts';
 import { z } from 'zod';
 import type { ToolDef } from '../register.ts';
 
@@ -22,8 +23,49 @@ export interface FindUnit {
   matches: UnitMatch[];
 }
 
-export function findUnit(query: string): Promise<FindUnit | { error: string }> {
-  return runJsonScript<FindUnit>('findUnit', [query], ['matches']);
+const MAX_MATCHES = 8;
+const STRESS = ['miserable', 'unhappy', 'unhappy', 'content', 'content', 'happy', 'ecstatic'];
+
+const asciiLower = (s: string): string => s.replace(/[A-Z]/g, (c) => c.toLowerCase());
+
+/**
+ * Builds find_unit's payload from a publisher snapshot, matching the Lua query's output.
+ * @param snap A complete snapshot from `readSnapshot`.
+ * @param query Name fragment or profession, matched case-insensitively (ASCII, as Lua's `string.lower`).
+ * @returns The same shape `mcp_findUnit.lua` emits.
+ */
+export function projectFindUnit(snap: Snapshot, query: string): FindUnit {
+  const q = asciiLower(query);
+  const squadName = new Map(snap.squads.map((s) => [s.id, s.name]));
+  const hits = snap.units.filter(
+    (u) =>
+      u.citizen &&
+      !u.error &&
+      (asciiLower(u.name).includes(q) || asciiLower(u.profession).includes(q))
+  );
+  const matches = hits.slice(0, MAX_MATCHES).map((u): UnitMatch => {
+    const sc = u.stress_category;
+    const squad = u.squad_id === undefined ? undefined : squadName.get(u.squad_id);
+    return {
+      unit_id: u.id,
+      name: u.name,
+      profession: u.profession,
+      age: u.age,
+      stress: sc === undefined ? 'nil' : (STRESS[sc] ?? String(sc)),
+      current_job: u.job_type ?? 'idle',
+      ...(squad === undefined ? {} : { squad }),
+      wounded: u.wound_count > 0,
+      patient: u.needs_healthcare,
+      unconscious: u.unconscious > 0,
+    };
+  });
+  return { query, match_count: hits.length, truncated: hits.length > matches.length, matches };
+}
+
+export async function findUnit(query: string): Promise<FindUnit | { error: string }> {
+  if (!snapshotEnabled()) return runJsonScript<FindUnit>('findUnit', [query], ['matches']);
+  const snap = await readSnapshot();
+  return 'error' in snap ? snap : projectFindUnit(snap, query);
 }
 
 export const findUnitDef: ToolDef = {

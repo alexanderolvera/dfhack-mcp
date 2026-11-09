@@ -12,7 +12,7 @@ const QUERY_DIR =
 
 type RpcClient = Pick<
   DwarfClient,
-  'connected' | 'connect' | 'close' | 'runLuaSnippet' | 'runCommand'
+  'connected' | 'connect' | 'close' | 'runLuaSnippet' | 'runCommand' | 'callLua'
 >;
 
 let createClient = (): RpcClient => new DwarfClient({ host: HOST, port: PORT });
@@ -118,6 +118,21 @@ async function withRetry<T>(call: (c: RpcClient) => Promise<T>): Promise<T> {
  */
 export async function runLua(snippet: string): Promise<string> {
   return withRetry((c) => c.runLuaSnippet(snippet));
+}
+
+/**
+ * Calls a function on an already-loaded `rpc.*` Lua module through the core RunLua RPC,
+ * skipping DFHack's per-call script lookup, under the per-call deadline.
+ * @param module Module name; DFHack only allows `rpc.*`, `*.rpc` or `*-rpc`.
+ * @param fn Function name on that module.
+ * @param args String arguments.
+ * @returns The function's return values as strings.
+ * @throws {RpcError} If DFHack rejected or failed the call.
+ * @throws {TimeoutError} If DFHack did not answer within the deadline (never retried).
+ * @throws {NotConnectedError} If DFHack can't be reached after the retry.
+ */
+export async function callLua(module: string, fn: string, args: string[] = []): Promise<string[]> {
+  return withRetry((c) => c.callLua(module, fn, args));
 }
 
 /**

@@ -14,6 +14,10 @@ export interface ReadToolDef {
   actuator?: boolean;
   /** Runs allowlisted DFHack commands; registered only under DFHACK_MCP_COMMANDS. */
   commands?: boolean;
+  /** Served from the in-game snapshot (spike #143); registered only under DFHACK_MCP_SNAPSHOT. */
+  snapshot?: boolean;
+  /** Emit compact JSON instead of pretty-printed. */
+  compact?: boolean;
 }
 
 /** A read-only tool that takes arguments matching `shape`. */
@@ -28,6 +32,10 @@ export interface QueryToolDef {
   actuator?: boolean;
   /** Runs allowlisted DFHack commands; registered only under DFHACK_MCP_COMMANDS. */
   commands?: boolean;
+  /** Served from the in-game snapshot (spike #143); registered only under DFHACK_MCP_SNAPSHOT. */
+  snapshot?: boolean;
+  /** Emit compact JSON instead of pretty-printed. */
+  compact?: boolean;
 }
 
 export type ToolDef = ReadToolDef | QueryToolDef;
@@ -41,13 +49,14 @@ export type ToolDef = ReadToolDef | QueryToolDef;
  * @returns True if the tool should not be registered.
  */
 export function isGatedOff(
-  def: Pick<ToolDef, 'devOnly' | 'actuator' | 'commands'>,
+  def: Pick<ToolDef, 'devOnly' | 'actuator' | 'commands' | 'snapshot'>,
   env: Record<string, string | undefined> = process.env
 ): boolean {
   return (
     (!!def.devOnly && !env.DFHACK_MCP_DEV) ||
     (!!def.actuator && !env.DFHACK_MCP_ACTUATORS) ||
-    (!!def.commands && !env.DFHACK_MCP_COMMANDS)
+    (!!def.commands && !env.DFHACK_MCP_COMMANDS) ||
+    (!!def.snapshot && !env.DFHACK_MCP_SNAPSHOT)
   );
 }
 
@@ -82,7 +91,8 @@ function registerQueryTool(server: McpServer, def: QueryToolDef): void {
   server.registerTool(name, { title, description, inputSchema: shape }, async (args) => {
     try {
       const data = await run(args);
-      return { content: [{ type: 'text', text: JSON.stringify(data, null, 2) }] };
+      const text = def.compact ? JSON.stringify(data) : JSON.stringify(data, null, 2);
+      return { content: [{ type: 'text', text }] };
     } catch (err) {
       return { content: [{ type: 'text', text: errorPayload(name, err) }], isError: true };
     }
