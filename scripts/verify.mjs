@@ -70,12 +70,11 @@ import { PARITY_SPECS, compareParity } from '../test/parity.mjs';
 // exercise a real path; the values are deterministic so goldens are stable.
 const TOOL_ARGS = {
   // blueprint_apply / blueprint_undo dry-runs (NO confirm_token -> preview only,
-  // never mutates). A valid 3-cell dig CSV anchored on the fixture's revealed-wall
-  // strip (x79-81,y37,z122 are StoneWall, discovered) so the preview designates
-  // cleanly (tiles_affected>0, no invalid keys / could_not) and reachability
-  // exercises the real dry-run path. blueprint_undo's dry-run only READS state.
-  blueprint_apply: { csv: '#dig\nd,d,d\n', anchor_x: 79, anchor_y: 37, anchor_z: 122, mode: 'dig' },
-  blueprint_undo: { csv: '#dig\nd,d,d\n', anchor_x: 79, anchor_y: 37, anchor_z: 122, mode: 'dig' },
+  // never mutates). resolveBlueprintAnchors replaces the anchor with one resolved
+  // from the live fort; these placeholders keep T0 well-formed and reach the
+  // no-fort guard. See CONTRIBUTING.md, "Resolving a blueprint anchor from the fort".
+  blueprint_apply: { csv: '#dig\nd,d,d\n', anchor_x: 0, anchor_y: 0, anchor_z: 0, mode: 'dig' },
+  blueprint_undo: { csv: '#dig\nd,d,d\n', anchor_x: 0, anchor_y: 0, anchor_z: 0, mode: 'dig' },
   citizen: { unit_id: '1' },
   // snapshot_query requires a class; a small limit exercises the row projection
   // rather than only the aggregate path.
@@ -352,6 +351,81 @@ async function resolveLiveArgs(client) {
   const mil = await callJson(client, 'military');
   const firstSquad = mil.data?.squads?.[0]?.squad_id;
   if (firstSquad != null) TOOL_ARGS.squad_orders = { squad_id: firstSquad, order: 'cancel' };
+  await resolveBlueprintAnchors(client);
+}
+
+// See CONTRIBUTING.md, "Resolving a blueprint anchor from the fort".
+const BLUEPRINT_ANCHORS = { dig: null, zone: null };
+
+const DIG_CSV = '#dig\nd,d,d\n';
+const ZONE_CSV = '#zone\nm,m\nm,m\n';
+
+const ANCHOR_SPECS = [
+  { key: 'dig', csv: DIG_CSV, mode: 'dig', glyphs: new Set(['#', ',']), w: 3, h: 1 },
+  { key: 'zone', csv: ZONE_CSV, mode: 'zone', glyphs: new Set(['.', '+']), w: 2, h: 2 },
+];
+
+const MAX_ANCHOR_PROBES = 12;
+
+function anchorCandidates(grid, origin, z, glyphs, w, h) {
+  const [ox, oy] = origin;
+  const uniform = (row, col) => {
+    for (let dy = 0; dy < h; dy++)
+      for (let dx = 0; dx < w; dx++) if (!glyphs.has(grid[row + dy]?.[col + dx])) return false;
+    return true;
+  };
+  const found = [];
+  for (let row = 0; row + h <= grid.length; row++)
+    for (let col = 0; col + w <= grid[row].length; col++)
+      if (uniform(row, col)) found.push({ anchor_x: ox + col, anchor_y: oy + row, anchor_z: z });
+  const cx = ox + grid[0].length / 2;
+  const cy = oy + grid.length / 2;
+  const distance = (c) => (c.anchor_x - cx) ** 2 + (c.anchor_y - cy) ** 2;
+  return found
+    .sort((a, b) => distance(a) - distance(b) || a.anchor_x - b.anchor_x || a.anchor_y - b.anchor_y)
+    .slice(0, MAX_ANCHOR_PROBES);
+}
+
+async function anchorPreviewsCleanly(client, spec, cells, candidate) {
+  const r = (
+    await callJson(client, 'blueprint_apply', { csv: spec.csv, mode: spec.mode, ...candidate })
+  ).data;
+  const p = r.preview;
+  return (
+    typeof r.confirm_token === 'string' &&
+    p?.tiles_affected === cells &&
+    p.pre_existing_designations === 0 &&
+    p.fog_of_war_tiles === 0 &&
+    p.could_not_designate === 0 &&
+    p.clipped_out_of_bounds === 0 &&
+    p.invalid_key_sequences === 0
+  );
+}
+
+async function resolveBlueprintAnchors(client) {
+  const region = (await callJson(client, 'tile_region', {})).data;
+  if (!Array.isArray(region.grid) || !region.grid.length || !Array.isArray(region.origin)) return;
+  for (const spec of ANCHOR_SPECS) {
+    const cells = spec.w * spec.h;
+    for (const candidate of anchorCandidates(
+      region.grid,
+      region.origin,
+      region.z,
+      spec.glyphs,
+      spec.w,
+      spec.h
+    )) {
+      if (await anchorPreviewsCleanly(client, spec, cells, candidate)) {
+        BLUEPRINT_ANCHORS[spec.key] = candidate;
+        break;
+      }
+    }
+  }
+  if (BLUEPRINT_ANCHORS.dig) {
+    const args = { csv: DIG_CSV, ...BLUEPRINT_ANCHORS.dig, mode: 'dig' };
+    TOOL_ARGS.blueprint_apply = args;
+    TOOL_ARGS.blueprint_undo = { ...args };
+  }
 }
 
 async function tier1(client) {
@@ -668,18 +742,16 @@ async function workDetailsParamChecks(client) {
 }
 
 // --- blueprint actuator surface (LIVE, MUTATING then restored) --------------
-// The confirm→apply→undo loop, zone mode, and the malformed/unsupported blocks —
-// none reachable from the no-token dry-run the golden/reachability tiers exercise
-// (the two actuators are in NO_GOLDEN precisely because the token is random). This
-// routine APPLIES to the fixture, so it MUST undo everything it applies and leave
-// the fort byte-identical (the T2 sensor goldens — e.g. map_overview's digging_z —
-// depend on that). Live-only; degrades to a clean skip with no fort loaded.
+// This routine APPLIES to the fort, so it MUST undo everything it applies and
+// leave the fort byte-identical. See CONTRIBUTING.md, "The blueprint actuator
+// surface" and "Resolving a blueprint anchor from the fort".
 async function blueprintActuatorChecks(client) {
   console.log('\nblueprint actuator surface (confirm+apply+undo / zone / malformed / unsupported)');
-  // Small dig blueprint on the revealed StoneWall strip (x79-81,y37,z122): three
-  // discovered, undesignated wall cells (the same clean strip the dry-run fixtures
-  // use), so apply designates exactly 3 tiles and undo fully reverts them.
-  const dig = { csv: '#dig\nd,d,d\n', anchor_x: 79, anchor_y: 37, anchor_z: 122, mode: 'dig' };
+  if (!BLUEPRINT_ANCHORS.dig) {
+    console.log('  ○ skipped (no clean dig strip resolved from this fort)');
+    return;
+  }
+  const dig = { csv: DIG_CSV, ...BLUEPRINT_ANCHORS.dig, mode: 'dig' };
 
   // Skip cleanly with no fort loaded (mirror tileRegionParamChecks).
   const pre = (await callJson(client, 'blueprint_apply', dig)).data;
@@ -728,28 +800,23 @@ async function blueprintActuatorChecks(client) {
   }
 
   // (c) zone mode previews a real designation (dry-run only; never mutates).
-  const zone = (
-    await callJson(client, 'blueprint_apply', {
-      csv: '#zone\nm,m\nm,m\n',
-      anchor_x: 79,
-      anchor_y: 37,
-      anchor_z: 122,
-      mode: 'zone',
-    })
-  ).data;
-  if (zone.preview?.tiles_affected > 0 && typeof zone.confirm_token === 'string')
-    ok(`zone preview -> tiles_affected=${zone.preview.tiles_affected} with a confirm_token`);
-  else fail(`zone preview wrong: ${JSON.stringify(zone).slice(0, 200)}`);
+  const zoneAnchor = BLUEPRINT_ANCHORS.zone;
+  if (!zoneAnchor) {
+    console.log('  ○ zone preview skipped (no zone-able 2x2 resolved from this fort)');
+  } else {
+    const zone = (
+      await callJson(client, 'blueprint_apply', { csv: ZONE_CSV, ...zoneAnchor, mode: 'zone' })
+    ).data;
+    if (zone.preview?.tiles_affected > 0 && typeof zone.confirm_token === 'string')
+      ok(`zone preview -> tiles_affected=${zone.preview.tiles_affected} with a confirm_token`);
+    else fail(`zone preview wrong: ${JSON.stringify(zone).slice(0, 200)}`);
+  }
+
+  const anchor = BLUEPRINT_ANCHORS.dig;
 
   // (d) a malformed CSV previews BLOCKED with no token (spike #11 partial-apply gate).
   const bad = (
-    await callJson(client, 'blueprint_apply', {
-      csv: '#dig\nZZZ,d\n',
-      anchor_x: 79,
-      anchor_y: 37,
-      anchor_z: 122,
-      mode: 'dig',
-    })
+    await callJson(client, 'blueprint_apply', { csv: '#dig\nZZZ,d\n', ...anchor, mode: 'dig' })
   ).data;
   if (Array.isArray(bad.blocked) && bad.blocked.length > 0 && bad.confirm_token === undefined)
     ok('malformed CSV -> blocked with no confirm_token');
@@ -757,13 +824,7 @@ async function blueprintActuatorChecks(client) {
 
   // (e) an unsupported mode (build) blocks with no token (v1 scope gate).
   const build = (
-    await callJson(client, 'blueprint_apply', {
-      csv: '#build\nb,b\n',
-      anchor_x: 79,
-      anchor_y: 37,
-      anchor_z: 122,
-      mode: 'build',
-    })
+    await callJson(client, 'blueprint_apply', { csv: '#build\nb,b\n', ...anchor, mode: 'build' })
   ).data;
   if (Array.isArray(build.blocked) && build.blocked.length > 0 && build.confirm_token === undefined)
     ok('unsupported mode "build" -> blocked with no confirm_token');

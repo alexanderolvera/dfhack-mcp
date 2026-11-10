@@ -143,6 +143,50 @@ executes that exact file fresh, ignoring whatever DFHack has cached under its
 script name. Cleanest alternative: restart DF/DFHack between checkouts so there's
 nothing to have cached.
 
+### The blueprint actuator surface
+
+`blueprintActuatorChecks` (in `scripts/verify.mjs`, run by both T2 and
+invariants) covers the parts of `blueprint_apply` / `blueprint_undo` that no
+other tier reaches: the confirm→apply→undo loop, zone mode, and the
+malformed-CSV and unsupported-mode blocks. The reachability and golden tiers
+only ever dry-run them, and both actuators sit in `NO_GOLDEN` because the
+`confirm_token` is random, so this routine is the only place the apply path is
+exercised at all.
+
+It is the one read-side routine that **mutates**, so it must undo everything it
+applies and leave the fort byte-identical — the T2 sensor goldens depend on it,
+`map_overview`'s `digging_z` most directly.
+
+### Resolving a blueprint anchor from the fort
+
+The anchor the routine designates at is resolved from the loaded fort by
+`resolveBlueprintAnchors`, not hard-coded. It was hard-coded until
+[#145](https://github.com/alexanderolvera/dfhack-mcp/issues/145): `(79,37,122)`,
+a revealed `StoneWall` strip in the fixture save. Against any other fort that
+anchor is unexplored rock, and the zone check failed with `tiles_affected: 0`
+and `fog_of_war_tiles: 4` — the invariants claim to hold for _any_ valid fort,
+so an anchor that only exists in one save is a harness bug, not a tool bug. The
+dig check happened to pass anyway, because a dig designation lands on any solid
+tile whether or not it has been discovered.
+
+Resolution reads the default `tile_region` window (the 60x40 window centered on
+the fort core, so candidates sit in the fort's active area, not in rock at the
+map edge), scans the glyph grid for the two shapes needed — a 3-wide run of
+undug stone or soil (`#`, `,`) to dig, a 2x2 of walkable floor (`.`, `+`) to
+zone — and then **probes** each candidate with a dry-run preview, nearest the
+window centre first, accepting the first whose preview comes back completely
+clean: a `confirm_token`, the full `tiles_affected`, and zero
+`pre_existing_designations`, `fog_of_war_tiles`, `could_not_designate`,
+`clipped_out_of_bounds` and `invalid_key_sequences`.
+
+Probing beats predicting. The preview is free and never mutates without a token,
+and it applies the tool's own notion of a designable tile rather than a second
+copy of that rule living in the harness. Candidate order is deterministic
+(distance from the window centre, then x, then y), so a given fort resolves the
+same anchor every run. Where no candidate survives — a fort with nothing
+diggable or no open floor near its core — the routine reports a clean skip
+instead of failing, like the no-fort path.
+
 ## Calling a tool by hand
 
 `npm run call [toolName] [key=value ...]` (`scripts/call-tool.mjs`) spawns the

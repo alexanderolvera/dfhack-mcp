@@ -201,6 +201,13 @@ what to read instead.
   now restore the publisher to the state they found it in.
 - `snapshot_query` failed T1 reachability, because it needs a `class` and the
   harness had no argument fixture for it.
+- The invariants claim to hold for any valid fort, but the blueprint actuator
+  checks were anchored at `(79,37,122)` — a revealed wall strip that exists only
+  in the fixture save. Against any other fort those tiles are unexplored rock, so
+  the zone check failed with `tiles_affected: 0` on a correct tool. The anchor is
+  now resolved from the loaded fort: the harness scans the `tile_region` window
+  around the fort core for the shapes it needs and probes each candidate with a
+  dry-run preview, taking the first that comes back clean.
 - Connecting now fails immediately, with an explanation, when DFHack will not
   accept the query script path. `dfhack.internal.addScriptPath` ignores a path it
   cannot see without reporting anything, so every later call failed with
