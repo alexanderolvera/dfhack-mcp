@@ -37,7 +37,13 @@ don't clone it to work on the server.
   before registering it, since `addScriptPath` rejects backslashes on Windows.
   `DFHACK_MCP_QUERY_DIR` overrides the path for a containerized DFHack, which
   needs the container-internal path rather than this host's (see
-  [`docker/README.md`](docker/README.md)).
+  [`docker/README.md`](docker/README.md)). `addScriptPath` **ignores a path it
+  cannot see, silently**, so the server now verifies registration by resolving a
+  known query script and fails the connection with an explanation if it did not
+  take. Two ways to get this wrong: pointing `DFHACK_MCP_QUERY_DIR` at a host
+  path when DF is in a container, and running a POSIX path through Git Bash
+  without `MSYS_NO_PATHCONV=1`, which rewrites `/opt/df/mcp-queries` into
+  `C:/Program Files/Git/opt/df/mcp-queries` before the server ever sees it.
 
 ## Setup — one command
 
@@ -56,24 +62,25 @@ version check and the contract gate.
 
 Full detail in [`docs/VERIFY.md`](docs/VERIFY.md). The short version:
 
-| Tier | Command | Needs | Gate |
-| --- | --- | --- | --- |
-| **T0** contract | `npm run verify:t0` | nothing | **CI-required** |
-| **T1** reachability | `npm run verify:t1` | live fort | local |
-| **T1** no-fort guard | `node scripts/verify.mjs --tier=1 --no-fort` | no-fort fixture | local |
-| **Invariants** (Red/Green) | `npm run verify:invariants` | any live fort | local |
-| **T2** golden + invariants | `npm run verify:t2` | fixture container | local |
+| Tier                       | Command                                      | Needs             | Gate                    |
+| -------------------------- | -------------------------------------------- | ----------------- | ----------------------- |
+| **T0** contract            | `npm run verify:t0`                          | nothing           | **CI-required**         |
+| **T1** reachability        | `npm run verify:t1`                          | live fort         | local                   |
+| **T1** no-fort guard       | `node scripts/verify.mjs --tier=1 --no-fort` | no-fort fixture   | local                   |
+| **Invariants** (Red/Green) | `npm run verify:invariants`                  | any live fort     | local                   |
+| **T2** golden + invariants | `npm run verify:t2`                          | fixture container | local                   |
+| **Lua syntax**             | `npm run lint:lua`                           | `luac` on PATH    | local (skips if absent) |
 
 The two halves of "did we break anything": **goldens** (T2) freeze the exact
 bytes each tool emits against the frozen fixture; **invariants** encode properties
-true of *any* valid fort (population agrees across tools, happiness sums to
+true of _any_ valid fort (population agrees across tools, happiness sums to
 population, the `find_unit`→`citizen` id chain resolves). Because invariants are
-relational they run against *any* fort with no committed golden — so `npm run
+relational they run against _any_ fort with no committed golden — so `npm run
 verify:invariants` is also the **Red/Green** surface: add a spec in
 [`test/invariants.mjs`](test/invariants.mjs), watch it fail on today's code (red),
 fix the tool until it passes (green). Both the fixture-frozen goldens and the
 invariants use the **disposable DF container** as the fort (see below); the
-container image tag *is* the fixture version.
+container image tag _is_ the fixture version.
 
 T1 also has a **`--no-fort`** mode (the mirror of `--require-fort`): pointed at a
 no-fort fixture — a container booted to the title screen with RPC up but no fort
@@ -88,17 +95,33 @@ rather than trusting it's coded, and is the no-fort reachability path for
 Some states the frozen fixture never reaches get an opt-in script that drives
 a scratch container into them instead of changing the shared save. `npm run
 verify:trade-caravan` forces a caravan and checks `trade` in each caravan state;
-run it after touching `mcp_trade.lua` or the `trade` invariants. Details are in
+run it after touching `mcp_trade.lua` or the `trade` invariants. `npm run
+verify:snapshot` exercises the snapshot publisher against any loaded fort —
+walker defaults, `autostart`, every entity class, `seq` advancing on a completed
+pass, and `find_unit` parity between the projection and the live Lua; run it after
+touching `mcp_snapshot.lua` or `src/snapshot.ts`. Its `--no-fort` mode, pointed at
+the no-fort fixture, checks that the walkers publish the guard under a new `seq`
+and that the reader never serves a cached fort behind it. Details are in
 [`docs/VERIFY.md`](docs/VERIFY.md#ad-hoc-live-verification-scripts).
 
 **Every tool is verified against a real running fort before it ships — no mocks.**
-Lua runs *inside* DF, so "test infra" is provisioned frozen-save fixtures, not
+Lua runs _inside_ DF, so "test infra" is provisioned frozen-save fixtures, not
 unit tests. Keep `npm run typecheck` and `npm run lint` clean.
+
+`npm run lint:lua` is the one exception that needs no fort: it runs `luac -p` over
+every `src/dfhack-queries/*.lua`, so a syntax error is caught at the terminal
+instead of surfacing as a failed tool call against a live game. It is part of
+`prepublishOnly` and skips cleanly where `luac` isn't installed.
+
+Reads served from the in-game snapshot instead of a per-call Lua walk have their
+own contract — cadence, `seq`, provenance and what deliberately stays live. See
+[`docs/snapshot.md`](docs/snapshot.md) before touching `mcp_snapshot.lua` or
+`src/snapshot.ts`.
 
 **Gotcha — DFHack caches loaded scripts by name, across server processes.**
 `addScriptPath` (`src/dfclient.ts`) registers a directory per connection, but
 DFHack's Lua VM is process-wide and persists for the life of the running game —
-if you point a *second* server checkout (a different worktree, an older build)
+if you point a _second_ server checkout (a different worktree, an older build)
 at the same live DF/DFHack instance, a script already loaded under a given name
 (e.g. `mcp_threats`) is NOT guaranteed to be re-resolved from the new path; you
 can get silently stale output that looks like your fix didn't take effect. This
@@ -135,7 +158,7 @@ own `node_modules`, and confirms T0 passes before handing it off.
   and CI — can run them simultaneously. This is the gate that lets parallel work
   land safely: schema/registration drift is caught without the game.
 - **The live DF is a shared resource — but no longer the only option.** Your
-  single live Steam DF is one fort on one port, so T1/T2 against *it* still run
+  single live Steam DF is one fort on one port, so T1/T2 against _it_ still run
   **one worktree at a time**. For real parallel live verification, spin up
   **disposable headless DF containers** ([`docker/`](docker/)): each worktree gets
   its own fort on its own port, so T1/T2 run concurrently. See
@@ -151,7 +174,7 @@ Why serialize, at the mechanism level: on connect the server calls
 DF-wide script search path**, and tools resolve `mcp_<name>` **by name** against
 it. Two worktrees pointed at the same DF both register their own `dfhack-queries/`,
 and `addScriptPath` prepends — so for a script that exists in both branches but
-*differs* (the common case: the one under test), whichever server connected last
+_differs_ (the common case: the one under test), whichever server connected last
 wins, and Agent A's call can silently run Agent B's version. Unique new tool names
 don't collide; same-named divergent scripts do. This is why true parallel live
 testing needs **separate DF instances** (#27's real deliverable), not just N
@@ -169,8 +192,8 @@ git worktree remove ../dfhack-mcp-server--feat-moods
 These tools **sense** — they return what is true about the fort and the world,
 the way a player reads a screen or looks something up. They do not tell the agent
 what to build or how to fight; that judgment is the agent's job. A field that
-says *what to do* is advice — leave it out (or, if it's a genuine limitation the
-caller must know, put it in the tool *description*, not the per-call payload).
+says _what to do_ is advice — leave it out (or, if it's a genuine limitation the
+caller must know, put it in the tool _description_, not the per-call payload).
 Thresholds belong to the client too: report the number (`happiness.unhappy`,
 `idle_pct`), never a sentence that fires when it crosses a line the server
 picked ("28 dwarves unhappy"). Deciding which facts deserve attention is
@@ -186,14 +209,14 @@ Follow the existing split:
 1. Write the version-fragile Lua as a real `src/dfhack-queries/mcp_<name>.lua`
    script — read parameters from `local args = {...}`, emit **one** JSON object
    with `print(require('json').encode(...))`. **Sort any unordered list before
-   emit** so goldens don't flap on `pairs()` order (see *Canonicalization* in
+   emit** so goldens don't flap on `pairs()` order (see _Canonicalization_ in
    `docs/VERIFY.md`).
    Any `{error}` other than the shared `no fort loaded` guard sets its own
-   `code` (see *Shared internals: error codes* below).
+   `code` (see _Shared internals: error codes_ below).
 2. Add a thin `src/tools/<name>.ts` wrapper that calls
    `runJsonScript('<name>', args, listFields)` and types the result.
 3. In that same module, export a `ToolDef` descriptor — `export const <name>Def:
-   ToolDef = { name, title, description, shape?, run }` (add `shape` for a tool
+ToolDef = { name, title, description, shape?, run }` (add `shape` for a tool
    that takes arguments; omit it for a no-arg read tool). The descriptor is the
    tool's contract; keep the description and schema here, not in `src/index.ts`.
 4. **Add one import + one array entry to [`src/tools/registry.ts`](src/tools/registry.ts)**,
@@ -303,12 +326,12 @@ page), so their behavior is documented here instead:
 relevant module above — don't re-implement the hidden-tile check.**
 
 This applies to **writes**, not just reads. An actuator that takes a unit as a
-*target* must gate it the same way: `squad_orders` blocks a kill order against a
+_target_ must gate it the same way: `squad_orders` blocks a kill order against a
 unit standing on an undiscovered tile, because issuing it would act on knowledge
 the fort does not have — the write-side twin of the X-ray leak the sensors fixed.
 The distinction to preserve is target-vs-area: naming a specific unseen creature
 is refused, while ordering movement (or a dig) into unexplored space is a
-legitimate command and is only *reported* as a fact (`squad_orders`'
+legitimate command and is only _reported_ as a fact (`squad_orders`'
 `target_undiscovered`, `blueprint_apply`'s `fog_of_war_tiles`), never blocked.
 
 Both modules use the standard DFHack `--@ module = true` idiom: a leading
@@ -347,7 +370,7 @@ Tools that stay out of the opt-in:
 - `squad_orders` refuses a kill order against a unit on an undiscovered tile
   and always applies fog (`fog_gate({})`). It is a write: bypassing it would
   change what the fort does, not what the client shows.
-- `blueprint_apply` and `squad_orders` only *report* undiscovered tiles
+- `blueprint_apply` and `squad_orders` only _report_ undiscovered tiles
   (`fog_of_war_tiles`, `target_undiscovered`); they gate nothing.
 - `dfhack_command_run`'s `prospect` reads the revealed map only. Its `all`/`hell`
   keywords, which scan undiscovered tiles, stay off the allowlist.

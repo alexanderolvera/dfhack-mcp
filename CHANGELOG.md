@@ -33,6 +33,46 @@ what to read instead.
 
 ### Added
 
+- **The snapshot publisher.** A Lua walker visits a slice of the fort each frame
+  and publishes a complete entity snapshot and a map census, so a read costs the
+  RPC transfer instead of a per-call walk with the game frozen. Two walkers with
+  independent cadence: entities (`units,items,buildings,reports`) at slice 16 /
+  600 frames, the map census at slice 32 / 6000 frames. Opt in with
+  `DFHACK_MCP_SNAPSHOT`, which also registers `snapshot_query` and `z_levels`;
+  every tool keeps its live path. Readers reach a resident `rpc.mcp_snapshot`
+  module through the core RunLua RPC, skipping DFHack's ~6.6 ms per-call script
+  lookup. Positions and tiles deliberately stay live. Measured on a live unpaused
+  fort, the two walkers at these defaults cost about **17% of main-thread time** —
+  absorbed entirely by headroom on an FPS-capped fort, but taken out of FPS on a
+  fort already running below its cap, so raise the cadences on a heavy fort. See
+  [docs/snapshot.md](docs/snapshot.md) for the numbers and the tuning levers.
+- **Runtime cadence tuning and an optional governor.** `mcp_snapshot tune` /
+  `tune_map` change a walker's slice and cadence in place — the pass in flight
+  keeps going, the published snapshot is kept and `seq` does not move — and
+  `status` now reports both the effective `cadence` and the
+  `cadence_configured` it was asked for. `mcp_snapshot govern on`, or
+  `DFHACK_MCP_SNAPSHOT_GOVERNOR=1`, auto-tunes: it times every frame, sorts each
+  into walking or idle, and compares the two to measure the publisher's actual
+  effect on frame time, backing the cadence off when that inflation exceeds a
+  threshold and recovering afterwards. It never runs faster than the configured
+  cadence and backs off at most 16x, so the cost on a fort with headroom under
+  its FPS cap is left alone and a fort that grows heavier is handled while it
+  runs. Also `tuneWalker()` in `src/snapshot.ts`.
+- `npm run lint:lua` syntax-checks every `src/dfhack-queries/*.lua` with
+  `luac -p`, so a Lua syntax error is caught without a live fort. Part of
+  `prepublishOnly`; skips cleanly where `luac` isn't installed.
+- `npm run verify:snapshot` checks the publisher against any loaded fort: walker
+  defaults, `autostart` idempotence, every entity class publishing without
+  per-record errors, `seq` advancing on a completed pass, and `find_unit`
+  projected from the snapshot being deep-equal to the live Lua query. Its
+  `--no-fort` mode checks the guard path: the walkers publish
+  `{"error":"no fort loaded"}` under a new `seq`, so a reader caching by `seq`
+  cannot keep serving a fort that is no longer loaded.
+- T0 now pins a third tool surface, `DFHACK_MCP_SNAPSHOT=1`, and strips every
+  gate variable from each pass's environment rather than only `DFHACK_MCP_DEV`
+  and `DFHACK_MCP_ACTUATORS` — so an ambient `DFHACK_MCP_COMMANDS` or
+  `DFHACK_MCP_SNAPSHOT` in a developer's shell can no longer leak into the
+  default-surface check.
 - `game_state` works at any screen, including the title screen with no fort. It
   reports DFHack and DF versions, the game mode, whether a world and map are
   loaded, whether the game is paused, and the raw clock (`year`, `year_tick`
@@ -97,6 +137,14 @@ what to read instead.
 
 ### Fixed
 
+- Connecting now fails immediately, with an explanation, when DFHack will not
+  accept the query script path. `dfhack.internal.addScriptPath` ignores a path it
+  cannot see without reporting anything, so every later call failed with
+  `"mcp_<name> is not a recognized command"` and no hint of the cause — usually
+  `DFHACK_MCP_QUERY_DIR` pointing somewhere DFHack cannot read (DF in a
+  container), or a POSIX path rewritten to a Windows one by Git Bash before it
+  reaches the server. Registration is now checked by resolving a known query
+  script, and the error names the path and both causes.
 - `PrepareMeal` work orders reported a bogus material. They now report
   `meal_ingredients` instead, and `work_order_create` accepts it.
 - `trade` reported 0 goods for every caravan and gave `leaving_in_days` ten
@@ -232,7 +280,7 @@ what to read instead.
   affected, since v0.1.0. Names are now converted to UTF-8 at the point of
   serialization.
 - **`trade` hid half its price agreements.** Both agreement lists capped at 30
-  rows *after* an alphabetical sort, so everything past `Headwear` was silently
+  rows _after_ an alphabetical sort, so everything past `Headwear` was silently
   dropped — a real caravan has 61 import categories. The cap sat below DF's own
   enum ceiling, so it cost data without bounding anything; raised to 150.
 
@@ -327,7 +375,7 @@ what to read instead.
 - **`farming.seasons[].seeds_available` duplicated `seed_totals[]`** — removed;
   join a season's `crop` against `seed_totals[]` instead.
 - **Renamed two misleading fields.** `stocks.tattered_citizens` →
-  `worn_citizens` (the threshold always included both heavily-worn *and*
+  `worn_citizens` (the threshold always included both heavily-worn _and_
   tattered stages); `farming.plots[].surface` → `open_to_sky` (it reports light
   exposure, not depth — a roofed surface plot and an underground one both read
   `false`).
@@ -402,7 +450,7 @@ server stays strictly read-only). First release published to npm — install wit
   `would_duplicate` and `manager_present`; cancel returns a recreate spec as its
   undo handle.
 - **Quickfort blueprints** (issue #25) — `blueprint_apply` / `blueprint_undo`,
-  dig and zone only. `blueprint_apply` without a token *is* the preview. A
+  dig and zone only. `blueprint_apply` without a token _is_ the preview. A
   malformed blueprint partially applies rather than erroring in quickfort, so
   the preview blocks outright on invalid keys or undesignatable tiles.
   Fog-of-war tiles under the footprint are reported, never blocked.

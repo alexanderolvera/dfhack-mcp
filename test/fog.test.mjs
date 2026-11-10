@@ -27,7 +27,8 @@ const scriptsCalledWithFogArgs = readdirSync(TOOLS)
   .flatMap((src) => [...src.matchAll(/runJsonScript<[^>]+>\(\s*'([^']+)'/g)].map((m) => m[1]))
   .sort();
 
-const fogTools = ALL_TOOLS.filter((t) => t.shape?.reveal_hidden);
+const fogTools = ALL_TOOLS.filter((t) => t.shape?.reveal_hidden && !t.snapshot);
+const snapshotFogTools = ALL_TOOLS.filter((t) => t.shape?.reveal_hidden && t.snapshot);
 
 test('every Lua script that takes the fog flag is called with fogArgs, and vice versa', () => {
   assert.ok(gatedScripts.length > 0);
@@ -56,6 +57,19 @@ test('every reveal_hidden parameter is the shared one, and its tool documents th
     );
     assert.ok(t.description.includes(FOG_OF_WAR_NOTE), `${t.name} description lacks the fog note`);
   }
+});
+
+test('snapshot tools apply fog over captured facts with the shared param and note', () => {
+  assert.ok(snapshotFogTools.length > 0);
+  for (const t of snapshotFogTools) {
+    assert.equal(
+      t.shape.reveal_hidden,
+      revealHiddenParam,
+      `${t.name} declares its own reveal_hidden`
+    );
+    assert.ok(t.description.includes(FOG_OF_WAR_NOTE), `${t.name} description lacks the fog note`);
+  }
+  assert.match(lua('mcp_snapshot.lua'), /fog_gate\(\{\}\)/);
 });
 
 test('reveal_hidden is an optional boolean', () => {

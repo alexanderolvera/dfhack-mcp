@@ -10,6 +10,7 @@ import { dfhackCommandListDef, dfhackCommandRunDef } from './dfhackCommand.ts';
 import { environmentDef } from './environment.ts';
 import { farmingDef } from './farming.ts';
 import { findUnitDef } from './findUnit.ts';
+import { snapshotQueryDef, zLevelsDef } from './snapshotQuery.ts';
 import { fluidsDef } from './fluids.ts';
 import { fortHealthDef } from './fortHealth.ts';
 import { fortStatusDef } from './fortStatus.ts';
@@ -82,6 +83,7 @@ export const ALL_TOOLS: ToolDef[] = [
   roomsAndZonesDef,
   runLuaDef,
   siteHistoryDef,
+  snapshotQueryDef,
   squadOrdersDef,
   stockpilesDef,
   stocksDef,
@@ -94,4 +96,5 @@ export const ALL_TOOLS: ToolDef[] = [
   workOrderCancelDef,
   workOrderCreateDef,
   workOrderListDef,
+  zLevelsDef,
 ];

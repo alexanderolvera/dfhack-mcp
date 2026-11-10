@@ -4,9 +4,9 @@ tags: [dfhack-mcp/tool, index]
 
 # Tool Index — dfhack-mcp
 
-One note per MCP tool (50 tools: 37 sensors, 2 reference, 9 gated actuators, 1 gated command runner, 1 dev), tracking `src/tools/registry.ts`. Each note carries frontmatter (`tool` / `tier` / `gated` / `source` / `lua`), parameters from the zod schema, the real return shape from the Lua query, and a trimmed example from the frozen-fixture goldens where one exists.
+One note per MCP tool (52 tools: 37 sensors, 2 reference, 2 gated snapshot reads, 9 gated actuators, 1 gated command runner, 1 dev), tracking `src/tools/registry.ts`. Each note carries frontmatter (`tool` / `tier` / `gated` / `source` / `lua`), parameters from the zod schema, the real return shape from the Lua query, and a trimmed example from the frozen-fixture goldens where one exists.
 
-Doctrine reminder: every tool is **facts-only** — it senses and reports; judgment stays with the AI client. Actuators are gated behind `DFHACK_MCP_ACTUATORS` and follow the §A0 preview/confirm contract; `dfhack_command_run` is gated separately behind `DFHACK_MCP_COMMANDS`; `run_lua` is dev-gated behind `DFHACK_MCP_DEV`.
+Doctrine reminder: every tool is **facts-only** — it senses and reports; judgment stays with the AI client. Actuators are gated behind `DFHACK_MCP_ACTUATORS` and follow the §A0 preview/confirm contract; `dfhack_command_run` is gated separately behind `DFHACK_MCP_COMMANDS`; `run_lua` is dev-gated behind `DFHACK_MCP_DEV`; the two snapshot reads are gated behind `DFHACK_MCP_SNAPSHOT`.
 
 ## Sensors (37)
 
@@ -54,6 +54,15 @@ Doctrine reminder: every tool is **facts-only** — it senses and reports; judgm
 - [environment](environment.md) — season, weather, temperature, biome, cavern pathing
 - [fluids](fluids.md) — aquifers, water/magma per z-level, flood exposure, well source depth
 - [blueprint_library](blueprint_library.md) — quickfort blueprints on disk (shipped library + user's own)
+
+## Snapshot reads (2, gated behind `DFHACK_MCP_SNAPSHOT`)
+
+Served from the in-game snapshot rather than a per-call Lua walk — see
+[the publisher](../snapshot.md) for the read contract, cadence and provenance. Notes for
+these two land with [#148](https://github.com/alexanderolvera/dfhack-mcp/issues/148).
+
+- `snapshot_query` — filter, project, group and count any entity class from the snapshot
+- `z_levels` — one row per revealed z-level: tile counts by class, and what stands there
 
 ## Reference (2)
 

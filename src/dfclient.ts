@@ -6,13 +6,14 @@ const PORT = Number(process.env.DFHACK_PORT ?? 5000);
 const DEFAULT_TIMEOUT_MS = 30_000;
 const TIMEOUT_MS = positiveOr(Number(process.env.DFHACK_MCP_TIMEOUT_MS), DEFAULT_TIMEOUT_MS);
 
+const PATH_SENTINEL = 'mcp_gameState';
 const QUERY_DIR =
   process.env.DFHACK_MCP_QUERY_DIR ??
   fileURLToPath(new URL('./dfhack-queries/', import.meta.url)).replace(/\\/g, '/');
 
 type RpcClient = Pick<
   DwarfClient,
-  'connected' | 'connect' | 'close' | 'runLuaSnippet' | 'runCommand'
+  'connected' | 'connect' | 'close' | 'runLuaSnippet' | 'runCommand' | 'callLua'
 >;
 
 let createClient = (): RpcClient => new DwarfClient({ host: HOST, port: PORT });
@@ -36,6 +37,19 @@ async function registerScriptPath(c: RpcClient): Promise<void> {
     );
   }
   await c.runLuaSnippet(`dfhack.internal.addScriptPath([[${QUERY_DIR}]])`);
+  const resolved = (
+    await c.runLuaSnippet(`print(tostring(dfhack.findScript('${PATH_SENTINEL}')))`)
+  ).trim();
+  if (resolved === 'nil' || resolved === '') {
+    throw new Error(
+      `DFHack did not accept the query script path ${QUERY_DIR} — it could not resolve ` +
+        `${PATH_SENTINEL} afterwards. The path must exist as DFHack sees it, which is not ` +
+        'the filesystem of this process when DF runs in a container or on another machine; set ' +
+        'DFHACK_MCP_QUERY_DIR to the path DFHack can read. Under Git Bash on Windows, also ' +
+        'set MSYS_NO_PATHCONV=1, or a POSIX path is rewritten to a Windows one before it ' +
+        'reaches this process.'
+    );
+  }
 }
 
 function ensureConnected(): Promise<RpcClient> {
@@ -118,6 +132,21 @@ async function withRetry<T>(call: (c: RpcClient) => Promise<T>): Promise<T> {
  */
 export async function runLua(snippet: string): Promise<string> {
   return withRetry((c) => c.runLuaSnippet(snippet));
+}
+
+/**
+ * Calls a function on an already-loaded `rpc.*` Lua module through the core RunLua RPC,
+ * skipping DFHack's per-call script lookup, under the per-call deadline.
+ * @param module Module name; DFHack only allows `rpc.*`, `*.rpc` or `*-rpc`.
+ * @param fn Function name on that module.
+ * @param args String arguments.
+ * @returns The function's return values as strings.
+ * @throws {RpcError} If DFHack rejected or failed the call.
+ * @throws {TimeoutError} If DFHack did not answer within the deadline (never retried).
+ * @throws {NotConnectedError} If DFHack can't be reached after the retry.
+ */
+export async function callLua(module: string, fn: string, args: string[] = []): Promise<string[]> {
+  return withRetry((c) => c.callLua(module, fn, args));
 }
 
 /**

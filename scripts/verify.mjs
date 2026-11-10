@@ -224,19 +224,27 @@ const isNoFort = (d) =>
   d && typeof d.error === 'string' && /^no (fort|game) loaded$/i.test(d.error.trim());
 
 // --- T0: contract -----------------------------------------------------------
-// Runs twice, once per gate state (see docs/VERIFY.md). `env` is built from
-// scratch per pass rather than mutating process.env, so the two passes can't
-// leak into each other or into T1/T2/invariants.
+// Runs once per gate state (see docs/VERIFY.md). `env` is built from scratch per
+// pass, with every gate cleared first, so neither the passes nor the developer's
+// own environment can leak into each other or into T1/T2/invariants.
+const GATES = [
+  'DFHACK_MCP_DEV',
+  'DFHACK_MCP_ACTUATORS',
+  'DFHACK_MCP_COMMANDS',
+  'DFHACK_MCP_SNAPSHOT',
+];
 async function tier0() {
   console.log('\nT0 — handshake + tools/list + schemas');
   const base = { ...process.env };
-  delete base.DFHACK_MCP_DEV;
-  delete base.DFHACK_MCP_ACTUATORS;
+  for (const gate of GATES) delete base[gate];
   await tier0Pass('default surface (gates off)', base);
-  await tier0Pass('full surface (gates on: DFHACK_MCP_DEV + DFHACK_MCP_ACTUATORS)', {
+  await tier0Pass('snapshot surface (gate on: DFHACK_MCP_SNAPSHOT)', {
     ...base,
-    DFHACK_MCP_DEV: '1',
-    DFHACK_MCP_ACTUATORS: '1',
+    DFHACK_MCP_SNAPSHOT: '1',
+  });
+  await tier0Pass('full surface (every gate on)', {
+    ...base,
+    ...Object.fromEntries(GATES.map((g) => [g, '1'])),
   });
 }
 

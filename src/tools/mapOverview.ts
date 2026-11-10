@@ -1,6 +1,13 @@
 import { runJsonScript } from '../query.ts';
 import type { ToolDef } from '../register.ts';
 import { FOG_OF_WAR_NOTE, fogArgs, revealHiddenParam, type FogReport } from '../fog.ts';
+import {
+  readMapSnapshot,
+  readSnapshot,
+  snapshotEnabled,
+  type MapSnapshot,
+  type Snapshot,
+} from '../snapshot.ts';
 
 export interface MapExtents {
   x: number;
@@ -38,9 +45,92 @@ export interface MapOverview extends FogReport {
   stair_columns_truncated: boolean;
 }
 
+const COLUMNS_CAP = 40;
+
+function fortCore(snap: Snapshot): FortCore | null {
+  let cx = 0;
+  let cy = 0;
+  let cz = 0;
+  let n = 0;
+  for (const u of snap.units) {
+    if (!u.citizen || u.error || u.pos.x < 0) continue;
+    cx += u.pos.x;
+    cy += u.pos.y;
+    cz += u.pos.z;
+    n++;
+  }
+  if (n === 0) return null;
+  return { x: Math.floor(cx / n), y: Math.floor(cy / n), z: Math.floor(cz / n), citizens: n };
+}
+
+function stairColumns(stairs: MapSnapshot['census']['stairs']): StairColumn[] {
+  const cells = new Map<string, { x: number; y: number; tiles: { z: number; s: string }[] }>();
+  for (const [x, y, z, s] of stairs) {
+    const key = `${x},${y}`;
+    const cell = cells.get(key) ?? { x, y, tiles: [] };
+    cell.tiles.push({ z, s });
+    cells.set(key, cell);
+  }
+  const connects = (lo: { z: number; s: string }, hi: { z: number; s: string }) =>
+    hi.z === lo.z + 1 && (lo.s === 'U' || lo.s === 'X') && (hi.s === 'D' || hi.s === 'X');
+  const columns: StairColumn[] = [];
+  for (const { x, y, tiles } of cells.values()) {
+    tiles.sort((a, b) => a.z - b.z);
+    let start = 0;
+    for (let i = 0; i < tiles.length; i++) {
+      if (i === tiles.length - 1 || !connects(tiles[i], tiles[i + 1])) {
+        columns.push({ x, y, z_top: tiles[i].z, z_bottom: tiles[start].z });
+        start = i + 1;
+      }
+    }
+  }
+  const height = (c: StairColumn) => c.z_top - c.z_bottom + 1;
+  return columns.sort(
+    (a, b) => height(b) - height(a) || a.x - b.x || a.y - b.y || a.z_top - b.z_top
+  );
+}
+
+/**
+ * Builds map_overview's payload from the publisher's map census and entity snapshot.
+ * @param map A complete map census snapshot.
+ * @param snap A complete entity snapshot (for the citizen centroid).
+ * @returns The same shape `mcp_mapOverview.lua` emits with fog of war applied.
+ */
+export function projectMapOverview(map: MapSnapshot, snap: Snapshot): MapOverview {
+  const c = map.census;
+  const core = fortCore(snap);
+  let surface: number | null = null;
+  if (core) {
+    const i = (core.y * c.extents.x + core.x) * 2;
+    const hex = c.surface_hex.slice(i, i + 2);
+    surface = hex === 'ff' || hex.length < 2 ? null : parseInt(hex, 16);
+  }
+  const all = stairColumns(c.stairs);
+  const union = [...new Set([...c.construction_z, ...c.digging_z])].sort((a, b) => a - b);
+  return {
+    extents: c.extents,
+    fort_core: core,
+    surface_z_at_core: surface,
+    activity: { z_levels: union, construction_z: c.construction_z, digging_z: c.digging_z },
+    stair_columns: all.slice(0, COLUMNS_CAP),
+    stair_columns_total: all.length,
+    stair_columns_truncated: all.length > COLUMNS_CAP,
+    fog_of_war: 'applied',
+  };
+}
+
+async function mapOverviewFromSnapshot(): Promise<MapOverview | { error: string }> {
+  const map = await readMapSnapshot();
+  if ('error' in map) return map;
+  const snap = await readSnapshot();
+  if ('error' in snap) return snap;
+  return projectMapOverview(map, snap);
+}
+
 export async function mapOverview(
   revealHidden?: boolean
 ): Promise<MapOverview | { error: string }> {
+  if (snapshotEnabled() && !revealHidden) return mapOverviewFromSnapshot();
   const data = await runJsonScript<MapOverview>('mapOverview', fogArgs(revealHidden), [
     'stair_columns',
   ]);

@@ -14,10 +14,13 @@ const PROBE = 'addScriptPath) and "yes"';
 let clients;
 let sent;
 
+const SENTINEL_PROBE = "findScript('mcp_gameState')";
+
 function install({
   onCommand = never,
   onSnippet = async () => '',
   onConnect = async () => {},
+  onSentinel = async () => '/queries/mcp_gameState.lua',
 } = {}) {
   clients = [];
   sent = [];
@@ -37,6 +40,7 @@ function install({
       runLuaSnippet(snippet) {
         if (snippet.includes(PROBE)) return Promise.resolve('yes');
         if (snippet.startsWith('dfhack.internal.addScriptPath')) return Promise.resolve('');
+        if (snippet.includes(SENTINEL_PROBE)) return onSentinel();
         sent.push(['lua', snippet]);
         return onSnippet(snippet);
       },
@@ -103,6 +107,38 @@ test('a connection-level failure is retried once, then reported as NotConnectedE
   await assert.rejects(runScript('fortStatus'), NotConnectedError);
   assert.equal(sent.length, 2);
   assert.equal(clients.length, 2);
+});
+
+const unrecognized = (name) =>
+  new RpcError(
+    'RPC call failed (-1)',
+    -1,
+    `mcp_${name} is not a recognized command.
+`
+  );
+
+const commandsSent = (name) => sent.filter(([c]) => c === name).length;
+
+test('an unrecognized DFHack command is reported as-is', async () => {
+  install({ onCommand: () => Promise.reject(unrecognized('seedwatch')) });
+  await assert.rejects(runDfhackCommand('seedwatch', ['all']), RpcError);
+  assert.equal(commandsSent('seedwatch'), 1, 'sent once, not retried');
+});
+
+test('a query path DFHack will not accept fails the connection, naming the path', async () => {
+  install({ onSentinel: async () => 'nil' });
+  await assert.rejects(runScript('fortStatus'), (err) => {
+    assert.match(err.message, /did not accept the query script path/);
+    assert.match(err.message, /DFHACK_MCP_QUERY_DIR/);
+    assert.match(err.message, /MSYS_NO_PATHCONV/);
+    return true;
+  });
+  assert.equal(sent.length, 0, 'no command is attempted against a path DFHack cannot read');
+});
+
+test('an empty answer from the path check is treated as failure, not success', async () => {
+  install({ onSentinel: async () => '' });
+  await assert.rejects(runScript('fortStatus'), /did not accept the query script path/);
 });
 
 test('concurrent first calls share one connection', async () => {
