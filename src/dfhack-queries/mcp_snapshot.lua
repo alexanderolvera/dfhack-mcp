@@ -48,12 +48,22 @@ end
 
 local WALKER_NAMES = { 'entities', 'map' }
 
-local function apply_governor()
+local function active_governor()
   local g = state.gov
-  if not g then return end
+  if g and g.enabled then return g end
+  return nil
+end
+
+local function effective_cadence(wk)
+  local g = active_governor()
+  if not g then return wk.target_cadence end
+  return gov.cadence_for(g, wk.target_cadence)
+end
+
+local function apply_governor()
   for _, name in ipairs(WALKER_NAMES) do
     local wk = walker(name)
-    wk.cadence = gov.cadence_for(g, wk.target_cadence)
+    wk.cadence = effective_cadence(wk)
   end
 end
 
@@ -65,9 +75,9 @@ local function any_walking()
 end
 
 local function gov_tick()
-  local g = state.gov
-  if not g or not g.enabled then
-    if g then g.ticking = false end
+  local g = active_governor()
+  if not g then
+    state.gov_ticking = false
     return
   end
   local now = dfhack.getTickCount()
@@ -85,26 +95,25 @@ end
 
 local function govern(on, opts)
   if not on then
-    if state.gov then state.gov.enabled = false end
-    for _, name in ipairs(WALKER_NAMES) do
-      local wk = walker(name)
-      wk.cadence = wk.target_cadence
-    end
+    state.gov = nil
+    apply_governor()
     return
   end
   local g = gov.new(opts)
   g.enabled = true
-  g.ticking = true
   state.gov = g
   apply_governor()
-  dfhack.timeout(1, 'frames', gov_tick)
+  if not state.gov_ticking then
+    state.gov_ticking = true
+    dfhack.timeout(1, 'frames', gov_tick)
+  end
 end
 
 local function tune(wk, slice, cadence)
   local s, c = tonumber(slice), tonumber(cadence)
   if s and s >= 0 then wk.slice = math.floor(s) end
   if c and c >= 1 then wk.target_cadence = math.floor(c) end
-  wk.cadence = state.gov and gov.cadence_for(state.gov, wk.target_cadence) or wk.target_cadence
+  wk.cadence = effective_cadence(wk)
 end
 
 local function pos_of(p) return { x = p.x, y = p.y, z = p.z } end
@@ -528,7 +537,7 @@ local function start(wk, slice, cadence, classes)
   stop(wk)
   wk.slice = tonumber(slice) or wk.slice
   wk.target_cadence = math.max(1, tonumber(cadence) or wk.target_cadence)
-  wk.cadence = state.gov and gov.cadence_for(state.gov, wk.target_cadence) or wk.target_cadence
+  wk.cadence = effective_cadence(wk)
   wk.classes = classes or wk.classes
   wk.latest, wk.last_error, wk.max_step_wall_ms = nil, nil, 0
   wk.gen = wk.gen + 1
@@ -544,11 +553,12 @@ local function progress(wk)
 end
 
 local function status_table(wk)
+  local g = active_governor()
   return { running = wk.running, slice = wk.slice, cadence = wk.cadence,
     cadence_configured = wk.target_cadence, classes = wk.classes,
     seq = wk.seq, ready = wk.latest ~= nil, walking = wk.walk ~= nil, progress = progress(wk), steps = wk.steps,
     max_step_wall_ms = wk.max_step_wall_ms, last_error = wk.last_error,
-    governor = state.gov and state.gov.enabled and gov.report(state.gov) or nil,
+    governor = g and gov.report(g) or nil,
     now_ms = dfhack.getTickCount() }
 end
 
@@ -566,6 +576,27 @@ package.loaded['rpc.mcp_snapshot'] = {
   map = function() return walker('map').latest or 'null' end,
 }
 
+local GAP_EDGES = { 16, 33, 50, 100, 200 }
+
+local function gap_class()
+  local c = { n = 0, sum = 0, max = 0, over50 = 0, hist = {} }
+  for i = 1, #GAP_EDGES + 1 do c.hist[i] = 0 end
+  return c
+end
+
+local function gap_record(c, d)
+  c.n, c.sum = c.n + 1, c.sum + d
+  if d > c.max then c.max = d end
+  if d > 50 then c.over50 = c.over50 + 1 end
+  for i = 1, #GAP_EDGES do
+    if d <= GAP_EDGES[i] then
+      c.hist[i] = c.hist[i] + 1
+      return
+    end
+  end
+  c.hist[#GAP_EDGES + 1] = c.hist[#GAP_EDGES + 1] + 1
+end
+
 local function gap_tick()
   if not gap.running then return end
   local now = dfhack.getTickCount()
@@ -574,21 +605,25 @@ local function gap_tick()
     gap.frames = gap.frames + 1
     if d > gap.max then gap.max = d end
     if d > 50 then gap.over50 = gap.over50 + 1 end
+    gap_record(gap.was_walking and gap.walk or gap.idle, d)
   end
   gap.last = now
+  gap.was_walking = any_walking()
   dfhack.timeout(1, 'frames', gap_tick)
 end
 
 local function gap_start()
   local was = gap.running
   gap.running, gap.last, gap.frames, gap.max, gap.over50 = true, nil, 0, 0, 0
+  gap.walk, gap.idle, gap.was_walking = gap_class(), gap_class(), false
   gap.since = dfhack.getTickCount()
   if not was then dfhack.timeout(1, 'frames', gap_tick) end
 end
 
 local function gap_read()
   return encode({ frames = gap.frames, max_gap_ms = gap.max, gaps_over_50ms = gap.over50,
-    window_ms = dfhack.getTickCount() - (gap.since or 0) })
+    window_ms = dfhack.getTickCount() - (gap.since or 0),
+    edges_ms = GAP_EDGES, walking = gap.walk, idle = gap.idle })
 end
 
 local function timed(fn)

@@ -159,6 +159,10 @@ Two properties are deliberate and worth relying on:
 - **Backoff is bounded** at 16× the configured cadence, and reports `at_max_backoff` rather
   than climbing forever — so a fort that is slow for reasons unrelated to the publisher
   cannot drive the cadence to infinity.
+- **`govern off` clears the governor outright**, it does not merely disable it, and
+  re-derives every walker's cadence from its configured target. Effective cadence is
+  computed in exactly one place (`effective_cadence`, over `active_governor`), which is
+  what keeps a disabled governor from stretching cadence behind the back of `status`.
 
 Hysteresis (2 windows up, 3 down) and the dead band between `low` and `high` keep it from
 oscillating. Samples reset after every decision so one window's measurement never smears
@@ -174,9 +178,17 @@ recovery not overshooting, the dead band, and a zero idle measurement.
 
 `npm run verify:snapshot` covers the in-game half, with the watermarks forced low enough to
 trip: the governor appears in status at level 0, backs off to level 1 (cadence 600 → 900)
-while leaving `cadence_configured` at 600 as its recovery target, and `govern off` restores 600. Measured inflation on the fixture container was 0.6% — below the 5% default, so at the
-defaults the governor correctly does nothing there, which is the behaviour to expect
-anywhere the publisher is not actually costing frames.
+while leaving `cadence_configured` at 600 as its recovery target, and `govern off` restores
+600 on both walkers. It then tunes and restarts past that boundary, because restoring the
+cadence on the way out is not the same as not re-deriving it from stale state afterwards.
+Measured inflation was 1.1% on a live 253-unit fort and 0.6% on the fixture container — both
+below the 5% default, so at the defaults the governor correctly does nothing on either,
+which is the behaviour to expect anywhere the publisher is not actually costing frames.
+
+The averaging is a real limitation: inflation is a mean over frames, so a walker that is
+free on most frames and burns a whole frame occasionally (`max_step_wall_ms` reaches 16 ms
+at the defaults) reads as low inflation even where a player notices the hitch. The law
+watches the mean, not the worst case.
 
 ### One complete pass at the defaults
 
@@ -201,6 +213,45 @@ so the shape is stable across forts and machines, and it is the one number that 
 layer's cost. The census pass lands at 23.9 s for 23,616 blocks, matching the spike's ~24 s
 estimate, and publishes only ~76 KB (almost all of it the surface map) because it keeps
 counts plus the coordinates of rare features rather than tiles.
+
+The pass length is worth comparing against the cadence it is paired with. A 5–6.5 s entity
+pass against the default 600-frame cadence (~6 s at 100 FPS) leaves the walker **busy
+roughly half the time**, because the cadence is the pause _after_ a pass, not the interval
+between pass starts. Pass length scales with the fort (items dominate) while the cadence is
+a fixed frame count, so on a fort appreciably larger than this one the pass outlasts the
+cadence and the walk effectively runs continuously. That is the condition the governor
+exists for: it is not a reason to pick a larger fixed cadence, because the right value
+depends on a fort size that changes under you.
+
+### Does the publisher stall the game?
+
+Measured on the live 253-unit fort at the shipped defaults, in three 100 s windows with no
+polling inside them, using `mcp_snapshot gap`'s per-class histogram:
+
+| Condition              | Frames | Mean    | Max    | Frames > 50 ms |
+| ---------------------- | ------ | ------- | ------ | -------------- |
+| publisher stopped      | 10,006 | 10.0 ms | 110 ms | 0.17%          |
+| publisher, **walking** | 6,973  | 10.0 ms | 110 ms | 0.22%          |
+| publisher, idle        | 3,016  | 10.0 ms | 125 ms | 0.13%          |
+| publisher stopped      | 10,012 | 10.0 ms | 125 ms | 0.16%          |
+
+**No.** The walking column sits within one standard deviation of the baseline (about 15 slow
+frames in 6,973, where Poisson noise alone is ±4), the mean is pinned at the 100 FPS cap in
+every condition, and the 110–125 ms worst hitches occur just as often with the publisher
+stopped — they are the fort's own. Comparing walking against idle frames _inside one window_
+is what makes this attributable at all: an earlier attempt to compare separate baselines
+could conclude nothing, because the fort's own hitches reached 156–234 ms either way.
+
+This holds _because_ the fort is at its FPS cap with headroom, which is where the 16 ms
+slice limit pays off — the work fits in the slack each frame already has. On a fort running
+below its cap there is no slack to hide in. That case is still unmeasured; see the open
+questions below.
+
+For scale, the one-shot queries this layer replaces are not sliced at all and run to
+completion on the main thread. On the same fort, one live `map_overview` call produced a
+**1,047 ms frame gap** — the game rendered 7 frames during a 1.2 s burst of 7 queries.
+Served from the census snapshot instead (`src/tools/mapOverview.ts`), that stall is gone.
+The publisher is not a cost this layer adds; it is what removes a one-second freeze.
 
 ## What is not in the snapshot
 

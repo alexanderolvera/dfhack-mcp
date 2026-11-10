@@ -58,6 +58,11 @@ what to read instead.
   cadence and backs off at most 16x, so the cost on a fort with headroom under
   its FPS cap is left alone and a fort that grows heavier is handled while it
   runs. Also `tuneWalker()` in `src/snapshot.ts`.
+- `mcp_snapshot gap` now splits every frame gap by whether a walker was
+  walking, with a bucket histogram per class, so the publisher's effect on frame
+  time can be attributed against the fort's own hitches in the same window
+  rather than compared against a separate baseline. The previous `frames`,
+  `max_gap_ms` and `gaps_over_50ms` fields are unchanged.
 - `npm run lint:lua` syntax-checks every `src/dfhack-queries/*.lua` with
   `luac -p`, so a Lua syntax error is caught without a live fort. Part of
   `prepublishOnly`; skips cleanly where `luac` isn't installed.
@@ -137,6 +142,19 @@ what to read instead.
 
 ### Fixed
 
+- Turning the snapshot governor off left its backoff applied. `govern off`
+  restored each walker's cadence but kept the governor in state with its level
+  intact, and the two places that re-derive cadence (`tune` and `start`) tested
+  only whether a governor existed, not whether it was enabled — so the next
+  tune or restart silently re-applied the multiplier, up to 16x, while `status`
+  reported no governor at all. `govern off` now clears it, and cadence is
+  derived in one place that honours `enabled`.
+- `npm run verify:t1` left the snapshot publisher walking the fort after it
+  exited, when run with `DFHACK_MCP_SNAPSHOT` set: a snapshot-backed tool
+  starts the publisher on first read, and nothing stopped it. Both T1 and T2
+  now restore the publisher to the state they found it in.
+- `snapshot_query` failed T1 reachability, because it needs a `class` and the
+  harness had no argument fixture for it.
 - Connecting now fails immediately, with an explanation, when DFHack will not
   accept the query script path. `dfhack.internal.addScriptPath` ignores a path it
   cannot see without reporting anything, so every later call failed with

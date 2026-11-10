@@ -222,3 +222,32 @@ test('the production defaults match the documented cadence', () => {
   assert.match(LUA, /map = \{ slice = 32, cadence = 6000,/);
   assert.match(LUA, /cmd == 'autostart'/);
 });
+
+test('cadence is derived through one governor predicate that honours enabled', () => {
+  assert.match(
+    LUA,
+    /local function active_governor\(\)\s*\n\s*local g = state\.gov\s*\n\s*if g and g\.enabled then return g end/,
+    'the governor is only active when enabled, or a disabled one still stretches cadence'
+  );
+  assert.doesNotMatch(
+    LUA,
+    /state\.gov and gov\.cadence_for/,
+    'deriving cadence from state.gov truthiness ignores enabled and strands the backoff'
+  );
+  const derivations = LUA.match(/wk\.cadence = [^\n]+/g) ?? [];
+  assert.ok(derivations.length > 0, 'cadence is assigned somewhere');
+  for (const line of derivations) {
+    assert.match(
+      line,
+      /effective_cadence\(wk\)/,
+      'cadence assigned without the shared predicate: ' + line
+    );
+  }
+});
+
+test('turning the governor off drops its state, so no stale level survives', () => {
+  const fn = LUA.slice(LUA.indexOf('local function govern(on, opts)'));
+  const off = fn.slice(0, fn.indexOf('local g = gov.new'));
+  assert.match(off, /state\.gov = nil/, 'govern off must clear the governor, not just disable it');
+  assert.match(off, /apply_governor\(\)/, 'and re-derive every walker cadence from its target');
+});

@@ -291,6 +291,21 @@ assert(
   off.entities.cadence === off.entities.cadence_configured,
   `and restores the configured cadence (${off.entities.cadence})`
 );
+assert(
+  off.map.cadence === off.map.cadence_configured,
+  `and the census cadence too (${off.map.cadence})`
+);
+
+const afterTune = await snapshotCmd('tune', '', '600');
+assert(
+  afterTune.cadence === 600 && !afterTune.governor,
+  `a tune after govern off keeps the configured cadence (got ${afterTune.cadence})`
+);
+const afterRestart = await snapshotCmd('start');
+assert(
+  afterRestart.cadence === afterRestart.cadence_configured,
+  `and a restart does not resurrect the backoff (got ${afterRestart.cadence})`
+);
 
 section(10, 'stop halts both walkers');
 await snapshotCmd('stop');
