@@ -25,6 +25,7 @@
     "build": "tsup",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
+    "lint:lua": "node scripts/lint-lua.mjs",
     "format": "prettier --write .",
     "call": "node scripts/call-tool.mjs",
     "test:unit": "node --test test/*.test.mjs",
@@ -36,11 +37,13 @@
     "verify:invariants": "node scripts/verify.mjs --invariants",
     "verify:update": "node scripts/verify.mjs --tier=2 --update",
     "verify:game-data": "node scripts/verify-game-data.mjs",
+    "bench:snapshot": "node scripts/bench-snapshot.mjs",
     "verify:trade-caravan": "node scripts/verify-trade-caravan.mjs",
+    "verify:snapshot": "node scripts/verify-snapshot.mjs",
     "bootstrap": "node scripts/bootstrap.mjs",
     "worktree": "node scripts/new-worktree.mjs",
     "prepare": "npm run build",
-    "prepublishOnly": "npm run typecheck && npm run lint && npm run test:unit && npm run verify:t0"
+    "prepublishOnly": "npm run typecheck && npm run lint && npm run lint:lua && npm run test:unit && npm run verify:t0"
   },
   "engines": {
     "node": ">=20"

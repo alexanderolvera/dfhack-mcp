@@ -73,6 +73,9 @@ const TOOL_ARGS = {
   blueprint_apply: { csv: '#dig\nd,d,d\n', anchor_x: 79, anchor_y: 37, anchor_z: 122, mode: 'dig' },
   blueprint_undo: { csv: '#dig\nd,d,d\n', anchor_x: 79, anchor_y: 37, anchor_z: 122, mode: 'dig' },
   citizen: { unit_id: '1' },
+  // snapshot_query requires a class; a small limit exercises the row projection
+  // rather than only the aggregate path.
+  snapshot_query: { class: 'units', limit: 5 },
   unit_appearance: { unit_id: '1' },
   find_unit: { query: 'a' },
   game_data: { query: 'cat' },
@@ -224,19 +227,27 @@ const isNoFort = (d) =>
   d && typeof d.error === 'string' && /^no (fort|game) loaded$/i.test(d.error.trim());
 
 // --- T0: contract -----------------------------------------------------------
-// Runs twice, once per gate state (see docs/VERIFY.md). `env` is built from
-// scratch per pass rather than mutating process.env, so the two passes can't
-// leak into each other or into T1/T2/invariants.
+// Runs once per gate state (see docs/VERIFY.md). `env` is built from scratch per
+// pass, with every gate cleared first, so neither the passes nor the developer's
+// own environment can leak into each other or into T1/T2/invariants.
+const GATES = [
+  'DFHACK_MCP_DEV',
+  'DFHACK_MCP_ACTUATORS',
+  'DFHACK_MCP_COMMANDS',
+  'DFHACK_MCP_SNAPSHOT',
+];
 async function tier0() {
   console.log('\nT0 — handshake + tools/list + schemas');
   const base = { ...process.env };
-  delete base.DFHACK_MCP_DEV;
-  delete base.DFHACK_MCP_ACTUATORS;
+  for (const gate of GATES) delete base[gate];
   await tier0Pass('default surface (gates off)', base);
-  await tier0Pass('full surface (gates on: DFHACK_MCP_DEV + DFHACK_MCP_ACTUATORS)', {
+  await tier0Pass('snapshot surface (gate on: DFHACK_MCP_SNAPSHOT)', {
     ...base,
-    DFHACK_MCP_DEV: '1',
-    DFHACK_MCP_ACTUATORS: '1',
+    DFHACK_MCP_SNAPSHOT: '1',
+  });
+  await tier0Pass('full surface (every gate on)', {
+    ...base,
+    ...Object.fromEntries(GATES.map((g) => [g, '1'])),
   });
 }
 
@@ -1003,6 +1014,31 @@ async function invariantsMode(client) {
   await blueprintLibraryRefChecks(client);
 }
 
+// --- publisher cleanup ------------------------------------------------------
+const snapshotGated = !!process.env.DFHACK_MCP_SNAPSHOT;
+
+async function publisherRunning() {
+  if (!snapshotGated) return null;
+  try {
+    const { runScript } = await import('../src/dfclient.ts');
+    return JSON.parse(await runScript('snapshot', ['status'])).running === true;
+  } catch {
+    return null;
+  }
+}
+
+async function restorePublisher(wasRunning) {
+  if (wasRunning !== false) return;
+  try {
+    const { runScript, closeConnection } = await import('../src/dfclient.ts');
+    await runScript('snapshot', ['stop']);
+    closeConnection();
+    console.log('  ○ publisher stopped (it was not running before this run)');
+  } catch (err) {
+    console.log(`  ○ could not stop the publisher: ${err.message.slice(0, 120)}`);
+  }
+}
+
 // --- run --------------------------------------------------------------------
 // T0 needs no live DFHack and manages its own two subprocesses (one per gate
 // state — see tier0()), so it connects nothing here. Every other mode shares
@@ -1011,6 +1047,8 @@ if (tier === 0 && !invariantsOnly) {
   await tier0();
 } else {
   const client = await connect();
+  // A snapshot read starts the publisher, which outlives this process.
+  const publisherWasRunning = await publisherRunning();
   try {
     if (invariantsOnly) {
       // Tier-independent: resolves its own live args, needs no golden.
@@ -1027,6 +1065,7 @@ if (tier === 0 && !invariantsOnly) {
       }
     }
   } finally {
+    await restorePublisher(publisherWasRunning);
     await client.close();
   }
 }
