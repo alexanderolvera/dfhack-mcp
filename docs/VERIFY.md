@@ -207,6 +207,50 @@ in a row against one container is the end-to-end proof that they leave the fixtu
 as they found it. One residue no read tool can see: `work_order_create` advances
 DF's `manager_order_next_id`, so the next order created gets a higher id.
 
+### Read-source parity (dual-path tools, live fort + snapshot gate)
+
+Every tool that can read either the live game or the in-game snapshot is called
+**twice over real MCP** — once with `source: "live"`, once with
+`source: "snapshot"` — and the two payloads are compared. This runs as a step of
+T1 (loaded) and T2, and only when `DFHACK_MCP_SNAPSHOT` is set; without the gate
+it prints that it was skipped, so a missing gate can never read as a pass.
+
+```sh
+DFHACK_MCP_SNAPSHOT=1 npm run verify:t1
+```
+
+**Paused, the two must be deep-equal** once provenance is stripped — that is the
+real assertion, and it is why the fixture container (which loads paused) is the
+right fort for it. On a *running* fort it legitimately will not hold: a snapshot
+is as old as its pass, and 4–8% of units change job inside that window. So
+unpaused the check requires the **identity spine** to match exactly and reports
+the fields that legitimately move as **drift**, printed but not failed. A spine
+mismatch is a projection bug; drift is the capture being a few seconds old, which
+is what `age_ms` is in the payload to tell the caller.
+
+The parity step also asserts the **envelope** itself, in both directions: a live
+read reports `source: "live"` and carries no `snapshot` key, and a snapshot read
+reports `source: "snapshot"` with an integer `seq`, a non-negative `age_ms` and a
+`{year, year_tick}` `captured` for every walker that contributed. See
+[the read-source contract](snapshot.md#the-read-source-contract).
+
+The spec per tool lives in [`test/parity.mjs`](../test/parity.mjs), beside the
+invariants and for the same reason: **adding a dual-path tool is one entry
+there**, not surgery on the runner. An entry names the calls to compare, the
+top-level fields that must agree (`stable`), the ones that may drift
+(`drifting`), and — for a tool that returns rows — the row array with its
+`identity` and `volatile` fields. `compareParity` applies the pause-aware rule
+and `sourceProblems` checks the envelope; `scripts/verify-snapshot.mjs` drives
+the same specs against `projectFindUnit` directly, so the projection is covered
+even without the server in the loop. Comparison is `isDeepStrictEqual` from
+`node:util`, **never `JSON.stringify`** — the live and snapshot paths build their
+objects in different key orders, so string equality would call every pair a
+mismatch.
+
+The T1 reachability and T2 golden calls for dual-path tools pin
+`source: "live"`, so a committed golden is always the live payload whatever the
+gate is set to, and parity asks for both sources itself.
+
 ## Canonicalization
 
 The only residual variation on an identical frozen fort is our own output
@@ -260,6 +304,12 @@ Never `--update` against a non-fixture fort.
   `geology` scan takes 12–14 s on the software-rendered fixture, which leaves little
   headroom under the 30 s default on a slower host, so the harness starts its server with `DFHACK_MCP_TIMEOUT_MS=60000`
   unless you set the variable yourself.
+- **Read-source provenance** is the one part of a dual-path payload that *must*
+  differ between the two sources, so the parity comparator strips `source` and
+  `snapshot` before comparing. `age_ms` is wall-clock and `seq` advances every
+  pass, so neither could be goldened; the goldens pin the live payload instead
+  (`source: "live"`), and the envelope is shape-checked by the parity step and by
+  `test/readSource.test.mjs`.
 - **Actuators** (write tools, Tier 2 / M3) verify as **fixture → apply → assert
   readback → restore-fixture**. Still deterministic; the committed save is the
   anchor the apply is measured against and restored to.

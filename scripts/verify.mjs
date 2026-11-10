@@ -61,6 +61,10 @@ const EXPECTED = {
 import { INVARIANTS } from '../test/invariants.mjs';
 const INVARIANT_TOOLS = [...new Set(INVARIANTS.flatMap((i) => i.tools))];
 
+// Read-source parity specs (#146) live beside the invariants for the same reason:
+// adding a dual-path tool is one entry there, not surgery on this runner.
+import { PARITY_SPECS, compareParity } from '../test/parity.mjs';
+
 // --- arg fixtures for tiers that actually call tools ------------------------
 // No-arg tools omit an entry. Query tools get the minimal valid args that
 // exercise a real path; the values are deterministic so goldens are stable.
@@ -77,7 +81,11 @@ const TOOL_ARGS = {
   // rather than only the aggregate path.
   snapshot_query: { class: 'units', limit: 5 },
   unit_appearance: { unit_id: '1' },
-  find_unit: { query: 'a' },
+  // find_unit and map_overview are dual-path; pinned to the LIVE path so a golden
+  // is the live payload whatever the snapshot gate is set to. parityChecks() asks
+  // for both sources itself.
+  find_unit: { query: 'a', source: 'live' },
+  map_overview: { source: 'live' },
   game_data: { query: 'cat' },
   historical_figure: { hf_id: '179' },
   // tile_region is parameterized; a deterministic explicit rectangle so T1
@@ -406,6 +414,38 @@ async function tier1NoFort(client) {
       // Well-formed JSON with no error against a no-fort fixture = real data. The
       // guard was NOT exercised — exactly the gap this mode exists to catch.
       fail(`${name}: returned data instead of the no-fort guard (guard not exercised)`);
+    }
+  }
+}
+
+// --- read-source parity -----------------------------------------------------
+// Every dual-path tool both ways against the same fort; the spec per tool is in
+// test/parity.mjs. See docs/VERIFY.md's "Read-source parity" section.
+async function parityChecks(client) {
+  if (!snapshotGated) {
+    console.log('');
+    console.log('  ○ read-source parity skipped (set DFHACK_MCP_SNAPSHOT to run it)');
+    return;
+  }
+  const { data: state } = await callJson(client, 'game_state');
+  const paused = state?.paused === true;
+  const mode = paused ? 'paused: strict deep equality' : 'running: identity spine plus drift';
+  console.log('');
+  console.log(`Read-source parity — every dual-path tool both ways (fort ${mode})`);
+  const verdict = paused ? 'deep-equal both ways' : 'identity holds across both sources';
+  for (const spec of PARITY_SPECS) {
+    for (const args of spec.calls) {
+      const label = `${spec.tool}(${JSON.stringify(args)})`;
+      const live = (await callJson(client, spec.tool, { ...args, source: 'live' })).data;
+      const snap = (await callJson(client, spec.tool, { ...args, source: 'snapshot' })).data;
+      if (typeof live.error === 'string' || typeof snap.error === 'string') {
+        fail(`${label}: ${live.error ?? snap.error}`);
+        continue;
+      }
+      const { failures, drift } = compareParity(spec, live, snap, { paused });
+      if (failures.length) for (const f of failures) fail(`${label}: ${f}`);
+      else ok(`${label}: ${verdict}`);
+      for (const d of drift) console.log(`      drift: ${d}`);
     }
   }
 }
@@ -1057,8 +1097,13 @@ if (tier === 0 && !invariantsOnly) {
       // Loaded tiers resolve save-specific args (e.g. citizen's unit_id) from live
       // discovery tools first; --no-fort needs no fort so it skips this.
       if ((tier === 1 && !noFort) || tier === 2) await resolveLiveArgs(client);
-      if (tier === 1) await tier1(client);
-      else if (tier === 2) await tier2(client);
+      if (tier === 1) {
+        await tier1(client);
+        if (!noFort) await parityChecks(client);
+      } else if (tier === 2) {
+        await tier2(client);
+        await parityChecks(client);
+      }
       else {
         console.error(`unknown tier: ${tier} (use --tier=0|1|2)`);
         failures++;

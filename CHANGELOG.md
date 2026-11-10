@@ -33,6 +33,36 @@ what to read instead.
 
 ### Added
 
+- **The read-source contract.** Every response that can come from either path now
+  reports `source: "snapshot" | "live"` — the path that actually served it — and a
+  snapshot read also reports `snapshot.<walker>.{seq, age_ms, captured}`: the
+  publisher's sequence number for the capture, how old it is in milliseconds, and
+  the game time it was taken at. Before this a snapshot-backed payload was
+  indistinguishable from a live one, so a caller had no way to tell whether it was
+  reading the game or a capture seconds old. `age_ms` is the field that decides
+  whether a fact is worth trusting: measured on a live fort, 50–55% of unit
+  positions had changed by 2 s of snapshot age, and current job is the
+  fastest-moving field in the capture. Provenance is keyed by walker because the
+  entity walker and the map census run at cadences an order of magnitude apart;
+  `map_overview` and `z_levels` draw on both and report both.
+- **`source` on dual-path tools**, defaulting from the new
+  `DFHACK_MCP_READ_SOURCE`. `find_unit` and `map_overview` take
+  `source: "snapshot" | "live"`. `live` is always honored; `snapshot` falls back to
+  live where the snapshot layer is off or the call cannot be served from a capture
+  (`map_overview` with `reveal_hidden=true`, since the census classifies revealed
+  tiles only), and the response then reports `live`, so a fallback is never silent.
+  `snapshot_query` and `z_levels` have no live path and so take no parameter, but
+  report the same envelope (see Changed, below). See
+  [docs/snapshot.md](docs/snapshot.md#the-read-source-contract).
+- **A reusable read-source parity harness.** `test/parity.mjs` holds one spec per
+  dual-path tool and the pause-aware comparator over it: paused, a projection must
+  be deep-equal to the live read once provenance is stripped; running, the identity
+  spine must still match exactly and the fields that legitimately move are reported
+  as drift. `DFHACK_MCP_SNAPSHOT=1 npm run verify:t1` (and `verify:t2`) now call
+  every dual-path tool both ways over real MCP and compare, and
+  `npm run verify:snapshot` drives the same specs against the projection directly.
+  Migrating a tool to the snapshot takes one entry in `PARITY_SPECS` rather than a
+  new harness.
 - **The snapshot publisher.** A Lua walker visits a slice of the fort each frame
   and publishes a complete entity snapshot and a map census, so a read costs the
   RPC transfer instead of a per-call walk with the game frozen. Two walkers with
@@ -129,6 +159,16 @@ what to read instead.
 
 ### Changed
 
+- `snapshot_query` and `z_levels` report their capture's provenance through the
+  shared read-source envelope instead of their own ad-hoc fields.
+  `snapshot_query`'s flat `snapshot {seq, age_ms, captured}` and `z_levels`'
+  `map_snapshot` / `entity_snapshot` pair both become
+  `source: "snapshot"` plus `snapshot.<walker>.{seq, age_ms, captured}` —
+  `z_levels` keyed by both `entities` and `map`, and `captured` is now reported
+  there where it was missing. Not marked breaking and absent from
+  [docs/migrating-to-2.0.md](docs/migrating-to-2.0.md): both tools are new in
+  this unreleased cycle (added under #145, and not present in 1.5.0), so no
+  released payload changes and a 1.x caller has nothing to migrate.
 - **Breaking:** `geology`'s `reveal_hidden` now behaves like every other
   tool's, and a bypassed survey has the same shape as a default one.
   `caverns_hidden[]` merges into `caverns_discovered[]`, `magma_hidden` gives
