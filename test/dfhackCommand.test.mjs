@@ -4,6 +4,7 @@ import { ALLOWLIST, findAllowlisted } from '../src/tools/dfhackCommandAllowlist.
 import {
   dfhackCommandRun,
   parseLs,
+  withoutQueryScripts,
   parseSeedwatch,
   parseTags,
   seedwatchRestore,
@@ -81,17 +82,34 @@ test('parseLs reads wrapped help, long names, and wrapped tag lines', () => {
     '',
   ].join('\n');
   assert.deepEqual(parseLs(text), [
-    { name: 'gui/gm-editor', help: 'Inspect and edit DF game data.', tags: ['animals', 'armok', 'buildings', 'items', 'units'] },
-    { name: 'instruments', help: 'Show how to craft instruments or create work orders for them.', tags: ['fort', 'inspection', 'workorders'] },
-    { name: 'fix/stuck-instruments', help: 'Allow bugged instruments to be interacted with again.', tags: [] },
+    {
+      name: 'gui/gm-editor',
+      help: 'Inspect and edit DF game data.',
+      tags: ['animals', 'armok', 'buildings', 'items', 'units'],
+    },
+    {
+      name: 'instruments',
+      help: 'Show how to craft instruments or create work orders for them.',
+      tags: ['fort', 'inspection', 'workorders'],
+    },
+    {
+      name: 'fix/stuck-instruments',
+      help: 'Allow bugged instruments to be interacted with again.',
+      tags: [],
+    },
   ]);
   assert.deepEqual(parseLs('No matches.\n'), []);
 });
 
 test('parseTags joins wrapped descriptions', () => {
-  const text = 'armok                Tools which give the player god-like powers or the ability\n                      to access information.\nauto                 Background tools.\n';
+  const text =
+    'armok                Tools which give the player god-like powers or the ability\n                      to access information.\nauto                 Background tools.\n';
   assert.deepEqual(parseTags(text), [
-    { tag: 'armok', description: 'Tools which give the player god-like powers or the ability to access information.' },
+    {
+      tag: 'armok',
+      description:
+        'Tools which give the player god-like powers or the ability to access information.',
+    },
     { tag: 'auto', description: 'Background tools.' },
   ]);
 });
@@ -120,4 +138,24 @@ test('parseSeedwatch and seedwatchRestore round-trip a target change', () => {
     { command: 'enable', args: ['seedwatch'] },
   ]);
   assert.deepEqual(seedwatchRestore(before, before), []);
+});
+
+test('the command list hides the query scripts this server puts on the script path', () => {
+  const text = [
+    'ls                   List available commands.',
+    'mcp_snapshot         ',
+    'mcp_snapshotGovernor ',
+    'seedwatch            Manage seed stocks.',
+  ].join('\n');
+  const parsed = parseLs(text);
+  assert.deepEqual(
+    parsed.map((c) => c.name),
+    ['ls', 'mcp_snapshot', 'mcp_snapshotGovernor', 'seedwatch'],
+    'parseLs stays a pure parser and reports whatever ls printed'
+  );
+  assert.deepEqual(
+    withoutQueryScripts(parsed).map((c) => c.name),
+    ['ls', 'seedwatch'],
+    'the query scripts are internals, not commands DFHack ships'
+  );
 });

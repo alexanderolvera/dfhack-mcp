@@ -182,6 +182,12 @@ what to read instead.
 
 ### Fixed
 
+- `dfhack_command_list` reported this server's own query scripts as commands
+  DFHack ships. The client registers the query directory on DFHack's script
+  path, so DFHack's own `ls` lists all 49 of them, which both contradicted the
+  tool's description and meant its golden broke every time a query script was
+  added. They are filtered out now; the T2 golden matches again unchanged, so
+  the recorded 311 commands were right all along.
 - Turning the snapshot governor off left its backoff applied. `govern off`
   restored each walker's cadence but kept the governor in state with its level
   intact, and the two places that re-derive cadence (`tune` and `start`) tested
