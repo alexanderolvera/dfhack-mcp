@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { FOG_OF_WAR_NOTE, revealHiddenParam } from '../fog.ts';
+import { READ_SOURCE_NOTE, snapshotSource } from '../readSource.ts';
 import type { ToolDef } from '../register.ts';
 import { readMapSnapshot, readSnapshot, type Snapshot } from '../snapshot.ts';
 
@@ -102,9 +103,9 @@ export function runQuery(snap: Snapshot, args: QueryArgs): Row {
     (r) => (reveal || r.hidden !== true) && where.every(([path, c]) => holds(valueAt(r, path), c))
   );
   const out: Row = {
+    ...snapshotSource({ entities: snap }),
     class: args.class,
     fog_of_war: reveal ? 'bypassed' : 'applied',
-    snapshot: { seq: snap.seq, age_ms: snap.age_ms, captured: snap.captured },
     matched: rows.length,
   };
   if (args.count_only) return out;
@@ -151,9 +152,10 @@ export const snapshotQueryDef: ToolDef = {
     'construction,desc}; buildings {id,type(Bed,Door,Workshop,Furnace,Stockpile,Civzone...),subtype,' +
     'zone_type(Civzone only: Bedroom,DiningHall,Office,Tomb...),owner(unit id),x1,y1,x2,y2,z,stage,' +
     'max_stage,name,items,jobs}; reports {id,type,text,year,time,pos,continuation}; squads {id,name}. ' +
-    'Every response carries snapshot {seq, age_ms, captured} — positions go stale within seconds. ' +
     'Rows on undiscovered tiles are omitted. ' +
-    FOG_OF_WAR_NOTE,
+    FOG_OF_WAR_NOTE +
+    ' ' +
+    READ_SOURCE_NOTE,
   shape: {
     class: z.enum(['units', 'items', 'buildings', 'reports', 'squads']),
     where: z.record(z.string(), z.union([primitive, ops])).optional(),
@@ -221,8 +223,10 @@ export const zLevelsDef: ToolDef = {
     'other_buildings). Columnar: {columns, levels:[[...]], unrevealed_z:[[lo,hi]]} — fully ' +
     'unrevealed levels collapse into ranges. Use it to decide where to look before tile_region or ' +
     'snapshot_query. Served from the snapshot; the map census refreshes slowly ' +
-    '(minutes), entity counts every few seconds; ages are reported. Optional z_min/z_max scope ' +
-    'the rows. Fog-of-war honest: hidden tiles are only counted, never classified.',
+    '(minutes) and entity counts every few seconds, so the two walkers report their ages ' +
+    'separately. Optional z_min/z_max scope the rows. Fog-of-war honest: hidden tiles are ' +
+    'only counted, never classified. ' +
+    READ_SOURCE_NOTE,
   shape: {
     z_min: z.coerce.number().int().optional(),
     z_max: z.coerce.number().int().optional(),
@@ -239,13 +243,12 @@ export const zLevelsDef: ToolDef = {
     const inRange = (zv: number) =>
       (z_min === undefined || zv >= z_min) && (z_max === undefined || zv <= z_max);
     return {
+      ...snapshotSource({ entities: snap, map }),
       columns: [...map.census.columns, ...ENTITY_COLUMNS],
       levels: map.census.levels
         .filter((row) => inRange(row[0]))
         .map((row) => [...row, ...(counts.get(row[0]) ?? empty)]),
       unrevealed_z: map.census.unrevealed_z,
-      map_snapshot: { seq: map.seq, age_ms: map.age_ms },
-      entity_snapshot: { seq: snap.seq, age_ms: snap.age_ms },
     };
   },
 };

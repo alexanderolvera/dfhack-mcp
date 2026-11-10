@@ -18,9 +18,12 @@ Resolves a name fragment or profession into a compact dossier per matching citiz
 | Name | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
 | query | string (min 1) | Yes | — | Name fragment or profession to search for. |
+| source | `"snapshot"` \| `"live"` | No | `DFHACK_MCP_READ_SOURCE`, else `snapshot` where the snapshot layer is on | Which read path to use. See [the read-source contract](../snapshot.md#the-read-source-contract). |
 
 ## Returns
 Top-level fields:
+- `source` — `"snapshot"` or `"live"`, the path that served this payload
+- `snapshot` — on a snapshot read only: `{ entities: { seq, age_ms, captured } }`. `age_ms` is how stale the capture is; `current_job` is the fastest-moving field in it
 - `query` — echo of the search term
 - `match_count` — total citizens that matched (may exceed the listed matches)
 - `truncated` — true when the match list was capped
@@ -55,7 +58,23 @@ Top-level fields:
     }
   ],
   "query": "a",
+  "source": "live",
   "truncated": true
+}
+```
+
+A snapshot read replaces `"source": "live"` with the provenance envelope:
+
+```json
+{
+  "source": "snapshot",
+  "snapshot": {
+    "entities": { "seq": 41, "age_ms": 2310, "captured": { "year": 251, "year_tick": 149760 } }
+  },
+  "query": "a",
+  "match_count": 75,
+  "truncated": true,
+  "matches": []
 }
 ```
 
@@ -63,9 +82,12 @@ Top-level fields:
 - The match list is capped at 8 (Lua `MAX = 8`); `match_count` still reports the full total and `truncated` flags the cap — narrow the query to see the rest.
 - Matching is case-insensitive against either the name or the profession.
 - `squad` is present only for squad members.
+- **A snapshot read is seconds old.** Identity, age, profession and squad move slowly, but `current_job` is the most staleness-sensitive field in the entity snapshot: on a live fort, 3–5 of the 8 matches shown had changed job at a snapshot age of only 0.6 s. Read `age_ms`, or ask for `source: "live"`, before acting on a job. `wounded`, `patient`, `unconscious` and `stress` also drift, far more slowly.
 - Returns `{"error":"no fort loaded"}` if no fort is active.
 
 ## Implementation notes
+The snapshot projection is `projectFindUnit` in `src/tools/findUnit.ts`, which filters the published `units` class on the same citizen/name/profession rule the Lua query applies and resolves `squad` through the snapshot's own `squads` class. Its parity against the live path is asserted by [`test/parity.mjs`](../../test/parity.mjs) — deep-equal on a paused fort, identity spine plus drift reporting on a running one. See [read-source parity](../snapshot.md#read-source-parity).
+
 The search term arrives as native DFHack argv (`args[1]`) rather than through any string-escaping layer, so an apostrophe or backslash in the query is just data — there is nothing to escape and nothing that needs to be.
 
 Confirmed live on DFHack 53.15-r2: `dfhack.units.getReadableName`, `getProfessionName`, `getAge`, and `getStressCategory` are all present on this build. Squad names resolve via `df.global.world.squads.all`, filtered to the fort's own `entity_id` and looked up by each unit's `military.squad_id`.

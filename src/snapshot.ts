@@ -107,7 +107,8 @@ const RPC_MODULE = 'rpc.mcp_snapshot';
 const cache: Partial<Record<Walker, { seq: number; data: Published | { error: string } }>> = {};
 
 /**
- * Whether read tools that support it should project from the in-game snapshot.
+ * Whether the snapshot layer is available at all. `readSource.ts` turns this into
+ * a per-call decision; nothing else should branch on it directly.
  * @param env Environment to read; defaults to `process.env`.
  * @returns True when `DFHACK_MCP_SNAPSHOT` is set.
  */

@@ -1,13 +1,17 @@
 import { runJsonScript } from '../query.ts';
+import type { ErrorPayload } from '../errors.ts';
 import type { ToolDef } from '../register.ts';
 import { FOG_OF_WAR_NOTE, fogArgs, revealHiddenParam, type FogReport } from '../fog.ts';
 import {
-  readMapSnapshot,
-  readSnapshot,
-  snapshotEnabled,
-  type MapSnapshot,
-  type Snapshot,
-} from '../snapshot.ts';
+  READ_SOURCE_NOTE,
+  liveSource,
+  readSourceParam,
+  readsSnapshot,
+  snapshotSource,
+  type ReadSource,
+  type SourceReport,
+} from '../readSource.ts';
+import { readMapSnapshot, readSnapshot, type MapSnapshot, type Snapshot } from '../snapshot.ts';
 
 export interface MapExtents {
   x: number;
@@ -35,7 +39,7 @@ export interface StairColumn {
   z_bottom: number;
 }
 
-export interface MapOverview extends FogReport {
+export interface MapOverview extends FogReport, SourceReport {
   extents: MapExtents;
   fort_core: FortCore | null;
   surface_z_at_core: number | null;
@@ -44,6 +48,8 @@ export interface MapOverview extends FogReport {
   stair_columns_total: number;
   stair_columns_truncated: boolean;
 }
+
+type LiveMapOverview = Omit<MapOverview, keyof SourceReport>;
 
 const COLUMNS_CAP = 40;
 
@@ -94,7 +100,7 @@ function stairColumns(stairs: MapSnapshot['census']['stairs']): StairColumn[] {
  * Builds map_overview's payload from the publisher's map census and entity snapshot.
  * @param map A complete map census snapshot.
  * @param snap A complete entity snapshot (for the citizen centroid).
- * @returns The same shape `mcp_mapOverview.lua` emits with fog of war applied.
+ * @returns The same shape `mcp_mapOverview.lua` emits with fog of war applied, plus provenance.
  */
 export function projectMapOverview(map: MapSnapshot, snap: Snapshot): MapOverview {
   const c = map.census;
@@ -108,6 +114,7 @@ export function projectMapOverview(map: MapSnapshot, snap: Snapshot): MapOvervie
   const all = stairColumns(c.stairs);
   const union = [...new Set([...c.construction_z, ...c.digging_z])].sort((a, b) => a - b);
   return {
+    ...snapshotSource({ entities: snap, map }),
     extents: c.extents,
     fort_core: core,
     surface_z_at_core: surface,
@@ -119,7 +126,7 @@ export function projectMapOverview(map: MapSnapshot, snap: Snapshot): MapOvervie
   };
 }
 
-async function mapOverviewFromSnapshot(): Promise<MapOverview | { error: string }> {
+async function mapOverviewFromSnapshot(): Promise<MapOverview | ErrorPayload> {
   const map = await readMapSnapshot();
   if ('error' in map) return map;
   const snap = await readSnapshot();
@@ -128,13 +135,15 @@ async function mapOverviewFromSnapshot(): Promise<MapOverview | { error: string 
 }
 
 export async function mapOverview(
-  revealHidden?: boolean
-): Promise<MapOverview | { error: string }> {
-  if (snapshotEnabled() && !revealHidden) return mapOverviewFromSnapshot();
-  const data = await runJsonScript<MapOverview>('mapOverview', fogArgs(revealHidden), [
+  revealHidden?: boolean,
+  source?: ReadSource
+): Promise<MapOverview | ErrorPayload> {
+  if (readsSnapshot(source) && !revealHidden) return mapOverviewFromSnapshot();
+  const live = await runJsonScript<LiveMapOverview>('mapOverview', fogArgs(revealHidden), [
     'stair_columns',
   ]);
-  if ('error' in data) return data;
+  if ('error' in live) return live;
+  const data: MapOverview = { ...liveSource(), ...live };
   if (data.activity) {
     for (const k of ['z_levels', 'construction_z', 'digging_z'] as const) {
       if (!Array.isArray(data.activity[k])) data.activity[k] = [];
@@ -169,7 +178,11 @@ export const mapOverviewDef: ToolDef = {
     'Fog-of-war honest: undiscovered tiles never leak. Use it to decide which ' +
     'z-levels and area to pull grids for. Returns {"error":"no fort loaded"} if ' +
     'no fort is active. ' +
-    FOG_OF_WAR_NOTE,
-  shape: { reveal_hidden: revealHiddenParam },
-  run: ({ reveal_hidden }) => mapOverview(reveal_hidden),
+    'reveal_hidden=true always reads live: the map census classifies revealed tiles only, ' +
+    'so a bypassed overview cannot be projected from it. ' +
+    FOG_OF_WAR_NOTE +
+    ' ' +
+    READ_SOURCE_NOTE,
+  shape: { reveal_hidden: revealHiddenParam, source: readSourceParam },
+  run: ({ reveal_hidden, source }) => mapOverview(reveal_hidden, source),
 };

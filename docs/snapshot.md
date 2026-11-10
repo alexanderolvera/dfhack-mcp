@@ -328,6 +328,79 @@ form `rpc.*`, `*.rpc` or `*-rpc`, which is why the module is registered under `r
 
 The snapshot is concatenated once at publish time and never re-encoded per read.
 
+## The read-source contract
+
+A snapshot-backed payload used to be indistinguishable from a live one: same fields, same
+shape, no way for a caller to tell whether it was reading the game or a capture, or how old
+that capture was. [#146](https://github.com/alexanderolvera/dfhack-mcp/issues/146) closes
+that. `src/readSource.ts` is the single source of the contract, the way `src/fog.ts` is for
+fog of war, and no tool writes its own provenance.
+
+**Every response that can come from either path reports which one served it.** A live read
+carries nothing else:
+
+```json
+{ "source": "live", "query": "a", "match_count": 75, "matches": [] }
+```
+
+A snapshot read carries one provenance entry per walker whose capture it was projected
+from — `seq`, `age_ms` and `captured`:
+
+```json
+{
+  "source": "snapshot",
+  "snapshot": {
+    "entities": { "seq": 41, "age_ms": 2310, "captured": { "year": 251, "year_tick": 149760 } },
+    "map": { "seq": 7, "age_ms": 48120, "captured": { "year": 251, "year_tick": 142080 } }
+  },
+  "extents": { "x": 192, "y": 192, "z": 164 }
+}
+```
+
+| Field                        | Meaning                                                                |
+| ---------------------------- | ---------------------------------------------------------------------- |
+| `source`                     | `"snapshot"` or `"live"` — the path that actually served this payload. |
+| `snapshot.<walker>.seq`      | The published sequence number this walker's facts came from.           |
+| `snapshot.<walker>.age_ms`   | Wall-clock milliseconds between that capture and the read.             |
+| `snapshot.<walker>.captured` | `{year, year_tick}` — the game time the pass finished at.              |
+
+The provenance is keyed by walker rather than flattened because the two walkers run at
+cadences an order of magnitude apart (~6 s against ~60 s), so _which_ publisher a fact came
+from is what tells a caller whether an age of 20 s is routine or alarming. `map_overview` and
+`z_levels` draw on both and report both; everything else reports the one it used. There is no
+aggregate age field: the oldest contributor is visible by reading the entries, and a derived
+second copy of a number already in the payload is a second place for it to drift.
+
+**`age_ms` is the field that decides whether a fact is worth trusting**, which is why it sits
+beside every capture rather than in a status call the caller has to make separately. From the
+measurements above, on a live fort 50–55% of unit positions had changed by 2 s of snapshot
+age and `job_type` is the most staleness-sensitive field in the entity layer — 3–5 of the 8
+matches a `find_unit` query showed had moved on at an age of only 0.6 s. Roster, death,
+squad, stress and health move far more slowly. A caller that reads `age_ms` can make that
+distinction; one that cannot see it is guessing.
+
+### Choosing a source
+
+Dual-path tools take the shared `source: "snapshot" | "live"` parameter from
+`readSource.ts`. The resolution rules:
+
+- **`live` is always honored.** It queries the game directly, costs frozen game time, and
+  cannot be stale.
+- **`snapshot` is honored where it can be served.** It falls back to live when the snapshot
+  layer is off (`DFHACK_MCP_SNAPSHOT` unset) or when the specific call cannot come from a
+  capture — today that is `map_overview` with `reveal_hidden=true`, because the census
+  classifies revealed tiles only, so a bypassed overview has to be read live.
+- **The default comes from `DFHACK_MCP_READ_SOURCE`**, and is `snapshot` wherever the
+  snapshot layer is on. With the layer off, every read is live whatever is asked for.
+
+A fallback is never silent: the response reports `source: "live"`, so the payload always
+names the path that produced it. The asymmetry is deliberate — being handed live data when
+you asked for a capture costs game time, while being handed a capture when you asked for
+live would be a correctness problem, and that direction cannot happen.
+
+`snapshot_query` and `z_levels` have no live path at all — they exist only under the gate —
+so they take no `source` parameter and always report `source: "snapshot"`.
+
 ## Surviving reloads and second copies
 
 A DFHack script's environment persists across runs _and_ across file edits, and DFHack keeps
@@ -383,18 +456,19 @@ restarts a pass in flight.
 
 ## Environment
 
-| Variable                            | Default | Effect                                                                                                                |
-| ----------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------- |
-| `DFHACK_MCP_SNAPSHOT`               | unset   | Registers `snapshot_query` and `z_levels`, and lets snapshot-backed tools project instead of reading live.            |
-| `DFHACK_MCP_SNAPSHOT_SLICE`         | `16`    | Entity walker slice.                                                                                                  |
-| `DFHACK_MCP_SNAPSHOT_CADENCE`       | `600`   | Entity walker cadence, in frames.                                                                                     |
-| `DFHACK_MCP_SNAPSHOT_MAP_SLICE`     | `32`    | Census slice.                                                                                                         |
-| `DFHACK_MCP_SNAPSHOT_MAP_CADENCE`   | `6000`  | Census cadence, in frames.                                                                                            |
-| `DFHACK_MCP_SNAPSHOT_GOVERNOR`      | unset   | Turns the cadence governor on when the reader starts the walkers.                                                     |
-| `DFHACK_MCP_SNAPSHOT_GOVERNOR_HIGH` | `0.05`  | Frame-time inflation above which the governor backs off.                                                              |
-| `DFHACK_MCP_SNAPSHOT_GOVERNOR_LOW`  | `0.01`  | Inflation below which it recovers towards the configured cadence.                                                     |
-| `DFHACK_MCP_SNAPSHOT_WARMUP_MS`     | `90000` | How long a read waits for a first payload. The census needs ~24 s, so the first call after a cold start is slow once. |
-| `DFHACK_MCP_SNAPSHOT_POLL_MS`       | `250`   | Status poll interval while waiting.                                                                                   |
+| Variable                            | Default | Effect                                                                                                                          |
+| ----------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `DFHACK_MCP_SNAPSHOT`               | unset   | Registers `snapshot_query` and `z_levels`, and lets snapshot-backed tools project instead of reading live.                      |
+| `DFHACK_MCP_READ_SOURCE`            | unset   | Default `source` for dual-path reads: `live` pins them live, anything else leaves them on the snapshot. Per-call `source` wins. |
+| `DFHACK_MCP_SNAPSHOT_SLICE`         | `16`    | Entity walker slice.                                                                                                            |
+| `DFHACK_MCP_SNAPSHOT_CADENCE`       | `600`   | Entity walker cadence, in frames.                                                                                               |
+| `DFHACK_MCP_SNAPSHOT_MAP_SLICE`     | `32`    | Census slice.                                                                                                                   |
+| `DFHACK_MCP_SNAPSHOT_MAP_CADENCE`   | `6000`  | Census cadence, in frames.                                                                                                      |
+| `DFHACK_MCP_SNAPSHOT_GOVERNOR`      | unset   | Turns the cadence governor on when the reader starts the walkers.                                                               |
+| `DFHACK_MCP_SNAPSHOT_GOVERNOR_HIGH` | `0.05`  | Frame-time inflation above which the governor backs off.                                                                        |
+| `DFHACK_MCP_SNAPSHOT_GOVERNOR_LOW`  | `0.01`  | Inflation below which it recovers towards the configured cadence.                                                               |
+| `DFHACK_MCP_SNAPSHOT_WARMUP_MS`     | `90000` | How long a read waits for a first payload. The census needs ~24 s, so the first call after a cold start is slow once.           |
+| `DFHACK_MCP_SNAPSHOT_POLL_MS`       | `250`   | Status poll interval while waiting.                                                                                             |
 
 ## Implementation notes
 
@@ -422,14 +496,15 @@ restarts a pass in flight.
 
 ## Verifying
 
-| Check                                       | Command                                      | Needs               |
-| ------------------------------------------- | -------------------------------------------- | ------------------- |
-| Reader contract, including no-fort recovery | `npm run test:unit`                          | nothing             |
-| Lua parses                                  | `npm run lint:lua`                           | `luac` on PATH      |
-| Tool surface under the gate                 | `npm run verify:t0`                          | nothing             |
-| Publisher in-game, plus `find_unit` parity  | `npm run verify:snapshot`                    | live fort           |
-| The no-fort guard in-game                   | `node scripts/verify-snapshot.mjs --no-fort` | no-fort fixture     |
-| Walker cost at and around the defaults      | `npm run bench:snapshot`                     | live, unpaused fort |
+| Check                                         | Command                                      | Needs               |
+| --------------------------------------------- | -------------------------------------------- | ------------------- |
+| Reader contract, including no-fort recovery   | `npm run test:unit`                          | nothing             |
+| Lua parses                                    | `npm run lint:lua`                           | `luac` on PATH      |
+| Tool surface under the gate                   | `npm run verify:t0`                          | nothing             |
+| Publisher in-game, plus `find_unit` parity    | `npm run verify:snapshot`                    | live fort           |
+| Read-source parity, every dual tool both ways | `DFHACK_MCP_SNAPSHOT=1 npm run verify:t1`    | live fort           |
+| The no-fort guard in-game                     | `node scripts/verify-snapshot.mjs --no-fort` | no-fort fixture     |
+| Walker cost at and around the defaults        | `npm run bench:snapshot`                     | live, unpaused fort |
 
 Against a containerized DFHack, pass the container-internal query dir and disable Git Bash
 path conversion, or `addScriptPath` silently gets a Windows path and every call fails as
@@ -446,17 +521,42 @@ actually runs under DFHack, that every class publishes without per-record errors
 `autostart` is idempotent, that a completed pass advances `seq`, and that `find_unit`
 projected from the snapshot agrees with the live Lua query. It leaves both walkers stopped.
 
+### Read-source parity
+
 **Parity is pause-aware, and has to be.** With the game paused the projection must be
-deep-equal to the live query — that is the real assertion, and it holds (7/7 on the spike's
-fort, 6/6 on the fixture container). On a _running_ fort it legitimately will not: a
-snapshot is as old as its pass, 4–8% of units change job in that window, and a query showing
-up to 8 matches will usually include one that moved. So unpaused, the check requires the
-**identity spine** (`unit_id`, `name`, `profession`, `age`, `squad`, plus `match_count` and
-`truncated`) to match exactly, and reports `current_job` / `stress` / `wounded` / `patient`
-/ `unconscious` differences as drift rather than failure. A spine mismatch would be a real
-projection bug; drift is the snapshot being a few seconds old, which is exactly what the
-provenance metadata in
-[#146](https://github.com/alexanderolvera/dfhack-mcp/issues/146) exists to tell the caller.
+deep-equal to the live query once provenance is stripped — that is the real assertion, and it
+holds (7/7 on the spike's fort, 6/6 on the fixture container). On a _running_ fort it
+legitimately will not: a snapshot is as old as its pass, 4–8% of units change job in that
+window, and a query showing up to 8 matches will usually include one that moved. So unpaused,
+the check requires the **identity spine** (`unit_id`, `name`, `profession`, `age`, `squad`,
+plus `match_count`, `query` and `truncated`) to match exactly, and reports `current_job` /
+`stress` / `wounded` / `patient` / `unconscious` differences as drift rather than failure. A
+spine mismatch is a real projection bug; drift is the snapshot being a few seconds old, which
+is what `age_ms` is in the payload to tell the caller.
+
+That logic is not written per tool. [`test/parity.mjs`](../test/parity.mjs) holds one spec
+per dual-path tool — the calls to compare, the top-level fields that must agree, the row
+array and its identity and volatile fields — plus `compareParity`, which applies the
+pause-aware rule, and `sourceProblems`, which checks the provenance envelope itself (`source`
+is the expected path; a live read carries no `snapshot` key; every walker entry has an
+integer `seq`, a non-negative `age_ms` and a `{year, year_tick}` `captured`). Provenance is
+stripped before the payloads are compared, because it is the one part that _must_ differ.
+Comparison is `isDeepStrictEqual` from `node:util`, never `JSON.stringify` — the two paths
+build their objects in different key orders, so string equality would report every pair as a
+mismatch.
+
+Two harnesses drive the same specs:
+
+- `npm run verify:snapshot` section 7 compares `projectFindUnit` against the live path with a
+  snapshot it holds in hand, so it can report the exact age the comparison was made at.
+- `DFHACK_MCP_SNAPSHOT=1 npm run verify:t1` (and `verify:t2`) call every spec'd tool twice
+  over real MCP, once with `source: "live"` and once with `source: "snapshot"`, and compare
+  the two payloads. That is the surface the migration tickets
+  ([#151](https://github.com/alexanderolvera/dfhack-mcp/issues/151)–[#156](https://github.com/alexanderolvera/dfhack-mcp/issues/156))
+  reuse: a migrated tool needs one entry in `PARITY_SPECS`, not a new harness. Without the
+  gate the step reports itself skipped rather than passing silently. The T1/T2 golden and
+  reachability calls pin `source: "live"`, so a committed golden is always the live payload
+  whatever the gate is set to.
 
 `--no-fort`, pointed at the no-fort fixture ([`docker/README.md`](../docker/README.md)),
 covers the other side: that the walkers come up at the title screen, publish

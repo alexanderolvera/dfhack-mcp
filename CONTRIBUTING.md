@@ -69,6 +69,7 @@ Full detail in [`docs/VERIFY.md`](docs/VERIFY.md). The short version:
 | **T1** no-fort guard       | `node scripts/verify.mjs --tier=1 --no-fort` | no-fort fixture   | local                   |
 | **Invariants** (Red/Green) | `npm run verify:invariants`                  | any live fort     | local                   |
 | **T2** golden + invariants | `npm run verify:t2`                          | fixture container | local                   |
+| **Read-source parity**     | `DFHACK_MCP_SNAPSHOT=1 npm run verify:t1`    | live fort         | local                   |
 | **Lua syntax**             | `npm run lint:lua`                           | `luac` on PATH    | local (skips if absent) |
 
 The two halves of "did we break anything": **goldens** (T2) freeze the exact
@@ -104,6 +105,12 @@ the no-fort fixture, checks that the walkers publish the guard under a new `seq`
 and that the reader never serves a cached fort behind it. Details are in
 [`docs/VERIFY.md`](docs/VERIFY.md#ad-hoc-live-verification-scripts).
 
+With the snapshot gate set, T1 and T2 add a **read-source parity** step: every
+dual-path tool is called twice over real MCP, once `source: "live"` and once
+`source: "snapshot"`, and the two payloads must be deep-equal on a paused fort.
+`DFHACK_MCP_SNAPSHOT=1 npm run verify:t1` is the command; without the gate the
+step reports itself skipped rather than passing silently.
+
 **Every tool is verified against a real running fort before it ships — no mocks.**
 Lua runs _inside_ DF, so "test infra" is provisioned frozen-save fixtures, not
 unit tests. Keep `npm run typecheck` and `npm run lint` clean.
@@ -115,8 +122,10 @@ instead of surfacing as a failed tool call against a live game. It is part of
 
 Reads served from the in-game snapshot instead of a per-call Lua walk have their
 own contract — cadence, `seq`, provenance and what deliberately stays live. See
-[`docs/snapshot.md`](docs/snapshot.md) before touching `mcp_snapshot.lua` or
-`src/snapshot.ts`.
+[`docs/snapshot.md`](docs/snapshot.md) before touching `mcp_snapshot.lua`,
+`src/snapshot.ts` or `src/readSource.ts`, and
+[Shared internals: the read-source contract](#shared-internals-the-read-source-contract)
+below for what a dual-path tool must report.
 
 **Gotcha — DFHack caches loaded scripts by name, across server processes.**
 `addScriptPath` (`src/dfclient.ts`) registers a directory per connection, but
@@ -294,6 +303,40 @@ README's [Errors](README.md#errors) section). Codes are assigned in three places
 `src/dfhack-queries/` and every `{ error: '...' }` literal in `src/tools/` and
 fails on one without a known code, and the harness's `callJson` fails any T1/T2
 payload whose `error` lacks one.
+
+## Shared internals: the read-source contract (`readSource.ts`)
+
+A tool that can read either the live game or the in-game snapshot must say which
+one answered, because the two differ in a way the caller cannot otherwise see: a
+snapshot is seconds old. `src/readSource.ts` is the one place that is decided,
+the way `src/fog.ts` is for fog of war, and no tool writes its own provenance.
+
+- **Every such response reports `source: "snapshot" | "live"`** — the path that
+  actually served it, not the one that was asked for.
+- **A snapshot read also reports `snapshot.<walker>.{seq, age_ms, captured}`**,
+  one entry per walker whose capture it was projected from (`entities`, `map`, or
+  both). Keyed by walker because the two run at cadences an order of magnitude
+  apart, so which publisher a fact came from is what makes its age readable.
+  There is no aggregate age field: it would be a second copy of a number already
+  in the payload.
+- **Dual-path tools take the shared `readSourceParam`** (`source`), defaulting
+  from `DFHACK_MCP_READ_SOURCE`. `live` is always honored; `snapshot` falls back
+  to live where the snapshot layer is off or the specific call cannot be served
+  from a capture, and the response then reports `live`. The asymmetry is the
+  point — a capture served where live was asked for would be a correctness bug,
+  and that direction cannot happen.
+- **Build the envelope with `liveSource()` / `snapshotSource({entities, map})`**
+  and spread it first into the payload, so provenance reads at the top. Extend
+  the payload interface from `SourceReport`.
+- **Append `READ_SOURCE_NOTE` to the tool description** of anything that reports
+  `source`, including snapshot-only tools like `snapshot_query` and `z_levels`
+  that take no parameter because they have no live path.
+- **Add one entry to [`test/parity.mjs`](test/parity.mjs)'s `PARITY_SPECS`** —
+  the calls to compare, the fields that must agree, and the row fields that may
+  drift. That is the whole wiring: `DFHACK_MCP_SNAPSHOT=1 npm run verify:t1`
+  then calls the tool both ways and asserts deep equality on a paused fort.
+  `test/readSource.test.mjs` fails if a dual-path module ships without the shared
+  parameter, the note, or a parity spec.
 
 ## Shared internals: fog-of-war safety
 

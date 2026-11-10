@@ -1,6 +1,16 @@
 import { runJsonScript } from '../query.ts';
-import { readSnapshot, snapshotEnabled, type Snapshot } from '../snapshot.ts';
+import {
+  READ_SOURCE_NOTE,
+  liveSource,
+  readSourceParam,
+  readsSnapshot,
+  snapshotSource,
+  type ReadSource,
+  type SourceReport,
+} from '../readSource.ts';
+import { readSnapshot, type Snapshot } from '../snapshot.ts';
 import { z } from 'zod';
+import type { ErrorPayload } from '../errors.ts';
 import type { ToolDef } from '../register.ts';
 
 export interface UnitMatch {
@@ -16,12 +26,14 @@ export interface UnitMatch {
   unconscious: boolean;
 }
 
-export interface FindUnit {
+export interface FindUnit extends SourceReport {
   query: string;
   match_count: number;
   truncated: boolean;
   matches: UnitMatch[];
 }
+
+type LiveFindUnit = Omit<FindUnit, keyof SourceReport>;
 
 const MAX_MATCHES = 8;
 const STRESS = ['miserable', 'unhappy', 'unhappy', 'content', 'content', 'happy', 'ecstatic'];
@@ -32,7 +44,7 @@ const asciiLower = (s: string): string => s.replace(/[A-Z]/g, (c) => c.toLowerCa
  * Builds find_unit's payload from a publisher snapshot, matching the Lua query's output.
  * @param snap A complete snapshot from `readSnapshot`.
  * @param query Name fragment or profession, matched case-insensitively (ASCII, as Lua's `string.lower`).
- * @returns The same shape `mcp_findUnit.lua` emits.
+ * @returns The same shape `mcp_findUnit.lua` emits, with snapshot provenance.
  */
 export function projectFindUnit(snap: Snapshot, query: string): FindUnit {
   const q = asciiLower(query);
@@ -59,13 +71,25 @@ export function projectFindUnit(snap: Snapshot, query: string): FindUnit {
       unconscious: u.unconscious > 0,
     };
   });
-  return { query, match_count: hits.length, truncated: hits.length > matches.length, matches };
+  return {
+    ...snapshotSource({ entities: snap }),
+    query,
+    match_count: hits.length,
+    truncated: hits.length > matches.length,
+    matches,
+  };
 }
 
-export async function findUnit(query: string): Promise<FindUnit | { error: string }> {
-  if (!snapshotEnabled()) return runJsonScript<FindUnit>('findUnit', [query], ['matches']);
-  const snap = await readSnapshot();
-  return 'error' in snap ? snap : projectFindUnit(snap, query);
+export async function findUnit(
+  query: string,
+  source?: ReadSource
+): Promise<FindUnit | ErrorPayload> {
+  if (readsSnapshot(source)) {
+    const snap = await readSnapshot();
+    return 'error' in snap ? snap : projectFindUnit(snap, query);
+  }
+  const data = await runJsonScript<LiveFindUnit>('findUnit', [query], ['matches']);
+  return 'error' in data ? data : { ...liveSource(), ...data };
 }
 
 export const findUnitDef: ToolDef = {
@@ -81,7 +105,11 @@ export const findUnitDef: ToolDef = {
     'preferences, recent thoughts). Lists at most 8 matches; match_count is ' +
     'always the full total and truncated flags when capped, so narrow the ' +
     'query to see the rest. Returns {"error":"no fort loaded"} if no ' +
-    'fort is active.',
-  shape: { query: z.string().min(1).describe('Name fragment or profession to search for') },
-  run: ({ query }) => findUnit(query),
+    'fort is active. ' +
+    READ_SOURCE_NOTE,
+  shape: {
+    query: z.string().min(1).describe('Name fragment or profession to search for'),
+    source: readSourceParam,
+  },
+  run: ({ query, source }) => findUnit(query, source),
 };

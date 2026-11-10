@@ -5,10 +5,10 @@
 // Leaves both walkers stopped. See docs/snapshot.md.
 import process from 'node:process';
 import { setTimeout as sleep } from 'node:timers/promises';
-import { isDeepStrictEqual } from 'node:util';
 import { callLua, closeConnection, runLua, runScript } from '../src/dfclient.ts';
-import { projectFindUnit } from '../src/tools/findUnit.ts';
+import { findUnit, projectFindUnit } from '../src/tools/findUnit.ts';
 import { readSnapshot } from '../src/snapshot.ts';
+import { PARITY_SPECS, compareParity } from '../test/parity.mjs';
 
 const NO_FORT_MODE = process.argv.includes('--no-fort');
 
@@ -182,60 +182,30 @@ const grown = await waitFor(async () => {
 }, 120_000);
 assert(grown !== null, grown ? `seq ${before} -> ${grown}` : 'seq never advanced within 120 s');
 
-// A snapshot is as old as its pass. On a running fort a few percent of units change
-// job between the capture and a live query, so strict parity is only a fair test with
-// the game paused. Unpaused, the identity spine must still match exactly; the fields
-// that legitimately move are reported as drift, which is what provenance (#146) is for.
-const SPINE = ['unit_id', 'name', 'profession', 'age', 'squad'];
-const VOLATILE = ['current_job', 'stress', 'wounded', 'patient', 'unconscious'];
-const spineOf = (p) => ({
-  query: p.query,
-  match_count: p.match_count,
-  truncated: p.truncated,
-  matches: p.matches.map((m) => Object.fromEntries(SPINE.map((k) => [k, m[k]]))),
-});
-
+const parity = PARITY_SPECS.find((spec) => spec.tool === 'find_unit');
 const paused = (await runLua('print(tostring(df.global.pause_state))')).trim() === 'true';
 section(
   7,
   `find_unit from the snapshot vs the live Lua query (fort ${paused ? 'paused' : 'running'})`
 );
-const snap = await rpc('entities');
-const age = ((await rpc('seqs')).entities.now_ms - snap.captured_at_ms) / 1000;
-console.log(`      snapshot age at comparison: ${age.toFixed(1)} s`);
+const published = await rpc('entities');
+const snap = {
+  ...published,
+  age_ms: (await rpc('seqs')).entities.now_ms - published.captured_at_ms,
+};
+console.log(`      snapshot age at comparison: ${(snap.age_ms / 1000).toFixed(1)} s`);
 
-for (const query of ['a', 'e', 'miner', 'medical', 'Urist', 'zzzznomatch']) {
-  const live = JSON.parse(await runScript('findUnit', [query]));
-  const projected = projectFindUnit(snap, query);
-
-  if (paused) {
-    const same = isDeepStrictEqual(live, projected);
-    assert(same, `"${query}": deep-equal to the live query (${live.match_count} matches)`);
-    if (!same) {
-      console.log(`      live:      ${JSON.stringify(live).slice(0, 240)}`);
-      console.log(`      projected: ${JSON.stringify(projected).slice(0, 240)}`);
-    }
-    continue;
-  }
-
-  const spineSame = isDeepStrictEqual(spineOf(live), spineOf(projected));
-  assert(spineSame, `"${query}": identity spine matches (${live.match_count} matches)`);
-  if (!spineSame) {
-    console.log(`      live:      ${JSON.stringify(spineOf(live)).slice(0, 240)}`);
-    console.log(`      projected: ${JSON.stringify(spineOf(projected)).slice(0, 240)}`);
-    continue;
-  }
-  const drifted = live.matches.filter((m, i) =>
-    VOLATILE.some((k) => m[k] !== projected.matches[i]?.[k])
+for (const args of parity.calls) {
+  const live = await findUnit(args.query, 'live');
+  const projected = projectFindUnit(snap, args.query);
+  const { failures, drift } = compareParity(parity, live, projected, { paused });
+  assert(
+    failures.length === 0,
+    `"${args.query}": ${paused ? 'deep-equal to the live query' : 'identity spine matches'} ` +
+      `(${live.match_count} matches)`
   );
-  if (drifted.length) {
-    const fields = new Set(
-      live.matches.flatMap((m, i) => VOLATILE.filter((k) => m[k] !== projected.matches[i]?.[k]))
-    );
-    console.log(
-      `      drift: ${drifted.length}/${live.matches.length} shown matches moved since capture (${[...fields].join(', ')})`
-    );
-  }
+  for (const line of failures) console.log(`      ${line}`);
+  for (const line of drift) console.log(`      drift: ${line}`);
 }
 
 section(8, 'tune changes slice and cadence without restarting the pass');
