@@ -51,6 +51,11 @@ function crName(code: number): string {
   return CR_NAMES.get(code) ?? `CR_${code}`;
 }
 
+const QUERY_SCRIPT_PREFIX = 'mcp_';
+
+export const withoutQueryScripts = (commands: CommandEntry[]): CommandEntry[] =>
+  commands.filter((c) => !c.name.startsWith(QUERY_SCRIPT_PREFIX));
+
 export function parseLs(text: string): CommandEntry[] {
   const entries: CommandEntry[] = [];
   let current: CommandEntry | null = null;
@@ -158,7 +163,11 @@ async function seedwatchState(): Promise<SeedwatchState | QueryError> {
 }
 
 async function managerOrders(): Promise<ManagerOrder[] | QueryError> {
-  const r = await runJsonScript<{ orders: ManagerOrder[] }>('dfhackCommand', ['orders'], ['orders']);
+  const r = await runJsonScript<{ orders: ManagerOrder[] }>(
+    'dfhackCommand',
+    ['orders'],
+    ['orders']
+  );
   return isQueryError(r) ? r : r.orders;
 }
 
@@ -234,7 +243,11 @@ async function apply(a: RunArgs, p: PlanResult): Promise<ApplyResult | QueryErro
 
   const r = await runCaptured(a.command, args);
   if (!r.ok) return commandFailed(a.command, args, r);
-  const changes = { allowlist_entry: entry.id, command_line: p.preview.command_line, output: r.output };
+  const changes = {
+    allowlist_entry: entry.id,
+    command_line: p.preview.command_line,
+    output: r.output,
+  };
 
   if (entry.tracker === 'seedwatch') {
     const after = await seedwatchState();
@@ -352,7 +365,7 @@ export async function dfhackCommandList(filter?: string): Promise<unknown> {
   const lsArgs = filter ? [filter] : [];
   const lsOut = await runHelpdb('ls', lsArgs);
   if (!lsOut.ok) return commandFailed('ls', lsArgs, lsOut);
-  const commands = parseLs(lsOut.output);
+  const commands = withoutQueryScripts(parseLs(lsOut.output));
   return {
     filter: filter ?? null,
     filter_kind: filter ? (tags.some((t) => t.tag === filter) ? 'tag' : 'search') : null,
@@ -367,10 +380,12 @@ export const dfhackCommandListDef: QueryToolDef = {
   title: 'DFHack command list',
   description:
     "Every command DFHack itself ships (built-ins, plugins, scripts), from DFHack's own `ls`: " +
-    'each command\'s name, one-line help, and tags, plus the full tag list from `tags` (each ' +
+    "each command's name, one-line help, and tags, plus the full tag list from `tags` (each " +
     'tag with its description). `filter` is a tag (e.g. "workorders") or a name substring ' +
     '(e.g. "seed"); a filter naming a tag lists that tag\'s commands. Reports what exists, not ' +
-    'what to run. Developer-only commands (`ls --dev`) are not listed. Running a command is ' +
+    'what to run. Developer-only commands (`ls --dev`) are not listed, and neither are the ' +
+    'query scripts this server puts on the script path: DFHack lists them, but they are ' +
+    'internals, not DFHack commands. Running a command is ' +
     'dfhack_command_run, which accepts only a small allowlist. Works without a fort loaded.',
   shape: {
     filter: z
