@@ -4,7 +4,7 @@
       "id": 100,
       "no_crop_assigned": false,
       "no_eligible_crop": false,
-      "open_to_sky": false,
+      "open_to_sky_tiles": 0,
       "seasons": [
         {
           "crop": "POD_SWEET",
@@ -33,7 +33,7 @@
       "id": 101,
       "no_crop_assigned": false,
       "no_eligible_crop": false,
-      "open_to_sky": false,
+      "open_to_sky_tiles": 0,
       "seasons": [
         {
           "crop": "POD_SWEET",
@@ -62,7 +62,7 @@
       "id": 108,
       "no_crop_assigned": false,
       "no_eligible_crop": false,
-      "open_to_sky": false,
+      "open_to_sky_tiles": 0,
       "seasons": [
         {
           "crop": "POD_SWEET",
@@ -91,7 +91,7 @@
       "id": 111,
       "no_crop_assigned": false,
       "no_eligible_crop": false,
-      "open_to_sky": false,
+      "open_to_sky_tiles": 0,
       "seasons": [
         {
           "crop": "MUSHROOM_CUP_DIMPLE",
@@ -120,7 +120,7 @@
       "id": 114,
       "no_crop_assigned": false,
       "no_eligible_crop": false,
-      "open_to_sky": false,
+      "open_to_sky_tiles": 0,
       "seasons": [
         {
           "crop": "MUSHROOM_CUP_DIMPLE",
@@ -149,7 +149,7 @@
       "id": 115,
       "no_crop_assigned": false,
       "no_eligible_crop": false,
-      "open_to_sky": false,
+      "open_to_sky_tiles": 0,
       "seasons": [
         {
           "crop": "BUSH_QUARRY",
@@ -178,7 +178,7 @@
       "id": 118,
       "no_crop_assigned": false,
       "no_eligible_crop": false,
-      "open_to_sky": false,
+      "open_to_sky_tiles": 0,
       "seasons": [
         {
           "crop": "BUSH_QUARRY",
@@ -207,7 +207,7 @@
       "id": 122,
       "no_crop_assigned": false,
       "no_eligible_crop": false,
-      "open_to_sky": false,
+      "open_to_sky_tiles": 0,
       "seasons": [
         {
           "crop": "MUSHROOM_CUP_DIMPLE",
@@ -236,7 +236,7 @@
       "id": 123,
       "no_crop_assigned": false,
       "no_eligible_crop": false,
-      "open_to_sky": false,
+      "open_to_sky_tiles": 0,
       "seasons": [
         {
           "crop": "BUSH_QUARRY",
@@ -265,7 +265,7 @@
       "id": 473,
       "no_crop_assigned": false,
       "no_eligible_crop": false,
-      "open_to_sky": false,
+      "open_to_sky_tiles": 0,
       "seasons": [
         {
           "crop": "GRAPE",
@@ -292,7 +292,7 @@
       "id": 474,
       "no_crop_assigned": false,
       "no_eligible_crop": false,
-      "open_to_sky": false,
+      "open_to_sky_tiles": 0,
       "seasons": [
         {
           "crop": "GRAPE",
@@ -319,7 +319,7 @@
       "id": 475,
       "no_crop_assigned": false,
       "no_eligible_crop": false,
-      "open_to_sky": false,
+      "open_to_sky_tiles": 0,
       "seasons": [
         {
           "crop": "GRAPE",
@@ -346,7 +346,7 @@
       "id": 476,
       "no_crop_assigned": false,
       "no_eligible_crop": false,
-      "open_to_sky": false,
+      "open_to_sky_tiles": 0,
       "seasons": [
         {
           "crop": "GRAPE",
@@ -373,7 +373,7 @@
       "id": 477,
       "no_crop_assigned": false,
       "no_eligible_crop": false,
-      "open_to_sky": false,
+      "open_to_sky_tiles": 0,
       "seasons": [
         {
           "crop": "REED_ROPE",
@@ -400,7 +400,7 @@
       "id": 478,
       "no_crop_assigned": false,
       "no_eligible_crop": false,
-      "open_to_sky": false,
+      "open_to_sky_tiles": 0,
       "seasons": [
         {
           "crop": "REED_ROPE",
@@ -427,7 +427,7 @@
       "id": 479,
       "no_crop_assigned": false,
       "no_eligible_crop": false,
-      "open_to_sky": false,
+      "open_to_sky_tiles": 0,
       "seasons": [
         {
           "crop": "REED_ROPE",
@@ -454,7 +454,7 @@
       "id": 480,
       "no_crop_assigned": false,
       "no_eligible_crop": false,
-      "open_to_sky": false,
+      "open_to_sky_tiles": 0,
       "seasons": [
         {
           "crop": "REED_ROPE",
@@ -481,7 +481,7 @@
       "id": 483,
       "no_crop_assigned": false,
       "no_eligible_crop": false,
-      "open_to_sky": false,
+      "open_to_sky_tiles": 0,
       "seasons": [
         {
           "crop": "REED_ROPE",
@@ -508,7 +508,7 @@
       "id": 484,
       "no_crop_assigned": false,
       "no_eligible_crop": false,
-      "open_to_sky": false,
+      "open_to_sky_tiles": 0,
       "seasons": [
         {
           "crop": "REED_ROPE",
@@ -535,7 +535,7 @@
       "id": 485,
       "no_crop_assigned": false,
       "no_eligible_crop": false,
-      "open_to_sky": false,
+      "open_to_sky_tiles": 0,
       "seasons": [
         {
           "crop": "REED_ROPE",
@@ -562,7 +562,7 @@
       "id": 486,
       "no_crop_assigned": false,
       "no_eligible_crop": false,
-      "open_to_sky": false,
+      "open_to_sky_tiles": 0,
       "seasons": [
         {
           "crop": "REED_ROPE",
@@ -589,7 +589,7 @@
       "id": 487,
       "no_crop_assigned": false,
       "no_eligible_crop": false,
-      "open_to_sky": false,
+      "open_to_sky_tiles": 0,
       "seasons": [
         {
           "crop": "GRAPE",
@@ -616,7 +616,7 @@
       "id": 488,
       "no_crop_assigned": false,
       "no_eligible_crop": false,
-      "open_to_sky": false,
+      "open_to_sky_tiles": 0,
       "seasons": [
         {
           "crop": "REED_ROPE",
@@ -643,7 +643,7 @@
       "id": 490,
       "no_crop_assigned": false,
       "no_eligible_crop": false,
-      "open_to_sky": false,
+      "open_to_sky_tiles": 0,
       "seasons": [
         {
           "crop": "REED_ROPE",
@@ -670,7 +670,7 @@
       "id": 491,
       "no_crop_assigned": false,
       "no_eligible_crop": false,
-      "open_to_sky": false,
+      "open_to_sky_tiles": 0,
       "seasons": [
         {
           "crop": "GRAPE",
@@ -697,7 +697,7 @@
       "id": 492,
       "no_crop_assigned": false,
       "no_eligible_crop": false,
-      "open_to_sky": false,
+      "open_to_sky_tiles": 0,
       "seasons": [
         {
           "crop": "GRAPE",
@@ -724,7 +724,7 @@
       "id": 493,
       "no_crop_assigned": false,
       "no_eligible_crop": false,
-      "open_to_sky": false,
+      "open_to_sky_tiles": 0,
       "seasons": [
         {
           "crop": "GRAPE",
@@ -751,7 +751,7 @@
       "id": 494,
       "no_crop_assigned": false,
       "no_eligible_crop": false,
-      "open_to_sky": false,
+      "open_to_sky_tiles": 0,
       "seasons": [
         {
           "crop": "GRAPE",
@@ -778,7 +778,7 @@
       "id": 495,
       "no_crop_assigned": false,
       "no_eligible_crop": false,
-      "open_to_sky": false,
+      "open_to_sky_tiles": 0,
       "seasons": [
         {
           "crop": "GRAPE",
@@ -805,7 +805,7 @@
       "id": 496,
       "no_crop_assigned": false,
       "no_eligible_crop": false,
-      "open_to_sky": false,
+      "open_to_sky_tiles": 0,
       "seasons": [
         {
           "crop": "GRAPE",

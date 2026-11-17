@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { runJsonScript } from '../query.ts';
 import type { ToolDef } from '../register.ts';
 
@@ -9,6 +10,7 @@ export interface BlueprintLibraryEntry {
   comment?: string;
   cursor_start_hint?: string;
   library: boolean;
+  hidden: boolean;
 }
 
 export interface BlueprintLibrary {
@@ -19,8 +21,11 @@ export interface BlueprintLibrary {
   user_count: number;
 }
 
-export function blueprintLibrary(): Promise<BlueprintLibrary | { error: string }> {
-  return runJsonScript<BlueprintLibrary>('blueprint_library', [], ['entries']);
+export function blueprintLibrary(
+  includeHidden?: boolean
+): Promise<BlueprintLibrary | { error: string }> {
+  const argv = includeHidden === false ? ['--no-hidden'] : [];
+  return runJsonScript<BlueprintLibrary>('blueprint_library', argv, ['entries']);
 }
 
 export const blueprintLibraryDef: ToolDef = {
@@ -38,14 +43,23 @@ export const blueprintLibraryDef: ToolDef = {
     'before applying, when the blueprint declares one). library:true marks a ' +
     "DFHack-shipped entry (path prefixed \"library/\"); library:false is the user's " +
     'own blueprint. library_count/user_count total each bucket; entries_total is the ' +
-    'unfiltered count and entries_truncated marks overflow past the 500-entry cap. ' +
-    'Blueprints marked hidden in their modeline (internal helper phases not meant ' +
-    'for direct selection) are omitted, matching plain `quickfort list`. ' +
+    'count before the 500-entry cap, which entries_truncated marks. ' +
+    'hidden:true marks a blueprint its own modeline marks hidden — an internal helper ' +
+    'phase not meant for direct selection, which plain `quickfort list` omits. These ARE ' +
+    'listed by default, because they are applicable and omitting them silently hid most ' +
+    "of DFHack's library (69 of 149 entries were listed before this). Pass " +
+    'include_hidden=false for the `quickfort list` view. ' +
     'Feed an entry\'s path/label straight to blueprint_apply as ' +
     'blueprint_path/blueprint_label to designate it. CAVEAT: blueprint_apply is ' +
     'still dig+zone only, so entries whose mode is build/place/query/meta cannot ' +
     'be applied yet — for a multi-phase file like dreamfort that means its dig ' +
     'phases apply and its build/place phases do not. Returns ' +
     '{"error":"no fort loaded"} if no fort is active.',
-  run: blueprintLibrary,
+  shape: {
+    include_hidden: z
+      .boolean()
+      .optional()
+      .describe('List blueprints their modeline marks hidden. Default true.'),
+  },
+  run: ({ include_hidden }: { include_hidden?: boolean }) => blueprintLibrary(include_hidden),
 };

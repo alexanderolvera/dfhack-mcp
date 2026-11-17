@@ -19,7 +19,7 @@ None.
 
 ## Returns
 - `population` (number) — citizen count.
-- `nobles[]` — `{ position, noble, can_mandate, can_demand }` for appointed positions that demand something of the fort.
+- `nobles[]` — `{ position, noble, can_mandate, can_demand }`, one row per **appointment** to a position that demands something of the fort. A position DF allows several holders of therefore yields a row each; rows were keyed by position id until [#160](https://github.com/alexanderolvera/dfhack-mcp/issues/160), so all but the last holder vanished. Sorted by position then noble name. The fixture's four demanding positions have one holder each, so this changed nothing there.
 - `mandates[]` — `{ noble, kind: "make", item, count, remaining, deadline_days }` production quotas; `deadline_days` may be `null`.
 - `mandates_truncated` (boolean).
 - `export_bans[]` — banned item names (strings), sorted.

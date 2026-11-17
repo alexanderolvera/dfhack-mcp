@@ -211,6 +211,325 @@
     }
   ],
   "levers_truncated": false,
+  "other_trap_count": 35,
+  "other_traps": [
+    {
+      "building_id": 86,
+      "pos": {
+        "x": 84,
+        "y": 63,
+        "z": 130
+      },
+      "trap_type": "TrackStop"
+    },
+    {
+      "building_id": 200,
+      "pos": {
+        "x": 84,
+        "y": 63,
+        "z": 125
+      },
+      "trap_type": "TrackStop"
+    },
+    {
+      "building_id": 203,
+      "pos": {
+        "x": 84,
+        "y": 45,
+        "z": 125
+      },
+      "trap_type": "TrackStop"
+    },
+    {
+      "building_id": 204,
+      "pos": {
+        "x": 93,
+        "y": 54,
+        "z": 125
+      },
+      "trap_type": "TrackStop"
+    },
+    {
+      "building_id": 205,
+      "pos": {
+        "x": 75,
+        "y": 54,
+        "z": 125
+      },
+      "trap_type": "TrackStop"
+    },
+    {
+      "building_id": 455,
+      "pos": {
+        "x": 84,
+        "y": 47,
+        "z": 124
+      },
+      "trap_type": "TrackStop"
+    },
+    {
+      "building_id": 471,
+      "pos": {
+        "x": 88,
+        "y": 52,
+        "z": 131
+      },
+      "trap_type": "TrackStop"
+    },
+    {
+      "building_id": 510,
+      "pos": {
+        "x": 88,
+        "y": 56,
+        "z": 131
+      },
+      "trap_type": "TrackStop"
+    },
+    {
+      "building_id": 530,
+      "pos": {
+        "x": 78,
+        "y": 61,
+        "z": 131
+      },
+      "trap_type": "TrackStop"
+    },
+    {
+      "building_id": 780,
+      "pos": {
+        "x": 90,
+        "y": 64,
+        "z": 131
+      },
+      "trap_type": "CageTrap"
+    },
+    {
+      "building_id": 781,
+      "pos": {
+        "x": 91,
+        "y": 64,
+        "z": 131
+      },
+      "trap_type": "CageTrap"
+    },
+    {
+      "building_id": 782,
+      "pos": {
+        "x": 92,
+        "y": 64,
+        "z": 131
+      },
+      "trap_type": "CageTrap"
+    },
+    {
+      "building_id": 783,
+      "pos": {
+        "x": 93,
+        "y": 64,
+        "z": 131
+      },
+      "trap_type": "CageTrap"
+    },
+    {
+      "building_id": 784,
+      "pos": {
+        "x": 94,
+        "y": 64,
+        "z": 131
+      },
+      "trap_type": "CageTrap"
+    },
+    {
+      "building_id": 785,
+      "pos": {
+        "x": 95,
+        "y": 64,
+        "z": 131
+      },
+      "trap_type": "CageTrap"
+    },
+    {
+      "building_id": 786,
+      "pos": {
+        "x": 96,
+        "y": 64,
+        "z": 131
+      },
+      "trap_type": "CageTrap"
+    },
+    {
+      "building_id": 787,
+      "pos": {
+        "x": 72,
+        "y": 64,
+        "z": 131
+      },
+      "trap_type": "CageTrap"
+    },
+    {
+      "building_id": 788,
+      "pos": {
+        "x": 73,
+        "y": 64,
+        "z": 131
+      },
+      "trap_type": "CageTrap"
+    },
+    {
+      "building_id": 789,
+      "pos": {
+        "x": 74,
+        "y": 64,
+        "z": 131
+      },
+      "trap_type": "CageTrap"
+    },
+    {
+      "building_id": 790,
+      "pos": {
+        "x": 75,
+        "y": 64,
+        "z": 131
+      },
+      "trap_type": "CageTrap"
+    },
+    {
+      "building_id": 791,
+      "pos": {
+        "x": 76,
+        "y": 64,
+        "z": 131
+      },
+      "trap_type": "CageTrap"
+    },
+    {
+      "building_id": 792,
+      "pos": {
+        "x": 77,
+        "y": 64,
+        "z": 131
+      },
+      "trap_type": "CageTrap"
+    },
+    {
+      "building_id": 793,
+      "pos": {
+        "x": 78,
+        "y": 64,
+        "z": 131
+      },
+      "trap_type": "CageTrap"
+    },
+    {
+      "building_id": 794,
+      "pos": {
+        "x": 79,
+        "y": 66,
+        "z": 131
+      },
+      "trap_type": "CageTrap"
+    },
+    {
+      "building_id": 795,
+      "pos": {
+        "x": 79,
+        "y": 67,
+        "z": 131
+      },
+      "trap_type": "CageTrap"
+    },
+    {
+      "building_id": 796,
+      "pos": {
+        "x": 80,
+        "y": 66,
+        "z": 131
+      },
+      "trap_type": "CageTrap"
+    },
+    {
+      "building_id": 797,
+      "pos": {
+        "x": 80,
+        "y": 67,
+        "z": 131
+      },
+      "trap_type": "CageTrap"
+    },
+    {
+      "building_id": 798,
+      "pos": {
+        "x": 88,
+        "y": 66,
+        "z": 131
+      },
+      "trap_type": "CageTrap"
+    },
+    {
+      "building_id": 799,
+      "pos": {
+        "x": 88,
+        "y": 67,
+        "z": 131
+      },
+      "trap_type": "CageTrap"
+    },
+    {
+      "building_id": 800,
+      "pos": {
+        "x": 89,
+        "y": 66,
+        "z": 131
+      },
+      "trap_type": "CageTrap"
+    },
+    {
+      "building_id": 801,
+      "pos": {
+        "x": 89,
+        "y": 67,
+        "z": 131
+      },
+      "trap_type": "CageTrap"
+    },
+    {
+      "building_id": 802,
+      "pos": {
+        "x": 97,
+        "y": 37,
+        "z": 131
+      },
+      "trap_type": "CageTrap"
+    },
+    {
+      "building_id": 803,
+      "pos": {
+        "x": 97,
+        "y": 38,
+        "z": 131
+      },
+      "trap_type": "CageTrap"
+    },
+    {
+      "building_id": 804,
+      "pos": {
+        "x": 71,
+        "y": 37,
+        "z": 131
+      },
+      "trap_type": "CageTrap"
+    },
+    {
+      "building_id": 805,
+      "pos": {
+        "x": 71,
+        "y": 38,
+        "z": 131
+      },
+      "trap_type": "CageTrap"
+    }
+  ],
+  "other_traps_truncated": false,
   "plate_count": 0,
   "pressure_plates": [],
   "pressure_plates_truncated": false,

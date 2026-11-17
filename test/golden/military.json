@@ -13,6 +13,7 @@
         "specs": []
       },
       "filled": 4,
+      "filled_but_absent": 0,
       "name": "The Waxy Tomes",
       "positions": 10,
       "roster": [
@@ -64,6 +65,7 @@
         ]
       },
       "filled": 5,
+      "filled_but_absent": 0,
       "name": "The Torrid Portals",
       "positions": 10,
       "roster": [
@@ -115,6 +117,7 @@
         "specs": []
       },
       "filled": 4,
+      "filled_but_absent": 0,
       "name": "The Mischief of Basements",
       "positions": 10,
       "roster": [

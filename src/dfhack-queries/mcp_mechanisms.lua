@@ -99,7 +99,7 @@ local function plate_facts(b)
   }
 end
 
-local LEVER_CAP, PLATE_CAP, UNLINKED_CAP = 200, 200, 200
+local LEVER_CAP, PLATE_CAP, UNLINKED_CAP, OTHER_TRAP_CAP = 200, 200, 200, 200
 
 local function cap(list, n)
   local truncated = false
@@ -114,6 +114,7 @@ if sub == nil or sub == 'list' then
   local levers, plates = {}, {}
   local linked_target_ids = {}
   local bridges = {}
+  local other_traps = {}
 
   for _, b in ipairs(df.global.world.buildings.all) do
     local t = b:getType()
@@ -127,6 +128,12 @@ if sub == nil or sub == 'list' then
         local facts = plate_facts(b)
         plates[#plates + 1] = facts
         for _, tgt in ipairs(facts.linked_targets) do linked_target_ids[tgt.building_id] = true end
+      else
+        other_traps[#other_traps + 1] = {
+          building_id = b.id,
+          trap_type = tt and tostring(tt) or tostring(b.trap_type),
+          pos = { x = b.centerx, y = b.centery, z = b.z },
+        }
       end
     elseif t == bt.Bridge then
       bridges[#bridges + 1] = { building_id = b.id, pos = { x = b.centerx, y = b.centery, z = b.z } }
@@ -148,7 +155,10 @@ if sub == nil or sub == 'list' then
 
   -- Counts are captured from the FULL sets, before any of the four lists below
   -- get capped, so *_count always reflects the true total even when truncated.
+  table.sort(other_traps, function(x, y) return x.building_id < y.building_id end)
   local lever_count, plate_count, bridge_count = #levers, #plates, #bridges
+  local other_trap_count = #other_traps
+  local other_traps_truncated = cap(other_traps, OTHER_TRAP_CAP)
   local levers_truncated = cap(levers, LEVER_CAP)
   local plates_truncated = cap(plates, PLATE_CAP)
   local unlinked_levers_truncated = cap(unlinked_levers, UNLINKED_CAP)
@@ -166,6 +176,9 @@ if sub == nil or sub == 'list' then
     bridge_count = bridge_count,
     unlinked_bridges = unlinked_bridges,
     unlinked_bridges_truncated = unlinked_bridges_truncated,
+    other_trap_count = other_trap_count,
+    other_traps = other_traps,
+    other_traps_truncated = other_traps_truncated,
   })
   return
 end

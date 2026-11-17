@@ -166,6 +166,7 @@ for _, sq in ipairs(df.global.world.squads.all) do
       squad_id = sq.id,
       name = name,
       filled = filled,
+      filled_but_absent = filled - #roster,
       positions = total,
       roster = roster,
       ammo = ammo_facts(sq),

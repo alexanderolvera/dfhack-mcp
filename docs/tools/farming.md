@@ -18,9 +18,9 @@ tags: [dfhack-mcp/tool]
 None.
 
 ## Returns
-- `plots[]` — one row per farm plot (capped at 200 — see `plots_total`/`plots_truncated`): `{ id, size, open_to_sky, seasons[], no_crop_assigned, no_eligible_crop }`.
+- `plots[]` — one row per farm plot (capped at 200 — see `plots_total`/`plots_truncated`): `{ id, size, open_to_sky_tiles, seasons[], no_crop_assigned, no_eligible_crop }`.
   - `size` — tile count (`width * height`).
-  - `open_to_sky` — true if the plot's tile currently has open sky above it (light/weather exposure). This is NOT a surface-vs-underground fact: a roofed plot built on the actual surface also reads `open_to_sky: false`, indistinguishable here from a genuinely underground plot.
+  - `open_to_sky_tiles` — how many of the plot's `size` tiles currently have open sky above them (light/weather exposure). Equal to `size` means the whole plot is exposed; `0` means none of it is; anything between is a plot that is partly roofed. This is NOT a surface-vs-underground fact: a roofed plot built on the actual surface reads `0` too, indistinguishable here from a genuinely underground plot.
   - `seasons[]` — always 4 entries, one per `SPRING`/`SUMMER`/`AUTUMN`/`WINTER`: `{ season, crop?, eligible? }`. `crop` (a plant token, e.g. `"MUSHROOM_HELMET_PLUMP"`) and `eligible` are both absent when that season is fallow (no crop assigned). When a crop IS assigned, `eligible` is whether the plant raw's own season flag allows it to grow in that season. Seed stock for `crop` is NOT repeated here — look it up in `seed_totals[]`, the single source for that fact.
   - `no_crop_assigned` — true iff every season is fallow — a plot doing nothing.
   - `no_eligible_crop` — true iff no season holds BOTH an assigned crop AND `eligible: true` — a strict superset of `no_crop_assigned` (a plot can have every season "filled" and still trip this if none of the assignments are actually eligible for their season).
@@ -33,7 +33,7 @@ None.
     {
       "id": 100,
       "size": 3,
-      "open_to_sky": false,
+      "open_to_sky_tiles": 0,
       "no_crop_assigned": false,
       "no_eligible_crop": false,
       "seasons": [
@@ -59,11 +59,11 @@ None.
 - Returns `{"error":"no fort loaded"}` when no fort is active.
 - `eligible` checks ONLY the plant raw's own season flag (`SPRING`/`SUMMER`/`AUTUMN`/`WINTER` — does DF consider this plant plantable in this season at all). It does NOT check surface/underground depth compatibility: live verification found a plant flagged surface-only via `underground_depth_min == underground_depth_max == 0` (`REED_ROPE`) successfully planted in an underground plot in the fixture — `underground_depth_min`/`max` describe where a plant grows WILD, not farm-plot eligibility, so asserting a depth/surface rule here would have been actively wrong rather than merely incomplete. Compose with `game_data`'s plant dossier `surface`/`depth_min`/`depth_max`/`biomes` fields if you need those facts directly, without this tool implying they gate plantability.
 - Seed counts live ONLY in `seed_totals[]` — a season's `crop` is not paired with a per-plot count (an earlier revision repeated the fort-wide `seed_totals[]` figure under every matching plot/season, which was pure duplication of a fact already in the same payload, not new information).
-- `open_to_sky` is read from the plot's own anchor tile's map designation (`designation.outside`, i.e. "is this tile exposed to light/weather"), not a surface-vs-underground classification and not inferred from a fort-wide surface z-level — accurate per-plot even in a fort with plots at mixed depths, but a roofed surface plot and a genuinely underground one both read `false`.
+- `open_to_sky_tiles` is read from each tile's own map designation (`designation.outside`, i.e. "is this tile exposed to light/weather"), not a surface-vs-underground classification and not inferred from a fort-wide surface z-level — accurate per-plot even in a fort with plots at mixed depths, but a roofed surface plot and a genuinely underground one both read `0`.
 - `plots[]` is capped at 200 rows (`plots_total`/`plots_truncated`); `seed_totals[]` is capped at 100 distinct plants (`seed_totals_count`/`seed_totals_truncated`).
 
 ## Implementation notes
-Plots come from `df.global.world.buildings.other.FARM_PLOT`; each plot's `plant_id[0..3]` indexes `df.global.world.raws.plants.all[]` and maps to season by DF's standard farm-plot convention (index 0-3 = spring/summer/autumn/winter), `-1` meaning fallow. `eligible` reads that plant raw's `flags[SEASON]` boolean directly — confirmed live against every crop this fixture had already assigned (all matched their season flag). Seed counts come from `df.global.world.items.other.SEEDS`, summed by `mat_index` (the same raw index as `plant_id`) with the same forbidden/dump/rotten/construction/trader/garbage_collect exclusion `stocks` uses. `open_to_sky` reads `dfhack.maps.getTileBlock(...).designation[lx][ly].outside` at the plot's `(x1, y1, z)` — deliberately named for exactly what that field means (sky exposure), not renamed to imply a surface/underground fact it doesn't carry. Confirmed live on DFHack 53.15-r2 against the Dreamfort fixture (all 30 plots underground, `outside=false`).
+Plots come from `df.global.world.buildings.other.FARM_PLOT`; each plot's `plant_id[0..3]` indexes `df.global.world.raws.plants.all[]` and maps to season by DF's standard farm-plot convention (index 0-3 = spring/summer/autumn/winter), `-1` meaning fallow. `eligible` reads that plant raw's `flags[SEASON]` boolean directly — confirmed live against every crop this fixture had already assigned (all matched their season flag). Seed counts come from `df.global.world.items.other.SEEDS`, summed by `mat_index` (the same raw index as `plant_id`) with the same forbidden/dump/rotten/construction/trader/garbage_collect exclusion `stocks` uses. `open_to_sky_tiles` reads `dfhack.maps.getTileBlock(...).designation[tx % 16][ty % 16].outside` for **every** tile in `(x1..x2, y1..y2, z)` — deliberately named for exactly what that field means (sky exposure), not renamed to imply a surface/underground fact it doesn't carry. It counted only the plot's `(x1, y1)` anchor tile until [#160](https://github.com/alexanderolvera/dfhack-mcp/issues/160), which reported one corner's exposure for the whole plot and so could not describe a partly-roofed plot at all. Confirmed live on DFHack 53.15-r2 against the Dreamfort fixture (all 30 plots underground, every tile `outside=false`, so `open_to_sky_tiles` is 0 on each).
 
 ## Related
 [stocks](stocks.md) · [game_data](game_data.md) · [environment](environment.md)

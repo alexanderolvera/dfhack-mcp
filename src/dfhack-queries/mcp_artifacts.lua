@@ -95,7 +95,13 @@ local function decorations(it)
         quality = quality_label(sget(im, 'quality')),
       }
       if entry.type == 'ART_IMAGE' then
-        entry.image_resolved = false
+        local ref = {}
+        pcall(function()
+          ref.id = im.image.id
+          ref.subid = im.image.subid
+        end)
+        if ref.id and ref.id >= 0 then entry.art_id = ref.id end
+        if ref.subid and ref.subid >= 0 then entry.art_subid = ref.subid end
       end
       out[#out + 1] = entry
     end

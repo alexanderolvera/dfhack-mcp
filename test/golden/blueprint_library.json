@@ -1,6 +1,7 @@
 {
   "entries": [
     {
+      "hidden": false,
       "id": 1,
       "label": "/help",
       "library": true,
@@ -10,6 +11,7 @@
     {
       "comment": "light aquifer water collector",
       "cursor_start_hint": "center of tap",
+      "hidden": false,
       "id": 2,
       "label": "/dig",
       "library": true,
@@ -18,6 +20,7 @@
     },
     {
       "comment": "28 bedrooms, 3 tiles each",
+      "hidden": false,
       "id": 3,
       "label": "/dig",
       "library": true,
@@ -25,6 +28,7 @@
       "path": "library/bedrooms/28-3-Modified_Windmill_Villas.csv"
     },
     {
+      "hidden": false,
       "id": 4,
       "label": "/rooms",
       "library": true,
@@ -32,7 +36,24 @@
       "path": "library/bedrooms/28-3-Modified_Windmill_Villas.csv"
     },
     {
+      "hidden": true,
+      "id": 5,
+      "label": "/zone",
+      "library": true,
+      "mode": "zone",
+      "path": "library/bedrooms/28-3-Modified_Windmill_Villas.csv"
+    },
+    {
+      "hidden": true,
+      "id": 6,
+      "label": "/build",
+      "library": true,
+      "mode": "build",
+      "path": "library/bedrooms/28-3-Modified_Windmill_Villas.csv"
+    },
+    {
       "comment": "48 rooms, 4 tiles each",
+      "hidden": false,
       "id": 7,
       "label": "/dig",
       "library": true,
@@ -40,6 +61,7 @@
       "path": "library/bedrooms/48-4-Raynard_Whirlpool_Housing.csv"
     },
     {
+      "hidden": false,
       "id": 8,
       "label": "/rooms",
       "library": true,
@@ -47,7 +69,48 @@
       "path": "library/bedrooms/48-4-Raynard_Whirlpool_Housing.csv"
     },
     {
+      "hidden": true,
+      "id": 9,
+      "label": "/zone1",
+      "library": true,
+      "mode": "zone",
+      "path": "library/bedrooms/48-4-Raynard_Whirlpool_Housing.csv"
+    },
+    {
+      "hidden": true,
+      "id": 10,
+      "label": "/zone2",
+      "library": true,
+      "mode": "zone",
+      "path": "library/bedrooms/48-4-Raynard_Whirlpool_Housing.csv"
+    },
+    {
+      "hidden": true,
+      "id": 11,
+      "label": "/zone3",
+      "library": true,
+      "mode": "zone",
+      "path": "library/bedrooms/48-4-Raynard_Whirlpool_Housing.csv"
+    },
+    {
+      "hidden": true,
+      "id": 12,
+      "label": "/zone4",
+      "library": true,
+      "mode": "zone",
+      "path": "library/bedrooms/48-4-Raynard_Whirlpool_Housing.csv"
+    },
+    {
+      "hidden": true,
+      "id": 13,
+      "label": "/build",
+      "library": true,
+      "mode": "build",
+      "path": "library/bedrooms/48-4-Raynard_Whirlpool_Housing.csv"
+    },
+    {
       "comment": "95 bedrooms (including 14 suites), 190 tombs",
+      "hidden": false,
       "id": 14,
       "label": "/dig",
       "library": true,
@@ -55,6 +118,7 @@
       "path": "library/bedrooms/95-9-Hactar1_3_Branch_Tree.csv"
     },
     {
+      "hidden": false,
       "id": 15,
       "label": "/rooms",
       "library": true,
@@ -62,7 +126,24 @@
       "path": "library/bedrooms/95-9-Hactar1_3_Branch_Tree.csv"
     },
     {
+      "hidden": true,
+      "id": 16,
+      "label": "/zone",
+      "library": true,
+      "mode": "zone",
+      "path": "library/bedrooms/95-9-Hactar1_3_Branch_Tree.csv"
+    },
+    {
+      "hidden": true,
+      "id": 17,
+      "label": "/build",
+      "library": true,
+      "mode": "build",
+      "path": "library/bedrooms/95-9-Hactar1_3_Branch_Tree.csv"
+    },
+    {
       "comment": "run me for the dreamfort walkthrough",
+      "hidden": false,
       "id": 18,
       "label": "/help",
       "library": true,
@@ -71,6 +152,7 @@
     },
     {
       "comment": "command checklist",
+      "hidden": false,
       "id": 19,
       "label": "/checklist",
       "library": true,
@@ -79,6 +161,7 @@
     },
     {
       "comment": "pre- and post-embark tasks",
+      "hidden": false,
       "id": 20,
       "label": "/setup_help",
       "library": true,
@@ -88,6 +171,7 @@
     {
       "comment": "dig industry, services, guildhall, suites, apartments, and crypt levels. does not include farming.",
       "cursor_start_hint": "central stairs on industry level",
+      "hidden": false,
       "id": 21,
       "label": "/dig_all",
       "library": true,
@@ -96,6 +180,7 @@
     },
     {
       "comment": "surface level walkthrough",
+      "hidden": false,
       "id": 22,
       "label": "/surface_help",
       "library": true,
@@ -103,7 +188,26 @@
       "path": "library/dreamfort.csv"
     },
     {
+      "comment": "carved spiral stairs odd levels",
+      "hidden": true,
+      "id": 23,
+      "label": "/central_stairs_odd",
+      "library": true,
+      "mode": "dig",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "carved spiral stairs even levels",
+      "hidden": true,
+      "id": 24,
+      "label": "/central_stairs_even",
+      "library": true,
+      "mode": "meta",
+      "path": "library/dreamfort.csv"
+    },
+    {
       "comment": "two levels of carved spiral stairs (repeat down as needed)",
+      "hidden": false,
       "id": 25,
       "label": "/central_stairs",
       "library": true,
@@ -111,7 +215,26 @@
       "path": "library/dreamfort.csv"
     },
     {
+      "comment": "constructed spiral stairs odd levels",
+      "hidden": true,
+      "id": 26,
+      "label": "/central_stairs_odd_constructed",
+      "library": true,
+      "mode": "build",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "constructed spiral stairs even levels",
+      "hidden": true,
+      "id": 27,
+      "label": "/central_stairs_even_constructed",
+      "library": true,
+      "mode": "meta",
+      "path": "library/dreamfort.csv"
+    },
+    {
       "comment": "two levels of constructed spiral stairs (repeat down as needed)",
+      "hidden": false,
       "id": 28,
       "label": "/central_stairs_constructed",
       "library": true,
@@ -121,6 +244,7 @@
     {
       "comment": "show the eventual perimeter of the surface fort; useful for location scouting. DO NOT APPLY.",
       "cursor_start_hint": "central stairs",
+      "hidden": false,
       "id": 29,
       "label": "/perimeter",
       "library": true,
@@ -130,6 +254,7 @@
     {
       "comment": "clear trees and set up pastures",
       "cursor_start_hint": "central stairs",
+      "hidden": false,
       "id": 30,
       "label": "/surface1",
       "library": true,
@@ -139,6 +264,7 @@
     {
       "comment": "set up starting workshops/stockpiles, channel miasma vents, and clear more trees",
       "cursor_start_hint": "central stairs",
+      "hidden": false,
       "id": 31,
       "label": "/surface2",
       "library": true,
@@ -148,6 +274,7 @@
     {
       "comment": "Cover vents and protect the central stairs.",
       "cursor_start_hint": "central stairs",
+      "hidden": false,
       "id": 32,
       "label": "/surface3",
       "library": true,
@@ -157,6 +284,7 @@
     {
       "comment": "build walls and flooring to support upcoming buildings and furniture",
       "cursor_start_hint": "central stairs",
+      "hidden": false,
       "id": 33,
       "label": "/surface4",
       "library": true,
@@ -166,6 +294,7 @@
     {
       "comment": "build gates, furniture, and trade stockpile/depot",
       "cursor_start_hint": "central stairs",
+      "hidden": false,
       "id": 34,
       "label": "/surface5",
       "library": true,
@@ -175,6 +304,7 @@
     {
       "comment": "build traps and remaining walls/floors",
       "cursor_start_hint": "central stairs",
+      "hidden": false,
       "id": 35,
       "label": "/surface6",
       "library": true,
@@ -184,6 +314,7 @@
     {
       "comment": "expand Inside+ burrow to safe surface areas and build roof",
       "cursor_start_hint": "central stairs (on ground level)",
+      "hidden": false,
       "id": 36,
       "label": "/surface7",
       "library": true,
@@ -193,6 +324,7 @@
     {
       "comment": "build extended trap corridors",
       "cursor_start_hint": "central stairs",
+      "hidden": false,
       "id": 37,
       "label": "/surface8",
       "library": true,
@@ -200,7 +332,240 @@
       "path": "library/dreamfort.csv"
     },
     {
+      "comment": "clear trees for starting workshops and stockpiles",
+      "hidden": true,
+      "id": 38,
+      "label": "/surface_clear_small",
+      "library": true,
+      "mode": "dig",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "create safety burrow that will grow with your fort",
+      "hidden": true,
+      "id": 39,
+      "label": "/surface_burrow_start",
+      "library": true,
+      "mode": "burrow",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "pastures and training areas",
+      "hidden": true,
+      "id": 40,
+      "label": "/surface_zones",
+      "library": true,
+      "mode": "zone",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "starting stockpiles",
+      "hidden": true,
+      "id": 41,
+      "label": "/surface_place_start",
+      "library": true,
+      "mode": "place",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "starting workshops",
+      "hidden": true,
+      "id": 42,
+      "label": "/surface_build_start",
+      "library": true,
+      "mode": "build",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "channel miasma vents",
+      "hidden": true,
+      "id": 43,
+      "label": "/surface_channel",
+      "library": true,
+      "mode": "dig",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "clear trees so the farming level can be dug without fear of generating surface holes",
+      "hidden": true,
+      "id": 44,
+      "label": "/surface_clear",
+      "library": true,
+      "mode": "dig",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "cover the miasma vents",
+      "hidden": true,
+      "id": 45,
+      "label": "/surface_cover_vents",
+      "library": true,
+      "mode": "build",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "protect the central stairs",
+      "hidden": true,
+      "id": 46,
+      "label": "/surface_cover_stairs",
+      "library": true,
+      "mode": "build",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "hidden": true,
+      "id": 47,
+      "label": "/surface_stairs_doors",
+      "library": true,
+      "mode": "build",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "flooring and anchoring walls for future buildings/doors",
+      "hidden": true,
+      "id": 48,
+      "label": "/surface_pre_building",
+      "library": true,
+      "mode": "build",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "set traffic designations",
+      "hidden": true,
+      "id": 49,
+      "label": "/surface_traffic",
+      "library": true,
+      "mode": "dig",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "remaining surface stockpiles",
+      "hidden": true,
+      "id": 50,
+      "label": "/surface_place",
+      "library": true,
+      "mode": "place",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "gates, barracks, farm area, and trade area",
+      "hidden": true,
+      "id": 51,
+      "label": "/surface_build",
+      "library": true,
+      "mode": "build",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "clear wider area of trees",
+      "hidden": true,
+      "id": 52,
+      "label": "/surface_clear_large",
+      "library": true,
+      "mode": "dig",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "build remaining walls",
+      "hidden": true,
+      "id": 53,
+      "label": "/surface_walls",
+      "library": true,
+      "mode": "build",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "build remaining flooring",
+      "hidden": true,
+      "id": 54,
+      "label": "/surface_floors",
+      "library": true,
+      "mode": "build",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "hidden": true,
+      "id": 55,
+      "label": "/surface_traps",
+      "library": true,
+      "mode": "build",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "extend safety burrow to newly safe surface areas and set up surrounding clearcutting area",
+      "hidden": true,
+      "id": 56,
+      "label": "/surface_burrows",
+      "library": true,
+      "mode": "burrow",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "roof hatch and adjacent tiles",
+      "hidden": true,
+      "id": 57,
+      "label": "/surface_roof",
+      "library": true,
+      "mode": "build",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "lower half of the roof",
+      "hidden": true,
+      "id": 58,
+      "label": "/surface_roof2",
+      "library": true,
+      "mode": "build",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "upper half center of the roof",
+      "hidden": true,
+      "id": 59,
+      "label": "/surface_roof3",
+      "library": true,
+      "mode": "build",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "upper half remainder of the roof",
+      "hidden": true,
+      "id": 60,
+      "label": "/surface_roof4",
+      "library": true,
+      "mode": "build",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "gates for the longer trap hallways",
+      "hidden": true,
+      "id": 61,
+      "label": "/surface_corridor_gates",
+      "library": true,
+      "mode": "build",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "longer trap hallway walls",
+      "hidden": true,
+      "id": 62,
+      "label": "/surface_corridor",
+      "library": true,
+      "mode": "build",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "traps for the longer trap hallways",
+      "hidden": true,
+      "id": 63,
+      "label": "/surface_corridor_traps",
+      "library": true,
+      "mode": "build",
+      "path": "library/dreamfort.csv"
+    },
+    {
       "comment": "farming level walkthrough",
+      "hidden": false,
       "id": 64,
       "label": "/farming_help",
       "library": true,
@@ -209,6 +574,7 @@
     },
     {
       "cursor_start_hint": "central stairs",
+      "hidden": false,
       "id": 65,
       "label": "/farming1",
       "library": true,
@@ -218,6 +584,7 @@
     {
       "comment": "workshops, stockpiles, and important furniture",
       "cursor_start_hint": "central stairs",
+      "hidden": false,
       "id": 66,
       "label": "/farming2",
       "library": true,
@@ -227,6 +594,7 @@
     {
       "comment": "build remaining doors",
       "cursor_start_hint": "central stairs",
+      "hidden": false,
       "id": 67,
       "label": "/farming3",
       "library": true,
@@ -234,7 +602,62 @@
       "path": "library/dreamfort.csv"
     },
     {
+      "comment": "rooms",
+      "hidden": true,
+      "id": 68,
+      "label": "/farming_zone",
+      "library": true,
+      "mode": "zone",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "message(remember to assign a minecart to the refuse quantum stockpile (run \"assign-minecarts all\")",
+      "hidden": true,
+      "id": 69,
+      "label": "/farming_place",
+      "library": true,
+      "mode": "place",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "workshops and important furniture",
+      "hidden": true,
+      "id": 70,
+      "label": "/farming_build",
+      "library": true,
+      "mode": "build",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "keep hungry dwarves away from the crops and food stores so they prefer the prepared meals",
+      "hidden": true,
+      "id": 71,
+      "label": "/farming_traffic",
+      "library": true,
+      "mode": "dig",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "fix up safety burrow after channel incursions",
+      "hidden": true,
+      "id": 72,
+      "label": "/farming_burrow",
+      "library": true,
+      "mode": "burrow",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "remaining doors",
+      "hidden": true,
+      "id": 73,
+      "label": "/farming_doors",
+      "library": true,
+      "mode": "build",
+      "path": "library/dreamfort.csv"
+    },
+    {
       "comment": "industry level walkthrough",
+      "hidden": false,
       "id": 74,
       "label": "/industry_help",
       "library": true,
@@ -243,6 +666,7 @@
     },
     {
       "cursor_start_hint": "central stairs",
+      "hidden": false,
       "id": 75,
       "label": "/industry1",
       "library": true,
@@ -252,6 +676,7 @@
     {
       "comment": "stockpiles and high-priority workshops",
       "cursor_start_hint": "central stairs",
+      "hidden": false,
       "id": 76,
       "label": "/industry2",
       "library": true,
@@ -261,6 +686,7 @@
     {
       "comment": "remaining workshops",
       "cursor_start_hint": "central stairs",
+      "hidden": false,
       "id": 77,
       "label": "/industry3",
       "library": true,
@@ -268,7 +694,45 @@
       "path": "library/dreamfort.csv"
     },
     {
+      "comment": "traffic patterns",
+      "cursor_start_hint": "central stairs",
+      "hidden": true,
+      "id": 78,
+      "label": "/industry_traffic",
+      "library": true,
+      "mode": "dig",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "industry stockpiles",
+      "hidden": true,
+      "id": 79,
+      "label": "/industry_place",
+      "library": true,
+      "mode": "place",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "workshops to build first",
+      "hidden": true,
+      "id": 80,
+      "label": "/industry_build",
+      "library": true,
+      "mode": "build",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "remaining workshops",
+      "hidden": true,
+      "id": 81,
+      "label": "/industry_build2",
+      "library": true,
+      "mode": "build",
+      "path": "library/dreamfort.csv"
+    },
+    {
       "comment": "services level walkthrough",
+      "hidden": false,
       "id": 82,
       "label": "/services_help",
       "library": true,
@@ -277,6 +741,7 @@
     },
     {
       "cursor_start_hint": "central stairs",
+      "hidden": false,
       "id": 83,
       "label": "/services1",
       "library": true,
@@ -286,6 +751,7 @@
     {
       "comment": "zones and minimally functional hospital and dining hall",
       "cursor_start_hint": "central stairs",
+      "hidden": false,
       "id": 84,
       "label": "/services2",
       "library": true,
@@ -295,6 +761,7 @@
     {
       "comment": "expand furnishings",
       "cursor_start_hint": "central stairs",
+      "hidden": false,
       "id": 85,
       "label": "/services3",
       "library": true,
@@ -304,6 +771,7 @@
     {
       "comment": "complete furnishings",
       "cursor_start_hint": "central stairs",
+      "hidden": false,
       "id": 86,
       "label": "/services4",
       "library": true,
@@ -311,7 +779,97 @@
       "path": "library/dreamfort.csv"
     },
     {
+      "comment": "keep lollygaggers out of the cisterns and justice areas",
+      "hidden": true,
+      "id": 87,
+      "label": "/services_traffic",
+      "library": true,
+      "mode": "dig",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "garbage dump, hospital, taverrn, barracks, archery range, and pond zones",
+      "hidden": true,
+      "id": 88,
+      "label": "/services_zones",
+      "library": true,
+      "mode": "zone",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "hidden": true,
+      "id": 89,
+      "label": "/services_place",
+      "library": true,
+      "mode": "place",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "build basic hospital, dining room, and barracks",
+      "hidden": true,
+      "id": 90,
+      "label": "/services_build",
+      "library": true,
+      "mode": "build",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "smooth the floor where the pedestal will go",
+      "hidden": true,
+      "id": 91,
+      "label": "/services_smooth",
+      "library": true,
+      "mode": "dig",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "jail food and booze",
+      "hidden": true,
+      "id": 92,
+      "label": "/services_place2",
+      "library": true,
+      "mode": "place",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "expand each room",
+      "hidden": true,
+      "id": 93,
+      "label": "/services_build2",
+      "library": true,
+      "mode": "build",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "smooth the floor where the statues will go",
+      "hidden": true,
+      "id": 94,
+      "label": "/services_smooth2",
+      "library": true,
+      "mode": "dig",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "remaining jail food and booze",
+      "hidden": true,
+      "id": 95,
+      "label": "/services_place3",
+      "library": true,
+      "mode": "place",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "finalize furniture",
+      "hidden": true,
+      "id": 96,
+      "label": "/services_build3",
+      "library": true,
+      "mode": "build",
+      "path": "library/dreamfort.csv"
+    },
+    {
       "comment": "guildhall level walkthrough",
+      "hidden": false,
       "id": 97,
       "label": "/guildhall_help",
       "library": true,
@@ -320,6 +878,7 @@
     },
     {
       "cursor_start_hint": "central stairs",
+      "hidden": false,
       "id": 98,
       "label": "/guildhall1",
       "library": true,
@@ -328,6 +887,7 @@
     },
     {
       "comment": "furnished with default temple and library",
+      "hidden": false,
       "id": 99,
       "label": "/guildhall2_default",
       "library": true,
@@ -336,6 +896,7 @@
     },
     {
       "comment": "fully furnished and zoned but no locations",
+      "hidden": false,
       "id": 100,
       "label": "/guildhall2_no_locations",
       "library": true,
@@ -344,6 +905,7 @@
     },
     {
       "comment": "only zones and doors",
+      "hidden": false,
       "id": 101,
       "label": "/guildhall2_custom",
       "library": true,
@@ -351,7 +913,58 @@
       "path": "library/dreamfort.csv"
     },
     {
+      "comment": "declare a library and temple",
+      "cursor_start_hint": "central stairs",
+      "hidden": true,
+      "id": 102,
+      "label": "/guildhall_locations",
+      "library": true,
+      "mode": "zone",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "designate zones, ready for custom locations to be assigned",
+      "cursor_start_hint": "central stairs",
+      "hidden": true,
+      "id": 103,
+      "label": "/guildhall_zones",
+      "library": true,
+      "mode": "zone",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "build doors",
+      "cursor_start_hint": "central stairs",
+      "hidden": true,
+      "id": 104,
+      "label": "/guildhall_doors",
+      "library": true,
+      "mode": "build",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "furnish 4 guildhalls, 3 temples, and a library",
+      "cursor_start_hint": "central stairs",
+      "hidden": true,
+      "id": 105,
+      "label": "/guildhall_furnish",
+      "library": true,
+      "mode": "build",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "smooth statue tiles",
+      "cursor_start_hint": "central stairs",
+      "hidden": true,
+      "id": 106,
+      "label": "/guildhall_smooth",
+      "library": true,
+      "mode": "dig",
+      "path": "library/dreamfort.csv"
+    },
+    {
       "comment": "walkthrough for the suites and apartments levels",
+      "hidden": false,
       "id": 107,
       "label": "/beds_help",
       "library": true,
@@ -361,6 +974,7 @@
     {
       "comment": "noble suites",
       "cursor_start_hint": "central stairs",
+      "hidden": false,
       "id": 108,
       "label": "/suites1",
       "library": true,
@@ -370,6 +984,7 @@
     {
       "comment": "build furniture, set traffic patterns, create zones, and assign them to nobles and administrators",
       "cursor_start_hint": "central stairs",
+      "hidden": false,
       "id": 109,
       "label": "/suites2_default",
       "library": true,
@@ -379,6 +994,7 @@
     {
       "comment": "build furniture and set traffic patterns",
       "cursor_start_hint": "central stairs",
+      "hidden": false,
       "id": 110,
       "label": "/suites2_no_zones",
       "library": true,
@@ -386,8 +1002,47 @@
       "path": "library/dreamfort.csv"
     },
     {
+      "comment": "don't path through other dwarves' rooms",
+      "cursor_start_hint": "central stairs",
+      "hidden": true,
+      "id": 111,
+      "label": "/suites_traffic",
+      "library": true,
+      "mode": "dig",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "cursor_start_hint": "central stairs",
+      "hidden": true,
+      "id": 112,
+      "label": "/suites_build",
+      "library": true,
+      "mode": "build",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "smooth statue tiles",
+      "cursor_start_hint": "central stairs",
+      "hidden": true,
+      "id": 113,
+      "label": "/suites_smooth",
+      "library": true,
+      "mode": "dig",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "cursor_start_hint": "central stairs",
+      "hidden": true,
+      "id": 114,
+      "label": "/suites_zone",
+      "library": true,
+      "mode": "zone",
+      "path": "library/dreamfort.csv"
+    },
+    {
       "comment": "apartment complex",
       "cursor_start_hint": "central stairs",
+      "hidden": false,
       "id": 115,
       "label": "/apartments1",
       "library": true,
@@ -397,6 +1052,7 @@
     {
       "comment": "zone rooms and build furniture",
       "cursor_start_hint": "central stairs",
+      "hidden": false,
       "id": 116,
       "label": "/apartments2",
       "library": true,
@@ -404,7 +1060,28 @@
       "path": "library/dreamfort.csv"
     },
     {
+      "comment": "zone rooms",
+      "cursor_start_hint": "central stairs",
+      "hidden": true,
+      "id": 117,
+      "label": "/apartments_rooms",
+      "library": true,
+      "mode": "zone",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "build furniture",
+      "cursor_start_hint": "central stairs",
+      "hidden": true,
+      "id": 118,
+      "label": "/apartments_build",
+      "library": true,
+      "mode": "build",
+      "path": "library/dreamfort.csv"
+    },
+    {
       "comment": "crypt level walkthrough",
+      "hidden": false,
       "id": 119,
       "label": "/crypt_help",
       "library": true,
@@ -414,6 +1091,7 @@
     {
       "comment": "crypt complex",
       "cursor_start_hint": "central stairs",
+      "hidden": false,
       "id": 120,
       "label": "/crypt1",
       "library": true,
@@ -423,6 +1101,7 @@
     {
       "comment": "small crypt that can be extended later",
       "cursor_start_hint": "central stairs",
+      "hidden": false,
       "id": 121,
       "label": "/crypt2",
       "library": true,
@@ -432,6 +1111,7 @@
     {
       "comment": "crypt extension",
       "cursor_start_hint": "central stairs",
+      "hidden": false,
       "id": 122,
       "label": "/crypt3",
       "library": true,
@@ -439,8 +1119,49 @@
       "path": "library/dreamfort.csv"
     },
     {
+      "comment": "zone tombs",
+      "cursor_start_hint": "central stairs",
+      "hidden": true,
+      "id": 123,
+      "label": "/crypt_zone",
+      "library": true,
+      "mode": "zone",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "build urns",
+      "cursor_start_hint": "central stairs",
+      "hidden": true,
+      "id": 124,
+      "label": "/crypt_build",
+      "library": true,
+      "mode": "build",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "zone more tombs",
+      "cursor_start_hint": "central stairs",
+      "hidden": true,
+      "id": 125,
+      "label": "/crypt_extended_zone",
+      "library": true,
+      "mode": "zone",
+      "path": "library/dreamfort.csv"
+    },
+    {
+      "comment": "build more urns",
+      "cursor_start_hint": "central stairs",
+      "hidden": true,
+      "id": 126,
+      "label": "/crypt_extended_build",
+      "library": true,
+      "mode": "build",
+      "path": "library/dreamfort.csv"
+    },
+    {
       "comment": "basic post embark workshops",
       "cursor_start_hint": "center of wagon",
+      "hidden": false,
       "id": 127,
       "label": "/workshops",
       "library": true,
@@ -449,6 +1170,7 @@
     },
     {
       "comment": "basic post embark stockpiles",
+      "hidden": false,
       "id": 128,
       "label": "/stockpiles",
       "library": true,
@@ -457,6 +1179,7 @@
     },
     {
       "comment": "diagonal interconnecting tunnels with stairs at intersections",
+      "hidden": false,
       "id": 129,
       "library": true,
       "mode": "dig",
@@ -464,6 +1187,7 @@
     },
     {
       "comment": "paths every 10 units",
+      "hidden": false,
       "id": 130,
       "library": true,
       "mode": "dig",
@@ -471,6 +1195,7 @@
     },
     {
       "comment": "mineshafts as stairs every 3rd tile",
+      "hidden": false,
       "id": 131,
       "library": true,
       "mode": "dig",
@@ -478,6 +1203,7 @@
     },
     {
       "comment": "marks a diagonal line down and left starting at the cursor",
+      "hidden": false,
       "id": 132,
       "library": true,
       "mode": "dig",
@@ -485,6 +1211,7 @@
     },
     {
       "comment": "marks a diagonal line down and right starting at the cursor",
+      "hidden": false,
       "id": 133,
       "library": true,
       "mode": "dig",
@@ -492,6 +1219,7 @@
     },
     {
       "comment": "marks a diagonal line up and left starting at the cursor",
+      "hidden": false,
       "id": 134,
       "library": true,
       "mode": "dig",
@@ -499,12 +1227,14 @@
     },
     {
       "comment": "marks a diagonal line up and right starting at the cursor",
+      "hidden": false,
       "id": 135,
       "library": true,
       "mode": "dig",
       "path": "library/layout-helpers/mark_up_right.csv"
     },
     {
+      "hidden": false,
       "id": 136,
       "label": "/help",
       "library": true,
@@ -512,8 +1242,29 @@
       "path": "library/pump_stack.csv"
     },
     {
+      "comment": "for a pump from south level",
+      "cursor_start_hint": "on access stairs",
+      "hidden": true,
+      "id": 137,
+      "label": "/digSN",
+      "library": true,
+      "mode": "dig",
+      "path": "library/pump_stack.csv"
+    },
+    {
+      "comment": "for a pump from north level",
+      "cursor_start_hint": "on access stairs",
+      "hidden": true,
+      "id": 138,
+      "label": "/digNS",
+      "library": true,
+      "mode": "dig",
+      "path": "library/pump_stack.csv"
+    },
+    {
       "comment": "2 levels of pump stack - bottom level pumps from the south",
       "cursor_start_hint": "at the bottom level on the access stairs",
+      "hidden": false,
       "id": 139,
       "label": "/dig",
       "library": true,
@@ -521,8 +1272,29 @@
       "path": "library/pump_stack.csv"
     },
     {
+      "comment": "for a pump from south level",
+      "cursor_start_hint": "on access stairs",
+      "hidden": true,
+      "id": 140,
+      "label": "/channelSN",
+      "library": true,
+      "mode": "dig",
+      "path": "library/pump_stack.csv"
+    },
+    {
+      "comment": "for a pump from north level",
+      "cursor_start_hint": "on access stairs",
+      "hidden": true,
+      "id": 141,
+      "label": "/channelNS",
+      "library": true,
+      "mode": "dig",
+      "path": "library/pump_stack.csv"
+    },
+    {
       "comment": "2 levels of pump stack - bottom level pumps from the south",
       "cursor_start_hint": "at the bottom level on the access stairs",
+      "hidden": false,
       "id": 142,
       "label": "/channel",
       "library": true,
@@ -530,8 +1302,29 @@
       "path": "library/pump_stack.csv"
     },
     {
+      "comment": "for a pump from south level",
+      "cursor_start_hint": "on access stairs",
+      "hidden": true,
+      "id": 143,
+      "label": "/buildSN",
+      "library": true,
+      "mode": "build",
+      "path": "library/pump_stack.csv"
+    },
+    {
+      "comment": "for a pump from north level",
+      "cursor_start_hint": "on access stairs",
+      "hidden": true,
+      "id": 144,
+      "label": "/buildNS",
+      "library": true,
+      "mode": "build",
+      "path": "library/pump_stack.csv"
+    },
+    {
       "comment": "2 levels of pump stack - bottom level pumps from the south",
       "cursor_start_hint": "at the bottom level on the access stairs",
+      "hidden": false,
       "id": 145,
       "label": "/build",
       "library": true,
@@ -540,6 +1333,7 @@
     },
     {
       "comment": "room for 24 corpses",
+      "hidden": false,
       "id": 146,
       "library": true,
       "mode": "dig",
@@ -547,6 +1341,7 @@
     },
     {
       "comment": "24 urns",
+      "hidden": false,
       "id": 147,
       "label": "/urns",
       "library": true,
@@ -555,6 +1350,7 @@
     },
     {
       "comment": "room for 513 corpses",
+      "hidden": false,
       "id": 148,
       "library": true,
       "mode": "dig",
@@ -562,6 +1358,7 @@
     },
     {
       "comment": "513 urns",
+      "hidden": false,
       "id": 149,
       "label": "/urns",
       "library": true,
@@ -569,8 +1366,8 @@
       "path": "library/tombs/The_Saracen_Crypts.csv"
     }
   ],
-  "entries_total": 69,
+  "entries_total": 149,
   "entries_truncated": false,
-  "library_count": 69,
+  "library_count": 149,
   "user_count": 0
 }

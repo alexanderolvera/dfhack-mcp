@@ -73,6 +73,23 @@ Fog of war is still on by default. Every fog-gated tool now takes the same optio
 | `magma_hidden { z_top, z_bottom }` (undiscovered magma sea) | `magma_reached: true` when the sea exists. Its z-range is no longer reported; `fluids` with `reveal_hidden: true` gives `magma_sea.top_z`. |
 | layer stack ran the full column; surface facts read revealed tiles only | layer stack runs the full column, and `surface_z_max`, brook, river, murky pools and cavern water also read undiscovered tiles |
 
+## Renamed and replaced fields
+
+| 1.x | 2.0 | Why |
+| --- | --- | --- |
+| `farming` → `plots[].open_to_sky` (boolean) | `plots[].open_to_sky_tiles` (number) | The boolean sampled only the plot's `(x1, y1)` corner and reported it for the whole plot, so a partly-roofed plot was misdescribed. The count is per-tile and exact; `open_to_sky_tiles == size` is the old `true`, and `size` is in the same row. |
+| `artifacts_and_engravings` → `decorations[].image_resolved` (always `false`) | `decorations[].art_id?` / `art_subid?` | The field was a hardcoded constant, so it told a caller nothing. The ids are the actual art-image reference, each omitted when unset — which is every ART_IMAGE decoration on the fixture, whose ref reads `id = -1`/`subid = -1`. |
+| `site_history` → `notable_deaths_total` as the death count | **new** `deaths_total`, with `notable_deaths_total` now strictly the named-list cap | `notable_deaths_total` only ever counted deaths whose victim could be named, and only appeared when the 25-row cap bit. `deaths_total` is every death at the site: 5 on the fixture, of which 1 is nameable. |
+
+`blueprint_library` now lists blueprints marked `hidden` in their own modeline by
+default, flagged `hidden: true`, and takes `include_hidden: false` for the old
+view. On the fixture that moves the default from 69 entries to 149. See
+[its page](tools/blueprint_library.md).
+
+`mechanisms` gained `other_traps[]` (cage, stone-fall and weapon traps, and
+track stops), `military` gained `squads[].filled_but_absent`, and `stockpiles`
+gained `rotting_in_stockpiles_count`. All three are additive.
+
 ## Errors carry a `code`
 
 Every error payload now has a stable `code` alongside the `error` message: `NOT_CONNECTED`, `NO_FORT`, `NO_GAME`, `NOT_FOUND`, `INVALID_ARGUMENT`, `TIMEOUT` or `SCRIPT_ERROR`. Branch on `code`; the message text may change between releases. Arguments that fail a tool's input schema are still rejected by the MCP SDK before the tool runs, as a plain-text protocol error with no `code`.
