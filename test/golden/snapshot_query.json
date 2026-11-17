@@ -1,0 +1,118 @@
+{
+  "class": "units",
+  "fog_of_war": "applied",
+  "matched": 351,
+  "returned": 5,
+  "rows": [
+    {
+      "age": 57,
+      "citizen": true,
+      "dead": false,
+      "hidden": false,
+      "id": 111,
+      "name": "Tun Lolumavuz \"Woodenmines\", militia commander",
+      "needs_healthcare": false,
+      "pos": {
+        "x": 77,
+        "y": 59,
+        "z": 131
+      },
+      "profession": "militia commander",
+      "race": "DWARF",
+      "squad_id": 1,
+      "stress_category": 2,
+      "unconscious": 0,
+      "wound_count": 0
+    },
+    {
+      "age": 85,
+      "citizen": true,
+      "dead": false,
+      "hidden": false,
+      "id": 112,
+      "job_type": "CarveRamp",
+      "name": "Atír Rîsenastod \"Coalgulfs\", Miner",
+      "needs_healthcare": false,
+      "pos": {
+        "x": 51,
+        "y": 91,
+        "z": 111
+      },
+      "profession": "Miner",
+      "race": "DWARF",
+      "stress_category": 4,
+      "unconscious": 0,
+      "wound_count": 1
+    },
+    {
+      "age": 83,
+      "citizen": true,
+      "dead": false,
+      "hidden": false,
+      "id": 113,
+      "job_type": "CarveRamp",
+      "name": "Sigun Sastreskeskal \"Princessshoots\", Miner",
+      "needs_healthcare": false,
+      "pos": {
+        "x": 40,
+        "y": 87,
+        "z": 111
+      },
+      "profession": "Miner",
+      "race": "DWARF",
+      "stress_category": 4,
+      "unconscious": 0,
+      "wound_count": 0
+    },
+    {
+      "age": 89,
+      "citizen": true,
+      "dead": false,
+      "hidden": false,
+      "id": 114,
+      "name": "Obok Sacatîton \"Dothalls\", Stone Carver",
+      "needs_healthcare": false,
+      "pos": {
+        "x": 84,
+        "y": 48,
+        "z": 120
+      },
+      "profession": "Stone Carver",
+      "race": "DWARF",
+      "stress_category": 4,
+      "unconscious": 0,
+      "wound_count": 0
+    },
+    {
+      "age": 60,
+      "citizen": true,
+      "dead": false,
+      "hidden": false,
+      "id": 115,
+      "job_type": "Eat",
+      "name": "Cog Lisatzuntîr \"Notchanvils\", Stonecrafter",
+      "needs_healthcare": false,
+      "pos": {
+        "x": 96,
+        "y": 39,
+        "z": 124
+      },
+      "profession": "Stonecrafter",
+      "race": "DWARF",
+      "stress_category": 6,
+      "unconscious": 0,
+      "wound_count": 0
+    }
+  ],
+  "snapshot": {
+    "entities": {
+      "age_ms": null,
+      "captured": {
+        "year": 7,
+        "year_tick": 391869
+      },
+      "seq": null
+    }
+  },
+  "source": "snapshot"
+}

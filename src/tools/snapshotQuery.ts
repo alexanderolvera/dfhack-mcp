@@ -3,6 +3,12 @@ import { FOG_OF_WAR_NOTE, revealHiddenParam } from '../fog.ts';
 import { READ_SOURCE_NOTE, snapshotSource } from '../readSource.ts';
 import type { ToolDef } from '../register.ts';
 import { readMapSnapshot, readSnapshot, type Snapshot } from '../snapshot.ts';
+import {
+  ENTITY_COLUMN_NAMES,
+  SNAPSHOT_CLASS_NAMES,
+  describeSnapshotClasses,
+  describeZLevelColumns,
+} from '../snapshotSchema.ts';
 
 type Primitive = string | number | boolean | null;
 type Ops = {
@@ -141,23 +147,19 @@ export const snapshotQueryDef: ToolDef = {
   description:
     'Filter, project, group and count any entity class from the in-game snapshot. ' +
     'Served from memory: costs no game time once the snapshot is warm. Nothing is truncated; ' +
-    'scope with where/fields/group_by/count_only/limit. Paths are dotted (e.g. "pos.z"). ' +
+    'scope with where/fields/group_by/count_only/limit. matched is always the full number of rows ' +
+    'that matched, so a limit scopes what comes back without hiding how much there was, and the ' +
+    'scoped count is reported as returned. Paths are dotted (e.g. "pos.z"). ' +
     'where values match exactly, or take ops {eq,ne,lt,lte,gt,gte,in,contains,exists}; contains is ' +
-    'case-insensitive. group_by returns [{<field>:value..., n}] sorted by n. Classes and fields: ' +
-    'units {id,name,profession,race,citizen,dead,age,stress_category(0 miserable..6 ecstatic),' +
-    'job_type,squad_id,wound_count,needs_healthcare,unconscious,pos{x,y,z}}; ' +
-    'items {id,type(df item_type e.g. BED,DOOR,BOX,CABINET,BOULDER,BAR),subtype,material(token e.g. ' +
-    'INORGANIC:GRANITE, PLANT:WILLOW:WOOD),mat_type,mat_index,quality,wear,stack,pos,container,holder,' +
-    'forbid,in_job,dump,on_ground,in_building(installed as furniture),in_inventory,rotten,trader,' +
-    'construction,desc}; buildings {id,type(Bed,Door,Workshop,Furnace,Stockpile,Civzone...),subtype,' +
-    'zone_type(Civzone only: Bedroom,DiningHall,Office,Tomb...),owner(unit id),x1,y1,x2,y2,z,stage,' +
-    'max_stage,name,items,jobs}; reports {id,type,text,year,time,pos,continuation}; squads {id,name}. ' +
-    'Rows on undiscovered tiles are omitted. ' +
+    'case-insensitive. group_by returns [{<field>:value..., n}] sorted by n. A field marked absent ' +
+    'in one row is simply missing, so use exists to test for it. Classes and fields: ' +
+    describeSnapshotClasses() +
+    '. Rows on undiscovered tiles are omitted. ' +
     FOG_OF_WAR_NOTE +
     ' ' +
     READ_SOURCE_NOTE,
   shape: {
-    class: z.enum(['units', 'items', 'buildings', 'reports', 'squads']),
+    class: z.enum(SNAPSHOT_CLASS_NAMES),
     where: z.record(z.string(), z.union([primitive, ops])).optional(),
     fields: z.array(z.string()).optional().describe('paths to return per row; default all'),
     group_by: z.array(z.string()).optional(),
@@ -175,21 +177,10 @@ export const snapshotQueryDef: ToolDef = {
   },
 };
 
-const ENTITY_COLUMNS = [
-  'citizens',
-  'other_units',
-  'workshops',
-  'stockpiles',
-  'zones',
-  'bedrooms',
-  'bedrooms_unowned',
-  'other_buildings',
-];
-
 function entityCounts(snap: Snapshot): Map<number, number[]> {
   const byZ = new Map<number, number[]>();
   const bump = (zv: number, col: number) => {
-    const row = byZ.get(zv) ?? ENTITY_COLUMNS.map(() => 0);
+    const row = byZ.get(zv) ?? ENTITY_COLUMN_NAMES.map(() => 0);
     row[col]++;
     byZ.set(zv, row);
   };
@@ -216,16 +207,15 @@ export const zLevelsDef: ToolDef = {
   name: 'z_levels',
   title: 'Z-level census',
   description:
-    'One row per REVEALED z-level of the whole map, surface first: tile counts by class (open, ' +
-    'floor, constructed, stair, ramp, tree, wall_stone, wall_mineral (ore veins), wall_soil, ' +
-    'wall_other, liquid) over revealed tiles only, the hidden-tile count, and what stands there ' +
-    '(citizens, other_units, workshops, stockpiles, zones, bedrooms, bedrooms_unowned, ' +
-    'other_buildings). Columnar: {columns, levels:[[...]], unrevealed_z:[[lo,hi]]} — fully ' +
-    'unrevealed levels collapse into ranges. Use it to decide where to look before tile_region or ' +
-    'snapshot_query. Served from the snapshot; the map census refreshes slowly ' +
-    '(minutes) and entity counts every few seconds, so the two walkers report their ages ' +
-    'separately. Optional z_min/z_max scope the rows. Fog-of-war honest: hidden tiles are ' +
-    'only counted, never classified. ' +
+    'One row per REVEALED z-level of the whole map, surface first: ' +
+    describeZLevelColumns() +
+    '. Columnar: {columns, levels:[[...]], unrevealed_z:[[lo,hi]]} — read each row against ' +
+    'columns, since the order is the contract; fully unrevealed levels collapse into ranges. ' +
+    'Use it to decide where to look before tile_region or snapshot_query. Served from the ' +
+    'snapshot; the map census refreshes slowly (minutes) and entity counts every few seconds, so ' +
+    'the two walkers report their ages separately. Optional z_min/z_max scope the rows, and ' +
+    'scoping never changes unrevealed_z, which always describes the whole map. Fog-of-war ' +
+    'honest: hidden tiles are only counted, never classified. ' +
     READ_SOURCE_NOTE,
   shape: {
     z_min: z.coerce.number().int().optional(),
@@ -239,12 +229,12 @@ export const zLevelsDef: ToolDef = {
     const snap = await readSnapshot();
     if ('error' in snap) return snap;
     const counts = entityCounts(snap);
-    const empty = ENTITY_COLUMNS.map(() => 0);
+    const empty = ENTITY_COLUMN_NAMES.map(() => 0);
     const inRange = (zv: number) =>
       (z_min === undefined || zv >= z_min) && (z_max === undefined || zv <= z_max);
     return {
       ...snapshotSource({ entities: snap, map }),
-      columns: [...map.census.columns, ...ENTITY_COLUMNS],
+      columns: [...map.census.columns, ...ENTITY_COLUMN_NAMES],
       levels: map.census.levels
         .filter((row) => inRange(row[0]))
         .map((row) => [...row, ...(counts.get(row[0]) ?? empty)]),

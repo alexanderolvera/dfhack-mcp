@@ -288,6 +288,18 @@ Never `--update` against a non-fixture fort.
   wall-clock timing; the real values are still shape/bounds-checked live by the
   `fort_health_wellformed_and_bounds_population` invariant. See
   [`docs/tools/fort_health.md`](tools/fort_health.md)'s Implementation notes.
+- **Snapshot provenance in a golden.** `find_unit` and `map_overview` dodge this by
+  pinning their `TOOL_ARGS` to `source: "live"`, so their goldens are live payloads
+  whatever the gate is set to. `snapshot_query` and `z_levels` have no live path, so
+  their goldens necessarily carry `snapshot.<walker>.{seq, age_ms, captured}`. Of those
+  three, `seq` counts completed passes and `age_ms` is wall clock — neither is frozen
+  game state even on a paused fixture, measured as `age_ms` 18 ms then 5,078 ms across
+  two calls to the same capture — so `maskProvenance` nulls both before the golden
+  snapshot/compare. `captured` is *game* time and therefore frozen (`{year: 7,
+  year_tick: 391869}` on both calls), so it stays in the golden, which is what makes the
+  golden assert the capture came from the same game moment rather than merely having the
+  right shape. The masking is generic, not per-tool: any payload carrying `snapshot`
+  provenance gets it, so a tool migrating to the snapshot needs no harness change.
 - **`historical_figure`** is goldened for more than one id. Its main
   `historical_figure.json` comes from `TOOL_ARGS`, and `HISTORICAL_FIGURE_GOLDEN_IDS`
   adds a `historical_figure.<hf_id>.json` for each extra fixture figure, so a dead

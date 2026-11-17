@@ -58,11 +58,11 @@ Doctrine reminder: every tool is **facts-only** — it senses and reports; judgm
 ## Snapshot reads (2, gated behind `DFHACK_MCP_SNAPSHOT`)
 
 Served from the in-game snapshot rather than a per-call Lua walk — see
-[the publisher](../snapshot.md) for the read contract, cadence and provenance. Notes for
-these two land with [#148](https://github.com/alexanderolvera/dfhack-mcp/issues/148).
+[the publisher](../snapshot.md) for the read contract, cadence and provenance. Neither
+has a live path, so neither takes a `source` parameter.
 
-- `snapshot_query` — filter, project, group and count any entity class from the snapshot
-- `z_levels` — one row per revealed z-level: tile counts by class, and what stands there
+- [snapshot_query](snapshot_query.md) — filter, project, group and count any entity class from the snapshot
+- [z_levels](z_levels.md) — one row per revealed z-level: tile counts by class, and what stands there
 
 ## Reference (2)
 
