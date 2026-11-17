@@ -33,6 +33,22 @@ what to read instead.
 
 ### Added
 
+- **Off-game development.** `DFHACK_MCP_SNAPSHOT_FIXTURE` points the snapshot
+  layer at a captured directory of both walkers' JSON instead of DFHack, so
+  `npm run start:stub` serves every snapshot-backed tool through the real tool
+  code with no game and no Docker. `npm run capture:snapshot` takes a capture
+  from any running fort and restores the publisher to the state it found. A
+  capture records the wall clock alongside the payload, so `age_ms` is derived
+  from two recorded numbers and a fixture-backed response is byte-stable. This
+  also puts the pure projections under CI for the first time — a capture cannot
+  exercise cadence, the governor, `seq` advancing or read-source parity, all of
+  which need a live fort, so those stay live-only. A missing or malformed fixture
+  fails loudly rather than falling back to DFHack.
+- `npm run call` parses a value that opens a JSON array or object, so params that
+  are not scalars are reachable by hand — `npm run call snapshot_query class=items
+'group_by=["type"]'`. Before this every value was a string, so `snapshot_query`'s
+  `where`, `fields` and `group_by` could not be exercised from the CLI at all.
+  Scalars are untouched, so a name query of `123` is still a string.
 - **The read-source contract.** Every response that can come from either path now
   reports `source: "snapshot" | "live"` — the path that actually served it — and a
   snapshot read also reports `snapshot.<walker>.{seq, age_ms, captured}`: the

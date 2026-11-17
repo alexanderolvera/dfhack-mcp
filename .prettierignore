@@ -2,3 +2,6 @@ dist
 cache
 node_modules
 package-lock.json
+# Captured snapshots are written compact on purpose — see docs/snapshot.md,
+# "Off-game development". Pretty-printing them nearly doubles them on disk.
+test/fixtures/snapshot

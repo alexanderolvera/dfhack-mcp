@@ -202,11 +202,27 @@ function canonicalize(value) {
 // Headroom over the 30 s default for full-map reveal_hidden scans on a slow host.
 const HARNESS_TIMEOUT_MS = '60000';
 
+// Every tier here measures the game, so a fixture left exported would make a live
+// run pass without touching DFHack. See CONTRIBUTING.md, "Off-game development".
+let warnedFixture = false;
+function withoutFixture(env) {
+  if (!env.DFHACK_MCP_SNAPSHOT_FIXTURE) return env;
+  if (!warnedFixture) {
+    warnedFixture = true;
+    console.log(
+      `  ○ ignoring DFHACK_MCP_SNAPSHOT_FIXTURE=${env.DFHACK_MCP_SNAPSHOT_FIXTURE} — this harness reads the live game`
+    );
+  }
+  const rest = { ...env };
+  delete rest.DFHACK_MCP_SNAPSHOT_FIXTURE;
+  return rest;
+}
+
 function connect(env = process.env) {
   const transport = new StdioClientTransport({
     command: process.execPath,
     args: [join(ROOT, 'src', 'index.ts')],
-    env: { DFHACK_MCP_TIMEOUT_MS: HARNESS_TIMEOUT_MS, ...env },
+    env: { DFHACK_MCP_TIMEOUT_MS: HARNESS_TIMEOUT_MS, ...withoutFixture(env) },
     cwd: ROOT,
   });
   const client = new Client({ name: 'dfhack-mcp-verify', version: '1.0.0' });
