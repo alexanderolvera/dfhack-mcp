@@ -33,6 +33,27 @@ what to read instead.
 
 ### Added
 
+- **One source for the snapshot schema.** `src/snapshotSchema.ts` holds the field
+  list per entity class and the `z_levels` columns, and `snapshot_query`'s and
+  `z_levels`'s descriptions, the `class` enum, the entity-count columns and the new
+  doc pages all come from it. `test/snapshotSchema.test.mjs` proves it against the
+  committed capture in both directions, so a field the walker emits but the schema
+  omits fails CI, and so does a schema field the walker never emits. That caught
+  real drift: `hidden` was undocumented on units, items and buildings, and
+  `buildings.custom` was not documented at all; the `z` and `revealed` census
+  columns were missing from `z_levels`'s description too. `always` flags follow the
+  Lua emitter's own contract rather than what one fort contained — `hidden` is
+  absent wherever there is no map position to test, which is why an item in a
+  container has neither `pos` nor `hidden`.
+- **`snapshot_query` and `z_levels` have doc pages and T2 goldens.** Both tools had
+  neither. Goldening a snapshot read needs its provenance handled: `seq` counts
+  passes and `age_ms` is wall clock, so both are masked, while `captured` is game
+  time and stays, which makes the golden assert the capture came from the same game
+  moment. The masking is generic, so a tool migrating to the snapshot needs no
+  harness change. Nothing had asserted that a registered tool has a doc page at
+  all, which is how two tools shipped without one; the suite now checks that every
+  tool has `docs/tools/<name>.md`, that no page names a tool that does not exist,
+  and that each page's frontmatter names its own file.
 - **Off-game development.** `DFHACK_MCP_SNAPSHOT_FIXTURE` points the snapshot
   layer at a captured directory of both walkers' JSON instead of DFHack, so
   `npm run start:stub` serves every snapshot-backed tool through the real tool

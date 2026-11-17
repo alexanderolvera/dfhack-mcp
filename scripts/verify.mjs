@@ -154,12 +154,26 @@ function assertTitleScreenGameState(data) {
 // so T2 doesn't flap on wall-clock timing. See docs/VERIFY.md's Special cases.
 const VOLATILE_FIELDS = { fort_health: ['fps', 'gfps'] };
 
+// A snapshot read's seq counts passes and age_ms is wall clock, so neither is
+// frozen game state even on a paused fixture. captured is game time and so IS
+// frozen — it stays in the golden, which is what makes the golden assert the
+// capture came from the same game moment. See docs/VERIFY.md's Special cases.
+function maskProvenance(data) {
+  if (!data?.snapshot || typeof data.snapshot !== 'object') return data;
+  const snapshot = {};
+  for (const [walker, p] of Object.entries(data.snapshot))
+    snapshot[walker] = p && typeof p === 'object' ? { ...p, seq: null, age_ms: null } : p;
+  return { ...data, snapshot };
+}
+
 function maskVolatile(name, data) {
   const fields = VOLATILE_FIELDS[name];
-  if (!fields || !data || typeof data !== 'object') return data;
-  const masked = { ...data };
-  for (const f of fields) if (f in masked) masked[f] = null;
-  return masked;
+  if (!data || typeof data !== 'object') return data;
+  const masked = maskProvenance(data);
+  if (!fields) return masked;
+  const out = { ...masked };
+  for (const f of fields) if (f in out) out[f] = null;
+  return out;
 }
 
 // Tools reached in every tier but NOT captured as T2 goldens. The actuators
