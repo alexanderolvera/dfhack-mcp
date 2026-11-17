@@ -182,6 +182,52 @@ what to read instead.
 
 ### Fixed
 
+- **A correctness batch from the v2.0 tool audit** ([#160](https://github.com/alexanderolvera/dfhack-mcp/issues/160)).
+  Each was re-verified against the live fixture before being touched, and two of
+  the reported eleven turned out not to be bugs.
+  - `blueprint_library` listed 69 of the shipped library's 149 blueprints and
+    reported `entries_total: 69`, so nothing told the caller the other 80
+    existed. Hidden modelines are now listed and flagged `hidden: true`, with
+    `include_hidden: false` for the old view. DFHack's own list filters them
+    rather than marking them, so the flag is the difference between the two
+    listings.
+  - `mechanisms` omitted every trap that is not a lever or pressure plate — 35
+    of them on the fixture, all cage traps and track stops, missing from a tool
+    named `mechanisms`. They are reported as `other_traps[]`.
+  - `citizen` emitted a relationship `unit_id` that `citizen` itself could not
+    resolve: a historical figure keeps that field after the unit is gone. On the
+    fixture a friend edge carried `unit_id: 309`, for which `citizen(309)`
+    answers `NOT_FOUND` while its `hf_id: 190` resolves. Both the histfig and
+    spouse paths now check the unit exists first, and an absent spouse falls
+    back to the histfig's own `SPOUSE` link so it still carries a name and an
+    `hf_id`. This was the `narrative_figures_carry_hf_id` invariant failure.
+  - `site_history` counted only deaths whose victim could be named: 1 of the
+    fixture site's 5. `deaths_total` now reports every death, while
+    `notable_deaths_total`/`_truncated` stay strictly about the named list's cap.
+  - `stockpiles` counted a rotten item inside a pile nowhere at all — not in
+    `item_count` (which excludes rotten items by design) nor in
+    `rotting_outside_stockpiles` (which only looks outside piles). The new
+    `rotting_in_stockpiles_count` reports it; the fixture has exactly one.
+  - `farming`'s `open_to_sky` sampled the plot's corner tile and reported it for
+    the whole plot. Replaced by `open_to_sky_tiles`, counted over every tile.
+  - `mandates_and_justice` keyed nobles by position id, so a position with
+    several holders kept only the last. One row per appointment now.
+  - `petitions` examined only `agr.details[0]`, dropping every later detail on
+    an agreement that carries more than one.
+  - `military` now reports `squads[].filled_but_absent`, the occupants counted in
+    `filled` who are dead or off-map and so have no `roster[]` row.
+  - `game_data`'s caste-flag whitelist held `MANNERISM_LAUGH = 0`, written as
+    though `0` excluded it. In Lua only `nil` and `false` are falsy, so a
+    cosmetic laugh mannerism was being emitted beside `TRAPAVOID` and
+    `FIREIMMUNE`. The entry is removed, so the code now does what it reads as.
+  - `artifacts_and_engravings`'s `image_resolved` was the constant `false`.
+    Replaced by the actual reference, `art_id`/`art_subid`, each omitted when
+    unset — confirmed live to be unset (`id = -1`/`subid = -1`) for every
+    ART_IMAGE decoration the fixture has, which is why nothing was resolvable.
+  - **Not bugs.** `fort_health`'s `fps`/`gfps` are correctly typed `number`: the
+    `null` in the golden is the harness's own `VOLATILE_FIELDS` masking, and live
+    they read 100 and 13. And `blueprint_library`'s `entries_total` had already
+    been corrected to the pre-cap count by #118/#119.
 - `dfhack_command_list` reported this server's own query scripts as commands
   DFHack ships. The client registers the query directory on DFHack's script
   path, so DFHack's own `ls` lists all 49 of them, which both contradicted the

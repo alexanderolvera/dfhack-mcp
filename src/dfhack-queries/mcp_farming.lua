@@ -50,9 +50,15 @@ local plots = {}
 for _, f in ipairs(df.global.world.buildings.other.FARM_PLOT) do
   local width = f.x2 - f.x1 + 1
   local height = f.y2 - f.y1 + 1
-  local lx, ly = f.x1 % 16, f.y1 % 16
-  local blk = dfhack.maps.getTileBlock(f.x1, f.y1, f.z)
-  local open_to_sky = (blk and blk.designation[lx][ly].outside) or false
+  local open_to_sky_tiles = 0
+  for ty = f.y1, f.y2 do
+    for tx = f.x1, f.x2 do
+      local blk = dfhack.maps.getTileBlock(tx, ty, f.z)
+      if blk and blk.designation[tx % 16][ty % 16].outside then
+        open_to_sky_tiles = open_to_sky_tiles + 1
+      end
+    end
+  end
 
   local seasons = {}
   local any_crop, any_eligible = false, false
@@ -76,7 +82,7 @@ for _, f in ipairs(df.global.world.buildings.other.FARM_PLOT) do
   plots[#plots + 1] = {
     id = f.id,
     size = width * height,
-    open_to_sky = open_to_sky,
+    open_to_sky_tiles = open_to_sky_tiles,
     seasons = seasons,
     no_crop_assigned = not any_crop,
     no_eligible_crop = not any_eligible,

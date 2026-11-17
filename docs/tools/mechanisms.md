@@ -25,6 +25,7 @@ None.
 - `plate_count`, `pressure_plates[]`, `pressure_plates_truncated` — `{ building_id, name, pos, linked_targets, triggers }` per pressure plate, id-sorted and capped at 200. `triggers` is the configured trip conditions: `citizens` (bool), `creatures` (bool) with `creature_weight_min`/`max`, `minecart_track` (bool) with `minecart_weight_min`/`max`, `water`/`magma` (bool) each with a `_depth_min`/`_depth_max` range.
 - `unlinked_levers[]`, `unlinked_levers_truncated` — building ids of levers wired to nothing (dead ends), capped at 200.
 - `bridge_count`, `unlinked_bridges[]`, `unlinked_bridges_truncated` — building ids of bridges no lever or plate in the fort currently operates, capped at 200.
+- `other_trap_count`, `other_traps[]`, `other_traps_truncated` — `{ building_id, trap_type, pos }` for every trap that is neither a lever nor a pressure plate: cage, stone-fall and weapon traps, and track stops. Id-sorted, capped at 200, with `other_trap_count` the true total. These are not part of the lever wiring (nothing links to them), but they are mechanisms in the fort and this tool omitted them entirely before [#160](https://github.com/alexanderolvera/dfhack-mcp/issues/160) — 35 of them on the fixture, all `TrackStop` or `CageTrap`. `trap_type` is DF's own `trap_type` token.
 
 ```json
 {

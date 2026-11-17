@@ -1544,6 +1544,7 @@
   ],
   "piles_total": 60,
   "piles_truncated": false,
+  "rotting_in_stockpiles_count": 1,
   "rotting_outside_stockpiles": {
     "by_type": [],
     "by_type_truncated": false,

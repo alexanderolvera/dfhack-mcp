@@ -76,6 +76,7 @@ Top-level fields:
 - Returns `{"error":...}` for a missing unit_id, `{"error":"no fort loaded"}` if no fort is active.
 
 ## Implementation notes
+- **A relation reports `unit_id` only when that unit is actually on the map**, so an id this tool hands back always chains into `citizen()`. A historical figure keeps its `unit_id` field after the unit itself is gone, and until [#160](https://github.com/alexanderolvera/dfhack-mcp/issues/160) both paths emitted it unchecked: `hf_unit_id` trusted `hf.unit_id`, and the spouse branch emitted `relationship_ids.Spouse` even when `df.unit.find` had already returned nil for it. On the fixture that produced a friend edge carrying `unit_id: 309` whose own `citizen(309)` answers `NOT_FOUND` while its `hf_id: 190` resolves fine. Both now check `df.unit.find` first, and the spouse branch falls back to the histfig's own `SPOUSE` link so an absent spouse still carries a name and an `hf_id` rather than only a dead `unit_id`.
 - `friends[].affection` is the citizen relationship's core "love" score, surfaced under the `affection` name.
 - `grudges[].negative_dims` only checks love/trust/respect/loyalty for negative values — `fear` is reported alongside but never contributes to `negative_dims`.
 - Nested list fields (e.g. `relationships.friends`, `worship`, `skills`) are addressed by dot path and coerced back to arrays in the TS wrapper: an empty Lua table encodes as `{}` rather than `[]`, and the generic `runJsonScript` helper only normalizes top-level fields, not citizen's nested ones.

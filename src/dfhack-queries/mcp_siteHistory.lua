@@ -130,7 +130,7 @@ local civ_dwarven, civ_english = civ_names(civ_id)
 local WAR_TYPES = { WAR_ATTACKED_SITE = true, WAR_DESTROYED_SITE = true,
   WAR_SITE_NEW_LEADER = true }
 local battles, battles_total = {}, 0
-local deaths, deaths_total = {}, 0
+local deaths, named_total, deaths_total = {}, 0, 0
 do
   local events = df.global.world.history.events
   for i = 0, #events - 1 do
@@ -160,8 +160,9 @@ do
         elseif tname == 'HIST_FIGURE_DIED' then
           local vic; pcall(function() vic = e.victim_hf end)
           local nm = hf_name(vic)
+          deaths_total = deaths_total + 1
           if nm then
-            deaths_total = deaths_total + 1
+            named_total = named_total + 1
             local d = { name = nm, hf_id = vic, year = nil }
             pcall(function() d.year = e.year end)
             d.race = hf_race(vic)
@@ -218,7 +219,8 @@ emit({
   battles = battles,
   battles_truncated = (battles_total > #battles) or nil,
   battles_total = (battles_total > #battles) and battles_total or nil,
+  deaths_total = deaths_total,
   notable_deaths = deaths,
-  notable_deaths_truncated = (deaths_total > #deaths) or nil,
-  notable_deaths_total = (deaths_total > #deaths) and deaths_total or nil,
+  notable_deaths_truncated = (named_total > #deaths) or nil,
+  notable_deaths_total = (named_total > #deaths) and named_total or nil,
 })

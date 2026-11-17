@@ -18,7 +18,7 @@ Location petitions (a deity's worshippers or a guild asking the fort to establis
 None.
 
 ## Returns
-- `location_petitions[]` — one row per outstanding-or-resolved `Location`-type agreement for this fort's site (capped at 50 — see `location_petitions_truncated`):
+- `location_petitions[]` — one row per `Location`-type **agreement detail** for this fort's site (capped at 50 — see `location_petitions_truncated`). An agreement can carry several details, so one `agreement_id` can appear more than once; only `details[0]` was examined until [#160](https://github.com/alexanderolvera/dfhack-mcp/issues/160), which dropped every later detail on such an agreement. The fixture's agreements each carry exactly one detail, so this changed nothing there:
   - `agreement_id` (number) — the agreement's own id, stable across calls.
   - `building` — `"TEMPLE"` or `"GUILDHALL"`.
   - `tier` — `1` (temple / guildhall) or `2` (temple complex / grand guildhall).

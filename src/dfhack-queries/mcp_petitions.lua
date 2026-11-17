@@ -115,8 +115,8 @@ local location_petitions = {}
 local residency_petitions = {}
 
 for _, agr in ipairs(df.global.world.agreements.all) do
-  if #agr.details > 0 then
-    local det = agr.details[0]
+  for di = 0, #agr.details - 1 do
+    local det = agr.details[di]
     local dtype = df.agreement_details_type[det.type]
     if dtype == 'Location' then
       local loc = det.data.Location
@@ -136,6 +136,7 @@ for _, agr in ipairs(df.global.world.agreements.all) do
           warned_ready = loc.flags.warned_is_ready or false,
           awaiting_decision = awaiting[agr.id] or false,
           status = petition_status(agr, ageDays),
+          _ord = di,
         }
       end
     elseif dtype == 'Residency' or dtype == 'Citizenship' then
@@ -152,6 +153,7 @@ for _, agr in ipairs(df.global.world.agreements.all) do
           deadline_days = deadline_days(data.end_year, data.end_season_tick),
           awaiting_decision = awaiting[agr.id] or false,
           status = petition_status(agr, ageDays),
+          _ord = di,
         }
       end
     end
@@ -163,10 +165,13 @@ local function petition_rank(p) return (p.status == 'outstanding' or p.awaiting_
 local function by_active_then_id(a, b)
   local ra, rb = petition_rank(a), petition_rank(b)
   if ra ~= rb then return ra < rb end
-  return a.agreement_id < b.agreement_id
+  if a.agreement_id ~= b.agreement_id then return a.agreement_id < b.agreement_id end
+  return (a._ord or 0) < (b._ord or 0)
 end
 table.sort(location_petitions, by_active_then_id)
 table.sort(residency_petitions, by_active_then_id)
+for _, p in ipairs(location_petitions) do p._ord = nil end
+for _, p in ipairs(residency_petitions) do p._ord = nil end
 
 local awaiting_decision_count = 0
 for _, p in ipairs(location_petitions) do

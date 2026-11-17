@@ -49,8 +49,9 @@ local function hf_unit_id(hfid)
   local hf = df.historical_figure.find(hfid)
   if not hf then return nil end
   local uid = safe(function() return hf.unit_id end, -1)
-  if uid and uid >= 0 then return uid end
-  return nil
+  if not uid or uid < 0 then return nil end
+  if not df.unit.find(uid) then return nil end
+  return uid
 end
 
 local function hf_edge(hfid)
@@ -115,14 +116,34 @@ out.personality = { extremes = extremes }
 local rel = { children = {}, parents = {}, friends = {}, grudges = {} }
 local family_hf = {}
 
+local function spouse_hf_from_links()
+  local myhf = safe(function() return u.hist_figure_id end, -1)
+  if not myhf or myhf < 0 then return nil end
+  local hf = df.historical_figure.find(myhf)
+  if not hf then return nil end
+  local found
+  pcall(function()
+    for _, l in ipairs(hf.histfig_links) do
+      if df.histfig_hf_link_type[l:getType()] == 'SPOUSE' then
+        found = l.target_hf
+        return
+      end
+    end
+  end)
+  if found and found >= 0 then return found end
+  return nil
+end
+
 local spouse_uid = safe(function() return u.relationship_ids.Spouse end, -1)
 if spouse_uid and spouse_uid >= 0 then
   local su = df.unit.find(spouse_uid)
+  local shf = (su and safe(function() return su.hist_figure_id end, -1)) or spouse_hf_from_links()
   rel.spouse = {
-    name = su and safe(function() return dfhack.units.getReadableName(su) end, 'unit ' .. spouse_uid) or ('unit ' .. spouse_uid),
-    unit_id = spouse_uid,
+    name = (su and safe(function() return dfhack.units.getReadableName(su) end, nil))
+      or (shf and shf >= 0 and hf_name(shf))
+      or ('unit ' .. spouse_uid),
+    unit_id = su and spouse_uid or nil,
   }
-  local shf = su and safe(function() return su.hist_figure_id end, -1)
   if shf and shf >= 0 then
     family_hf[shf] = true
     rel.spouse.hf_id = shf

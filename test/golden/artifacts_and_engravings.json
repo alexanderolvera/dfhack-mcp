@@ -21,7 +21,6 @@
           "type": "THREAD"
         },
         {
-          "image_resolved": false,
           "material": {
             "name": "wool",
             "token": "CREATURE:SHEEP:HAIR"
@@ -30,7 +29,6 @@
           "type": "ART_IMAGE"
         },
         {
-          "image_resolved": false,
           "material": {
             "name": "wax opal",
             "token": "INORGANIC:WAX OPAL"
@@ -215,7 +213,6 @@
           "type": "COVERED"
         },
         {
-          "image_resolved": false,
           "material": {
             "name": "cherry wood",
             "token": "PLANT:CHERRY:WOOD"
@@ -248,7 +245,6 @@
           "type": "RINGS_HANGING"
         },
         {
-          "image_resolved": false,
           "material": {
             "name": "wool",
             "token": "CREATURE:SHEEP:HAIR"

@@ -26,7 +26,8 @@ None.
 - `battles[]` — site-scoped war events: `{ year?, type, attacker?, defender?, attacker_general?, attacker_general_hf_id?, defender_general?, defender_general_hf_id?, outcome? }`; `type` is `WAR_ATTACKED_SITE | WAR_DESTROYED_SITE | WAR_SITE_NEW_LEADER`; `outcome` set when recorded (e.g. "site destroyed"). Most-recent-first.
 - `battles_truncated?`, `battles_total?` — present only when the 20-row cap dropped entries.
 - `notable_deaths[]` — `{ name, hf_id, year?, race?, cause?, slain_by?, slain_by_hf_id? }`; `hf_id` is the victim's historical-figure id, `slain_by_hf_id` the slayer's; `race` is a creature token ("DWARF"), `cause` a df.death_type token ("BLEED"). Most-recent-first.
-- `notable_deaths_truncated?`, `notable_deaths_total?` — present only when the 25-row cap dropped entries.
+- `deaths_total` (number) — every death recorded at this site, whether or not the victim can be named. Reported separately from the `notable_deaths` bookkeeping below because the two answer different questions: 5 dwarves died at the fixture's site and only 1 of them resolves to a name, so a caller reading only `notable_deaths` would see one death. Until [#160](https://github.com/alexanderolvera/dfhack-mcp/issues/160) the unnameable ones were counted nowhere.
+- `notable_deaths_truncated?`, `notable_deaths_total?` — present only when the 25-row cap dropped **named** entries. They describe the cap on the list above, not the fort's death toll — that is `deaths_total`.
 
 ```json
 {

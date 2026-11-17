@@ -42,7 +42,7 @@ if ent then
         if asg.position_id == pos.id and asg.histfig ~= -1 then
           local hf = df.historical_figure.find(asg.histfig)
           local u = hf and hf.unit_id ~= -1 and df.unit.find(hf.unit_id) or nil
-          nobles[pos.id] = {
+          nobles[#nobles + 1] = {
             position = (pos.name[0] ~= '' and pos.name[0]) or pos.code,
             hf = hf, unit = u,
             name = u and unit_name(u) or hf_name(hf),
@@ -55,7 +55,7 @@ if ent then
 end
 
 local noble_rows = {}
-for _, n in pairs(nobles) do
+for _, n in ipairs(nobles) do
   noble_rows[#noble_rows + 1] = {
     position = n.position,
     noble = n.name,

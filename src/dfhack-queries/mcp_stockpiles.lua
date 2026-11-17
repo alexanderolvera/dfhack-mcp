@@ -102,6 +102,7 @@ local IT = df.item_type
 local backlog_counts = {}
 local rotting_counts = {}
 local rotting_total = 0
+local rotting_in_piles = 0
 local dump_flagged_count = 0
 
 for _, item in ipairs(df.global.world.items.other.IN_PLAY) do
@@ -112,7 +113,9 @@ for _, item in ipairs(df.global.world.items.other.IN_PLAY) do
   local pile = x and pile_at(x, y, z) or nil
 
   if fl.rotten then
-    if fl.on_ground and not pile then
+    if pile then
+      rotting_in_piles = rotting_in_piles + 1
+    elseif fl.on_ground then
       rotting_total = rotting_total + 1
       local tok = IT[item:getType()]
       rotting_counts[tok] = (rotting_counts[tok] or 0) + 1
@@ -185,5 +188,6 @@ emit({
     by_type = rotting_by_type,
     by_type_truncated = rotting_by_type_truncated,
   },
+  rotting_in_stockpiles_count = rotting_in_piles,
   dump_flagged_count = dump_flagged_count,
 })
