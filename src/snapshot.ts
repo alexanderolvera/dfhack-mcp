@@ -1,5 +1,6 @@
 import { callLua, runScript } from './dfclient.ts';
 import { withGuardCode, type ErrorPayload } from './errors.ts';
+import { fixtureDir, readFixture } from './snapshotFixture.ts';
 
 export interface GameTime {
   year: number;
@@ -164,6 +165,8 @@ export async function tuneWalker(
 async function latest(
   walker: Walker
 ): Promise<{ data: Published | { error: string }; now: number } | ErrorPayload> {
+  const dir = fixtureDir();
+  if (dir) return readFixture<Published>(walker, dir);
   let s = await statuses();
   if (await ensureRunning(s)) s = await statuses();
   const deadline = Date.now() + WARMUP_MS;

@@ -143,6 +143,22 @@ executes that exact file fresh, ignoring whatever DFHack has cached under its
 script name. Cleanest alternative: restart DF/DFHack between checkouts so there's
 nothing to have cached.
 
+### Off-game development
+
+`npm run start:stub` serves the snapshot-backed tools from a committed capture of
+both walkers, through the real tool code, with no DF process and no container —
+so a Codespace can iterate on a projection without a game. The pure projections
+(`projectFindUnit`, `projectMapOverview`, `runQuery`) are the one part of the
+snapshot path CI can exercise, and
+[`test/snapshotFixture.test.mjs`](test/snapshotFixture.test.mjs) does, over the
+committed capture.
+
+What a capture cannot test is anything about _change_: cadence, the governor,
+`seq` advancing, or read-source parity, which needs a live path to compare
+against. Those stay live-only, so a green `test:unit` is not evidence the
+publisher works — only that the projections do. See
+[`docs/snapshot.md`](docs/snapshot.md#off-game-development) for capturing one.
+
 ### The blueprint actuator surface
 
 `blueprintActuatorChecks` (in `scripts/verify.mjs`, run by both T2 and
@@ -192,7 +208,19 @@ instead of failing, like the no-fort path.
 `npm run call [toolName] [key=value ...]` (`scripts/call-tool.mjs`) spawns the
 server over stdio, lists its tools, and calls one — e.g. `npm run call
 find_unit query=medical`. Defaults to `fort_status` with no args. Needs Dwarf
-Fortress running with DFHack and a fort loaded.
+Fortress running with DFHack and a fort loaded, or a fixture (see
+[Off-game development](#off-game-development)).
+
+A value that opens a JSON array or object is parsed as JSON, so params that are
+not scalars are reachable by hand:
+
+```sh
+npm run call snapshot_query class=items 'group_by=["type"]'
+npm run call snapshot_query class=units 'where={"age":{"gt":100}}'
+```
+
+Everything else stays the string it was typed as, so a name query of `123` is
+still the string `"123"` and not a number.
 
 ## Working overlapping issues in parallel
 

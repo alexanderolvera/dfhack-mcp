@@ -2,10 +2,24 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
 const toolName = process.argv[2] ?? 'fort_status';
+
+// Only a value that opens a JSON array or object is parsed, so array and object
+// params are reachable by hand while every scalar stays the string it was typed
+// as — a name query of "123" must not become a number.
+function parseValue(raw) {
+  if (!/^\s*[[{]/.test(raw)) return raw;
+  try {
+    return JSON.parse(raw);
+  } catch (err) {
+    console.error(`${raw} looks like JSON but does not parse: ${err.message}`);
+    process.exit(2);
+  }
+}
+
 const toolArgs = Object.fromEntries(
   process.argv.slice(3).map((kv) => {
     const i = kv.indexOf('=');
-    return i === -1 ? [kv, true] : [kv.slice(0, i), kv.slice(i + 1)];
+    return i === -1 ? [kv, true] : [kv.slice(0, i), parseValue(kv.slice(i + 1))];
   })
 );
 

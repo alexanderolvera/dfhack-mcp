@@ -469,6 +469,47 @@ restarts a pass in flight.
 | `DFHACK_MCP_SNAPSHOT_GOVERNOR_LOW`  | `0.01`  | Inflation below which it recovers towards the configured cadence.                                                               |
 | `DFHACK_MCP_SNAPSHOT_WARMUP_MS`     | `90000` | How long a read waits for a first payload. The census needs ~24 s, so the first call after a cold start is slow once.           |
 | `DFHACK_MCP_SNAPSHOT_POLL_MS`       | `250`   | Status poll interval while waiting.                                                                                             |
+| `DFHACK_MCP_SNAPSHOT_FIXTURE`       | unset   | Directory of captured walker JSON to read **instead of DFHack** — off-game development, no game and no Docker.                  |
+
+## Off-game development
+
+The snapshot path has one seam that talks to DFHack: `latest()` in
+[`src/snapshot.ts`](../src/snapshot.ts). Point `DFHACK_MCP_SNAPSHOT_FIXTURE` at a
+directory holding `entities.json` and `map.json` and that seam reads the capture
+instead, so every snapshot-backed tool runs its real projection with no DF
+process and no container.
+
+```sh
+npm run start:stub                        # the committed capture
+npm run start:stub -- --fixture <dir>     # one of your own
+```
+
+A capture records the published payload next to the wall clock the walker
+reported when it was taken, so `age_ms` is derived from two recorded numbers and
+is identical on every read — a fixture-backed response is byte-stable, which is
+what makes it usable in a golden or a unit test.
+
+Capture one from any running fort — the container fixture is the reproducible
+choice:
+
+```sh
+DFHACK_PORT=5001 DFHACK_MCP_QUERY_DIR=/opt/df/mcp-queries npm run capture:snapshot -- --out test/fixtures/snapshot
+```
+
+The capture waits for a complete pass on both walkers, then restores the
+publisher to the state it found — including restarting a walker that was already
+running with its own slice and cadence, since `snapshot stop` stops both.
+
+Two limits worth knowing before you rely on it. **Only the snapshot-backed
+surface works**: a tool with no snapshot path still reaches for DFHack and
+reports that it cannot be reached, which is honest rather than mocked. And a
+capture is a fort frozen at one `seq`, so it cannot exercise anything about
+_change_ — cadence, the governor, `seq` advancing, or read-source parity, which
+needs a live path to compare against. Those stay live-only.
+
+A missing or malformed fixture fails loudly rather than falling back to DFHack:
+a silent fallback would make an off-game run look like it passed when it had
+quietly gone live.
 
 ## Implementation notes
 
