@@ -279,13 +279,10 @@
   ],
   "caps": {
     "decorations_per_artifact": 16,
-    "default_limit": 25,
     "engravings_scanned_max": 20000,
-    "max_limit": 100,
     "subject_buckets_max": 40,
     "top_engravers_max": 10
   },
-  "cursor": 0,
   "engravings": {
     "art_images_loaded": true,
     "by_subject": [

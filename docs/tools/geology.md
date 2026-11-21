@@ -18,6 +18,7 @@ Reports the geological substrate of the loaded embark: the surface z-level, the 
 | Name | Type | Required | Default | Description |
 |---|---|---|---|---|
 | reveal_hidden | boolean | No | `false` | Bypass [fog of war](../../CONTRIBUTING.md#fog-of-war-the-reveal_hidden-opt-in): also read undiscovered tiles and caverns. The response reports the mode as `fog_of_war`. |
+| refresh | boolean | No | `false` | Recompute instead of serving the load-time cache, and replace what is cached. Only for forcing a fresh read — the cache is already dropped when a map loads or unloads. |
 
 ## Returns
 - `surface_z_max` (number) — the highest open-to-sky ground z-level found ANYWHERE on the embark. Distinct from [map_overview](map_overview.md)'s `surface_z_at_core`, which reads only the fort-core column; on a sloped embark the two differ by however much relief the map has. Both were called `surface_z` before 1.4.1, which made a caller composing the two tools silently pick whichever it happened to read first.
@@ -27,6 +28,12 @@ Reports the geological substrate of the loaded embark: the surface z-level, the 
 - `magma_reached` (boolean) — the magma-SEA discovery flag alone, never a volcano/pool/hauled magma. With `reveal_hidden=true` it reports whether the magma sea exists at all.
 - `surface_water` — `{ brook, river, murky_pools, permanent_freeze }`. `murky_pools` counts connected stagnant-water bodies; `permanent_freeze` means the biome base temperature is at/below freezing (glacier/tundra), not a seasonal-winter claim.
 - `fog_of_war` — `"applied"` (the default) or `"bypassed"` (with `reveal_hidden=true`).
+
+### Cost: computed once per map load
+
+This is the most expensive read in the server, because it walks the whole z-column: measured against the fixture on DFHack 53.15-r2, **5.5 s** with fog applied and **9.9 s** with `reveal_hidden=true`, all of it frozen game time. The layer stack, aquifer and cavern geometry are fixed for a map load, so the result is cached per load **and per fog mode** and served from memory afterwards — ~85 ms, which is the RPC round trip and nothing more. Re-measured end to end through MCP: 6,022 ms cold, 26 ms warm, byte-identical payloads.
+
+The cache is dropped when a map loads or unloads, and a load-token check (save folder + site id) means a different fort in the same DF process can never be served the previous one's layers. `refresh=true` forces a recompute. See [the load-time cache](../../CONTRIBUTING.md#shared-internals-the-load-time-cache-mcp_loadcachelua).
 
 ```json
 {

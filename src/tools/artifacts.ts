@@ -99,12 +99,8 @@ export interface ArtifactsAndEngravings {
   artifact_count: number;
   artifact_count_world: number;
   returned: number;
-  cursor: number;
-  next_cursor?: string;
   engravings: EngravingsSummary;
   caps: {
-    default_limit: number;
-    max_limit: number;
     decorations_per_artifact: number;
     engravings_scanned_max: number;
     subject_buckets_max: number;
@@ -114,12 +110,11 @@ export interface ArtifactsAndEngravings {
 
 export async function artifactsAndEngravings(
   limit?: number,
-  cursor?: string,
   scope?: 'site' | 'world'
 ): Promise<ArtifactsAndEngravings | { error: string }> {
   const data = await runJsonScript<ArtifactsAndEngravings>(
     'artifacts',
-    [limit != null ? String(limit) : '', cursor ?? '', scope ?? ''],
+    [limit != null ? String(limit) : '', scope ?? ''],
     ['artifacts']
   );
   if ('error' in data) return data;
@@ -164,21 +159,21 @@ export const artifactsAndEngravingsDef: ToolDef = {
     'looks at them; this tool loads them the way the engraving view sheet does, ' +
     'paused and with the UI restored, but skips that while a view sheet is open. ' +
     'A subject whose image is still not loaded reports subject_resolved=false and ' +
-    'falls back to its image reference ("image #0:70"), never a fabricated scene. Use ' +
-    'limit + next_cursor to page through artifacts; see `caps` for all documented ' +
-    'limits. Returns {"error":"no fort loaded"} if no fort is active.',
+    'falls back to its image reference ("image #0:70"), never a fabricated scene. ' +
+    'Every artifact in scope is returned; artifact_count is that total, and the optional ' +
+    'limit scopes how many rows come back, with the scoped count reported as returned. ' +
+    'There is no cursor: nothing is held back, so there is nothing to page to. See `caps` ' +
+    'for the limits that do apply. Returns {"error":"no fort loaded"} if no fort is active.',
   shape: {
     limit: z.coerce
       .number()
       .int()
       .min(1)
-      .max(100)
       .optional()
-      .describe('Artifacts per page (default 25, max 100). Engravings are always fully aggregated.'),
-    cursor: z
-      .string()
-      .optional()
-      .describe('Opaque pagination cursor from a previous call\'s next_cursor; omit for the first page.'),
+      .describe(
+        'Return at most this many artifacts. Omit for every artifact in scope. ' +
+          'Engravings are always fully aggregated.'
+      ),
     scope: z
       .enum(['site', 'world'])
       .optional()
@@ -187,5 +182,5 @@ export const artifactsAndEngravingsDef: ToolDef = {
           '"world" = every artifact in the world, each tagged with site_local.'
       ),
   },
-  run: ({ limit, cursor, scope }) => artifactsAndEngravings(limit, cursor, scope),
+  run: ({ limit, scope }) => artifactsAndEngravings(limit, scope),
 };

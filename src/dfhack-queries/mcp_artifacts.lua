@@ -8,8 +8,6 @@ if df.global.gamemode ~= df.game_mode.DWARF then
   return
 end
 
-local DEFAULT_LIMIT = 25
-local MAX_LIMIT = 100
 local DECORATION_CAP = 16
 local ENGRAVING_SCAN_CAP = 20000
 local SUBJECT_CAP = 40
@@ -136,7 +134,7 @@ local function in_scope(ar, scope)
   return sget(ar, 'site') == fort_site_id
 end
 
-local function build_artifacts(cursor, limit, scope)
+local function build_artifacts(limit, scope)
   local all = df.global.world.artifacts.all
   local world_total = #all
   local indices = {}
@@ -145,8 +143,8 @@ local function build_artifacts(cursor, limit, scope)
   end
   local total = #indices
   local list = {}
-  local n = cursor
-  while n < total and #list < limit do
+  local n = 0
+  while n < total and (not limit or #list < limit) do
     local ar = all[indices[n + 1]]
     local ok, rec = pcall(artifact_record, ar)
     if not ok then
@@ -156,9 +154,7 @@ local function build_artifacts(cursor, limit, scope)
     list[#list + 1] = rec
     n = n + 1
   end
-  local next_cursor
-  if n < total then next_cursor = tostring(n) end
-  return list, total, world_total, next_cursor
+  return list, total, world_total
 end
 
 local function chunk_index()
@@ -387,17 +383,11 @@ local function build_engravings()
 end
 
 local limit = tonumber(args[1] or '')
-if not limit or limit < 1 then limit = DEFAULT_LIMIT end
-if limit > MAX_LIMIT then limit = MAX_LIMIT end
-limit = math.floor(limit)
+if limit and limit >= 1 then limit = math.floor(limit) else limit = nil end
 
-local cursor = tonumber(args[2] or '')
-if not cursor or cursor < 0 then cursor = 0 end
-cursor = math.floor(cursor)
+local scope = (args[2] == 'world') and 'world' or 'site'
 
-local scope = (args[3] == 'world') and 'world' or 'site'
-
-local artifacts, total, world_total, next_cursor = build_artifacts(cursor, limit, scope)
+local artifacts, total, world_total = build_artifacts(limit, scope)
 
 emit({
   scope = scope,
@@ -405,12 +395,8 @@ emit({
   artifact_count = total,
   artifact_count_world = world_total,
   returned = #artifacts,
-  cursor = cursor,
-  next_cursor = next_cursor,
   engravings = build_engravings(),
   caps = {
-    default_limit = DEFAULT_LIMIT,
-    max_limit = MAX_LIMIT,
     decorations_per_artifact = DECORATION_CAP,
     engravings_scanned_max = ENGRAVING_SCAN_CAP,
     subject_buckets_max = SUBJECT_CAP,

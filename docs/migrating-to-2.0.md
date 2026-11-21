@@ -73,6 +73,20 @@ Fog of war is still on by default. Every fog-gated tool now takes the same optio
 | `magma_hidden { z_top, z_bottom }` (undiscovered magma sea) | `magma_reached: true` when the sea exists. Its z-range is no longer reported; `fluids` with `reveal_hidden: true` gives `magma_sea.top_z`. |
 | layer stack ran the full column; surface facts read revealed tiles only | layer stack runs the full column, and `surface_z_max`, brook, river, murky pools and cavern water also read undiscovered tiles |
 
+## `artifacts_and_engravings`: no cursor
+
+| 1.x | 2.0 |
+| --- | --- |
+| `limit` defaulted to 25, capped at 100 | `limit` is optional caller scoping with no cap; omitting it returns **every** artifact in scope |
+| `cursor` in, `next_cursor` out, `cursor` echoed back | both gone |
+| `caps.default_limit`, `caps.max_limit` | gone; `caps` keeps the limits that still apply |
+
+`artifact_count` was already the scope total and still is, so a client that read
+it needs no change. One that paged should drop the loop: ask once and read
+`artifacts[]`, or pass a `limit` if it wants fewer rows. Removing the cursor
+without removing the cap would have made any artifact past the hundredth
+unreachable, which is why the cap went too.
+
 ## Errors carry a `code`
 
 Every error payload now has a stable `code` alongside the `error` message: `NOT_CONNECTED`, `NO_FORT`, `NO_GAME`, `NOT_FOUND`, `INVALID_ARGUMENT`, `TIMEOUT` or `SCRIPT_ERROR`. Branch on `code`; the message text may change between releases. Arguments that fail a tool's input schema are still rejected by the MCP SDK before the tool runs, as a plain-text protocol error with no `code`.

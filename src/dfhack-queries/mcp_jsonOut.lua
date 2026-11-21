@@ -11,9 +11,13 @@ local function convert(t)
   end
 end
 
-function emit(t)
+function encoded(t)
   convert(t)
-  print(json.encode(t))
+  return json.encode(t)
+end
+
+function emit(t)
+  print(encoded(t))
 end
 
 if dfhack_flags and dfhack_flags.module then
