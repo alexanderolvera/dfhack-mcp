@@ -382,6 +382,51 @@ the way `src/fog.ts` is for fog of war, and no tool writes its own provenance.
   `test/readSource.test.mjs` fails if a dual-path module ships without the shared
   parameter, the note, or a parity spec.
 
+## Shared internals: the load-time cache (`mcp_loadCache.lua`)
+
+A `reqscript`'d Lua module that holds values which are fixed for a map load, so a
+tool computes them once instead of once per call. It is not a tool (no
+`docs/tools/*.md` page), so it is documented here.
+
+```lua
+local cache = reqscript('mcp_loadCache')
+local hit = cache.peek(key)          -- the encoded string, or nil
+if hit then print(hit) return end
+...
+print(cache.put(key, out))           -- encodes, stores, returns the string
+```
+
+**It stores encoded JSON strings, never tables of DF objects.** A cached table
+holding `df` references would keep pointers into a world that a reload has freed,
+which is a crash rather than stale data. `put` encodes through
+`mcp_jsonOut.encoded` and keeps only the result, so nothing survives a load but
+text.
+
+Invalidation is belt and braces. The module registers one
+`dfhack.onStateChange` handler that clears the store on `SC_MAP_LOADED`,
+`SC_MAP_UNLOADED` and `SC_WORLD_UNLOADED` — not on `SC_WORLD_LOADED`, since a map
+load follows it. Independently, every access compares a load token
+(`cur_savegame.save_dir` + `plotinfo.site_id`) and clears on a mismatch, so
+pointing one DF process at a different fort cannot serve the previous fort's
+answers even if the event were missed. The store lives in
+`package.loaded['mcp_loadCache.store']` so it survives a script reload, the same
+trick `mcp_snapshot.lua` uses for walker state.
+
+`npm run call` can't reach it (it isn't a tool), but
+`dfhack-run mcp_loadCache` prints `{token, keys}` and `mcp_loadCache clear`
+empties it — useful when a live A/B test needs a cold read.
+
+**What belongs in it is decided by measurement, not by category.** Against the
+fixture on DFHack 53.15-r2, `geology` costs **5.5 s** fogged and **9.9 s** with
+`reveal_hidden` — it walks the whole z-column — and comes back in ~85 ms cached.
+The other reads [#150](https://github.com/alexanderolvera/dfhack-mcp/issues/150)
+named are already at the RPC floor: `site_history`, `artifacts_and_engravings`
+and `game_data` measure 87–100 ms (p50) against a floor of ~92 ms for a bare
+`runLua('print(1)')`, so caching them would buy nothing measurable while making
+them lie the moment an artifact is forged or a dwarf dies. They are deliberately
+not cached. A tool earns a cache entry by being slow, and `geology` is the only
+one of the four that is.
+
 ## Shared internals: fog-of-war safety
 
 Two `reqscript`'d Lua modules centralize fog-of-war correctness so individual

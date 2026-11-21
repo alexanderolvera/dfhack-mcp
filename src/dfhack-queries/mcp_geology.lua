@@ -8,7 +8,29 @@ if df.global.gamemode ~= df.game_mode.DWARF then
   return
 end
 
-local fog = reqscript('mcp_readTerrain').fog_gate({ ... })
+local cache = reqscript('mcp_loadCache')
+
+local argv = { ... }
+local refresh = false
+for i = #argv, 1, -1 do
+  if argv[i] == '--refresh' then
+    refresh = true
+    table.remove(argv, i)
+  end
+end
+
+local fog = reqscript('mcp_readTerrain').fog_gate(argv)
+
+-- The layer stack is fixed for a map load, so this costs 5.5 s (9.9 s revealed)
+-- exactly once. See CONTRIBUTING.md "Shared internals: the load-time cache".
+local CACHE_KEY = 'geology:' .. fog.mode
+if not refresh then
+  local hit = cache.peek(CACHE_KEY)
+  if hit then
+    print(hit)
+    return
+  end
+end
 
 local w = df.global.world
 local ttattrs = df.tiletype.attrs
@@ -282,4 +304,4 @@ local out = {
   surface_water = surface_water,
   fog_of_war = fog.mode,
 }
-emit(out)
+print(cache.put(CACHE_KEY, out))

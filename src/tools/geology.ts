@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { runJsonScript } from '../query.ts';
 import type { ToolDef } from '../register.ts';
 import { FOG_OF_WAR_NOTE, fogArgs, revealHiddenParam, type FogReport } from '../fog.ts';
@@ -39,11 +40,13 @@ export interface Geology extends FogReport {
   surface_water: SurfaceWater;
 }
 
-export async function geology(revealHidden?: boolean): Promise<Geology | { error: string }> {
-  const data = await runJsonScript<Geology>('geology', fogArgs(revealHidden), [
-    'layers',
-    'caverns_discovered',
-  ]);
+export async function geology(
+  revealHidden?: boolean,
+  refresh?: boolean
+): Promise<Geology | { error: string }> {
+  const argv = fogArgs(revealHidden);
+  if (refresh) argv.push('--refresh');
+  const data = await runJsonScript<Geology>('geology', argv, ['layers', 'caverns_discovered']);
   if ('error' in data) return data;
   for (const b of data.layers ?? []) {
     if (!Array.isArray(b.materials)) b.materials = [];
@@ -71,8 +74,21 @@ export const geologyDef: ToolDef = {
     'unreached magma sea are OMITTED; with reveal_hidden=true every cavern is listed ' +
     'in caverns_discovered, magma_reached reports whether the sea exists, and the ' +
     'layer stack runs the full column. Reports what is there, not where to dig. ' +
+    'The layer stack is fixed for a map load, so this is computed once per load and per ' +
+    'reveal_hidden mode and served from memory afterwards: the first call costs seconds of ' +
+    'frozen game time, later ones cost the RPC round trip. Pass refresh=true to recompute. ' +
     'Returns {"error":"no fort loaded"} if no fort is active. ' +
     FOG_OF_WAR_NOTE,
-  shape: { reveal_hidden: revealHiddenParam },
-  run: ({ reveal_hidden }) => geology(reveal_hidden),
+  shape: {
+    reveal_hidden: revealHiddenParam,
+    refresh: z
+      .boolean()
+      .optional()
+      .describe(
+        'Recompute instead of serving the load-time cache, and replace what is cached. ' +
+          'The cache is already dropped when a map loads or unloads, so this is only for ' +
+          'forcing a fresh read.'
+      ),
+  },
+  run: ({ reveal_hidden, refresh }) => geology(reveal_hidden, refresh),
 };

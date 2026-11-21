@@ -17,6 +17,13 @@ what to read instead.
 
 ### Removed
 
+- **Breaking:** `artifacts_and_engravings` no longer paginates. `cursor`,
+  `next_cursor`, the echoed `cursor`, the 25-row default and the hard cap of 100
+  (`caps.default_limit`/`caps.max_limit`) are all gone. Every artifact in scope is
+  returned and `artifact_count` is that total; `limit` stays as optional caller
+  scoping and changes only `returned`. Removing the cursor while keeping the cap
+  would have made any artifact past the hundredth unreachable, which is why the
+  cap went with it.
 - **Breaking:** `wiki_search` and `wiki_lookup` are removed, along with the
   `DFHACK_MCP_CACHE_DIR` cache. They were HTTP to dwarffortresswiki.org and
   never touched DFHack. Clients bring their own game knowledge.
@@ -32,6 +39,29 @@ what to read instead.
   cutoffs. It returns raw counts with `population` alongside.
 
 ### Added
+
+- **A load-time cache for `geology`.** It is the most expensive read in the
+  server, because it walks the whole z-column: measured against the fixture,
+  **5.5 s** with fog applied and **9.9 s** with `reveal_hidden`, all of it frozen
+  game time. The layer stack, aquifer and cavern geometry are fixed for a map
+  load, so the result is now computed once per load and per fog mode and served
+  from memory — 6,022 ms cold to 26 ms warm end to end through MCP, with
+  byte-identical payloads, which is why `geology`'s golden is unchanged. The new
+  `refresh` parameter forces a recompute.
+
+  The cache (`mcp_loadCache.lua`) stores encoded JSON strings rather than tables
+  of DF objects, since a cached `df` reference would point into a world a reload
+  has freed. It is dropped on `SC_MAP_LOADED`, `SC_MAP_UNLOADED` and
+  `SC_WORLD_UNLOADED`, and independently on a load-token mismatch (save folder +
+  site id), so a different fort in the same DF process cannot be served the
+  previous one's answers.
+
+  **The other three reads [#150](https://github.com/alexanderolvera/dfhack-mcp/issues/150)
+  named are deliberately not cached.** `site_history`, `artifacts_and_engravings`
+  and `game_data` measure 87-100 ms against a floor of ~92 ms for a bare
+  `runLua('print(1)')` — they are already at the RPC round trip, so a cache would
+  buy nothing measurable while making them stale the moment an artifact is forged
+  or a dwarf dies.
 
 - **The read-source contract.** Every response that can come from either path now
   reports `source: "snapshot" | "live"` — the path that actually served it — and a

@@ -17,22 +17,21 @@ Reports the fort's named artifacts (paginated) plus an aggregated summary of the
 ## Parameters
 | Name | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
-| limit | integer (coerced, 1-100) | No | 25 | Artifacts per page (max 100). Engravings are always fully aggregated. |
-| cursor | string | No | — | Opaque pagination cursor from a previous call's `next_cursor`; omit for the first page. |
+| limit | integer (coerced, >= 1) | No | — | Return at most this many artifacts. Omit for **every** artifact in scope. Engravings are always fully aggregated. |
 | scope | `"site"` \| `"world"` | No | `"site"` | Which artifacts to return. `site` = only the loaded fort's. `world` = every artifact in the world, each row tagged `site_local`. |
 
 ## Returns
 Top-level fields:
 - `scope` — the scope actually applied (`"site"` or `"world"`), echoed so a paged caller can't lose track of it.
 - `artifacts` — array of artifact records: `id`, `site_local?` (only in `world` scope), `name {dwarven, english}`, `item_type` (e.g. SLAB), `item_label` (readable, e.g. "microcline slab"), `material {token, name}`, `value`, `quality`, `maker {histfig_id, name, unit_id?}` (`unit_id` present ONLY when the maker is a living current citizen), `decorations[]` (`type`/`material`/`quality`, ART_IMAGE entries carry `image_resolved`), `decorations_truncated?`/`decorations_total?`, `inscription?` (engraved text), `error?` (set only when a single record was unreadable)
-- `artifact_count` — total artifacts across all pages **in the applied scope**; `artifact_count_world` — the unfiltered world total, always reported so the fact isn't lost when scoping to the site; `returned`, `cursor`, `next_cursor?` (absent on the last page)
+- `artifact_count` — total artifacts **in the applied scope**, whether or not `limit` scoped the rows; `artifact_count_world` — the unfiltered world total, always reported so the fact isn't lost when scoping to the site; `returned` — how many rows came back, equal to `artifact_count` unless the caller passed a `limit`
 - `engravings` — `total_present`, `scanned`, `scan_truncated`, `distinct_subjects`, `art_images_loaded`, `subjects_resolvable`, `quality` (label → count map), `by_subject[]` (`subject`, `subject_resolved`, `ref`, `count`, `image?`), `by_subject_truncated`, `top_engravers[]` (`name`, `histfig_id`, `unit_id?`, `count`)
 - `by_subject[].image` — present exactly when `subject_resolved` is true:
   - `elements[]` — what the image depicts, each with `type` (`CREATURE`/`ITEM`/`PLANT`/`TREE`/`SHAPE`), `name` (DF's own wording, e.g. "Obok Dothalls the dwarf", "a chert door"), `count?`, plus by type: `race` + `histfig_id?` + `unit_id?` (living citizens only) for creatures, `item_type` + `material?` for items, `plant` for plants/trees, `shape` for shapes.
   - `properties[]` — `type` (`transitive_verb`/`intransitive_verb`), `verb` (e.g. `Raising`), `subject` and `object?` as 0-based indices into `elements`, `text` (DF's own sentence, e.g. "Obok Dothalls is raising the chert door.").
   - `event?` — `{id, type, year}` of the history event the image commemorates (e.g. `MASTERPIECE_CREATED_ITEM`).
   - `year` — the year the image was made.
-- `caps` — all documented limits: `default_limit`, `max_limit`, `decorations_per_artifact`, `engravings_scanned_max`, `subject_buckets_max`, `top_engravers_max`
+- `caps` — the limits that still apply: `decorations_per_artifact`, `engravings_scanned_max`, `subject_buckets_max`, `top_engravers_max`
 
 ```json
 {
@@ -88,7 +87,7 @@ Top-level fields:
 
 ## Caveats & limits
 - **Artifacts are site-scoped by default.** `df.global.world.artifacts.all` is a WORLD table, and in a mature world the overwhelming majority of it has nothing to do with your fort. Before 1.4.1 the tool returned all of it with no scope field and no per-row discriminator, so a 2-year-old fort of 57 dwarves reported `artifact_count: 286` — world-gen mythical remnants and other civs' books listed indistinguishably alongside its own five pieces. Scoping keys on the artifact record's own `site` field against `df.global.plotinfo.site_id`.
-- Artifact pagination: default 25 per page, hard cap 100; page with `limit` + `next_cursor`. The cursor indexes into the SCOPED list, so a cursor minted under one `scope` is meaningless under the other — keep `scope` fixed while paging.
+- **No pagination.** Every artifact in scope is returned and `artifact_count` is that total, so there is nothing held back to page to. `limit` is caller scoping only: it changes `returned`, never `artifact_count`. The cursor, its 25-per-page default and its hard cap of 100 are gone with [#150](https://github.com/alexanderolvera/dfhack-mcp/issues/150) — the cap was the real problem, since removing the cursor while keeping it would have made any artifact past the hundredth unreachable.
 - Per-artifact decorations are capped at 16 (`decorations_truncated` + `decorations_total` flag the overflow).
 - Engraving aggregation scans at most 20,000 engravings (`scan_truncated`); at most 40 subject buckets and 10 top engravers are returned.
 - **Engraving subjects resolve by loading DF's art images.** DF keeps them on disk and reads one in only when something views an engraving, so on a freshly loaded fort the table is empty. The tool loads the images its scanned engravings reference the way the engraving view sheet does (see Implementation notes). It does this paused, restores the UI state it touched, and **skips the load while any view sheet is open or a non-fortress screen is on top**, so it never disturbs what the player is looking at. Once loaded, an image stays resident, so later calls resolve without loading again. A subject whose image is not loaded reports `subject_resolved=false` and falls back to its stable reference (`ref` = `<art_id>:<subid>`, rendered `"image #0:70"`). It is never fabricated. `art_images_loaded` reports whether any art image is resident; `subjects_resolvable` reports whether any scanned engraving resolved.

@@ -1891,43 +1891,50 @@ export const INVARIANTS = [
     },
   },
   {
-    name: 'artifacts_world_scope_and_paging_agree_with_site_scope',
+    name: 'artifacts_world_scope_and_limit_agree_with_site_scope',
     tools: ['artifacts_and_engravings'],
     probes: {
-      world: { tool: 'artifacts_and_engravings', args: () => ({ scope: 'world', limit: 100 }) },
+      world: { tool: 'artifacts_and_engravings', args: () => ({ scope: 'world' }) },
       firstOfOne: { tool: 'artifacts_and_engravings', args: () => ({ limit: 1 }) },
-      secondOfOne: {
-        tool: 'artifacts_and_engravings',
-        args: (p) => (p.probes.firstOfOne?.next_cursor ? { limit: 1, cursor: p.probes.firstOfOne.next_cursor } : null),
-      },
     },
-    desc: 'world scope totals the same world count, tags every row site_local, and holds exactly the site rows as site_local; a 1-row page plus its next_cursor walk the same order as the default page',
+    desc: 'world scope totals the same world count, tags every row site_local, and holds exactly the site rows as site_local; the default call returns every artifact in scope, limit scopes the rows without changing artifact_count, and no response carries a cursor',
     check(p) {
       const site = p.artifacts_and_engravings;
-      const { world, firstOfOne, secondOfOne } = p.probes;
+      const { world, firstOfOne } = p.probes;
       const out = [];
       if (world.scope !== 'world') out.push(`scope echo "${world.scope}", expected "world"`);
       if (world.artifact_count !== site.artifact_count_world || world.artifact_count_world !== site.artifact_count_world)
         out.push(`world scope count ${world.artifact_count}/${world.artifact_count_world} disagrees with site's artifact_count_world ${site.artifact_count_world}`);
       const rows = world.artifacts ?? [];
       if (rows.some((a) => typeof a.site_local !== 'boolean')) out.push('a world-scope row has no boolean site_local');
-      if (world.next_cursor === undefined) {
-        const local = new Set(rows.filter((a) => a.site_local).map((a) => a.id));
-        if (local.size !== site.artifact_count)
-          out.push(`world scope tags ${local.size} rows site_local, site scope counts ${site.artifact_count}`);
-        for (const a of site.artifacts ?? [])
-          if (!local.has(a.id)) out.push(`site artifact ${a.id} is not a site_local row in world scope`);
-      }
+      const local = new Set(rows.filter((a) => a.site_local).map((a) => a.id));
+      if (local.size !== site.artifact_count)
+        out.push(`world scope tags ${local.size} rows site_local, site scope counts ${site.artifact_count}`);
+      for (const a of site.artifacts ?? [])
+        if (!local.has(a.id)) out.push(`site artifact ${a.id} is not a site_local row in world scope`);
       const ids = (site.artifacts ?? []).map((a) => a.id);
-      if (new Set(ids).size !== ids.length) out.push(`duplicate artifact ids on the default page: ${JSON.stringify(ids)}`);
+      if (new Set(ids).size !== ids.length) out.push(`duplicate artifact ids: ${JSON.stringify(ids)}`);
+      // No cursor anywhere: nothing is held back, so there is nothing to page to (#150).
+      for (const [label, r] of [['site', site], ['world', world], ['limit=1', firstOfOne]]) {
+        const cursors = Object.keys(r).filter((k) => /cursor/.test(k));
+        if (cursors.length) out.push(`${label} response still carries ${cursors.join(', ')}`);
+      }
+      for (const [label, r] of [['site', site], ['world', world]]) {
+        if (r.returned !== (r.artifacts ?? []).length)
+          out.push(`${label} returned=${r.returned} but lists ${(r.artifacts ?? []).length} rows`);
+        if (r.returned !== r.artifact_count)
+          out.push(
+            `${label} returned ${r.returned} of ${r.artifact_count} with no limit asked for`
+          );
+      }
       if (firstOfOne.returned !== Math.min(1, site.artifact_count))
         out.push(`limit=1 returned ${firstOfOne.returned} rows`);
+      if (firstOfOne.artifact_count !== site.artifact_count)
+        out.push(
+          `limit=1 changed artifact_count to ${firstOfOne.artifact_count}, expected ${site.artifact_count}`
+        );
       if (firstOfOne.artifacts?.[0]?.id !== site.artifacts?.[0]?.id)
         out.push(`limit=1 first row ${firstOfOne.artifacts?.[0]?.id} !== default first row ${site.artifacts?.[0]?.id}`);
-      if ((site.artifact_count > 1) !== (firstOfOne.next_cursor !== undefined))
-        out.push(`limit=1 next_cursor presence disagrees with artifact_count=${site.artifact_count}`);
-      if (secondOfOne && secondOfOne.artifacts?.[0]?.id !== site.artifacts?.[1]?.id)
-        out.push(`resuming from next_cursor gave row ${secondOfOne.artifacts?.[0]?.id}, default second row is ${site.artifacts?.[1]?.id}`);
       for (const [i, a] of (site.artifacts ?? []).entries()) {
         const n = a.decorations?.length ?? 0;
         if (n > site.caps.decorations_per_artifact) out.push(`artifacts[${i}] lists ${n} decorations over the cap`);
